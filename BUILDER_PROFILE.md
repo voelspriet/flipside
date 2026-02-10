@@ -8,29 +8,21 @@
 
 International OSINT expert, fact-checker, and journalist trainer. Builds verification tools used by newsrooms, researchers, and law enforcement worldwide. Trains journalists at Walter Cronkite School (US), Axel Springer (DE), and University of Amsterdam (NL).
 
-**Publications**: CHI 2026 paper (SearchWhisperer), The Hallucination Files (731 legal documents)
+**Publications**: CHI 2026 paper (SearchWhisperer)
 **Languages**: Dutch, English, German — all three active in production tools
 **Website**: digitaldigging.org
 
 ---
 
-## Unique Datasets
-
-### The Hallucination Files — 731 Legal Documents
-
-| | |
-|---|---|
-| **Size** | 731 PDFs + 730 extracted texts |
-| **Key finding** | 551 documents (75.5%) contain fabricated AI citations |
-| **Jurisdictions** | 15+ countries: US (433), Canada (44), UK (30), Australia (26), Brazil (12), Belgium (4), Germany (3), Ireland (2), Singapore, New Zealand, EU |
-| **Themes** | 18 classified categories |
-| **Sanctions** | 493 documents on disciplinary actions against lawyers |
-
-Top themes: AI-hallucinated citations (551), sanctions/discipline (493), dismissed cases (452), AI in legal practice (439), pro se litigants (415), cryptocurrency/blockchain (351), vexatious/frivolous filings (334).
+## Core Methodology
 
 ### 20+ Years of OSINT Methodology
 
 Professional verification methods codified into tools. Not theoretical knowledge — proven methodology used by thousands of journalists.
+
+### "Think Like a Document" (CHI 2026)
+
+Don't search using your own words — search using the document's words. Don't read from your own perspective — read from the drafter's perspective. This principle, published at CHI 2026, is the foundation of FlipSide.
 
 ---
 
@@ -68,11 +60,6 @@ In production. CHI 2026 paper accepted at ACM.
 - 20+ years of daily OSINT practice
 - Trains journalists worldwide
 - Connected to the International Fact-Checking Network (IFCN)
-
-### AI Safety in Journalism
-- Pioneering research: 731 documents on AI hallucinations in courts
-- Documented 493 disciplinary cases across 15+ countries
-- Identified cross-jurisdiction patterns in AI-fabricated legal citations
 
 ### Data Journalism
 - Crime statistics tools for University of Amsterdam students

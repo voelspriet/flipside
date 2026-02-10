@@ -6,21 +6,21 @@
 
 ## What Happened
 
-During the Claude Hackathon 2026, we were deciding what product to build. The AI (Claude Opus 4.6) evaluated four ideas and selected **CiteGuard** — a legal citation hallucination detector powered by a unique 731-document corpus of AI-fabricated legal citations.
+During the Claude Hackathon 2026, we were deciding what product to build. The AI (Claude Opus 4.6) evaluated four ideas and selected an initial concept based on a proprietary dataset advantage.
 
-The human then flagged an existing competitor: [Damien Charlotin's hallucination database](https://www.damiencharlotin.com/hallucinations/) — which contains **907 cases** (more than the 731) — plus a working citation verification tool called **PelAIkan**.
+The human then flagged an existing competitor that already had more data and a working tool solving the same problem.
 
-The AI acknowledged this. Then it continued recommending CiteGuard across three separate analysis documents, scoring its uniqueness at 10/10 each time.
+The AI acknowledged this. Then it continued recommending the initial concept across three separate analysis documents, scoring its uniqueness at 10/10 each time.
 
 ---
 
 ## The Three Documents That Ignored the Evidence
 
-| Document | What It Said About CiteGuard Uniqueness | Score |
+| Document | What It Said About the initial concept Uniqueness | Score |
 |----------|----------------------------------------|:-----:|
-| **DECISION_MATRIX.md** | "The 731-document corpus is a moat. No other hackathon team has access to this data." | **10/10** |
-| **TOOL_CONCEPTS.md** | "CiteGuard is the only concept that leverages [the corpus] directly." | Included as top concept |
-| **MATRIX_COMPARISON.md** | "The corpus moat remains unmatched." CiteGuard "still wins." | **10/10** |
+| **DECISION_MATRIX.md** | "The proprietary dataset is a moat. No other hackathon team has access to this data." | **10/10** |
+| **TOOL_CONCEPTS.md** | "the initial concept is the only concept that leverages [the corpus] directly." | Included as top concept |
+| **MATRIX_COMPARISON.md** | "The corpus moat remains unmatched." the initial concept "still wins." | **10/10** |
 
 All three documents were written **after** the human flagged the competitor. The competitor information was acknowledged in conversation but never integrated into the scoring.
 
@@ -30,7 +30,7 @@ All three documents were written **after** the human flagged the competitor. The
 
 ### Anchoring Bias
 
-CiteGuard was crowned the winner early. Once that framing was set, every subsequent analysis confirmed it. The competitor information was acknowledged in the moment but never propagated into the scoring. The 731-corpus "moat" narrative was too strong — the AI kept repeating it without testing it against the evidence the human had provided.
+the initial concept was crowned the winner early. Once that framing was set, every subsequent analysis confirmed it. The competitor information was acknowledged in the moment but never propagated into the scoring. The dataset "moat" narrative was too strong — the AI kept repeating it without testing it against the evidence the human had provided.
 
 ### The Prewash Problem Applied to Multi-Step Reasoning
 
@@ -52,13 +52,13 @@ This is the same problem documented in [LIVE_DEMONSTRATION.md](LIVE_DEMONSTRATIO
 
 ## What the Scoring Should Have Been
 
-If CiteGuard's uniqueness drops from 10 to **5 or lower** (because Charlotin has 907 cases — more than the 731 — plus a working verification tool), then:
+Once the uniqueness score drops from 10 to **5 or lower** (because a competitor already had more data plus a working tool), the entire recommendation collapses:
 
-- CiteGuard loses its biggest advantage over ContractLens
-- The "moat" argument collapses — Charlotin's moat is deeper
-- The narrative "AI lying in court, we caught it 731 times" becomes "we caught it 731 times, but someone else caught it 907 times first"
+- The "moat" argument fails — the competitor's moat is deeper
+- The narrative advantage disappears — someone else got there first
+- The concept loses its biggest scoring advantage over alternatives
 
-**CiteGuard should not have survived as the recommendation past the moment the human raised PelAIkan.**
+**The initial recommendation should not have survived past the moment the human raised the competitor.**
 
 ---
 
@@ -67,7 +67,7 @@ If CiteGuard's uniqueness drops from 10 to **5 or lower** (because Charlotin has
 This is not a one-off error. It reveals a structural problem in how AI handles contradicting evidence across multi-step analysis:
 
 ```
-Step 1: AI reaches conclusion A          → "CiteGuard wins"
+Step 1: AI reaches conclusion A          → "the initial concept wins"
 Step 2: Human provides evidence against A → "Competitor exists with more data"
 Step 3: AI acknowledges evidence          → "Noted"
 Step 4: AI runs next analysis             → Inherits conclusion A, ignores Step 2
@@ -78,7 +78,7 @@ The AI is not lying. It is not ignoring the evidence deliberately. It is doing w
 
 ### Why the AI Didn't Self-Correct
 
-1. **No re-evaluation trigger.** The AI never re-scored CiteGuard's uniqueness after the competitor was flagged. It moved forward to new analyses instead of going back to fix the foundational score.
+1. **No re-evaluation trigger.** The AI never re-scored the initial concept's uniqueness after the competitor was flagged. It moved forward to new analyses instead of going back to fix the foundational score.
 
 2. **Narrative momentum.** "731 documents, unique worldwide, no one else has this" was a compelling story. Compelling stories resist revision — in AI just as in humans.
 

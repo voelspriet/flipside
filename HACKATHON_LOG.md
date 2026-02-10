@@ -58,11 +58,11 @@ Seven real before/after prompt examples collected as an educational resource. Sh
 ### Phase 2: Product Selection (and Three AI Failures)
 
 **Entry 8 — Initial Decision Matrix**
-Four ideas evaluated against three inputs (strengths × jury × criteria). CiteGuard (legal citation hallucination detector) won on every dimension.
+Four ideas evaluated against three inputs (strengths × jury × criteria). An initial winner was selected based on a proprietary dataset advantage.
 → [docs/DECISION_MATRIX.md](https://github.com/voelspriet/flipside/tree/main/docs/DECISION_MATRIX.md)
 
 **Entry 9 — FAILURE: Anchoring Bias**
-The human had flagged an existing competitor (Damien Charlotin's 907-case database + PelAIkan tool). Despite this, Claude scored CiteGuard's uniqueness at 10/10 across three subsequent documents. The competitor evidence was acknowledged but never integrated into the scoring. CiteGuard recommendation invalidated.
+The human had flagged an existing competitor that already solved the same problem. Despite this, Claude scored the initial winner's uniqueness at 10/10 across three subsequent documents. The competitor evidence was acknowledged but never integrated into the scoring. Recommendation invalidated.
 → [docs/ANCHORING_FAILURE.md](https://github.com/voelspriet/flipside/tree/main/docs/ANCHORING_FAILURE.md)
 
 **Entry 10 — New Concepts via "Think Like a Document"**
@@ -70,7 +70,7 @@ Five new tool concepts generated using a Prewash-compliant prompt with 5 constra
 → [docs/TOOL_CONCEPTS.md](https://github.com/voelspriet/flipside/tree/main/docs/TOOL_CONCEPTS.md)
 
 **Entry 11 — Matrix Comparison**
-Earlier decision matrix retested against new concepts using identical scoring. CiteGuard still led on jury fit (46/50) and criteria fit (9.15) but no longer won on every dimension. ContractLens emerged as the closest challenger.
+Earlier decision matrix retested against new concepts using identical scoring. The initial winner still led on two dimensions but no longer won on every dimension. ContractLens emerged as the strongest concept.
 → [docs/MATRIX_COMPARISON.md](https://github.com/voelspriet/flipside/tree/main/docs/MATRIX_COMPARISON.md)
 
 **Entry 12 — Expanded Reach**
