@@ -6,23 +6,39 @@
 
 ## Who
 
-International OSINT expert, fact-checker, and journalist trainer. Builds verification tools used by newsrooms, researchers, and law enforcement worldwide. Trains journalists at Walter Cronkite School (US), Axel Springer (DE), and University of Amsterdam (NL).
+Henk van Ess is an internationally recognized expert in online research methods, leveraging the web and AI to uncover information effectively. His expertise is sought after by Pulitzer winners, NGOs, research firms, and law enforcement.
 
-**Publications**: CHI 2026 paper (SearchWhisperer)
-**Languages**: Dutch, English, German — all three active in production tools
-**Website**: digitaldigging.org
+A pioneer in AI-powered digital research and open-source intelligence (OSINT), Henk's methods for discovering and verifying online information have earned him international recognition. Through hands-on workshops and training sessions worldwide, he empowers professionals with practical digital investigation skills.
+
+**Assessor** for Poynter's International Fact-Checking Network (IFCN) and the European Fact-Checking Standards Network (EFCSN). Early contributor to **Bellingcat**, the renowned collective specializing in open-source investigations. Author of multiple books on internet research and data analysis.
+
+**Newsletter**: 10,000+ subscribers from BBC, Google, Microsoft, The New York Times, The Washington Post, Reuters, Amnesty International, Europol, The United Nations, Harvard, Oxford, Stanford, MIT, NATO, and Interpol.
+
+**Website**: [digitaldigging.org](https://digitaldigging.org)
 
 ---
 
-## Core Methodology
+## Why FlipSide Comes From This Builder
 
-### 20+ Years of OSINT Methodology
+FlipSide applies a methodology Henk has been developing for 20+ years: **don't take yourself as the measurement of things — observe what must be there.**
 
-Professional verification methods codified into tools. Not theoretical knowledge — proven methodology used by thousands of journalists.
+In search, this became "Think Like a Document" — a peer-reviewed methodology (CHI 2026, ACM) that teaches users to search from the document's perspective, not their own. In FlipSide, the same principle is applied to contracts: read from the drafter's perspective, not yours.
 
-### "Think Like a Document" (CHI 2026)
+This is not an abstract idea. It comes from decades of training journalists to find documents they couldn't find, verify claims they couldn't verify, and see what was hidden in plain sight. FlipSide applies the same thinking to legal documents.
 
-Don't search using your own words — search using the document's words. Don't read from your own perspective — read from the drafter's perspective. This principle, published at CHI 2026, is the foundation of FlipSide.
+---
+
+## Published Work
+
+### "Think Like a Document" — CHI 2026
+
+**Paper**: "Search Whisperer: AI-Augmented Query Reformulation for Enhanced Information Sensemaking" — CHI 2026, ACM
+
+The methodology behind SearchWhisperer and FlipSide: don't search or read using your own vocabulary and perspective. Adopt the perspective of the source. Published and peer-reviewed at the world's largest HCI conference.
+
+### GIJN Guide: Detecting AI-Generated Content
+
+Author of the [Reporter's Guide to Detecting AI-Generated Content](https://gijn.org/resource/guide-detecting-ai-generated-content/) for the Global Investigative Journalism Network. Covers seven detection techniques for identifying machine-made content, including mathematical signatures, physics failures, and noise pattern analysis.
 
 ---
 
@@ -30,41 +46,40 @@ Don't search using your own words — search using the document's words. Don't r
 
 ### ImageWhisperer / DetectAI (detectai.live)
 
-In production. Used by journalists, researchers, and law enforcement.
+Born from the GIJN guide. Runs parallel LLM analysis alongside forensic image processing.
 
 - 25+ forensic image detection methods
 - 7 video temporal forensic methods (~100% detection on AI-generated video)
 - GAN fingerprinting for 10+ AI models (StyleGAN, DALL-E, Midjourney, Flux, Sora)
-- Vanishing point analysis (ensemble of 3 methods)
 - Claim verification with source attribution
-- Location verification (GPS/EXIF + sun position + season consistency)
 - SSE streaming architecture for real-time results
-- Battle Mode: 25 detection systems side by side
 
 ### SearchWhisperer (searchwhisperer.ai)
 
-In production. CHI 2026 paper accepted at ACM.
+The "Think Like a Document" methodology as a tool. CHI 2026 paper.
 
 - Scores search queries on 4 dimensions (specificity, clarity, searchability, domain)
-- Generates advanced Google operators (filetype:, site:, intitle:, AROUND(n))
 - Orchestrates 4 LLMs: Claude, GPT-4, Groq, Perplexity
-- "Think Like a Document" methodology: search the way documents are written, not the way people ask
+- Generates advanced Google operators
+- Multilingual: NL/EN/DE with domain-specific terminology
 
-**Paper**: "Search Whisperer: AI-Augmented Query Reformulation for Enhanced Information Sensemaking" — CHI 2026, ACM
+### AI Whisperer ([github.com/voelspriet/aiwhisperer](https://github.com/voelspriet/aiwhisperer))
+
+Open-source tool for preparing documents for AI analysis. Shrinks massive PDFs to fit AI upload limits. Sanitizes documents before uploading to reduce risk of exposing sensitive data. Used in investigative workflows.
 
 ---
 
-## Domain Expertise
+## What Professionals Say
 
-### Verification & Fact-Checking
-- 20+ years of daily OSINT practice
-- Trains journalists worldwide
-- Connected to the International Fact-Checking Network (IFCN)
+> *"Henk van Ess is the best in the game at explaining OSINT tips and tricks and how AI is affecting the world of OSINT."* — Explainabl
 
-### Data Journalism
-- Crime statistics tools for University of Amsterdam students
-- QGIS SQL Translator for geographic data analysis
-- Tools that make government data accessible to journalists
+> *"As Fact-Checkers and Researchers, we learn tremendously from your insights."* — Dr. Stefan Hertrampf
+
+> *"I have attended your seminars at NBC News and am in awe of your investigative abilities."* — Polly DeFrank
+
+> *"When I teach OSINT I refer my delegates to your work and that of Bellingcat."* — Ray Massie
+
+> *"I am a senior analyst... I think you share information that is essential for us to continue to do our work well as researchers/analysts."* — Paolo
 
 ---
 
@@ -85,7 +100,7 @@ In production. CHI 2026 paper accepted at ACM.
 | SSE streaming | ImageWhisperer real-time analysis |
 | Multi-LLM orchestration | SearchWhisperer (4 LLMs), AgentWhisperer (4 LLMs) |
 | Flask microservices | 6+ production apps |
-| PDF/DOCX extraction | Document Extractor pipeline |
+| PDF/DOCX extraction | AI Whisperer, Document Extractor |
 | Ensemble methods | Vanishing point (3 methods), Video forensics (7 methods) |
 
 ---
