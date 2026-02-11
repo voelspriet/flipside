@@ -1,0 +1,4018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlipSide — The Other Side of Small Print</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* ══════════════════════════════════════════════════════
+           RESET & DESIGN SYSTEM
+           ══════════════════════════════════════════════════════ */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+        :root {
+            --bg-cream: #f7f5f0;
+            --bg-warm: #f0ede6;
+            --bg-card: #ffffff;
+            --bg-surface: #faf8f4;
+            --bg-thinking: #2c2a25;
+            --border: #e2ddd4;
+            --border-light: #ece8e0;
+            --border-focus: #c44b28;
+            --text-primary: #1a1a18;
+            --text-body: #3d3b36;
+            --text-secondary: #6b6860;
+            --text-muted: #9c9789;
+            --text-dim: #bfb9ad;
+            --accent: #c44b28;
+            --accent-hover: #a83d20;
+            --accent-light: rgba(196, 75, 40, 0.08);
+            --accent-medium: rgba(196, 75, 40, 0.15);
+            --green: #2d8a4e;
+            --green-bg: rgba(45, 138, 78, 0.07);
+            --green-border: rgba(45, 138, 78, 0.22);
+            --green-text: #1e6b38;
+            --yellow: #b8860b;
+            --yellow-bg: rgba(184, 134, 11, 0.07);
+            --yellow-border: rgba(184, 134, 11, 0.22);
+            --yellow-text: #8a6508;
+            --red: #c44b28;
+            --red-bg: rgba(196, 75, 40, 0.07);
+            --red-border: rgba(196, 75, 40, 0.22);
+            --red-text: #a83d20;
+            --radius: 12px;
+            --radius-md: 8px;
+            --radius-sm: 6px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
+        }
+
+        /* ── Dark mode (Prompt 22) ──────────────── */
+        body.dark-mode {
+            --bg-cream: #1a1917;
+            --bg-warm: #222120;
+            --bg-card: #2a2927;
+            --bg-surface: #252422;
+            --border: #3d3a35;
+            --border-light: #333128;
+            --text-primary: #e8e4dc;
+            --text-body: #c8c3b8;
+            --text-secondary: #a09a8e;
+            --text-muted: #78736a;
+            --text-dim: #585450;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        body.dark-mode::after { opacity: 0.15; }
+
+        body {
+            font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        }
+
+        /* ══════════════════════════════════════════════════════
+           ANIMATIONS
+           ══════════════════════════════════════════════════════ */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        .fade-up-delay-1 { animation-delay: 0.1s; }
+        .fade-up-delay-2 { animation-delay: 0.2s; }
+
+        @keyframes clauseDropIn {
+            0% { transform: translateY(20px); opacity: 0; }
+            70% { transform: translateY(-3px); }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes chipAppear {
+            0% { transform: scale(0.92); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes slideInLeft {
+            0% { transform: translateX(-12px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes barFill { to { transform: scaleX(1); } }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        @keyframes phaseGlow {
+            0%, 100% { box-shadow: 0 0 8px rgba(196, 75, 40, 0.15); }
+            50% { box-shadow: 0 0 20px rgba(196, 75, 40, 0.3); }
+        }
+
+        /* ══════════════════════════════════════════════════════
+           UPLOAD SECTION
+           ══════════════════════════════════════════════════════ */
+        #upload-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        .upload-container { max-width: 520px; width: 100%; }
+
+        .brand { text-align: center; margin-bottom: 2.5rem; }
+        .brand h1 {
+            font-size: 3.2rem; font-weight: 800;
+            letter-spacing: -0.04em; color: var(--text-primary); line-height: 1.1;
+        }
+        .brand .tagline {
+            font-size: 1.05rem; color: var(--text-secondary);
+            margin-top: 0.5rem; font-weight: 400; font-style: italic;
+        }
+
+        .upload-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow-md);
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border); border-radius: var(--radius-md);
+            padding: 2.5rem 2rem; text-align: center; cursor: pointer;
+            transition: all var(--transition); background: var(--bg-surface); position: relative;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent); background: var(--accent-light);
+            transform: scale(1.01); box-shadow: 0 0 0 4px rgba(196, 75, 40, 0.1);
+        }
+        .drop-zone .icon { font-size: 2.2rem; margin-bottom: 0.6rem; display: block; opacity: 0.6; }
+        .drop-zone .dz-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+        .drop-zone .hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.15rem; }
+        .drop-zone .filetypes {
+            font-size: 0.72rem; color: var(--text-dim); margin-top: 0.6rem;
+            letter-spacing: 0.12em; text-transform: uppercase;
+        }
+
+        .file-selected {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0.6rem; padding: 0.4rem 0;
+        }
+        .file-selected .file-icon { font-size: 1.4rem; }
+        .file-selected .file-name { font-weight: 600; font-size: 0.92rem; color: var(--text-primary); }
+        .file-selected .file-size { font-size: 0.78rem; color: var(--text-muted); }
+        .file-remove {
+            color: var(--text-muted); font-size: 0.78rem; text-decoration: none;
+            margin-left: 0.5rem; cursor: pointer; transition: color var(--transition);
+        }
+        .file-remove:hover { color: var(--red); }
+
+        .input-toggle {
+            text-align: center; margin-top: 1rem;
+            display: flex; justify-content: center; gap: 1.5rem;
+        }
+        .input-toggle a {
+            color: var(--text-muted); font-size: 0.82rem; text-decoration: none;
+            transition: color var(--transition); border-bottom: 1px dotted var(--text-dim);
+        }
+        .input-toggle a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .paste-area {
+            width: 100%; min-height: 120px; background: var(--bg-surface);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            color: var(--text-primary); font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem; padding: 1rem; resize: vertical; margin-top: 1rem;
+            outline: none; transition: border-color var(--transition);
+        }
+        .paste-area:focus { border-color: var(--accent); }
+        .paste-area::placeholder { color: var(--text-dim); }
+
+        .depth-selector {
+            display: flex; border-radius: var(--radius-sm);
+            overflow: hidden; border: 1px solid var(--border);
+        }
+        .depth-btn {
+            flex: 1; padding: 0.55rem 0.4rem; background: var(--bg-surface);
+            color: var(--text-muted); border: none; font-family: inherit;
+            font-size: 0.78rem; font-weight: 500; cursor: pointer;
+            transition: all var(--transition); text-align: center;
+        }
+        .depth-btn + .depth-btn { border-left: 1px solid var(--border); }
+        .depth-btn.active { background: var(--text-primary); color: var(--bg-cream); }
+        .depth-btn:hover:not(.active) { background: var(--bg-warm); color: var(--text-secondary); }
+        .depth-btn .depth-label { display: block; line-height: 1.3; }
+        .depth-btn .depth-detail { display: block; font-size: 0.62rem; opacity: 0.7; }
+
+        .setting-group { flex: 1; }
+        .setting-group label {
+            display: block; font-size: 0.7rem; color: var(--text-muted);
+            margin-bottom: 0.35rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .analyze-btn {
+            width: 100%; margin-top: 1.5rem; padding: 0.85rem; font-size: 0.95rem;
+            font-weight: 600; font-family: inherit; background: var(--accent);
+            color: white; border: none; border-radius: var(--radius-md); cursor: pointer;
+            transition: all var(--transition); letter-spacing: -0.01em;
+            position: relative; overflow: hidden;
+        }
+        .analyze-btn:hover:not(:disabled) {
+            background: var(--accent-hover); transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(196, 75, 40, 0.2);
+        }
+        .analyze-btn:active:not(:disabled) { transform: translateY(0); }
+        .analyze-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .analyze-btn.loading { pointer-events: none; opacity: 0.6; }
+
+        .compare-row { display: flex; gap: 0.75rem; }
+        .compare-col { flex: 1; }
+        .compare-drop { cursor: pointer; }
+        @media (max-width: 500px) { .compare-row { flex-direction: column; } }
+
+        .disclaimer {
+            text-align: center; margin-top: 1.25rem; font-size: 0.7rem;
+            color: var(--text-dim); line-height: 1.7;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           ANALYSIS SECTION
+           ══════════════════════════════════════════════════════ */
+        #analysis-section {
+            min-height: 100vh; display: flex; flex-direction: column;
+            position: relative; z-index: 1;
+        }
+
+        /* ── Header ─────────────────────────────────── */
+        .analysis-header {
+            padding: 0.6rem 1.5rem; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(247, 245, 240, 0.95); backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-brand { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.78rem; color: var(--text-secondary); background: var(--bg-card);
+            padding: 0.25rem 0.7rem; border-radius: 20px; border: 1px solid var(--border);
+        }
+        .status-pill .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--accent); animation: pulse 1.5s infinite;
+        }
+        .status-pill.done .dot { background: var(--green); animation: none; }
+
+        .back-btn {
+            background: none; border: 1px solid var(--border); color: var(--text-secondary);
+            padding: 0.3rem 0.85rem; border-radius: var(--radius-sm); font-family: inherit;
+            font-size: 0.78rem; cursor: pointer; transition: all var(--transition);
+        }
+        .back-btn:hover {
+            border-color: var(--text-secondary); color: var(--text-primary);
+            background: var(--bg-warm);
+        }
+
+        /* ── Phase indicator ────────────────────────── */
+        .phase-indicator {
+            display: flex; align-items: center; justify-content: center;
+            padding: 1.25rem 1rem; gap: 0; background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+        .phase-step {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 0.35rem; min-width: 68px;
+        }
+        .phase-dot {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 2px solid var(--text-dim); display: flex; align-items: center;
+            justify-content: center; font-size: 0.7rem; font-weight: 600;
+            color: var(--text-dim); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .phase-dot.active {
+            border-color: var(--accent); color: var(--accent);
+            box-shadow: 0 0 16px rgba(196, 75, 40, 0.2); animation: phaseGlow 2s infinite;
+        }
+        .phase-dot.complete {
+            border-color: var(--green); background: var(--green);
+            color: white; box-shadow: none; animation: none;
+        }
+        .phase-line {
+            width: 28px; height: 2px; background: var(--text-dim);
+            transition: background 0.5s ease; flex-shrink: 0;
+        }
+        .phase-line.active { background: var(--accent); }
+        .phase-line.complete { background: var(--green); }
+        .phase-label {
+            font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase;
+            letter-spacing: 0.06em; font-weight: 600; transition: color 0.5s ease;
+            white-space: nowrap;
+        }
+        .phase-step.active .phase-label { color: var(--accent); }
+        .phase-step.complete .phase-label { color: var(--green-text); }
+
+        /* ── Two-column layout ─────────────────────── */
+        .analysis-body {
+            flex: 1; display: flex; gap: 1.5rem;
+            max-width: 1140px; margin: 0 auto; width: 100%;
+            padding: 1.5rem; align-items: flex-start;
+        }
+        .analysis-main { flex: 1; min-width: 0; }
+
+        /* ── Sidebar ───────────────────────────────── */
+        .sidebar {
+            width: 280px; flex-shrink: 0; position: sticky; top: 120px;
+            max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 0.25rem;
+        }
+        .sidebar::-webkit-scrollbar { width: 3px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .sidebar-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .sidebar-heading {
+            font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem;
+        }
+
+        /* Live counter */
+        .live-counter {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.55rem 0.75rem; background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: var(--radius-md);
+            margin-bottom: 0.75rem; font-size: 0.78rem; color: var(--text-secondary);
+            font-weight: 500; flex-wrap: wrap;
+        }
+        .risk-filter-btn {
+            cursor: pointer; border-radius: 3px; padding: 0 3px;
+            transition: all var(--transition); border-bottom: 2px solid transparent;
+        }
+        .risk-filter-btn:hover { opacity: 0.7; }
+        .risk-filter-btn.active { border-bottom-color: currentColor; font-weight: 700; }
+        .live-counter-pulse {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent); animation: pulse 1.5s infinite; flex-shrink: 0;
+        }
+        .live-counter.done .live-counter-pulse { background: var(--green); animation: none; }
+
+        /* Status message */
+        .sidebar-status {
+            font-size: 0.78rem; color: var(--text-secondary); font-style: italic;
+            padding: 0.15rem 0 0.6rem; transition: opacity 0.3s ease; min-height: 1.4em;
+        }
+
+        /* Insight chips */
+        .sidebar-chips { display: flex; flex-direction: column; gap: 0.35rem; }
+        .insight-chip {
+            display: block; padding: 0.35rem 0.55rem;
+            background: var(--accent-light); border: 1px solid rgba(196, 75, 40, 0.15);
+            border-radius: var(--radius-sm); font-size: 0.72rem; color: var(--text-body);
+            line-height: 1.5; animation: chipAppear 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Clause search */
+        .clause-search {
+            width: 100%; padding: 0.3rem 0.5rem; margin-bottom: 0.4rem;
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-family: inherit; font-size: 0.72rem; background: var(--bg-surface);
+            color: var(--text-primary); outline: none; transition: border-color var(--transition);
+        }
+        .clause-search:focus { border-color: var(--accent); }
+        .clause-search::placeholder { color: var(--text-dim); }
+
+        /* Clause index */
+        .clause-index-item {
+            display: flex; align-items: flex-start; gap: 0.45rem;
+            padding: 0.45rem 0.35rem; border-radius: var(--radius-sm);
+            cursor: pointer; transition: background var(--transition);
+            animation: slideInLeft 0.3s ease; margin-bottom: 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .clause-index-item:last-child { border-bottom: none; }
+        .clause-index-item:hover { background: var(--bg-warm); }
+        .clause-index-item.active { background: var(--accent-light); border-left: 2px solid var(--accent); }
+        .clause-index-level {
+            width: 30px; height: 20px; border-radius: 3px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.6rem; font-weight: 700; color: white;
+            flex-shrink: 0; margin-top: 1px;
+        }
+        .clause-index-info { flex: 1; min-width: 0; }
+        .clause-index-title {
+            font-size: 0.73rem; color: var(--text-body);
+            line-height: 1.35;
+        }
+        .clause-index-meta {
+            font-size: 0.62rem; color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+
+        /* Trick tags */
+        .sidebar-tag-cloud { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+        .trick-tag {
+            display: inline-flex; align-items: center; gap: 0.2rem;
+            padding: 0.2rem 0.45rem; background: var(--bg-surface);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 0.7rem; color: var(--text-secondary); cursor: pointer;
+            position: relative; transition: all var(--transition);
+        }
+        .trick-tag:hover { background: var(--bg-warm); border-color: var(--accent); color: var(--text-primary); }
+        .trick-tag-count {
+            background: var(--accent); color: white; font-size: 0.56rem;
+            min-width: 14px; height: 14px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 700;
+        }
+        .trick-tooltip {
+            position: absolute; bottom: calc(100% + 6px); left: 50%;
+            transform: translateX(-50%); background: var(--bg-thinking);
+            color: rgba(255,255,255,0.9); padding: 0.4rem 0.6rem;
+            border-radius: var(--radius-sm); font-size: 0.68rem;
+            white-space: nowrap; pointer-events: none;
+            opacity: 0; transition: opacity 0.2s ease;
+            z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .trick-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%); border: 5px solid transparent;
+            border-top-color: var(--bg-thinking);
+        }
+        .trick-tag:hover .trick-tooltip { opacity: 1; }
+
+        /* Sidebar playbook */
+        .sidebar-playbook-item {
+            padding: 0.3rem 0; font-size: 0.75rem; color: var(--text-body);
+            line-height: 1.4; border-bottom: 1px solid var(--border-light);
+        }
+        .sidebar-playbook-item:last-child { border-bottom: none; }
+        .sidebar-playbook-num { color: var(--accent); font-weight: 700; margin-right: 0.25rem; }
+
+        /* Sidebar assessment */
+        .sidebar-bar-row {
+            display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem;
+        }
+        .sidebar-bar-label {
+            font-size: 0.66rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--text-muted); width: 44px; flex-shrink: 0;
+        }
+        .sidebar-bar-track {
+            flex: 1; height: 5px; background: var(--border-light);
+            border-radius: 3px; overflow: hidden;
+        }
+        .sidebar-bar-fill {
+            height: 100%; border-radius: 3px; transform-origin: left;
+            transform: scaleX(0); animation: barFill 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .sidebar-bar-value {
+            font-size: 0.68rem; font-weight: 700; width: 24px;
+            text-align: right; flex-shrink: 0;
+        }
+
+        /* ── Document preview ───────────────────────── */
+        .doc-preview {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 0.75rem 1rem;
+            margin-bottom: 1rem; font-size: 0.82rem; animation: fadeUp 0.5s ease;
+        }
+        .doc-preview-name { font-weight: 600; color: var(--text-primary); }
+        .doc-preview-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; }
+        .doc-preview-text {
+            margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-light);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+            color: var(--text-secondary); line-height: 1.6; max-height: 60px; overflow: hidden;
+            mask-image: linear-gradient(to bottom, white 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, white 50%, transparent 100%);
+        }
+
+        /* ── Thinking progress bar ──────────────────── */
+        .thinking-progress {
+            height: 3px; background: rgba(255,255,255,0.08); margin: 0;
+        }
+        .thinking-progress-fill {
+            height: 100%; background: var(--accent); width: 0%;
+            transition: width 2s linear;
+        }
+
+        /* ── Retry button ──────────────────────────── */
+        .retry-btn {
+            display: inline-block; margin-top: 0.75rem; padding: 0.5rem 1.2rem;
+            background: var(--accent); color: white; border: none;
+            border-radius: var(--radius-sm); font-family: inherit; font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; transition: all var(--transition);
+        }
+        .retry-btn:hover { background: var(--accent-hover); }
+
+        /* ── Thinking panel ─────────────────────────── */
+        .thinking-panel {
+            background: var(--bg-thinking); border-radius: var(--radius);
+            overflow: hidden; margin-bottom: 0.75rem; transition: all 0.4s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .thinking-panel .panel-header {
+            padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.72rem; color: rgba(255,255,255,0.5);
+            display: flex; align-items: center; gap: 0.4rem; font-weight: 500;
+        }
+        .thinking-panel .panel-header .panel-icon { font-size: 0.85rem; }
+        .thinking-text {
+            padding: 0.6rem 0.75rem; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; line-height: 1.7; color: rgba(255,255,255,0.65);
+            max-height: 200px; overflow-y: auto; white-space: pre-wrap;
+            word-wrap: break-word; position: relative;
+        }
+        .thinking-panel.is-thinking .thinking-text {
+            min-height: 80px; max-height: 200px; font-size: 0.62rem;
+        }
+        .thinking-text .kw { color: rgba(196, 120, 80, 0.95); font-weight: 500; }
+        .thinking-text .cursor {
+            display: inline-block; width: 2px; height: 1.1em;
+            background: var(--accent); margin-left: 2px;
+            animation: blink 0.8s infinite; vertical-align: text-bottom;
+        }
+        .thinking-panel.collapsed .thinking-text {
+            max-height: 60px; overflow: hidden;
+            mask-image: linear-gradient(to bottom, white 30%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, white 30%, transparent 100%);
+        }
+        .thinking-toggle {
+            display: none; padding: 0.35rem 0.75rem; font-size: 0.65rem;
+            color: rgba(255,255,255,0.35); cursor: pointer; text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.06); transition: all var(--transition);
+        }
+        .thinking-toggle:hover { color: rgba(255,255,255,0.6); }
+        .thinking-panel.has-toggle .thinking-toggle { display: block; }
+        .thinking-text::-webkit-scrollbar { width: 4px; }
+        .thinking-text::-webkit-scrollbar-track { background: transparent; }
+        .thinking-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+        /* ── Summary card ──────────────────────────── */
+        .summary-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); border-radius: var(--radius);
+            padding: 1.75rem 2rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-md);
+            animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .summary-top { display: flex; align-items: flex-start; gap: 2rem; margin-bottom: 1.25rem; }
+        .score-ring-container { flex-shrink: 0; }
+        .score-ring { width: 96px; height: 96px; }
+        .score-ring .ring-bg { fill: none; stroke: var(--border-light); stroke-width: 6; }
+        .score-ring .ring-fill {
+            fill: none; stroke-width: 6; stroke-linecap: round;
+            transform: rotate(-90deg); transform-origin: center;
+            transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.5s ease;
+        }
+        .score-ring .score-value {
+            fill: var(--text-primary); font-family: 'DM Sans', sans-serif;
+            font-size: 24px; font-weight: 700;
+        }
+        .score-ring .score-label {
+            fill: var(--text-muted); font-family: 'DM Sans', sans-serif;
+            font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+        }
+        .summary-meta { flex: 1; }
+        .summary-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+        .score-bars { margin-bottom: 0.75rem; }
+        .score-bar-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+        .score-bar-label {
+            font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.06em; width: 60px; flex-shrink: 0;
+        }
+        .score-bar-track {
+            flex: 1; height: 6px; background: var(--border-light);
+            border-radius: 3px; overflow: hidden;
+        }
+        .score-bar-fill {
+            height: 100%; border-radius: 3px; transform-origin: left;
+            transform: scaleX(0); animation: barFill 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .score-bar-value {
+            font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);
+            width: 28px; text-align: right; flex-shrink: 0;
+        }
+        .risk-distribution { display: flex; gap: 0.85rem; margin-bottom: 0.75rem; }
+        .risk-count {
+            display: flex; align-items: center; gap: 0.3rem;
+            font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;
+        }
+        .risk-count .dot-green { color: var(--green); }
+        .risk-count .dot-yellow { color: var(--yellow); }
+        .risk-count .dot-red { color: var(--red); }
+        .summary-concerns { padding: 0; list-style: none; }
+        .summary-concerns li {
+            font-size: 0.85rem; color: var(--text-body); padding: 0.3rem 0;
+            padding-left: 1.2rem; position: relative; line-height: 1.55;
+        }
+        .summary-concerns li::before {
+            content: ''; position: absolute; left: 0; top: 0.65rem;
+            width: 6px; height: 6px; border-radius: 50%; background: var(--red);
+        }
+
+        /* ── Results panel ─────────────────────────── */
+        .results-panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow-sm); animation: fadeUp 0.5s ease;
+        }
+        .results-panel > .panel-header {
+            padding: 0.7rem 1.2rem; border-bottom: 1px solid var(--border);
+            font-size: 0.82rem; color: var(--text-muted);
+            display: flex; align-items: center; gap: 0.5rem;
+            font-weight: 500; background: var(--bg-surface);
+        }
+        .results-content { padding: 1.5rem 2rem 2rem; }
+        .expand-all-btn {
+            margin-left: auto; background: none; border: 1px solid var(--border);
+            color: var(--text-muted); padding: 0.15rem 0.6rem; border-radius: var(--radius-sm);
+            font-family: inherit; font-size: 0.7rem; cursor: pointer;
+            transition: all var(--transition);
+        }
+        .expand-all-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* ── Markdown in results ───────────────────── */
+        .results-content h2 {
+            font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem;
+            color: var(--text-primary); letter-spacing: -0.01em;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .results-content h2:not(:first-child) {
+            margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border);
+        }
+        .results-content h3 {
+            font-size: 0.98rem; font-weight: 600; margin-top: 1.25rem;
+            margin-bottom: 0.4rem; color: var(--text-primary);
+        }
+        .results-content p {
+            line-height: 1.75; margin-bottom: 0.5rem;
+            color: var(--text-body); font-size: 0.9rem;
+        }
+        .results-content strong { color: var(--text-primary); font-weight: 600; }
+        .results-content blockquote {
+            border-left: 3px solid var(--accent); padding: 0.6rem 0 0.6rem 1.15rem;
+            margin: 0.6rem 0; color: var(--text-secondary); font-style: italic;
+            font-size: 0.88rem; background: var(--accent-light);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding-right: 1rem;
+        }
+        .results-content ul, .results-content ol { padding-left: 1.5rem; margin-bottom: 0.6rem; }
+        .results-content li {
+            margin-bottom: 0.3rem; color: var(--text-body); line-height: 1.7; font-size: 0.9rem;
+        }
+        .results-content hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+        /* ── Risk badges ───────────────────────────── */
+        .risk-badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 0.15rem 0.6rem; border-radius: 4px;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .risk-green { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+        .risk-yellow { background: var(--yellow-bg); color: var(--yellow-text); border: 1px solid var(--yellow-border); }
+        .risk-red { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-border); }
+        .risk-score {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-left: 0.4rem;
+        }
+        .risk-score .score-bar {
+            width: 48px; height: 4px; background: var(--border-light);
+            border-radius: 2px; overflow: hidden; display: inline-block; vertical-align: middle;
+        }
+        .risk-score .score-fill {
+            height: 100%; border-radius: 2px; transform-origin: left;
+            animation: barFill 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .trick-label {
+            display: inline-block; font-size: 0.72rem; color: var(--text-muted);
+            margin-left: 0.35rem; font-weight: 500;
+        }
+
+        /* ── Clause cards ──────────────────────────── */
+        .clause-card {
+            border-radius: var(--radius-md); padding: 1.15rem 1.4rem;
+            margin: 0.85rem 0; border-left: 3px solid var(--text-dim);
+            background: var(--bg-card); border-top: 1px solid var(--border-light);
+            border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+            transition: background var(--transition), box-shadow var(--transition), transform var(--transition), border-left-color var(--transition); cursor: pointer; position: relative; overflow: hidden;
+        }
+        .clause-card:hover {
+            background: var(--bg-surface); box-shadow: var(--shadow-sm);
+            transform: translateX(2px);
+        }
+        .clause-card.level-green { border-left-color: var(--green); }
+        .clause-card.level-yellow { border-left-color: var(--yellow); }
+        .clause-card.level-red { border-left-color: var(--red); }
+        .clause-card.highlight { box-shadow: 0 0 0 2px var(--accent); }
+        @keyframes redPulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(196, 75, 40, 0); }
+            25% { box-shadow: 0 0 12px 3px rgba(196, 75, 40, 0.25); }
+            50% { box-shadow: 0 0 4px 1px rgba(196, 75, 40, 0.1); }
+            75% { box-shadow: 0 0 12px 3px rgba(196, 75, 40, 0.25); }
+        }
+        .clause-card.red-pulse { animation: redPulseGlow 1s ease 2 !important; }
+        .clause-card.just-arrived { box-shadow: 0 0 0 2px var(--accent-medium); transition: box-shadow 1s ease; }
+        .clause-card h3 { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+        .clause-card p:last-child { margin-bottom: 0; }
+        .clause-card .clause-details {
+            overflow: hidden; max-height: 0; opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+        }
+        .clause-card.expanded .clause-details { max-height: 2000px; opacity: 1; }
+        .clause-card .clause-preview {
+            overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease;
+        }
+        .clause-card.expanded .clause-preview { max-height: 0; opacity: 0; }
+        .clause-expand-hint {
+            font-size: 0.7rem; color: var(--text-dim); margin-top: 0.4rem;
+            transition: color var(--transition);
+        }
+        .clause-card:hover .clause-expand-hint { color: var(--accent); }
+        .clause-card.clause-hidden { display: none; }
+        .clause-card.green-filtered { display: none; }
+        .next-clause-btn {
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            width: 100%; padding: 0.9rem 1rem; margin: 1rem 0;
+            background: var(--bg-card); border: 2px dashed var(--border);
+            border-radius: var(--radius-md); cursor: pointer;
+            font-family: inherit; font-size: 0.88rem; font-weight: 600;
+            color: var(--text-secondary); transition: all var(--transition);
+        }
+        .next-clause-btn:hover {
+            border-color: var(--accent); color: var(--accent);
+            background: var(--accent-light); transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        .next-clause-btn .next-arrow {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: var(--accent); color: white; font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+        .next-clause-btn:hover .next-arrow { transform: translateY(2px); }
+        .clause-note-wrap { margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-light); }
+        .clause-note-toggle {
+            background: none; border: none; cursor: pointer; font-family: inherit;
+            font-size: 0.72rem; color: var(--text-dim); padding: 0;
+            transition: color var(--transition);
+        }
+        .clause-note-toggle:hover { color: var(--accent); }
+        .clause-note-area {
+            width: 100%; min-height: 60px; margin-top: 0.4rem; padding: 0.5rem;
+            font-family: inherit; font-size: 0.8rem; color: var(--text-body);
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); resize: vertical; outline: none;
+        }
+        .clause-note-area:focus { border-color: var(--accent); }
+        .clause-star-btn {
+            position: absolute; top: 0.6rem; right: 2.2rem;
+            background: none; border: none; cursor: pointer; font-size: 1rem;
+            color: var(--text-dim); opacity: 0; transition: all var(--transition);
+            padding: 0; line-height: 1;
+        }
+        .clause-card:hover .clause-star-btn, .clause-star-btn.starred { opacity: 1; }
+        .clause-star-btn.starred { color: var(--yellow); }
+        .clause-star-btn:hover { color: var(--yellow); transform: scale(1.2); }
+        .clause-copy-btn {
+            position: absolute; top: 0.6rem; right: 0.6rem;
+            background: var(--bg-surface); border: 1px solid var(--border);
+            color: var(--text-muted); width: 28px; height: 28px;
+            border-radius: var(--radius-sm); cursor: pointer; font-size: 0.75rem;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: all var(--transition);
+        }
+        .clause-card:hover .clause-copy-btn { opacity: 1; }
+        .clause-copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+        .clause-copy-btn.copied { color: var(--green); border-color: var(--green); }
+        .clause-count-badge {
+            font-size: 0.6rem; color: var(--text-dim); font-weight: 500;
+            margin-left: 0.5rem; opacity: 0.7;
+        }
+        .jump-worst-btn {
+            font-size: 0.62rem; padding: 0.15rem 0.4rem; background: var(--red-bg);
+            color: var(--red-text); border: 1px solid var(--red-border); border-radius: var(--radius-sm);
+            cursor: pointer; font-family: inherit; font-weight: 600; transition: all var(--transition);
+        }
+        .jump-worst-btn:hover { background: var(--red); color: white; }
+        .sort-score-btn {
+            font-size: 0.72rem; padding: 0.2rem 0.4rem; background: var(--bg-surface);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            cursor: pointer; font-family: inherit; color: var(--text-muted);
+            transition: all var(--transition); line-height: 1;
+        }
+        .sort-score-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .sort-score-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* ── Score threshold slider (Prompt 6) ──── */
+        .score-threshold {
+            display: flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0;
+        }
+        .score-threshold input[type="range"] {
+            flex: 1; height: 4px; -webkit-appearance: none; appearance: none;
+            background: var(--border); border-radius: 2px; outline: none;
+        }
+        .score-threshold input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+            background: var(--accent); cursor: pointer;
+        }
+        .score-threshold-label {
+            font-size: 0.62rem; color: var(--text-muted); min-width: 28px; text-align: right;
+        }
+
+        /* ── Clause mini-map (Prompt 7) ──────────── */
+        .clause-minimap {
+            display: flex; gap: 2px; flex-wrap: wrap; padding: 0.3rem 0;
+        }
+        .minimap-dot {
+            width: 8px; height: 8px; border-radius: 2px; cursor: pointer;
+            transition: transform 0.15s ease; opacity: 0.85;
+        }
+        .minimap-dot:hover { transform: scale(1.5); opacity: 1; }
+        .minimap-dot.active { transform: scale(1.5); box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 3px currentColor; }
+
+        /* ── Keyboard shortcut overlay (Prompt 8) ── */
+        .shortcut-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+        }
+        .shortcut-overlay.visible { opacity: 1; pointer-events: all; }
+        .shortcut-panel {
+            background: var(--bg-card); border-radius: var(--radius); padding: 1.5rem 2rem;
+            max-width: 420px; width: 90%; box-shadow: var(--shadow-lg);
+        }
+        .shortcut-panel h3 { font-size: 1rem; margin-bottom: 0.8rem; }
+        .shortcut-row {
+            display: flex; justify-content: space-between; padding: 0.3rem 0;
+            font-size: 0.82rem; border-bottom: 1px solid var(--border-light);
+        }
+        .shortcut-key {
+            background: var(--bg-warm); padding: 0.1rem 0.4rem; border-radius: 3px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Floating nav arrows (Prompt 9) ──────── */
+        .clause-nav {
+            position: fixed; right: 1.5rem; bottom: 5rem; display: flex;
+            flex-direction: column; gap: 0.3rem; z-index: 90;
+        }
+        .clause-nav-btn {
+            width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card);
+            border: 1px solid var(--border); cursor: pointer; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-sm); transition: all var(--transition);
+            color: var(--text-secondary);
+        }
+        .clause-nav-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* ── Highlighted terms (Prompt 10) ────────── */
+        .hl-date { background: rgba(184, 134, 11, 0.12); padding: 0 2px; border-radius: 2px; }
+        .hl-money { background: rgba(45, 138, 78, 0.12); padding: 0 2px; border-radius: 2px; }
+        .hl-legal { background: rgba(196, 75, 40, 0.1); padding: 0 2px; border-radius: 2px; font-weight: 600; }
+
+        /* ── Session history (Prompt 49) ────────── */
+        .session-history {
+            margin-top: 1.5rem; padding: 0.8rem; background: var(--bg-card);
+            border: 1px solid var(--border-light); border-radius: var(--radius-md);
+        }
+        .session-history h4 {
+            font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: 0.08em; margin-bottom: 0.5rem;
+        }
+        .session-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.4rem 0; border-bottom: 1px solid var(--border-light);
+            font-size: 0.8rem; color: var(--text-body);
+        }
+        .session-item:last-child { border-bottom: none; }
+        .session-item-name { font-weight: 500; }
+        .session-item-meta { font-size: 0.68rem; color: var(--text-dim); }
+
+        /* ── Trick icon (Prompt 35) ─────────────── */
+        .trick-icon { font-size: 0.85em; margin-right: 0.15rem; }
+
+        /* ── Worst clause badge (Prompt 44) ─────── */
+        .worst-badge {
+            font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: white; background: var(--red);
+            padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        /* ── Severity summary (Prompt 34) ──────── */
+        .severity-summary {
+            font-size: 0.82rem; color: var(--text-secondary);
+            padding: 0.5rem 0.8rem; margin: 0 0 0.5rem;
+            background: var(--bg-surface); border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        /* ── Skeleton loading (Prompt 19) ──────── */
+        @keyframes skeletonPulse {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.35; }
+        }
+        .skeleton-loader { padding: 0.5rem 0; }
+        .skeleton-block {
+            background: var(--text-dim);
+            border-radius: var(--radius-sm);
+            animation: skeletonPulse 1.5s ease-in-out infinite;
+        }
+        .skeleton-card {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-left: 3px solid var(--text-dim); border-radius: var(--radius-md);
+            padding: 1.15rem 1.4rem; margin: 0.85rem 0;
+        }
+
+        /* ── Sticky section headers (Prompt 17) ──── */
+        .results-content h2 {
+            position: sticky; top: 52px; z-index: 10; background: var(--bg-cream);
+            padding: 0.5rem 0; margin-top: 1.5rem; border-bottom: 2px solid var(--accent);
+        }
+
+        /* ── "Why this clause exists" ─────────────── */
+        .clause-why {
+            background: var(--bg-warm); border-radius: var(--radius-sm);
+            padding: 0.5rem 0.75rem; margin: 0.35rem 0 0.5rem;
+            font-size: 0.82rem; color: var(--text-secondary);
+            line-height: 1.55; border-left: 2px solid var(--text-dim);
+        }
+        .clause-why-label {
+            font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.15rem;
+        }
+
+        /* ── Deep analysis progress ──────────────── */
+        .deep-progress {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 0.6rem 1rem;
+            margin: 1rem 0; display: flex; align-items: center; gap: 0.6rem;
+            animation: fadeUp 0.5s ease;
+        }
+        .deep-progress-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent); animation: pulse 1.5s infinite;
+        }
+        .deep-progress-text {
+            font-size: 0.82rem; color: var(--text-secondary); font-style: italic;
+        }
+
+        /* ── Split clause cards (juxtaposition) ───── */
+        .clause-split-header { display: flex; border-top: 1px solid var(--border-light); margin-top: 0.6rem; }
+        .clause-split-label {
+            flex: 1; padding: 0.32rem 0.75rem; font-size: 0.6rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .clause-split-label-left {
+            background: var(--bg-surface); color: var(--text-muted);
+            border-right: 1px solid var(--border-light);
+        }
+        .clause-split-label-right { background: rgba(196, 75, 40, 0.05); color: var(--accent); }
+        .clause-split { display: flex; gap: 0; }
+        .clause-split-left {
+            flex: 1; padding: 0.65rem 0.75rem; background: var(--bg-surface);
+            border-right: 1px solid var(--border-light); font-style: italic;
+            color: var(--text-muted); font-size: 0.84rem; line-height: 1.6;
+        }
+        .clause-split-right {
+            flex: 1; padding: 0.65rem 0.75rem; background: rgba(196, 75, 40, 0.04);
+            color: var(--text-primary); font-weight: 500; font-size: 0.86rem; line-height: 1.6;
+        }
+
+        /* ── Cross-clause & playbook cards ─────────── */
+        .cross-clause-card {
+            border-radius: var(--radius-md); padding: 1.15rem 1.4rem;
+            margin: 0.85rem 0; background: var(--bg-card);
+            border: 1px solid var(--red-border); position: relative; overflow: hidden;
+        }
+        .cross-clause-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 3px; background: linear-gradient(90deg, var(--yellow), var(--red));
+        }
+        .cross-clause-card h3 { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+        .playbook-card {
+            border-radius: var(--radius-md); padding: 1.25rem 1.5rem;
+            margin: 0.85rem 0; background: var(--bg-card);
+            border: 1px solid var(--border); border-left: 3px solid var(--text-primary);
+        }
+        .playbook-card h3 { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+
+        /* ── Error ──────────────────────────────────── */
+        .error-msg {
+            background: var(--red-bg); border: 1px solid var(--red-border);
+            border-radius: var(--radius-sm); padding: 0.9rem 1.2rem;
+            color: var(--red-text); font-size: 0.88rem;
+        }
+        .hidden { display: none !important; }
+
+        /* ── Mobile sidebar toggle ──────────────────── */
+        .sidebar-toggle {
+            display: none; position: fixed; bottom: 1.5rem; left: 1.5rem;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--accent); color: white; border: none;
+            box-shadow: 0 4px 16px rgba(196, 75, 40, 0.3); cursor: pointer;
+            z-index: 190; align-items: center; justify-content: center;
+            font-size: 1.2rem; transition: transform var(--transition);
+        }
+        .sidebar-toggle:hover { transform: scale(1.08); }
+        .toggle-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: var(--red); color: white; font-size: 0.6rem;
+            min-width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3); z-index: 195;
+        }
+
+        /* ── Responsive ─────────────────────────────── */
+        @media (max-width: 768px) {
+            .analysis-body { flex-direction: column; }
+            .sidebar {
+                position: fixed; left: -300px; top: 0; bottom: 0;
+                width: 280px; z-index: 200;
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                background: var(--bg-cream); box-shadow: none;
+                padding: 70px 0.75rem 1rem; overflow-y: auto; max-height: none;
+            }
+            .sidebar.open { left: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.12); }
+            .sidebar-toggle { display: flex; }
+            .clause-split { flex-direction: column; }
+            .clause-split-left { border-right: none; border-bottom: 1px solid var(--border-light); }
+            .clause-split-header { flex-direction: column; }
+            .clause-split-label-left { border-right: none; border-bottom: 1px solid var(--border-light); }
+        }
+        @media (max-width: 640px) {
+            .brand h1 { font-size: 2.4rem; }
+            .results-content { padding: 1rem 1.15rem; }
+            .phase-indicator { padding: 0.75rem 0.5rem; }
+            .phase-step { min-width: 50px; }
+            .phase-line { width: 14px; }
+            .phase-label { font-size: 0.52rem; }
+            .summary-top { flex-direction: column; gap: 1rem; }
+            .upload-card { padding: 1.25rem; }
+            .clause-card { padding: 1rem 1.1rem; }
+        }
+        @media (max-width: 400px) {
+            #upload-section { padding: 1rem; }
+            .phase-dot { width: 24px; height: 24px; font-size: 0.62rem; }
+            .phase-line { width: 10px; }
+        }
+        /* ── Toast notifications ──────────────────── */
+        .toast-container {
+            position: fixed; top: 80px; right: 1.5rem;
+            z-index: 300; display: flex; flex-direction: column;
+            gap: 0.5rem; pointer-events: none;
+        }
+        .toast {
+            background: var(--bg-card); border: 1px solid var(--red-border);
+            border-left: 4px solid var(--red); border-radius: var(--radius-md);
+            padding: 0.65rem 1rem; box-shadow: var(--shadow-lg);
+            max-width: 320px; pointer-events: auto; cursor: pointer;
+            animation: toastIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: all 0.3s ease;
+        }
+        .toast:hover { transform: translateX(-4px); box-shadow: 0 8px 32px rgba(196, 75, 40, 0.15); }
+        .toast.toast-out { opacity: 0; transform: translateX(100%); }
+        .toast-icon { font-size: 1rem; margin-right: 0.35rem; }
+        .toast-title { font-size: 0.78rem; font-weight: 700; color: var(--red-text); }
+        .toast-body { font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.15rem; line-height: 1.4; }
+        @keyframes toastIn {
+            0% { opacity: 0; transform: translateX(100%); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ── Reading position indicator ───────────── */
+        .reading-progress {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 3px; z-index: 999;
+            background: transparent;
+        }
+        .reading-progress-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--green), var(--yellow), var(--red));
+            transition: width 0.15s linear;
+        }
+
+        /* ── Jump to top ───────────────────────────── */
+        .jump-top-btn {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--bg-card); border: 1px solid var(--border);
+            color: var(--text-secondary); cursor: pointer; z-index: 90;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; box-shadow: var(--shadow-md);
+            transition: all var(--transition);
+        }
+        .jump-top-btn:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
+
+        /* ── Print styles ───────────────────────────── */
+        @media print {
+            body::after { display: none; }
+            .analysis-header, .phase-indicator, .sidebar, .sidebar-toggle,
+            .sidebar-overlay, .thinking-panel, .back-btn, .expand-all-btn,
+            #docPreview { display: none !important; }
+            .analysis-body { max-width: 100%; padding: 0; display: block; }
+            .analysis-main { width: 100%; }
+            .results-panel { border: none; box-shadow: none; }
+            .clause-card { break-inside: avoid; }
+            .clause-card .clause-details { max-height: none !important; opacity: 1 !important; }
+            .clause-expand-hint { display: none; }
+            .summary-card { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     UPLOAD SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section id="upload-section">
+    <div class="upload-container">
+        <div class="brand fade-up">
+            <h1>FlipSide</h1>
+            <p class="tagline">The other side of small print.</p>
+        </div>
+
+        <div class="upload-card fade-up fade-up-delay-1">
+            <div class="drop-zone" id="dropZone">
+                <div id="uploadPrompt">
+                    <span class="icon">&#128196;</span>
+                    <p class="dz-title">Drop your document here</p>
+                    <p class="hint">or click to browse</p>
+                    <p class="filetypes">PDF &middot; DOCX &middot; TXT &middot; Any language</p>
+                </div>
+                <div id="fileInfo" class="hidden">
+                    <div class="file-selected">
+                        <span class="file-icon">&#128196;</span>
+                        <span class="file-name" id="fileName"></span>
+                        <span class="file-size" id="fileSize"></span>
+                        <a class="file-remove" id="fileRemove">&#10005;</a>
+                    </div>
+                </div>
+                <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.text,.md" hidden>
+            </div>
+
+            <div class="input-toggle">
+                <a href="#" id="pasteToggle">or paste text directly</a>
+                <a href="#" id="sampleToggle">try sample policy</a>
+                <a href="#" id="compareToggle">compare two documents</a>
+            </div>
+            <textarea id="pasteArea" class="paste-area hidden" placeholder="Paste your document text here... any language"></textarea>
+
+            <!-- Compare mode -->
+            <div id="compareMode" class="hidden" style="margin-top:1rem;">
+                <div class="compare-row">
+                    <div class="compare-col">
+                        <label class="setting-group" style="flex:none">
+                            <span style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">Document A</span>
+                        </label>
+                        <div class="drop-zone compare-drop" id="dropZoneA" style="padding:1rem;min-height:auto">
+                            <div id="uploadPromptA"><p class="hint" style="margin:0;font-size:0.78rem">Drop file or click</p></div>
+                            <div id="fileInfoA" class="hidden"><span class="file-name" id="fileNameA" style="font-size:0.78rem"></span></div>
+                            <input type="file" id="fileInputA" accept=".pdf,.docx,.txt,.text,.md" hidden>
+                        </div>
+                        <textarea id="pasteAreaA" class="paste-area" placeholder="Or paste Document A text..." style="min-height:80px;margin-top:0.5rem;font-size:0.75rem"></textarea>
+                    </div>
+                    <div class="compare-col">
+                        <label class="setting-group" style="flex:none">
+                            <span style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">Document B</span>
+                        </label>
+                        <div class="drop-zone compare-drop" id="dropZoneB" style="padding:1rem;min-height:auto">
+                            <div id="uploadPromptB"><p class="hint" style="margin:0;font-size:0.78rem">Drop file or click</p></div>
+                            <div id="fileInfoB" class="hidden"><span class="file-name" id="fileNameB" style="font-size:0.78rem"></span></div>
+                            <input type="file" id="fileInputB" accept=".pdf,.docx,.txt,.text,.md" hidden>
+                        </div>
+                        <textarea id="pasteAreaB" class="paste-area" placeholder="Or paste Document B text..." style="min-height:80px;margin-top:0.5rem;font-size:0.75rem"></textarea>
+                    </div>
+                </div>
+                <button id="compareBtn" class="analyze-btn" style="margin-top:1rem" disabled>Compare Documents</button>
+            </div>
+
+            <div style="margin-top: 1.25rem;">
+                <div class="setting-group">
+                    <label>Analysis depth</label>
+                    <div class="depth-selector">
+                        <button type="button" class="depth-btn" data-depth="quick">
+                            <span class="depth-label">Quick</span>
+                            <span class="depth-detail">~1 min</span>
+                        </button>
+                        <button type="button" class="depth-btn active" data-depth="standard">
+                            <span class="depth-label">Standard</span>
+                            <span class="depth-detail">~2–3 min</span>
+                        </button>
+                        <button type="button" class="depth-btn" data-depth="deep">
+                            <span class="depth-label">Deep</span>
+                            <span class="depth-detail">~4–6 min</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="analyzeBtn" class="analyze-btn" disabled>Analyze Document</button>
+        </div>
+
+        <div id="uploadError" class="error-msg hidden" style="margin-top: 1rem;"></div>
+
+        <p class="disclaimer fade-up fade-up-delay-2">
+            FlipSide reveals strategic intent in documents. It is not legal advice.<br>
+            Powered by Claude Opus 4.6 extended thinking &middot; Analyzes in any language.
+        </p>
+
+        <!-- Prompt 49: Session history -->
+        <div id="sessionHistory" class="session-history hidden"></div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ANALYSIS SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section id="analysis-section" class="hidden">
+    <div class="reading-progress" id="readingProgress"><div class="reading-progress-fill" id="readingProgressFill"></div></div>
+    <header class="analysis-header">
+        <div class="header-left">
+            <span class="header-brand" id="headerBrand" style="cursor:default">FlipSide</span>
+            <div class="status-pill" id="statusPill">
+                <span class="dot"></span>
+                <span id="statusText">Connecting...</span>
+                <span id="elapsedTime" style="font-size:0.7rem;color:var(--text-dim);margin-left:0.2rem"></span>
+            </div>
+            <span id="depthIndicator" style="font-size:0.65rem;color:var(--text-dim);font-weight:500;letter-spacing:0.05em;text-transform:uppercase"></span>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+            <button class="back-btn" id="darkModeBtn" title="Toggle dark mode" aria-label="Toggle dark mode" style="font-size:1rem;padding:0.2rem 0.5rem">&#9790;</button>
+            <button class="back-btn" id="fontSizeBtn" title="Adjust font size" aria-label="Adjust font size" style="font-size:0.78rem;padding:0.2rem 0.5rem">A+</button>
+            <button class="back-btn hidden" id="checklistBtn" title="Generate action checklist" aria-label="Generate action checklist">&#9745; Checklist</button>
+            <button class="back-btn hidden" id="printBtn" title="Print analysis" aria-label="Print analysis" style="font-size:0.82rem">&#128424; Print</button>
+            <button class="back-btn hidden" id="copyAllBtn" title="Copy all findings to clipboard" aria-label="Copy all findings to clipboard">&#128203; Copy all</button>
+            <button class="back-btn hidden" id="exportStarredBtn" title="Export bookmarked clauses" aria-label="Export bookmarked clauses">&#9733; Export starred</button>
+            <button class="back-btn hidden" id="exportBtn" title="Download analysis" aria-label="Download analysis">&#8681; Export</button>
+            <button class="back-btn hidden" id="backBtn">&larr; New Analysis</button>
+        </div>
+    </header>
+
+    <div class="phase-indicator" id="phaseIndicator">
+        <div class="phase-step" id="phase-thinking">
+            <div class="phase-dot">1</div>
+            <span class="phase-label">Reasoning</span>
+        </div>
+        <div class="phase-line" id="phaseLine1"></div>
+        <div class="phase-step" id="phase-profile">
+            <div class="phase-dot">2</div>
+            <span class="phase-label">Profile</span>
+        </div>
+        <div class="phase-line" id="phaseLine2"></div>
+        <div class="phase-step" id="phase-clauses">
+            <div class="phase-dot">3</div>
+            <span class="phase-label">Clauses</span>
+        </div>
+        <div class="phase-line" id="phaseLine3"></div>
+        <div class="phase-step" id="phase-playbook">
+            <div class="phase-dot">4</div>
+            <span class="phase-label">Playbook</span>
+        </div>
+        <div class="phase-line" id="phaseLine4"></div>
+        <div class="phase-step" id="phase-summary">
+            <div class="phase-dot">5</div>
+            <span class="phase-label">Summary</span>
+        </div>
+    </div>
+
+    <!-- Two-column body -->
+    <div class="analysis-body">
+        <!-- LEFT: Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="live-counter" id="liveCounter">
+                <span class="live-counter-pulse" id="liveCounterPulse"></span>
+                <span id="liveCounterText">Starting analysis...</span>
+            </div>
+
+            <div class="sidebar-status" id="statusMessage"></div>
+
+            <!-- Thinking panel (moved to sidebar) -->
+            <div class="thinking-panel is-thinking" id="thinkingPanel" role="region" aria-label="Model reasoning" aria-live="polite">
+                <div class="panel-header">
+                    <span class="panel-icon">&#129504;</span>
+                    <span id="thinkingLabel">Reading as the drafter's attorney...</span>
+                    <span id="thinkingWordCount" style="font-size:0.65rem;color:var(--text-dim);margin-left:auto;font-weight:400"></span>
+                </div>
+                <div class="thinking-progress"><div class="thinking-progress-fill" id="thinkingProgress"></div></div>
+                <div class="thinking-text" id="thinkingText"><span class="cursor"></span></div>
+                <div class="thinking-toggle" id="thinkingToggle">Show full reasoning</div>
+            </div>
+
+            <div class="sidebar-section hidden" id="sidebarFindings">
+                <div class="sidebar-heading">Key Findings from Reasoning</div>
+                <div class="sidebar-chips" id="insightChips"></div>
+            </div>
+
+            <div class="sidebar-section hidden" id="sidebarClauses">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                    <div class="sidebar-heading" id="clauseIndexHeading" style="cursor:pointer" title="Click to clear filter">Clause Index</div>
+                    <button class="jump-worst-btn hidden" id="jumpWorstBtn" title="Jump to highest-scoring clause" aria-label="Jump to highest-scoring clause">&#9888; Highest</button>
+                </div>
+                <div style="display:flex;gap:0.3rem;margin-bottom:0.3rem">
+                    <label for="clauseSearch" class="sr-only">Filter clauses</label>
+                    <input type="text" class="clause-search" id="clauseSearch" placeholder="Filter clauses..." style="margin-bottom:0;flex:1">
+                    <button class="sort-score-btn" id="sortScoreBtn" title="Sort by risk score" aria-label="Sort by risk score">&#8693;</button>
+                </div>
+                <div class="score-threshold" id="scoreThreshold">
+                    <span class="score-threshold-label" id="thresholdLabel">0+</span>
+                    <label for="thresholdSlider" class="sr-only">Minimum score threshold</label>
+                    <input type="range" min="0" max="100" value="0" id="thresholdSlider" aria-label="Minimum score threshold">
+                </div>
+                <div class="clause-minimap" id="clauseMinimap"></div>
+                <div id="clauseIndex"></div>
+            </div>
+
+            <div class="sidebar-section hidden" id="sidebarTricks">
+                <div class="sidebar-heading">Tricks Found</div>
+                <div class="sidebar-tag-cloud" id="trickCloud"></div>
+            </div>
+
+            <div class="sidebar-section hidden" id="sidebarPlaybook">
+                <div class="sidebar-heading">Drafter's Playbook</div>
+                <div id="playbookList"></div>
+            </div>
+
+            <div class="sidebar-section hidden" id="sidebarDistribution">
+                <div class="sidebar-heading">Risk Distribution</div>
+                <div id="riskDistChart" style="display:flex;height:12px;border-radius:6px;overflow:hidden;gap:1px"></div>
+                <div id="riskDistLabels" style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text-muted);margin-top:0.2rem"></div>
+            </div>
+
+            <div class="sidebar-section hidden" id="sidebarAssessment">
+                <div class="sidebar-heading">Assessment</div>
+                <div id="assessmentBars"></div>
+            </div>
+
+            <!-- Prompt 28: Analysis progress ring -->
+            <div class="sidebar-section" id="sidebarProgress" style="text-align:center;padding:0.6rem 0">
+                <svg width="60" height="60" viewBox="0 0 60 60" id="progressRing">
+                    <circle cx="30" cy="30" r="26" fill="none" stroke="var(--border)" stroke-width="4"/>
+                    <circle cx="30" cy="30" r="26" fill="none" stroke="var(--accent)" stroke-width="4"
+                        id="progressRingFill" stroke-dasharray="163.36" stroke-dashoffset="163.36"
+                        stroke-linecap="round" transform="rotate(-90 30 30)" style="transition:stroke-dashoffset 0.5s ease"/>
+                    <text x="30" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="var(--text-primary)" id="progressRingText">0%</text>
+                </svg>
+            </div>
+        </aside>
+
+        <!-- RIGHT: Main content -->
+        <div class="analysis-main">
+            <div id="docPreview" class="doc-preview hidden"></div>
+            <div id="summaryContainer"></div>
+
+            <div class="results-panel hidden" id="resultsPanel">
+                <div class="panel-header">
+                    <span class="panel-icon">&#128203;</span>
+                    <span>Analysis Results</span>
+                    <span id="readingTime" style="font-size:0.68rem;color:var(--text-muted);margin-left:auto;margin-right:0.5rem"></span>
+                    <button class="expand-all-btn hidden" id="hideGreenBtn" title="Hide low-risk clauses">Actionable only</button>
+                    <button class="expand-all-btn hidden" id="expandAllBtn" title="Show all clauses at once">Show all</button>
+                </div>
+                <div id="heatmapStrip" style="display:none;height:6px;margin:0 0.5rem 0.5rem;border-radius:3px;overflow:hidden"></div>
+                <div class="results-content" id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sidebar toggle -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <span>&#9776;</span>
+        <span class="toggle-badge hidden" id="toggleBadge">0</span>
+    </button>
+    <div class="sidebar-overlay hidden" id="sidebarOverlay"></div>
+    <button class="jump-top-btn hidden" id="jumpTopBtn" title="Back to top">&#8593;</button>
+
+    <!-- Prompt 9: Floating clause navigation -->
+    <div class="clause-nav hidden" id="clauseNav">
+        <button class="clause-nav-btn" id="clauseNavPrev" title="Previous clause">&#8593;</button>
+        <button class="clause-nav-btn" id="clauseNavNext" title="Next clause">&#8595;</button>
+    </div>
+
+    <!-- Prompt 12: Action checklist modal -->
+    <div class="shortcut-overlay" id="checklistOverlay">
+        <div class="shortcut-panel" style="max-width:560px;max-height:80vh;overflow-y:auto">
+            <h3>Action Checklist</h3>
+            <div id="checklistContent" style="font-size:0.85rem"></div>
+            <button class="back-btn" style="margin-top:1rem;width:100%" onclick="document.getElementById('checklistOverlay').classList.remove('visible')">Close</button>
+        </div>
+    </div>
+
+    <!-- Prompt 8: Keyboard shortcut overlay -->
+    <div class="shortcut-overlay" id="shortcutOverlay">
+        <div class="shortcut-panel">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="shortcut-row"><span>Navigate clauses</span><span><span class="shortcut-key">&#8593;</span> <span class="shortcut-key">&#8595;</span> or <span class="shortcut-key">j</span> <span class="shortcut-key">k</span></span></div>
+            <div class="shortcut-row"><span>Go back</span><span class="shortcut-key">Esc</span></div>
+            <div class="shortcut-row"><span>Show shortcuts</span><span class="shortcut-key">?</span></div>
+            <div style="margin-top:0.8rem;text-align:center;font-size:0.72rem;color:var(--text-muted)">Press any key to close</div>
+        </div>
+    </div>
+</section>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// FlipSide Frontend — Live Sidebar, Split Cards, Animations
+// ═══════════════════════════════════════════════════════════════
+
+(function () {
+    'use strict';
+
+    // ── Constants ──────────────────────────────────────────────
+    var TRICK_MAP = {
+        'Silent Waiver': '\uD83E\uDD10',
+        'Burden Shift': '\u2696\uFE0F',
+        'Time Trap': '\u23F0',
+        'Escape Hatch': '\uD83D\uDEAA',
+        'Moving Target': '\uD83C\uDFAF',
+        'Forced Arena': '\uD83C\uDFDB\uFE0F',
+        'Phantom Protection': '\uD83D\uDC7B',
+        'Cascade Clause': '\uD83D\uDCA5',
+        'Sole Discretion': '\uD83D\uDC51',
+        'Liability Cap': '\uD83D\uDEE1\uFE0F',
+        'Reverse Shield': '\uD83D\uDCB8',
+        'Auto-Lock': '\uD83D\uDD12',
+        'Content Grab': '\uD83D\uDD8A\uFE0F',
+        'Data Drain': '\uD83D\uDC41\uFE0F',
+        'Penalty Disguise': '\uD83C\uDFAD',
+        'Gag Clause': '\uD83D\uDD07',
+        'Scope Creep': '\uD83D\uDD78\uFE0F',
+        'Ghost Standard': '\uD83D\uDCC4'
+    };
+
+    var TRICK_DESCRIPTIONS = {
+        'Silent Waiver': 'Quietly surrenders your legal rights',
+        'Burden Shift': 'Moves proof/action duty onto you',
+        'Time Trap': 'Tight deadlines that forfeit your rights',
+        'Escape Hatch': 'Drafter can exit, you cannot',
+        'Moving Target': 'Terms can change after you agree',
+        'Forced Arena': 'Disputes in drafter\'s chosen forum',
+        'Phantom Protection': 'Broad coverage eaten by exceptions',
+        'Cascade Clause': 'One trigger activates multiple penalties',
+        'Sole Discretion': 'Drafter decides everything, no appeal',
+        'Liability Cap': 'Limits payout regardless of harm',
+        'Reverse Shield': 'You cover their costs, not vice versa',
+        'Auto-Lock': 'Auto-renewal with hard cancellation',
+        'Content Grab': 'Claims rights over your content/work',
+        'Data Drain': 'Expansive hidden data permissions',
+        'Penalty Disguise': 'Punitive charges disguised as fees',
+        'Gag Clause': 'Prohibits negative reviews or discussion',
+        'Scope Creep': 'Vague terms stretch beyond expectations',
+        'Ghost Standard': 'References external docs not included'
+    };
+
+    var STATUS_MESSAGES = {
+        thinking: [
+            "Adopting the drafter's perspective...",
+            "Reading between the lines...",
+            "Tracing cross-references...",
+            "Mapping strategic architecture...",
+            "Identifying asymmetric language...",
+            "Analyzing burden allocation...",
+            "Checking for hidden triggers..."
+        ],
+        clauses: [
+            "Analyzing clause by clause...",
+            "Flagging strategic language...",
+            "Detecting hidden obligations...",
+            "Scoring risk levels...",
+            "Classifying legal tricks..."
+        ],
+        playbook: [
+            "Revealing the drafter's strategy...",
+            "Reconstructing the playbook...",
+            "Mapping the strategic architecture..."
+        ],
+        summary: [
+            "Calculating risk scores...",
+            "Generating your assessment...",
+            "Measuring power imbalance..."
+        ]
+    };
+
+    // ── State ─────────────────────────────────────────────────
+    var selectedFile = null;
+    var analysisDepth = 'standard';
+    var eventSource = null;
+    var thinkingContent = '';
+    var responseContent = '';
+    var currentPhase = null;
+    var renderTimeout = null;
+    var lastRenderedLength = 0;
+    var isDoneRendering = false;
+
+    var phaseOrder = ['thinking', 'profile', 'clauses', 'interactions', 'playbook', 'summary'];
+    var completedPhases = new Set();
+    var uiSteps = ['thinking', 'profile', 'clauses', 'playbook', 'summary'];
+
+    // Sidebar state
+    var insightsList = [];
+    var clauseIndexData = [];
+    var trickCounts = {};
+    var playbookStrategies = [];
+    var lastRiskScore = null;
+    var lastPowerScore = null;
+    var statusRotateInterval = null;
+    var currentStatusIdx = 0;
+    var animatedCardTitles = new Set();
+    var lastInsightUpdate = 0;
+    var thinkingStartTime = 0;
+    var progressInterval = null;
+    var quickDone = false;
+    var analysisStartTime = 0;
+    var elapsedInterval = null;
+    var revealedClauseCount = 1; // Progressive disclosure: show 1 card at a time
+    var bookmarkedClauses = new Set(); // Prompt 20: starred/bookmarked clauses
+
+    // ── Elements ──────────────────────────────────────────────
+    var $ = function(id) { return document.getElementById(id); };
+    var uploadSection    = $('upload-section');
+    var analysisSection  = $('analysis-section');
+    var dropZone         = $('dropZone');
+    var uploadPrompt     = $('uploadPrompt');
+    var fileInfo         = $('fileInfo');
+    var fileNameEl       = $('fileName');
+    var fileSizeEl       = $('fileSize');
+    var fileRemove       = $('fileRemove');
+    var fileInput        = $('fileInput');
+    var pasteToggle      = $('pasteToggle');
+    var sampleToggle     = $('sampleToggle');
+    var pasteArea        = $('pasteArea');
+    var analyzeBtn       = $('analyzeBtn');
+    var uploadError      = $('uploadError');
+    var statusPill       = $('statusPill');
+    var statusText       = $('statusText');
+    var backBtn          = $('backBtn');
+    var thinkingPanel    = $('thinkingPanel');
+    var thinkingLabel    = $('thinkingLabel');
+    var thinkingText     = $('thinkingText');
+    var thinkingToggle   = $('thinkingToggle');
+    var resultsPanel     = $('resultsPanel');
+    var resultsContent   = $('resultsContent');
+    var summaryContainer = $('summaryContainer');
+    var sidebar          = $('sidebar');
+    var sidebarToggle    = $('sidebarToggle');
+    var sidebarOverlay   = $('sidebarOverlay');
+    var statusMessage    = $('statusMessage');
+    var liveCounter      = $('liveCounter');
+    var liveCounterText  = $('liveCounterText');
+    var insightChips     = $('insightChips');
+    var clauseIndex      = $('clauseIndex');
+    var trickCloud       = $('trickCloud');
+    var playbookList     = $('playbookList');
+    var assessmentBars   = $('assessmentBars');
+    var toggleBadge      = $('toggleBadge');
+    var docPreview       = $('docPreview');
+    var lastDocId        = null;
+
+    // ── Configure marked ──────────────────────────────────────
+    marked.setOptions({ breaks: true, gfm: true });
+
+    // ── Helpers ───────────────────────────────────────────────
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function showError(msg) {
+        uploadError.textContent = msg;
+        uploadError.classList.remove('hidden');
+        setTimeout(function() { uploadError.classList.add('hidden'); }, 8000);
+    }
+
+    function updateAnalyzeBtn() {
+        var hasFile = selectedFile !== null;
+        var hasText = pasteArea.value.trim().length > 0;
+        analyzeBtn.disabled = !(hasFile || hasText);
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    // ── Phase management ──────────────────────────────────────
+    var phaseLabels = {
+        thinking: "Reading as the drafter's attorney...",
+        profile: 'Identifying document structure...',
+        clauses: 'Analyzing clauses...',
+        interactions: 'Detecting cross-clause interactions...',
+        playbook: "Revealing the drafter's playbook...",
+        summary: 'Generating risk assessment...'
+    };
+
+    var phaseToStep = {
+        thinking: 'thinking', profile: 'profile',
+        clauses: 'clauses', interactions: 'clauses',
+        playbook: 'playbook', summary: 'summary'
+    };
+
+    function setPhase(phase) {
+        if (phase === currentPhase) return;
+
+        if (currentPhase) {
+            var prevStep = phaseToStep[currentPhase];
+            if (prevStep) {
+                completedPhases.add(prevStep);
+                var el = $('phase-' + prevStep);
+                if (el) {
+                    el.classList.remove('active');
+                    el.classList.add('complete');
+                    el.querySelector('.phase-dot').innerHTML = '&#10003;';
+                }
+            }
+            var prevIdx = uiSteps.indexOf(prevStep);
+            if (prevIdx >= 0 && prevIdx < uiSteps.length - 1) {
+                var line = $('phaseLine' + (prevIdx + 1));
+                if (line) line.classList.add('complete');
+            }
+        }
+
+        currentPhase = phase;
+        var step = phaseToStep[phase];
+
+        if (step && !completedPhases.has(step)) {
+            var stepEl = $('phase-' + step);
+            if (stepEl) stepEl.classList.add('active');
+            var idx = uiSteps.indexOf(step);
+            if (idx > 0) {
+                var lineEl = $('phaseLine' + idx);
+                if (lineEl) lineEl.classList.add('active');
+            }
+        }
+
+        if (phaseLabels[phase]) {
+            statusText.textContent = phaseLabels[phase];
+            thinkingLabel.textContent = phaseLabels[phase];
+        }
+
+        // Start status rotation for this phase
+        var group = getStatusGroup(phase);
+        if (group) startStatusRotation(group);
+
+        // Prompt 28: Update progress ring
+        var phaseProgress = { 'thinking': 15, 'profiling': 30, 'scanning': 50, 'analyzing': 70, 'deep_thinking': 60, 'deep_analyzing': 85, 'cross_analyzing': 90, 'playbook': 95 };
+        var pct = phaseProgress[phase] || 10;
+        var circumference = 163.36;
+        var ring = $('progressRingFill');
+        if (ring) {
+            ring.setAttribute('stroke-dashoffset', circumference * (1 - pct / 100));
+            $('progressRingText').textContent = pct + '%';
+        }
+    }
+
+    var DEPTH_LABELS = {
+        quick: 'Quick scan + focused analysis',
+        standard: 'Quick scan + standard analysis',
+        deep: 'Quick scan + deep cross-clause analysis'
+    };
+
+    // ── Status rotation ───────────────────────────────────────
+    function getStatusGroup(phase) {
+        if (phase === 'thinking') return 'thinking';
+        if (phase === 'profile' || phase === 'clauses' || phase === 'interactions') return 'clauses';
+        if (phase === 'playbook') return 'playbook';
+        if (phase === 'summary') return 'summary';
+        return null;
+    }
+
+    function startStatusRotation(group) {
+        stopStatusRotation();
+        currentStatusIdx = 0;
+        var messages = STATUS_MESSAGES[group];
+        if (!messages || messages.length === 0) return;
+
+        statusMessage.textContent = messages[0];
+        statusMessage.style.opacity = '1';
+
+        statusRotateInterval = setInterval(function() {
+            statusMessage.style.opacity = '0';
+            setTimeout(function() {
+                currentStatusIdx = (currentStatusIdx + 1) % messages.length;
+                statusMessage.textContent = messages[currentStatusIdx];
+                statusMessage.style.opacity = '1';
+            }, 300);
+        }, 4000);
+    }
+
+    function stopStatusRotation() {
+        if (statusRotateInterval) {
+            clearInterval(statusRotateInterval);
+            statusRotateInterval = null;
+        }
+    }
+
+    // ── Drag-and-drop ─────────────────────────────────────────
+    dropZone.addEventListener('click', function() { fileInput.click(); });
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault(); dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', function() {
+        dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault(); dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+        var ext = file.name.split('.').pop().toLowerCase();
+        if (['pdf', 'docx', 'txt', 'text', 'md'].indexOf(ext) === -1) {
+            showError('Unsupported file type. Please use PDF, DOCX, or TXT.');
+            return;
+        }
+        selectedFile = file;
+        fileNameEl.textContent = file.name;
+        fileSizeEl.textContent = formatSize(file.size);
+        uploadPrompt.classList.add('hidden');
+        fileInfo.classList.remove('hidden');
+        pasteArea.classList.add('hidden');
+        pasteArea.value = '';
+        updateAnalyzeBtn();
+    }
+
+    fileRemove.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        selectedFile = null; fileInput.value = '';
+        fileInfo.classList.add('hidden');
+        uploadPrompt.classList.remove('hidden');
+        updateAnalyzeBtn();
+    });
+
+    // ── Paste text ────────────────────────────────────────────
+    pasteToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        var isHidden = pasteArea.classList.contains('hidden');
+        if (isHidden) {
+            pasteArea.classList.remove('hidden');
+            pasteArea.focus();
+            pasteToggle.textContent = 'use file upload instead';
+            selectedFile = null; fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            uploadPrompt.classList.remove('hidden');
+            dropZone.classList.add('hidden');
+        } else {
+            pasteArea.classList.add('hidden');
+            pasteArea.value = '';
+            pasteToggle.textContent = 'or paste text directly';
+            dropZone.classList.remove('hidden');
+        }
+        updateAnalyzeBtn();
+    });
+    pasteArea.addEventListener('input', updateAnalyzeBtn);
+
+    // ── Sample document ───────────────────────────────────────
+    sampleToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        sampleToggle.textContent = 'loading...';
+        sampleToggle.style.pointerEvents = 'none';
+
+        fetch('/sample', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ depth: analysisDepth })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) {
+                showError(data.error);
+                sampleToggle.textContent = 'try sample policy';
+                sampleToggle.style.pointerEvents = '';
+                return;
+            }
+            lastDocId = data.doc_id;
+            showAnalysisView(data);
+            connectStream(data.doc_id);
+        })
+        .catch(function() {
+            showError('Failed to load sample. Please try again.');
+            sampleToggle.textContent = 'try sample policy';
+            sampleToggle.style.pointerEvents = '';
+        });
+    });
+
+    // ── Depth selector ────────────────────────────────────────
+    document.querySelectorAll('.depth-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.depth-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            analysisDepth = btn.dataset.depth;
+        });
+    });
+
+    // ── Compare mode ────────────────────────────────────────
+    var compareMode = false;
+    var compareFileA = null;
+    var compareFileB = null;
+
+    $('compareToggle').addEventListener('click', function(e) {
+        e.preventDefault();
+        compareMode = !compareMode;
+        $('compareMode').classList.toggle('hidden', !compareMode);
+        $('dropZone').classList.toggle('hidden', compareMode);
+        pasteArea.classList.add('hidden');
+        analyzeBtn.classList.toggle('hidden', compareMode);
+        if (compareMode) {
+            $('compareToggle').textContent = 'single document mode';
+            pasteToggle.classList.add('hidden');
+        } else {
+            $('compareToggle').textContent = 'compare two documents';
+            pasteToggle.classList.remove('hidden');
+            pasteToggle.style.display = '';
+        }
+        updateAnalyzeBtn();
+    });
+
+    // Compare drop zones
+    ['A', 'B'].forEach(function(side) {
+        var dz = $('dropZone' + side);
+        var fi = $('fileInput' + side);
+        dz.addEventListener('click', function() { fi.click(); });
+        dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('dragover'); });
+        dz.addEventListener('dragleave', function() { dz.classList.remove('dragover'); });
+        dz.addEventListener('drop', function(e) {
+            e.preventDefault(); dz.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleCompareFile(side, e.dataTransfer.files[0]);
+        });
+        fi.addEventListener('change', function() {
+            if (fi.files.length) handleCompareFile(side, fi.files[0]);
+        });
+    });
+
+    function handleCompareFile(side, file) {
+        var ext = file.name.split('.').pop().toLowerCase();
+        if (['pdf', 'docx', 'txt', 'text', 'md'].indexOf(ext) === -1) {
+            showError('Unsupported file type.'); return;
+        }
+        if (side === 'A') compareFileA = file; else compareFileB = file;
+        $('fileName' + side).textContent = file.name;
+        $('uploadPrompt' + side).classList.add('hidden');
+        $('fileInfo' + side).classList.remove('hidden');
+        updateCompareBtn();
+    }
+
+    function updateCompareBtn() {
+        var hasA = compareFileA !== null || $('pasteAreaA').value.trim().length > 0;
+        var hasB = compareFileB !== null || $('pasteAreaB').value.trim().length > 0;
+        $('compareBtn').disabled = !(hasA && hasB);
+    }
+
+    $('pasteAreaA').addEventListener('input', updateCompareBtn);
+    $('pasteAreaB').addEventListener('input', updateCompareBtn);
+
+    $('compareBtn').addEventListener('click', function() {
+        $('compareBtn').disabled = true;
+        $('compareBtn').textContent = 'Uploading...';
+
+        var formData = new FormData();
+        if (compareFileA) formData.append('file1', compareFileA);
+        else formData.append('text1', $('pasteAreaA').value);
+        if (compareFileB) formData.append('file2', compareFileB);
+        else formData.append('text2', $('pasteAreaB').value);
+        formData.append('depth', analysisDepth);
+
+        fetch('/compare', { method: 'POST', body: formData })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) { showError(data.error); resetCompareBtn(); return; }
+            lastDocId = data.doc_id;
+            showAnalysisView(data);
+            connectStream(data.doc_id);
+        })
+        .catch(function() {
+            showError('Failed to upload. Please try again.');
+            resetCompareBtn();
+        });
+    });
+
+    function resetCompareBtn() {
+        $('compareBtn').disabled = false;
+        $('compareBtn').textContent = 'Compare Documents';
+    }
+
+    // ── Analyze ───────────────────────────────────────────────
+    analyzeBtn.addEventListener('click', startAnalysis);
+
+    function startAnalysis() {
+        analyzeBtn.disabled = true;
+        analyzeBtn.classList.add('loading');
+        analyzeBtn.textContent = 'Uploading...';
+        uploadError.classList.add('hidden');
+
+        var formData = new FormData();
+        if (selectedFile) {
+            formData.append('file', selectedFile);
+        } else {
+            formData.append('text', pasteArea.value);
+        }
+        formData.append('depth', analysisDepth);
+
+        fetch('/upload', { method: 'POST', body: formData })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) { showError(data.error); resetUploadBtn(); return; }
+            lastDocId = data.doc_id;
+            showAnalysisView(data);
+            connectStream(data.doc_id);
+        })
+        .catch(function() {
+            showError('Failed to upload. Please try again.');
+            resetUploadBtn();
+        });
+    }
+
+    function resetUploadBtn() {
+        analyzeBtn.disabled = false;
+        analyzeBtn.classList.remove('loading');
+        analyzeBtn.textContent = 'Analyze Document';
+    }
+
+    function showAnalysisView(docInfo) {
+        // Prompt 18: Smooth fade transition
+        uploadSection.style.opacity = '0';
+        uploadSection.style.transition = 'opacity 0.3s ease';
+        setTimeout(function() {
+            uploadSection.classList.add('hidden');
+            uploadSection.style.opacity = '';
+            analysisSection.classList.remove('hidden');
+            analysisSection.style.opacity = '0';
+            analysisSection.style.transition = 'opacity 0.4s ease';
+            requestAnimationFrame(function() { analysisSection.style.opacity = '1'; });
+        }, 300);
+
+        // Reset all state
+        thinkingContent = '';
+        responseContent = '';
+        currentPhase = null;
+        completedPhases.clear();
+        animatedCardTitles.clear();
+        revealedClauseCount = 1;
+        userHasScrolled = false;
+        lastAutoScrollY = 0;
+        quickDone = false;
+        insightsList = [];
+        clauseIndexData = [];
+        trickCounts = {};
+        playbookStrategies = [];
+        lastRiskScore = null;
+        lastPowerScore = null;
+        lastInsightUpdate = 0;
+        stopStatusRotation();
+
+        // Reset UI
+        thinkingText.innerHTML = '<span class="cursor"></span>';
+        // Prompt 19: Skeleton loading placeholders
+        // Prompt 19: Show skeleton loading placeholders immediately
+        resultsContent.innerHTML =
+            '<div class="skeleton-loader">' +
+            '<div class="skeleton-block" style="width:40%;height:1.2rem;margin-bottom:1.2rem"></div>' +
+            '<div class="skeleton-card">' +
+            '<div class="skeleton-block" style="width:60%;height:1rem;margin-bottom:0.8rem"></div>' +
+            '<div class="skeleton-block" style="width:90%;height:0.75rem;margin-bottom:0.5rem"></div>' +
+            '<div class="skeleton-block" style="width:75%;height:0.75rem;margin-bottom:0.5rem"></div>' +
+            '<div class="skeleton-block" style="width:85%;height:0.75rem"></div>' +
+            '</div>' +
+            '<div class="skeleton-card">' +
+            '<div class="skeleton-block" style="width:50%;height:1rem;margin-bottom:0.8rem"></div>' +
+            '<div class="skeleton-block" style="width:80%;height:0.75rem;margin-bottom:0.5rem"></div>' +
+            '<div class="skeleton-block" style="width:70%;height:0.75rem"></div>' +
+            '</div>' +
+            '</div>';
+        summaryContainer.innerHTML = '';
+        resultsPanel.classList.remove('hidden');
+        backBtn.classList.add('hidden');
+        thinkingPanel.classList.remove('collapsed', 'has-toggle');
+        thinkingPanel.classList.add('is-thinking');
+        statusPill.classList.remove('done');
+        statusText.textContent = 'Connecting...';
+        // Prompt 48: Depth indicator
+        var depthLabels = { quick: 'Quick scan', standard: 'Standard', deep: 'Deep analysis' };
+        $('depthIndicator').textContent = depthLabels[analysisDepth] || analysisDepth;
+        liveCounterText.textContent = 'Starting analysis...';
+        liveCounter.classList.remove('done');
+        statusMessage.textContent = '';
+
+        // Reset sidebar sections
+        $('sidebarFindings').classList.add('hidden');
+        $('sidebarClauses').classList.add('hidden');
+        $('sidebarTricks').classList.add('hidden');
+        $('sidebarPlaybook').classList.add('hidden');
+        $('sidebarAssessment').classList.add('hidden');
+        insightChips.innerHTML = '';
+        clauseIndex.innerHTML = '';
+        trickCloud.innerHTML = '';
+        playbookList.innerHTML = '';
+        assessmentBars.innerHTML = '';
+        toggleBadge.classList.add('hidden');
+
+        // Reset phase indicators
+        uiSteps.forEach(function(p, i) {
+            var el = $('phase-' + p);
+            if (el) {
+                el.classList.remove('active', 'complete');
+                el.querySelector('.phase-dot').textContent = i + 1;
+            }
+        });
+        [1,2,3,4].forEach(function(i) {
+            var line = $('phaseLine' + i);
+            if (line) line.classList.remove('active', 'complete');
+        });
+
+        // Close mobile sidebar
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.add('hidden');
+
+        // Show document preview
+        if (docInfo) {
+            var words = Math.round((docInfo.text_length || 0) / 5.5);
+            var readMin = Math.max(1, Math.round(words / 200));
+            docPreview.innerHTML = '<div class="doc-preview-name">' + escapeHtml(docInfo.filename || 'Document') + '</div>' +
+                '<div class="doc-preview-meta">' +
+                (words ? words.toLocaleString() + ' words · ~' + readMin + ' min read · ' : '') +
+                (docInfo.text_length ? docInfo.text_length.toLocaleString() + ' characters' : '') +
+                '</div>' +
+                (docInfo.preview ? '<div class="doc-preview-text">' + escapeHtml(docInfo.preview) + '</div>' : '');
+            docPreview.classList.remove('hidden');
+        } else {
+            docPreview.classList.add('hidden');
+        }
+
+        $('expandAllBtn').classList.add('hidden');
+        $('expandAllBtn').textContent = 'Show all';
+        $('hideGreenBtn').classList.add('hidden');
+        $('hideGreenBtn').textContent = 'Actionable only';
+
+        // Start elapsed time counter
+        analysisStartTime = Date.now();
+        if (elapsedInterval) clearInterval(elapsedInterval);
+        var elapsedEl = $('elapsedTime');
+        elapsedEl.textContent = '';
+        elapsedInterval = setInterval(function() {
+            var secs = Math.floor((Date.now() - analysisStartTime) / 1000);
+            var min = Math.floor(secs / 60);
+            var sec = secs % 60;
+            elapsedEl.textContent = (min > 0 ? min + 'm ' : '') + sec + 's';
+        }, 1000);
+
+        window.scrollTo({ top: 0 });
+    }
+
+    // ── SSE streaming ─────────────────────────────────────────
+    function connectStream(docId) {
+        eventSource = new EventSource('/analyze/' + docId);
+
+        eventSource.onmessage = function(e) {
+            var msg;
+            try { msg = JSON.parse(e.data); } catch(err) { return; }
+
+            switch (msg.type) {
+                case 'phase':
+                    setPhase(msg.content);
+                    break;
+
+                case 'thinking_start':
+                    if (!quickDone) {
+                        setPhase('thinking');
+                        thinkingStartTime = Date.now();
+                        startThinkingProgress();
+                    } else {
+                        // Deep thinking: update label so user knows deep analysis is reasoning
+                        thinkingLabel.textContent = 'Deep cross-clause reasoning...';
+                        thinkingPanel.classList.remove('collapsed');
+                        thinkingPanel.classList.add('is-thinking');
+                    }
+                    break;
+
+                case 'thinking':
+                    thinkingContent += msg.content;
+                    // Prompt 31: Update thinking word count
+                    var twc = thinkingContent.split(/\s+/).length;
+                    $('thinkingWordCount').textContent = twc.toLocaleString() + ' words';
+                    if (!quickDone) {
+                        renderThinking();
+                    } else {
+                        // Extract insights from deep thinking too
+                        var now = Date.now();
+                        if (now - lastInsightUpdate > 2000) {
+                            lastInsightUpdate = now;
+                            updateSidebarInsights();
+                        }
+                    }
+                    break;
+
+                case 'thinking_done':
+                    if (!quickDone) {
+                        thinkingLabel.textContent = 'Clause scan complete';
+                        stopThinkingProgress();
+                        removeCursor();
+                        thinkingPanel.classList.remove('is-thinking');
+                        thinkingPanel.classList.add('collapsed', 'has-toggle');
+                        updateSidebarInsights();
+                    }
+                    break;
+
+                case 'text_start':
+                    resultsPanel.classList.remove('hidden');
+                    break;
+
+                case 'text':
+                    if (resultsPanel.classList.contains('hidden')) {
+                        resultsPanel.classList.remove('hidden');
+                    }
+                    responseContent += msg.content;
+                    renderResults();
+                    break;
+
+                case 'text_done':
+                    renderResultsFinal();
+                    break;
+
+                case 'quick_done':
+                    quickDone = true;
+                    var elapsed = Math.floor((Date.now() - analysisStartTime) / 1000);
+                    statusText.textContent = 'Deep analysis...';
+                    startStatusRotation('playbook');
+                    // Show deep analysis progress in sidebar (left side)
+                    var deepDiv = document.createElement('div');
+                    deepDiv.className = 'deep-progress';
+                    deepDiv.id = 'deepProgress';
+                    deepDiv.innerHTML = '<span class="deep-progress-dot"></span>' +
+                        '<span class="deep-progress-text">Analyzing cross-clause interactions, playbook, and overall risk...</span>';
+                    statusMessage.parentNode.insertBefore(deepDiv, statusMessage.nextSibling);
+                    break;
+
+                case 'done':
+                    uiSteps.forEach(function(p) {
+                        var el = $('phase-' + p);
+                        if (el) {
+                            el.classList.remove('active');
+                            el.classList.add('complete');
+                            el.querySelector('.phase-dot').innerHTML = '&#10003;';
+                        }
+                    });
+                    [1,2,3,4].forEach(function(i) {
+                        var line = $('phaseLine' + i);
+                        if (line) { line.classList.remove('active'); line.classList.add('complete'); }
+                    });
+
+                    statusText.textContent = 'Analysis complete';
+                    // Prompt 28: Complete progress ring
+                    var doneRing = $('progressRingFill');
+                    if (doneRing) {
+                        doneRing.setAttribute('stroke-dashoffset', '0');
+                        doneRing.setAttribute('stroke', 'var(--green)');
+                        $('progressRingText').textContent = '100%';
+                    }
+                    statusPill.classList.add('done');
+                    liveCounter.classList.add('done');
+                    backBtn.classList.remove('hidden');
+                    $('exportBtn').classList.remove('hidden');
+                    $('copyAllBtn').classList.remove('hidden');
+                    $('exportStarredBtn').classList.remove('hidden');
+                    $('printBtn').classList.remove('hidden');
+                    removeCursor();
+                    stopStatusRotation();
+                    stopThinkingProgress();
+                    if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
+                    statusMessage.textContent = 'Done';
+                    // Prompt 49: Save to session history
+                    var histTitle = docPreview.querySelector('.doc-preview-name');
+                    var histName = histTitle ? histTitle.textContent : 'Unknown';
+                    saveSessionHistory(histName, clauseIndexData.length, lastRiskScore || 0);
+                    // Remove deep progress indicator
+                    var dp = $('deepProgress');
+                    if (dp) dp.remove();
+                    renderResultsFinal();
+                    updateSidebarData();
+                    buildSummaryCard();
+                    eventSource.close();
+                    eventSource = null;
+                    break;
+
+                case 'error':
+                    statusText.textContent = 'Error';
+                    statusPill.classList.add('done');
+                    backBtn.classList.remove('hidden');
+                    if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
+                    removeCursor();
+                    stopStatusRotation();
+                    stopThinkingProgress();
+                    resultsPanel.classList.remove('hidden');
+                    var errMsg = msg.content || 'Unknown error';
+                    var advice = '';
+                    if (errMsg.indexOf('API key') >= 0) advice = 'Check your .env file has a valid ANTHROPIC_API_KEY.';
+                    else if (errMsg.indexOf('rate') >= 0 || errMsg.indexOf('429') >= 0) advice = 'Rate limit reached. Wait a minute and try again.';
+                    else if (errMsg.indexOf('timeout') >= 0 || errMsg.indexOf('overloaded') >= 0) advice = 'The API is busy. Try again in a few minutes or use Quick depth.';
+                    else advice = 'Try again or use a different analysis depth.';
+                    resultsContent.innerHTML = '<div class="error-msg">' + escapeHtml(errMsg) +
+                        '<br><span style="font-size:0.82rem;color:var(--text-secondary);font-weight:400">' + advice + '</span>' +
+                        '<br><button class="retry-btn" onclick="location.reload()">Try Again</button></div>';
+                    eventSource.close();
+                    eventSource = null;
+                    break;
+            }
+        };
+
+        eventSource.onerror = function() {
+            if (eventSource) { eventSource.close(); eventSource = null; }
+            if (!statusPill.classList.contains('done')) {
+                statusText.textContent = 'Connection lost';
+                statusPill.classList.add('done');
+                backBtn.classList.remove('hidden');
+                removeCursor();
+                stopStatusRotation();
+                // Show retry option if we haven't received results
+                if (responseContent.length < 50) {
+                    resultsPanel.classList.remove('hidden');
+                    resultsContent.innerHTML = '<div class="error-msg">Connection lost during analysis.' +
+                        '<br><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
+                }
+            }
+        };
+    }
+
+    // ── Thinking rendering ────────────────────────────────────
+    // ── Thinking progress ──────────────────────────────────
+    function startThinkingProgress() {
+        var expectedMs = { quick: 15000, standard: 40000, deep: 90000 };
+        var expected = expectedMs[analysisDepth] || 40000;
+        var bar = $('thinkingProgress');
+        bar.style.width = '0%';
+        progressInterval = setInterval(function() {
+            var elapsed = Date.now() - thinkingStartTime;
+            var pct = Math.min(95, (elapsed / expected) * 100);
+            bar.style.width = pct + '%';
+        }, 1000);
+    }
+
+    function stopThinkingProgress() {
+        if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+        var bar = $('thinkingProgress');
+        bar.style.width = '100%';
+    }
+
+    var thinkingKeywords = /\b(asymmetric|one-sided|hidden|buried|disguised|waiver|penalty|forfeit|exclusion|loophole|unilateral|discretion|cascade|strategic|deliberately|advantage|obligation|burden|ambiguous|vague|trap|lock-in|irreversible)\b/gi;
+
+    function highlightThinking(text) {
+        var escaped = escapeHtml(text);
+        return escaped.replace(thinkingKeywords, '<span class="kw">$1</span>');
+    }
+
+    function renderThinking() {
+        thinkingText.innerHTML = highlightThinking(thinkingContent) + '<span class="cursor"></span>';
+        thinkingText.scrollTop = thinkingText.scrollHeight;
+
+        // Throttled insight extraction (every 2s)
+        var now = Date.now();
+        if (now - lastInsightUpdate > 2000) {
+            lastInsightUpdate = now;
+            updateSidebarInsights();
+        }
+    }
+
+    function removeCursor() {
+        var cursor = thinkingText.querySelector('.cursor');
+        if (cursor) cursor.remove();
+    }
+
+    // ── Results rendering ─────────────────────────────────────
+    function renderResults() {
+        if (renderTimeout) return;
+        renderTimeout = setTimeout(function() {
+            renderTimeout = null;
+            doRenderResults();
+        }, 300); // 300ms throttle — fast enough to feel live, slow enough to not flicker
+    }
+
+    function renderResultsFinal() {
+        if (renderTimeout) { clearTimeout(renderTimeout); renderTimeout = null; }
+        doRenderResults();
+    }
+
+    function isNearBottom() {
+        var threshold = 300;
+        return (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - threshold);
+    }
+
+    // Track manual scroll — suppress auto-scroll when user scrolls away
+    var lastAutoScrollY = 0;
+    var userHasScrolled = false;
+    window.addEventListener('scroll', function() {
+        // If user scrolled more than 100px away from where auto-scroll put them, respect that
+        if (Math.abs(window.scrollY - lastAutoScrollY) > 100) {
+            userHasScrolled = true;
+        }
+    }, { passive: true });
+
+    function doRenderResults() {
+        var wasNearBottom = !userHasScrolled && isNearBottom();
+
+        // ── Anti-flicker: cache revealed cards before DOM rebuild ──
+        // Before innerHTML destroys the DOM, detach visible cards.
+        // After rebuild, swap them back if their core content hasn't changed.
+        // Compare BOTH paragraph count AND content text length:
+        //   - Paragraph count catches new <p> tags being added
+        //   - Content text length catches text growing within existing paragraphs
+        // Only measure prose elements (p, blockquote, ul, ol, table) to exclude
+        // dynamic UI (badges, buttons, notes) which inflate textContent.
+        var savedCards = new Map();
+        var savedContentInfo = new Map();
+
+        function getContentFingerprint(card) {
+            var paras = card.querySelectorAll('p, blockquote, ul, ol, table');
+            var textLen = 0;
+            for (var i = 0; i < paras.length; i++) {
+                textLen += paras[i].textContent.length;
+            }
+            return { count: paras.length, textLen: textLen };
+        }
+
+        resultsContent.querySelectorAll('.clause-card:not(.clause-hidden)').forEach(function(card) {
+            var title = card.getAttribute('data-clause-title');
+            if (title) {
+                savedCards.set(title, card);
+                savedContentInfo.set(title, getContentFingerprint(card));
+            }
+        });
+
+        var html = marked.parse(responseContent);
+        html = styleRiskBadges(html);
+        html = styleWhyClauses(html);
+        html = styleSplitClauses(html);
+        resultsContent.innerHTML = html;
+        wrapClauseSections();
+
+        // Restore cached cards whose core content hasn't grown
+        savedCards.forEach(function(cachedCard, title) {
+            var freshCard = resultsContent.querySelector('.clause-card[data-clause-title="' + CSS.escape(title) + '"]');
+            if (freshCard) {
+                var freshInfo = getContentFingerprint(freshCard);
+                var cachedInfo = savedContentInfo.get(title) || { count: 0, textLen: 0 };
+                // Card is stable if paragraph count AND text length haven't grown
+                if (freshInfo.count <= cachedInfo.count && freshInfo.textLen <= cachedInfo.textLen) {
+                    freshCard.parentNode.replaceChild(cachedCard, freshCard);
+                }
+            }
+        });
+
+        animateNewCards();
+        applyProgressiveDisclosure();
+        animateScoreCounters();
+        highlightTerms();
+        updateSidebarData();
+        renderMinimap();
+        // Prompt 34: Clause severity summary sentence
+        if (clauseIndexData.length > 0) {
+            var reds = clauseIndexData.filter(function(c) { return c.level === 'red'; }).length;
+            var yellows = clauseIndexData.filter(function(c) { return c.level === 'yellow'; }).length;
+            var greens = clauseIndexData.filter(function(c) { return c.level === 'green'; }).length;
+            var summaryEl = resultsContent.querySelector('.severity-summary');
+            if (!summaryEl) {
+                summaryEl = document.createElement('div');
+                summaryEl.className = 'severity-summary';
+                var firstCard = resultsContent.querySelector('.clause-card');
+                if (firstCard) resultsContent.insertBefore(summaryEl, firstCard);
+            }
+            var parts = [];
+            if (reds) parts.push('<span style="color:var(--red);font-weight:600">' + reds + ' high risk</span>');
+            if (yellows) parts.push('<span style="color:var(--yellow);font-weight:600">' + yellows + ' moderate</span>');
+            if (greens) parts.push('<span style="color:var(--green);font-weight:600">' + greens + ' low risk</span>');
+            var summaryHtml = 'Found ' + clauseIndexData.length + ' clauses: ' + parts.join(', ');
+            if (summaryEl.innerHTML !== summaryHtml) summaryEl.innerHTML = summaryHtml;
+        }
+        // Show floating nav when we have multiple revealed clause cards
+        var visNavCards = resultsContent.querySelectorAll('.clause-card:not(.clause-hidden)');
+        if (visNavCards.length > 1) $('clauseNav').classList.remove('hidden');
+        else $('clauseNav').classList.add('hidden');
+        // Prompt 15: Heatmap strip
+        if (clauseIndexData.length > 0) {
+            var hm = $('heatmapStrip');
+            var hmHtml = '<div style="display:flex;height:100%;gap:1px;width:100%">';
+            clauseIndexData.forEach(function(c) {
+                var col = c.level === 'red' ? 'var(--red)' : c.level === 'yellow' ? 'var(--yellow)' : 'var(--green)';
+                hmHtml += '<div style="flex:1;background:' + col + ';opacity:' + (0.4 + c.score / 166) + '"></div>';
+            });
+            hmHtml += '</div>';
+            if (hm.innerHTML !== hmHtml) hm.innerHTML = hmHtml;
+            hm.style.display = 'block';
+        }
+        // Prompt 16: Reading time estimate
+        var wordCount = resultsContent.textContent.split(/\s+/).length;
+        var readMins = Math.max(1, Math.round(wordCount / 200));
+        // Prompt 42: Word count + reading time
+        $('readingTime').textContent = readMins + ' min read · ' + wordCount.toLocaleString() + ' words';
+        // Prompt 44: Worst clause badge (stable — only mutate if worst card changed)
+        if (clauseIndexData.length > 0) {
+            var worst = clauseIndexData.reduce(function(a, b) { return a.score > b.score ? a : b; });
+            var worstTitle = worst.score >= 50 ? worst.title : null;
+            var existingBadge = resultsContent.querySelector('.worst-badge');
+            var existingBadgeCard = existingBadge ? existingBadge.closest('.clause-card') : null;
+            var existingBadgeTitle = existingBadgeCard ? existingBadgeCard.getAttribute('data-clause-title') : null;
+            // Only mutate DOM if the worst card actually changed
+            if (existingBadgeTitle !== worstTitle) {
+                if (existingBadge) existingBadge.remove();
+                if (worstTitle) {
+                    var worstCard = resultsContent.querySelector('.clause-card[data-clause-title="' + CSS.escape(worstTitle) + '"]');
+                    if (worstCard) {
+                        var wb = document.createElement('span');
+                        wb.className = 'worst-badge';
+                        wb.textContent = 'Highest risk';
+                        var h3 = worstCard.querySelector('h3');
+                        if (h3) h3.appendChild(wb);
+                    }
+                }
+            }
+        }
+        // Only auto-scroll if user hasn't manually scrolled away
+        if (wasNearBottom) {
+            var visibleCards = resultsContent.querySelectorAll('.clause-card:not(.clause-hidden)');
+            var nextBtn = resultsContent.querySelector('.next-clause-btn');
+            if (nextBtn) {
+                nextBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            } else if (visibleCards.length > 0) {
+                visibleCards[visibleCards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
+            } else {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }
+            lastAutoScrollY = window.scrollY;
+        }
+        // Show action buttons once we have clause cards
+        var cards = resultsContent.querySelectorAll('.clause-card');
+        if (cards.length > 1) {
+            $('expandAllBtn').classList.remove('hidden');
+            $('hideGreenBtn').classList.remove('hidden');
+        }
+        // Prompt 40: Re-observe clause cards for sidebar highlighting
+        observeClauseCards();
+    }
+
+    // ── Risk badge styling (enhanced with trick labels) ───────
+    function styleRiskBadges(html) {
+        // Match: LEVEL · Score: NN/100 · Trick: NAME
+        html = html.replace(
+            /(?:<strong>)?(GREEN|YELLOW|RED)(?:<\/strong>)?\s*(?:·|&#xB7;|&middot;)\s*Score:\s*(\d+)\/100\s*(?:·|&#xB7;|&middot;)\s*Trick:\s*([^<\n]+)/gi,
+            function(_, level, score, trick) {
+                var lc = level.toLowerCase();
+                var uc = level.toUpperCase();
+                var s = parseInt(score);
+                var t = trick.trim();
+                var emoji = TRICK_MAP[t] || '';
+                return buildBadgeHtml(lc, uc, s, emoji, t);
+            }
+        );
+
+        // Fallback: LEVEL · Score: NN/100 (no trick)
+        html = html.replace(
+            /(?:<strong>)?(GREEN|YELLOW|RED)(?:<\/strong>)?\s*(?:·|&#xB7;|&middot;)\s*Score:\s*(\d+)\/100/gi,
+            function(_, level, score) {
+                var lc = level.toLowerCase();
+                var uc = level.toUpperCase();
+                var s = parseInt(score);
+                return buildBadgeHtml(lc, uc, s, '', '');
+            }
+        );
+
+        return html;
+    }
+
+    function buildBadgeHtml(level, label, score, emoji, trick) {
+        var colors = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)' };
+        var riskWord = score >= 80 ? 'Critical' : score >= 66 ? 'High' : score >= 50 ? 'Moderate' : score >= 31 ? 'Notable' : 'Low';
+        // Prompt 37: Tooltip with score interpretation
+        var tipTexts = {
+            'Critical': 'Score 80+: Clause contains terms that strongly favor the drafter at your expense',
+            'High': 'Score 66-79: Clause shifts obligations, liability, or discretion toward you',
+            'Moderate': 'Score 50-65: Clause contains measurable asymmetry between parties',
+            'Notable': 'Score 31-49: Clause deviates from balanced terms in limited areas',
+            'Low': 'Score 0-30: Clause contains symmetric or standard terms'
+        };
+        var tip = tipTexts[riskWord] || '';
+        var h = '<span class="risk-badge risk-' + level + '" title="' + tip + '">' + label + '</span>' +
+            '<span class="risk-score" title="' + tip + '">' + riskWord + ' <span class="score-counter" data-target="' + score + '">0</span>/100 ' +
+            '<span class="score-bar"><span class="score-fill" style="width:' +
+            score + '%;background:' + colors[level] + '"></span></span></span>';
+        if (trick) {
+            h += '<span class="trick-label">' + escapeHtml(trick) + '</span>';
+        }
+        return h;
+    }
+
+    // Prompt 1: Animate score counters
+    function animateScoreCounters() {
+        var counters = document.querySelectorAll('.score-counter:not(.counted)');
+        counters.forEach(function(el) {
+            el.classList.add('counted');
+            var target = parseInt(el.getAttribute('data-target'));
+            var current = 0;
+            var duration = 600;
+            var step = Math.max(1, Math.floor(target / (duration / 16)));
+            var timer = setInterval(function() {
+                current += step;
+                if (current >= target) { current = target; clearInterval(timer); }
+                el.textContent = current;
+            }, 16);
+        });
+    }
+
+    // ── "Why this clause exists" — hidden from display ───────
+    function styleWhyClauses(html) {
+        // Remove "Why this clause exists" blocks entirely from display
+        // (kept in API response for reasoning quality, just not shown)
+        return html.replace(
+            /<p><strong>Why this clause exists:<\/strong>\s*([\s\S]*?)<\/p>/gi,
+            ''
+        );
+    }
+
+    // ── Split clause styling (juxtaposition) ──────────────────
+    function styleSplitClauses(html) {
+        return html.replace(
+            /<p><strong>What the small print says:<\/strong>\s*([\s\S]*?)<\/p>\s*<p><strong>What you should read:<\/strong>\s*([\s\S]*?)<\/p>/gi,
+            function(_, left, right) {
+                return '<div class="clause-split-header">' +
+                    '<div class="clause-split-label clause-split-label-left">What the small print says</div>' +
+                    '<div class="clause-split-label clause-split-label-right">What you should read</div>' +
+                    '</div>' +
+                    '<div class="clause-split">' +
+                    '<div class="clause-split-left">' + left.trim() + '</div>' +
+                    '<div class="clause-split-right">' + right.trim() + '</div>' +
+                    '</div>';
+            }
+        );
+    }
+
+    // ── Clause card wrapping ──────────────────────────────────
+    function wrapClauseSections() {
+        var headings = resultsContent.querySelectorAll('h3');
+
+        headings.forEach(function(h3) {
+            if (h3.parentElement.classList.contains('clause-card') ||
+                h3.parentElement.classList.contains('cross-clause-card') ||
+                h3.parentElement.classList.contains('playbook-card')) return;
+
+            var sectionType = getSectionType(h3);
+            var card = document.createElement('div');
+            card.className = sectionType === 'cross' ? 'cross-clause-card' :
+                             sectionType === 'playbook' ? 'playbook-card' : 'clause-card';
+
+            var siblings = [h3];
+            var next = h3.nextElementSibling;
+            while (next && next.tagName !== 'H3' && next.tagName !== 'H2' && next.tagName !== 'HR') {
+                siblings.push(next);
+                next = next.nextElementSibling;
+            }
+
+            // Detect risk level for clause cards
+            if (sectionType === 'clause') {
+                var text = siblings.map(function(el) { return el.innerHTML || el.textContent; }).join(' ');
+                var level = '';
+                if (text.match(/risk-red|RED/)) level = 'red';
+                else if (text.match(/risk-yellow|YELLOW/)) level = 'yellow';
+                else if (text.match(/risk-green|GREEN/)) level = 'green';
+                if (level) card.classList.add('level-' + level);
+            }
+
+            // Set data attribute for scroll-to
+            card.setAttribute('data-clause-title', h3.textContent.trim());
+
+            h3.parentNode.insertBefore(card, h3);
+            siblings.forEach(function(el) { card.appendChild(el); });
+
+            // Move "What the small print says" split section to lead the card (right after H3)
+            if (sectionType === 'clause') {
+                var splitHeader = card.querySelector('.clause-split-header');
+                var splitBody = card.querySelector('.clause-split');
+                if (splitHeader && splitBody) {
+                    // Insert right after the H3
+                    var afterH3 = h3.nextSibling;
+                    card.insertBefore(splitHeader, afterH3);
+                    card.insertBefore(splitBody, splitHeader.nextSibling);
+                }
+            }
+
+            // Add copy + bookmark buttons to clause cards
+            if (sectionType === 'clause' || sectionType === 'cross') {
+                // Prompt 20: Bookmark/star button
+                var starBtn = document.createElement('button');
+                starBtn.className = 'clause-star-btn';
+                var clauseTitle = h3.textContent.trim();
+                starBtn.innerHTML = bookmarkedClauses.has(clauseTitle) ? '&#9733;' : '&#9734;';
+                if (bookmarkedClauses.has(clauseTitle)) starBtn.classList.add('starred');
+                starBtn.title = 'Bookmark this clause';
+                starBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (bookmarkedClauses.has(clauseTitle)) {
+                        bookmarkedClauses.delete(clauseTitle);
+                        starBtn.innerHTML = '&#9734;';
+                        starBtn.classList.remove('starred');
+                    } else {
+                        bookmarkedClauses.add(clauseTitle);
+                        starBtn.innerHTML = '&#9733;';
+                        starBtn.classList.add('starred');
+                    }
+                });
+                card.appendChild(starBtn);
+
+                var copyBtn = document.createElement('button');
+                copyBtn.className = 'clause-copy-btn';
+                copyBtn.innerHTML = '&#128203;';
+                copyBtn.title = 'Copy to clipboard';
+                copyBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var text = card.innerText.replace('Click to expand', '').replace('Click to collapse', '').trim();
+                    navigator.clipboard.writeText(text).then(function() {
+                        copyBtn.classList.add('copied');
+                        copyBtn.innerHTML = '&#10003;';
+                        setTimeout(function() {
+                            copyBtn.classList.remove('copied');
+                            copyBtn.innerHTML = '&#128203;';
+                        }, 1500);
+                    });
+                });
+                card.appendChild(copyBtn);
+
+                // Prompt 45: Export single clause as markdown
+                var mdBtn = document.createElement('button');
+                mdBtn.className = 'clause-copy-btn';
+                mdBtn.style.right = '3.8rem';
+                mdBtn.innerHTML = 'MD';
+                mdBtn.title = 'Copy as markdown';
+                mdBtn.style.fontSize = '0.6rem';
+                mdBtn.style.fontWeight = '700';
+                mdBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var h = card.querySelector('h3');
+                    var md = '### ' + (h ? h.textContent.trim() : 'Clause') + '\n\n';
+                    var ps = card.querySelectorAll('p, blockquote, ul, ol');
+                    ps.forEach(function(p) {
+                        if (p.tagName === 'BLOCKQUOTE') md += '> ' + p.textContent.trim() + '\n\n';
+                        else md += p.textContent.trim() + '\n\n';
+                    });
+                    navigator.clipboard.writeText(md).then(function() {
+                        mdBtn.innerHTML = '&#10003;';
+                        setTimeout(function() { mdBtn.innerHTML = 'MD'; }, 1500);
+                    });
+                });
+                card.appendChild(mdBtn);
+
+                // Prompt 21: Personal notes per clause
+                if (sectionType === 'clause') {
+                    var noteKey = 'flipside-note-' + clauseTitle;
+                    var noteWrap = document.createElement('div');
+                    noteWrap.className = 'clause-note-wrap';
+                    var noteToggle = document.createElement('button');
+                    noteToggle.className = 'clause-note-toggle';
+                    noteToggle.textContent = 'Add note';
+                    var noteArea = document.createElement('textarea');
+                    noteArea.className = 'clause-note-area hidden';
+                    noteArea.placeholder = 'Your notes on this clause...';
+                    try { noteArea.value = localStorage.getItem(noteKey) || ''; } catch(e) {}
+                    if (noteArea.value) {
+                        noteArea.classList.remove('hidden');
+                        noteToggle.textContent = 'Hide note';
+                    }
+                    noteToggle.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        noteArea.classList.toggle('hidden');
+                        noteToggle.textContent = noteArea.classList.contains('hidden') ? 'Add note' : 'Hide note';
+                    });
+                    noteArea.addEventListener('input', function() {
+                        try { localStorage.setItem(noteKey, this.value); } catch(e) {}
+                    });
+                    noteArea.addEventListener('click', function(e) { e.stopPropagation(); });
+                    noteWrap.appendChild(noteToggle);
+                    noteWrap.appendChild(noteArea);
+                    card.appendChild(noteWrap);
+                }
+            }
+
+            if (sectionType === 'clause') makeExpandable(card);
+        });
+    }
+
+    function getSectionType(el) {
+        var prev = el.previousElementSibling;
+        while (prev) {
+            if (prev.tagName === 'H2') {
+                var text = prev.textContent.toLowerCase();
+                if (text.indexOf('cross-clause') >= 0) return 'cross';
+                if (text.indexOf('playbook') >= 0) return 'playbook';
+                return 'clause';
+            }
+            prev = prev.previousElementSibling;
+        }
+        return 'clause';
+    }
+
+    function makeExpandable(card) {
+        // Cards show fully expanded — progressive disclosure hides via clause-hidden class
+        card.classList.add('expanded');
+    }
+
+    // ── Progressive disclosure: show one clause at a time ─────
+    function applyProgressiveDisclosure() {
+        var clauseCards = Array.from(resultsContent.querySelectorAll('.clause-card'));
+        if (clauseCards.length === 0) return;
+
+        clauseCards.forEach(function(card, idx) {
+            if (idx < revealedClauseCount) {
+                card.classList.remove('clause-hidden');
+            } else {
+                card.classList.add('clause-hidden');
+            }
+        });
+
+        // Update or create next-clause button (avoid remove/recreate cycle)
+        var hiddenCount = clauseCards.length - revealedClauseCount;
+        var existing = resultsContent.querySelector('.next-clause-btn');
+        if (hiddenCount > 0) {
+            var lastVisible = clauseCards[revealedClauseCount - 1];
+            var btnLabel = '<span class="next-arrow">&#8595;</span> Show next clause (' + hiddenCount + ' remaining)';
+            if (existing) {
+                // Just update text if button exists
+                if (existing.innerHTML !== btnLabel) existing.innerHTML = btnLabel;
+                // Ensure it's positioned after the correct card
+                var expectedNext = lastVisible.nextSibling;
+                if (expectedNext !== existing) {
+                    lastVisible.parentNode.insertBefore(existing, lastVisible.nextSibling);
+                }
+            } else {
+                var btn = document.createElement('button');
+                btn.className = 'next-clause-btn';
+                btn.innerHTML = btnLabel;
+                btn.addEventListener('click', function() {
+                    revealedClauseCount++;
+                    applyProgressiveDisclosure();
+                    var newCard = clauseCards[revealedClauseCount - 1];
+                    if (newCard) {
+                        newCard.style.animation = 'clauseDropIn 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+                        setTimeout(function() {
+                            newCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 50);
+                    }
+                });
+                if (lastVisible.nextSibling) {
+                    lastVisible.parentNode.insertBefore(btn, lastVisible.nextSibling);
+                } else {
+                    lastVisible.parentNode.appendChild(btn);
+                }
+            }
+        } else if (existing) {
+            existing.remove();
+        }
+
+    }
+
+    // ── Card animation tracking ───────────────────────────────
+    function animateNewCards() {
+        var cards = resultsContent.querySelectorAll('.clause-card, .cross-clause-card, .playbook-card');
+        var clauseCards = resultsContent.querySelectorAll('.clause-card');
+        var totalClauses = clauseCards.length;
+        var clauseIdx = 0;
+        cards.forEach(function(card) {
+            var h3 = card.querySelector('h3');
+            if (!h3) return;
+            // Use stable data attribute (set before badges/icons are added)
+            // Falls back to h3 text for cross-clause/playbook cards
+            var title = card.getAttribute('data-clause-title') || h3.textContent.trim();
+            // Prompt 2 + 38: Clause count badge with per-clause reading time
+            if (card.classList.contains('clause-card')) {
+                clauseIdx++;
+                var clauseWords = card.textContent.split(/\s+/).length;
+                var clauseReadSec = Math.max(10, Math.round(clauseWords / 200 * 60));
+                var readLabel = clauseReadSec >= 60 ? Math.round(clauseReadSec / 60) + 'm' : clauseReadSec + 's';
+                var badgeText = clauseIdx + ' / ' + totalClauses + ' · ' + readLabel;
+                var existingBadge = card.querySelector('.clause-count-badge');
+                if (!existingBadge) {
+                    var badge = document.createElement('span');
+                    badge.className = 'clause-count-badge';
+                    badge.textContent = badgeText;
+                    h3.appendChild(badge);
+                } else if (existingBadge.textContent !== badgeText) {
+                    existingBadge.textContent = badgeText;
+                }
+            }
+            // Prompt 35: Show trick icon next to clause title
+            if (card.classList.contains('clause-card') && !card.querySelector('.trick-icon')) {
+                var trickEl = card.querySelector('.trick-label');
+                if (trickEl) {
+                    var trickName = trickEl.textContent.trim();
+                    var icon = TRICK_MAP[trickName];
+                    if (icon) {
+                        var iconSpan = document.createElement('span');
+                        iconSpan.className = 'trick-icon';
+                        iconSpan.textContent = icon + ' ';
+                        iconSpan.title = trickName;
+                        h3.insertBefore(iconSpan, h3.firstChild);
+                    }
+                }
+            }
+            if (!animatedCardTitles.has(title)) {
+                animatedCardTitles.add(title);
+                card.style.animation = 'clauseDropIn 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+                // Prompt 33: Brief highlight pulse on new card
+                card.classList.add('just-arrived');
+                setTimeout(function() { card.classList.remove('just-arrived'); }, 1500);
+                // Prompt 29: Pulse glow on RED cards
+                if (card.classList.contains('level-red')) {
+                    card.classList.add('red-pulse');
+                    setTimeout(function() { card.classList.remove('red-pulse'); }, 2000);
+                }
+            }
+            // Skip setting animation:none on already-animated cards — no-op mutation causes flicker
+        });
+    }
+
+    // ── Thinking insight extraction ───────────────────────────
+    function extractThinkingInsights() {
+        var keywords = [
+            'effectively', 'one-sided', 'asymmetric', 'hidden', 'buried',
+            'disguised', 'combined with', 'interacts with', 'time limit',
+            'deadline', 'burden', 'waiver', 'discretion', 'unilateral',
+            'strategically', 'advantage', 'penalty', 'cascade', 'exclusion',
+            'loophole', 'ambiguous', 'vague', 'forfeit', 'obligation'
+        ];
+
+        var sentences = thinkingContent.split(/[.!]\s+/);
+        var insights = [];
+        var seen = new Set();
+
+        for (var i = 0; i < sentences.length && insights.length < 12; i++) {
+            var sentence = sentences[i];
+            var lower = sentence.toLowerCase();
+            for (var k = 0; k < keywords.length; k++) {
+                if (lower.indexOf(keywords[k]) >= 0 && sentence.length > 25 && sentence.length < 300) {
+                    var short = sentence.trim().substring(0, 180);
+                    var key = short.substring(0, 30).toLowerCase();
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        insights.push(short + (sentence.length > 180 ? '...' : ''));
+                    }
+                    break;
+                }
+            }
+        }
+
+        return insights;
+    }
+
+    // ── Clause data extraction ────────────────────────────────
+    function extractClausesFromResponse() {
+        var clauses = [];
+        var tricks = {};
+        var playbook = [];
+        var riskScore = null;
+        var powerScore = null;
+
+        // Match clause headers + risk lines
+        var clauseRe = /###\s+(.+?)\s*\(([^)]+)\)[\s\S]*?(GREEN|YELLOW|RED)\s*(?:·|·)\s*Score:\s*(\d+)\/100(?:\s*(?:·|·)\s*Trick:\s*(.+?))?$/gm;
+        var match;
+        while ((match = clauseRe.exec(responseContent)) !== null) {
+            var clause = {
+                title: match[1].trim(),
+                section: match[2].trim(),
+                level: match[3].toLowerCase(),
+                score: parseInt(match[4]),
+                trick: match[5] ? match[5].trim() : ''
+            };
+            clauses.push(clause);
+            if (clause.trick) {
+                tricks[clause.trick] = (tricks[clause.trick] || 0) + 1;
+            }
+        }
+
+        // Match playbook strategies
+        var pbStart = responseContent.indexOf("Drafter's Playbook");
+        var sumStart = responseContent.indexOf('Overall Assessment');
+        if (pbStart >= 0) {
+            var pbText = sumStart >= 0 ? responseContent.substring(pbStart, sumStart) : responseContent.substring(pbStart);
+            var pbRe = /\d+\.\s*\*\*(.+?)\*\*[:\s]*(.+)/g;
+            while ((match = pbRe.exec(pbText)) !== null) {
+                playbook.push({ name: match[1], desc: match[2].trim() });
+            }
+        }
+
+        // Match scores
+        var riskMatch = responseContent.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
+        if (riskMatch) riskScore = parseInt(riskMatch[1]);
+        var powerMatch = responseContent.match(/Power Imbalance Index[:\s]*(\d+)\/100/i);
+        if (powerMatch) powerScore = parseInt(powerMatch[1]);
+
+        return { clauses: clauses, tricks: tricks, playbook: playbook, riskScore: riskScore, powerScore: powerScore };
+    }
+
+    // ── Sidebar updates ───────────────────────────────────────
+    function updateSidebarInsights() {
+        var insights = extractThinkingInsights();
+        if (insights.length > insightsList.length) {
+            insightsList = insights;
+            renderSidebarInsights();
+            updateSidebarBadge();
+        }
+    }
+
+    function updateSidebarData() {
+        var data = extractClausesFromResponse();
+
+        // Re-render if clause count changed OR any scores updated (for live sorting)
+        var clausesChanged = data.clauses.length !== clauseIndexData.length;
+        if (!clausesChanged && data.clauses.length > 0) {
+            for (var ci = 0; ci < data.clauses.length; ci++) {
+                if (!clauseIndexData[ci] || data.clauses[ci].score !== clauseIndexData[ci].score) {
+                    clausesChanged = true;
+                    break;
+                }
+            }
+        }
+        if (clausesChanged) {
+            clauseIndexData = data.clauses;
+            renderSidebarClauses();
+        }
+
+        var newTrickKeys = Object.keys(data.tricks).length;
+        var oldTrickKeys = Object.keys(trickCounts).length;
+        if (newTrickKeys > oldTrickKeys) {
+            trickCounts = data.tricks;
+            renderSidebarTricks();
+        }
+
+        if (data.playbook.length > playbookStrategies.length) {
+            playbookStrategies = data.playbook;
+            renderSidebarPlaybook();
+        }
+
+        if (data.riskScore !== null && data.riskScore !== lastRiskScore) {
+            lastRiskScore = data.riskScore;
+            lastPowerScore = data.powerScore;
+            renderSidebarAssessment(data.riskScore, data.powerScore);
+        }
+
+        updateLiveCounter();
+        updateSidebarBadge();
+    }
+
+    function renderSidebarInsights() {
+        var html = '';
+        for (var i = 0; i < insightsList.length; i++) {
+            html += '<span class="insight-chip" style="animation-delay:' + (i * 0.1) + 's">' +
+                escapeHtml(insightsList[i]) + '</span>';
+        }
+        insightChips.innerHTML = html;
+        $('sidebarFindings').classList.toggle('hidden', insightsList.length === 0);
+    }
+
+    function renderSidebarClauses() {
+        // Sort by score descending so highest-risk clauses are always at top
+        clauseIndexData.sort(function(a, b) { return b.score - a.score; });
+        var bgColors = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)' };
+        var html = '';
+        for (var i = 0; i < clauseIndexData.length; i++) {
+            var c = clauseIndexData[i];
+            var bg = bgColors[c.level] || 'var(--text-dim)';
+            // Prompt 39: Get clause preview for hover
+            var preview = '';
+            var matchCard = resultsContent.querySelector('.clause-card[data-clause-title="' + CSS.escape(c.title + ' (' + c.section + ')') + '"]');
+            if (matchCard) {
+                var cardText = matchCard.textContent.replace(/\s+/g, ' ').trim();
+                preview = cardText.substring(0, 120) + (cardText.length > 120 ? '...' : '');
+            }
+            html += '<div class="clause-index-item" data-clause-title="' +
+                escapeHtml(c.title + ' (' + c.section + ')') +
+                '" title="' + escapeHtml(preview) + '" style="animation-delay:' + (i * 0.05) + 's">' +
+                '<div class="clause-index-level" style="background:' + bg + '">' + c.score + '</div>' +
+                '<div class="clause-index-info">' +
+                '<div class="clause-index-title">' + escapeHtml(c.title) + '</div>' +
+                '<div class="clause-index-meta">' + escapeHtml(c.trick || '') +
+                (c.section ? ' · ' + escapeHtml(c.section) : '') + '</div>' +
+                '</div></div>';
+        }
+        clauseIndex.innerHTML = html;
+        $('sidebarClauses').classList.toggle('hidden', clauseIndexData.length === 0);
+        // Show jump to worst button if we have RED clauses
+        var hasRed = clauseIndexData.some(function(c) { return c.level === 'red'; });
+        $('jumpWorstBtn').classList.toggle('hidden', !hasRed);
+    }
+
+    function renderSidebarTricks() {
+        var entries = Object.entries(trickCounts).sort(function(a, b) { return b[1] - a[1]; });
+        var html = '';
+        for (var i = 0; i < entries.length; i++) {
+            var trick = entries[i][0];
+            var count = entries[i][1];
+            var desc = TRICK_DESCRIPTIONS[trick] || '';
+            html += '<span class="trick-tag" data-trick="' + escapeHtml(trick) + '">' + escapeHtml(trick) +
+                ' <span class="trick-tag-count">' + count + '</span>' +
+                (desc ? '<span class="trick-tooltip">' + escapeHtml(desc) + '</span>' : '') +
+                '</span>';
+        }
+        trickCloud.innerHTML = html;
+        $('sidebarTricks').classList.toggle('hidden', entries.length === 0);
+
+        // Prompt 5: Click trick tag to highlight matching clause cards
+        trickCloud.querySelectorAll('.trick-tag').forEach(function(tag) {
+            tag.addEventListener('click', function() {
+                var trick = tag.getAttribute('data-trick');
+                var cards = resultsContent.querySelectorAll('.clause-card');
+                var alreadyHighlighted = tag.classList.contains('active');
+                // Clear all highlights
+                trickCloud.querySelectorAll('.trick-tag').forEach(function(t) { t.classList.remove('active'); });
+                cards.forEach(function(c) { c.style.boxShadow = ''; c.style.opacity = ''; });
+                if (!alreadyHighlighted) {
+                    tag.classList.add('active');
+                    cards.forEach(function(card) {
+                        var trickLabel = card.querySelector('.trick-label');
+                        var cardTrick = trickLabel ? trickLabel.textContent.trim() : '';
+                        if (cardTrick === trick) {
+                            card.style.boxShadow = '0 0 0 2px var(--accent)';
+                        } else {
+                            card.style.opacity = '0.35';
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    function renderSidebarPlaybook() {
+        var html = '';
+        for (var i = 0; i < playbookStrategies.length; i++) {
+            var s = playbookStrategies[i];
+            // Prompt 27: Expandable playbook cards
+            html += '<div class="sidebar-playbook-item" style="cursor:pointer" data-strategy="' + escapeHtml(s.name) + '">' +
+                '<span class="sidebar-playbook-num">' + (i + 1) + '.</span>' +
+                '<div style="flex:1">' +
+                '<strong>' + escapeHtml(s.name) + '</strong>' +
+                '<div class="playbook-preview" style="font-size:0.68rem;color:var(--text-muted);margin-top:0.1rem">' + escapeHtml(s.desc.substring(0, 80)) + (s.desc.length > 80 ? '...' : '') + '</div>' +
+                '<div class="playbook-full hidden" style="font-size:0.75rem;color:var(--text-body);margin-top:0.3rem">' + escapeHtml(s.desc) + '</div>' +
+                '</div>' +
+                '<span class="playbook-expand-icon" style="font-size:0.6rem;color:var(--text-dim);transition:transform 0.2s">&#9660;</span>' +
+                '</div>';
+        }
+        playbookList.innerHTML = html;
+        $('sidebarPlaybook').classList.toggle('hidden', playbookStrategies.length === 0);
+
+        // Click to scroll to playbook section
+        // Prompt 27: Toggle expandable playbook cards
+        playbookList.querySelectorAll('.sidebar-playbook-item').forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                var preview = item.querySelector('.playbook-preview');
+                var full = item.querySelector('.playbook-full');
+                var icon = item.querySelector('.playbook-expand-icon');
+                if (full && full.classList.contains('hidden')) {
+                    full.classList.remove('hidden');
+                    if (preview) preview.classList.add('hidden');
+                    if (icon) icon.style.transform = 'rotate(180deg)';
+                } else if (full) {
+                    full.classList.add('hidden');
+                    if (preview) preview.classList.remove('hidden');
+                    if (icon) icon.style.transform = '';
+                }
+            });
+        });
+    }
+
+    function renderSidebarAssessment(risk, power) {
+        function scoreColor(v) {
+            if (v > 65) return 'var(--red)';
+            if (v > 35) return 'var(--yellow)';
+            return 'var(--green)';
+        }
+        var html = '<div class="sidebar-bar-row">' +
+            '<span class="sidebar-bar-label">Risk</span>' +
+            '<div class="sidebar-bar-track"><div class="sidebar-bar-fill" style="width:' + risk + '%;background:' + scoreColor(risk) + '"></div></div>' +
+            '<span class="sidebar-bar-value" style="color:' + scoreColor(risk) + '">' + risk + '</span></div>';
+        if (power !== null) {
+            html += '<div class="sidebar-bar-row">' +
+                '<span class="sidebar-bar-label">Power</span>' +
+                '<div class="sidebar-bar-track"><div class="sidebar-bar-fill" style="width:' + power + '%;background:' + scoreColor(power) + ';animation-delay:0.15s"></div></div>' +
+                '<span class="sidebar-bar-value" style="color:' + scoreColor(power) + '">' + power + '</span></div>';
+        }
+        assessmentBars.innerHTML = html;
+        $('sidebarAssessment').classList.remove('hidden');
+    }
+
+    var activeRiskFilter = null; // null = show all, 'green'/'yellow'/'red' = filter
+
+    function updateLiveCounter() {
+        var greens = 0, yellows = 0, reds = 0;
+        for (var i = 0; i < clauseIndexData.length; i++) {
+            var l = clauseIndexData[i].level;
+            if (l === 'green') greens++;
+            else if (l === 'yellow') yellows++;
+            else if (l === 'red') reds++;
+        }
+        var total = clauseIndexData.length;
+        if (total > 0) {
+            liveCounterText.innerHTML = total + ' clause' + (total !== 1 ? 's' : '') + ' &middot; ' +
+                '<span class="risk-filter-btn' + (activeRiskFilter === 'green' ? ' active' : '') + '" data-filter="green" aria-label="Filter: score 0-30" style="color:var(--green)">' + greens + ' (0-30)</span> ' +
+                '<span class="risk-filter-btn' + (activeRiskFilter === 'yellow' ? ' active' : '') + '" data-filter="yellow" aria-label="Filter: score 31-65" style="color:var(--yellow)">' + yellows + ' (31-65)</span> ' +
+                '<span class="risk-filter-btn' + (activeRiskFilter === 'red' ? ' active' : '') + '" data-filter="red" aria-label="Filter: score 66-100" style="color:var(--red)">' + reds + ' (66-100)</span>';
+
+            // Average score
+            var avgScore = 0;
+            if (total > 0) {
+                var sum = 0;
+                for (var j = 0; j < clauseIndexData.length; j++) sum += clauseIndexData[j].score;
+                avgScore = Math.round(sum / total);
+            }
+            if (avgScore > 0) {
+                var avgColor = avgScore > 65 ? 'var(--red)' : avgScore > 35 ? 'var(--yellow)' : 'var(--green)';
+                liveCounterText.innerHTML += '<br><span style="font-size:0.7rem;color:' + avgColor + '">avg score: ' + avgScore + '/100</span>';
+            }
+
+            var pulse = $('liveCounterPulse');
+            if (reds > 0) pulse.style.background = 'var(--red)';
+            else if (yellows > 0) pulse.style.background = 'var(--yellow)';
+            else pulse.style.background = 'var(--green)';
+
+            // Prompt 13: Risk distribution bar chart
+            if (total > 0) {
+                var gPct = Math.round(greens / total * 100);
+                var yPct = Math.round(yellows / total * 100);
+                var rPct = 100 - gPct - yPct;
+                $('riskDistChart').innerHTML =
+                    (gPct > 0 ? '<div style="flex:' + greens + ';background:var(--green);transition:flex 0.5s ease"></div>' : '') +
+                    (yPct > 0 ? '<div style="flex:' + yellows + ';background:var(--yellow);transition:flex 0.5s ease"></div>' : '') +
+                    (rPct > 0 ? '<div style="flex:' + reds + ';background:var(--red);transition:flex 0.5s ease"></div>' : '');
+                $('riskDistLabels').innerHTML =
+                    '<span>' + greens + ' green</span><span>' + yellows + ' yellow</span><span>' + reds + ' red</span>';
+                $('sidebarDistribution').classList.remove('hidden');
+            }
+        }
+    }
+
+    // Risk filter click handler
+    liveCounter.addEventListener('click', function(e) {
+        var btn = e.target.closest('.risk-filter-btn');
+        if (!btn) return;
+        var filter = btn.getAttribute('data-filter');
+        activeRiskFilter = activeRiskFilter === filter ? null : filter;
+        updateLiveCounter();
+        applyRiskFilter();
+    });
+
+    function applyRiskFilter() {
+        // Filter clause index items
+        var items = clauseIndex.querySelectorAll('.clause-index-item');
+        items.forEach(function(item) {
+            if (!activeRiskFilter) { item.style.display = ''; return; }
+            var level = item.querySelector('.clause-index-level');
+            var bg = level ? level.style.background : '';
+            var colors = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)' };
+            item.style.display = bg === colors[activeRiskFilter] ? '' : 'none';
+        });
+        // Filter clause cards in main content
+        var cards = resultsContent.querySelectorAll('.clause-card');
+        cards.forEach(function(card) {
+            if (!activeRiskFilter) { card.style.display = ''; return; }
+            card.style.display = card.classList.contains('level-' + activeRiskFilter) ? '' : 'none';
+        });
+        // Update sidebar heading with filter status
+        var heading = $('sidebarClauses').querySelector('.sidebar-heading');
+        if (heading) {
+            heading.textContent = activeRiskFilter
+                ? 'Clause Index — showing ' + activeRiskFilter.toUpperCase() + ' only (click to clear)'
+                : 'Clause Index';
+        }
+    }
+
+    function updateSidebarBadge() {
+        var count = insightsList.length + clauseIndexData.length;
+        toggleBadge.textContent = count;
+        toggleBadge.classList.toggle('hidden', count === 0);
+    }
+
+    // Prompt 3: Jump to highest risk clause
+    $('jumpWorstBtn').addEventListener('click', function() {
+        var worst = null, worstScore = -1;
+        clauseIndexData.forEach(function(c) {
+            if (c.score > worstScore) { worstScore = c.score; worst = c; }
+        });
+        if (worst) {
+            var title = worst.title + ' (' + worst.section + ')';
+            var cards = resultsContent.querySelectorAll('.clause-card');
+            cards.forEach(function(card) {
+                if (card.getAttribute('data-clause-title') === title) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.style.boxShadow = '0 0 0 3px var(--red)';
+                    setTimeout(function() { card.style.boxShadow = ''; }, 2000);
+                }
+            });
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.add('hidden');
+        }
+    });
+
+    // ── Clear risk filter from heading click ────────────────
+    $('clauseIndexHeading').addEventListener('click', function() {
+        if (activeRiskFilter) {
+            activeRiskFilter = null;
+            updateLiveCounter();
+            applyRiskFilter();
+        }
+    });
+
+    // Prompt 4: Sort clauses by risk score
+    var sortByScore = false;
+    $('sortScoreBtn').addEventListener('click', function() {
+        sortByScore = !sortByScore;
+        $('sortScoreBtn').classList.toggle('active', sortByScore);
+        var items = Array.from(clauseIndex.querySelectorAll('.clause-index-item'));
+        if (sortByScore) {
+            items.sort(function(a, b) {
+                var sa = parseInt(a.querySelector('.clause-index-level').textContent) || 0;
+                var sb = parseInt(b.querySelector('.clause-index-level').textContent) || 0;
+                return sb - sa;
+            });
+        }
+        items.forEach(function(item) { clauseIndex.appendChild(item); });
+        if (!sortByScore) renderSidebarClauses();
+    });
+
+    // ── Clause search/filter ─────────────────────────────────
+    $('clauseSearch').addEventListener('input', function() {
+        var query = this.value.toLowerCase();
+        var items = clauseIndex.querySelectorAll('.clause-index-item');
+        items.forEach(function(item) {
+            var title = item.querySelector('.clause-index-title');
+            var text = title ? title.textContent.toLowerCase() : '';
+            item.style.display = text.indexOf(query) >= 0 || query === '' ? '' : 'none';
+        });
+    });
+
+    // Prompt 6: Score threshold slider
+    $('thresholdSlider').addEventListener('input', function() {
+        var min = parseInt(this.value);
+        $('thresholdLabel').textContent = min + '+';
+        var cards = resultsContent.querySelectorAll('.clause-card');
+        cards.forEach(function(card) {
+            var scoreEl = card.querySelector('.score-counter');
+            var score = scoreEl ? parseInt(scoreEl.getAttribute('data-target')) : 0;
+            card.style.display = score >= min ? '' : 'none';
+        });
+        var items = clauseIndex.querySelectorAll('.clause-index-item');
+        items.forEach(function(item) {
+            var scoreEl = item.querySelector('.clause-index-level');
+            var score = scoreEl ? parseInt(scoreEl.textContent) : 0;
+            item.style.display = score >= min ? '' : 'none';
+        });
+    });
+
+    // Prompt 7: Render clause mini-map
+    function renderMinimap() {
+        var colors = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)' };
+        var html = '';
+        for (var i = 0; i < clauseIndexData.length; i++) {
+            var c = clauseIndexData[i];
+            var bg = colors[c.level] || 'var(--text-dim)';
+            html += '<div class="minimap-dot" style="background:' + bg + '" data-idx="' + i + '" title="' + escapeHtml(c.title) + ' (' + c.score + ')"></div>';
+        }
+        $('clauseMinimap').innerHTML = html;
+        $('clauseMinimap').querySelectorAll('.minimap-dot').forEach(function(dot) {
+            dot.addEventListener('click', function() {
+                var idx = parseInt(dot.getAttribute('data-idx'));
+                var c = clauseIndexData[idx];
+                var title = c.title + ' (' + c.section + ')';
+                var card = resultsContent.querySelector('.clause-card[data-clause-title="' + CSS.escape(title) + '"]');
+                if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
+    }
+
+    // Prompt 8: Keyboard shortcut overlay
+    var shortcutOverlay = $('shortcutOverlay');
+
+    // Prompt 9: Floating prev/next nav
+    var currentNavIdx = -1;
+    $('clauseNavPrev').addEventListener('click', function() {
+        var cards = Array.from(resultsContent.querySelectorAll('.clause-card:not(.clause-hidden)'));
+        if (cards.length === 0) return;
+        currentNavIdx = Math.max(0, currentNavIdx - 1);
+        cards[currentNavIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    $('clauseNavNext').addEventListener('click', function() {
+        var cards = Array.from(resultsContent.querySelectorAll('.clause-card:not(.clause-hidden)'));
+        if (cards.length === 0) return;
+        currentNavIdx = Math.min(cards.length - 1, currentNavIdx + 1);
+        cards[currentNavIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    // Prompt 10: Auto-highlight dates, deadlines, dollar amounts in clause text
+    function highlightTerms() {
+        var cards = resultsContent.querySelectorAll('.clause-card');
+        cards.forEach(function(card) {
+            if (card.getAttribute('data-hl')) return;
+            card.setAttribute('data-hl', '1');
+            var walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT, null, false);
+            var nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach(function(node) {
+                var text = node.textContent;
+                if (!text.match(/\d|shall|must|waive|forfeit/i)) return;
+                var parent = node.parentNode;
+                if (parent.classList && (parent.classList.contains('risk-badge') || parent.classList.contains('score-counter') || parent.classList.contains('clause-count-badge') || parent.tagName === 'H3')) return;
+                var replaced = text
+                    .replace(/\$[\d,]+(?:\.\d{2})?/g, '<span class="hl-money">$&</span>')
+                    .replace(/\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d+\s*(?:days?|months?|years?|hours?|weeks?|business\s*days?))\b/gi, '<span class="hl-date">$&</span>')
+                    .replace(/\b(shall|must|waive|waiver|forfeit|forfeiture|irrevocable|irrevocably)\b/gi, '<span class="hl-legal">$&</span>');
+                if (replaced !== text) {
+                    var span = document.createElement('span');
+                    span.innerHTML = replaced;
+                    parent.replaceChild(span, node);
+                }
+            });
+        });
+    }
+
+    // ── Sidebar click-to-scroll ───────────────────────────────
+    clauseIndex.addEventListener('click', function(e) {
+        var item = e.target.closest('.clause-index-item');
+        if (!item) return;
+        var title = item.getAttribute('data-clause-title');
+        var card = resultsContent.querySelector('.clause-card[data-clause-title="' + CSS.escape(title) + '"]');
+        if (!card) {
+            // Try partial match
+            var all = resultsContent.querySelectorAll('.clause-card');
+            for (var i = 0; i < all.length; i++) {
+                if (all[i].getAttribute('data-clause-title') && all[i].getAttribute('data-clause-title').indexOf(title.split(' (')[0]) >= 0) {
+                    card = all[i]; break;
+                }
+            }
+        }
+        if (card) {
+            // Expand the clause card so user sees full content
+            if (!card.classList.contains('expanded')) {
+                card.classList.add('expanded');
+                var hint = card.querySelector('.clause-expand-hint');
+                if (hint) hint.textContent = 'Click to collapse';
+            }
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('highlight');
+            setTimeout(function() { card.classList.remove('highlight'); }, 1500);
+            // Close mobile sidebar
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.add('hidden');
+        }
+    });
+
+    // ── Summary card builder ──────────────────────────────────
+    function buildSummaryCard() {
+        var text = responseContent;
+        var scoreMatch = text.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
+        if (!scoreMatch) return;
+        var score = parseInt(scoreMatch[1]);
+
+        var piiMatch = text.match(/Power Imbalance Index[:\s]*(\d+)\/100/i);
+        var piiScore = piiMatch ? parseInt(piiMatch[1]) : null;
+
+        var distMatch = text.match(/(\d+)\]\s*Green\s*(?:·|·)\s*\[?(\d+)\]?\s*Yellow\s*(?:·|·)\s*\[?(\d+)\]?\s*Red/i);
+        var greenCount = 0, yellowCount = 0, redCount = 0;
+        if (distMatch) {
+            greenCount = parseInt(distMatch[1]);
+            yellowCount = parseInt(distMatch[2]);
+            redCount = parseInt(distMatch[3]);
+        }
+
+        var concerns = [];
+        var assessmentStart = text.indexOf('Overall Assessment');
+        var assessmentText = assessmentStart >= 0 ? text.substring(assessmentStart) : text;
+        var concernLines = assessmentText.match(/\d+\.\s*\*\*.+?\*\*\s*(?:—|[-–]).+/g);
+        if (concernLines) {
+            concernLines.slice(0, 3).forEach(function(line) {
+                var m = line.match(/\d+\.\s*\*\*(.+?)\*\*\s*(?:—|[-–])\s*(.+)/);
+                if (m) concerns.push({ title: m[1], desc: m[2].trim() });
+            });
+        }
+
+        var scoreColor = 'var(--green)';
+        var scoreLabel = 'Low Risk';
+        if (score > 65) { scoreColor = 'var(--red)'; scoreLabel = 'High Risk'; }
+        else if (score > 35) { scoreColor = 'var(--yellow)'; scoreLabel = 'Moderate'; }
+
+        var piiColor = 'var(--green)';
+        if (piiScore > 65) piiColor = 'var(--red)';
+        else if (piiScore > 35) piiColor = 'var(--yellow)';
+
+        var circumference = 2 * Math.PI * 42;
+        var offset = circumference * (1 - score / 100);
+
+        var h = '<div class="summary-card"><div class="summary-top">';
+        h += '<div class="score-ring-container"><svg class="score-ring" viewBox="0 0 100 100">';
+        h += '<circle class="ring-bg" cx="50" cy="50" r="42"/>';
+        h += '<circle class="ring-fill" cx="50" cy="50" r="42" stroke="' + scoreColor + '" stroke-dasharray="' + circumference.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/>';
+        h += '<text class="score-value" x="50" y="47" text-anchor="middle" dy="0.35em">' + score + '</text>';
+        h += '<text class="score-label" x="50" y="64" text-anchor="middle">' + scoreLabel + '</text>';
+        h += '</svg></div>';
+
+        h += '<div class="summary-meta"><div class="summary-title">Document Risk Assessment</div>';
+        h += '<div class="score-bars">';
+        h += '<div class="score-bar-row"><span class="score-bar-label" style="color:var(--text-secondary)">Risk</span>';
+        h += '<div class="score-bar-track"><div class="score-bar-fill" style="width:' + score + '%;background:' + scoreColor + '"></div></div>';
+        h += '<span class="score-bar-value">' + score + '</span></div>';
+        if (piiScore !== null) {
+            h += '<div class="score-bar-row"><span class="score-bar-label" style="color:var(--text-secondary)">Power</span>';
+            h += '<div class="score-bar-track"><div class="score-bar-fill" style="width:' + piiScore + '%;background:' + piiColor + ';animation-delay:0.15s"></div></div>';
+            h += '<span class="score-bar-value">' + piiScore + '</span></div>';
+        }
+        h += '</div>';
+
+        h += '<div class="risk-distribution">';
+        if (greenCount) h += '<span class="risk-count"><span class="dot-green">&#9679;</span> ' + greenCount + ' Green</span>';
+        if (yellowCount) h += '<span class="risk-count"><span class="dot-yellow">&#9679;</span> ' + yellowCount + ' Yellow</span>';
+        if (redCount) h += '<span class="risk-count"><span class="dot-red">&#9679;</span> ' + redCount + ' Red</span>';
+        h += '</div>';
+
+        if (concerns.length) {
+            h += '<ul class="summary-concerns">';
+            concerns.forEach(function(c) {
+                h += '<li><strong>' + escapeHtml(c.title) + '</strong> — ' + escapeHtml(c.desc) + '</li>';
+            });
+            h += '</ul>';
+        }
+        h += '</div></div></div>';
+
+        summaryContainer.innerHTML = h;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Thinking toggle ───────────────────────────────────────
+    thinkingToggle.addEventListener('click', function() {
+        var isCollapsed = thinkingPanel.classList.contains('collapsed');
+        if (isCollapsed) {
+            thinkingPanel.classList.remove('collapsed');
+            thinkingToggle.textContent = 'Collapse reasoning';
+        } else {
+            thinkingPanel.classList.add('collapsed');
+            thinkingToggle.textContent = 'Show full reasoning';
+        }
+    });
+
+    // ── Show all / Show one at a time toggle ──────────────────
+    $('expandAllBtn').addEventListener('click', function() {
+        var btn = $('expandAllBtn');
+        var cards = resultsContent.querySelectorAll('.clause-card');
+        var allRevealed = revealedClauseCount >= cards.length;
+        if (allRevealed) {
+            revealedClauseCount = 1;
+            btn.textContent = 'Show all';
+        } else {
+            revealedClauseCount = cards.length;
+            btn.textContent = 'One at a time';
+        }
+        applyProgressiveDisclosure();
+    });
+
+    // ── Prompt 30: Hide GREEN (actionable only) ──────────────
+    var hideGreen = false;
+    $('hideGreenBtn').addEventListener('click', function() {
+        hideGreen = !hideGreen;
+        this.textContent = hideGreen ? 'Show all risks' : 'Actionable only';
+        var cards = resultsContent.querySelectorAll('.clause-card');
+        cards.forEach(function(card) {
+            if (hideGreen && card.classList.contains('level-green')) {
+                card.classList.add('green-filtered');
+            } else {
+                card.classList.remove('green-filtered');
+            }
+        });
+    });
+
+    // ── Prompt 40: Highlight visible clause in sidebar ──────────
+    var clauseObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                var title = entry.target.getAttribute('data-clause-title');
+                var items = clauseIndex.querySelectorAll('.clause-index-item');
+                items.forEach(function(item) {
+                    var itemTitle = item.getAttribute('data-clause-title');
+                    if (itemTitle === title) item.classList.add('active');
+                    else item.classList.remove('active');
+                });
+            }
+        });
+    }, { rootMargin: '-20% 0px -60% 0px' });
+
+    // Re-observe clause cards after each render
+    var lastObservedCards = [];
+    function observeClauseCards() {
+        lastObservedCards.forEach(function(c) { clauseObserver.unobserve(c); });
+        lastObservedCards = Array.from(resultsContent.querySelectorAll('.clause-card'));
+        lastObservedCards.forEach(function(c) { clauseObserver.observe(c); });
+    }
+
+    // ── Prompt 22: Dark mode toggle ─────────────────────────────
+    $('darkModeBtn').addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        var isDark = document.body.classList.contains('dark-mode');
+        this.innerHTML = isDark ? '&#9788;' : '&#9790;';
+        this.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+        try { localStorage.setItem('flipside-dark', isDark ? '1' : '0'); } catch(e) {}
+    });
+    // Restore dark mode preference
+    try {
+        if (localStorage.getItem('flipside-dark') === '1') {
+            document.body.classList.add('dark-mode');
+            $('darkModeBtn').innerHTML = '&#9788;';
+        }
+    } catch(e) {}
+
+    // ── Prompt 23: Font size controls ─────────────────────────
+    var fontSizeLevel = 0; // -1, 0, +1
+    var fontLabels = ['A-', 'A', 'A+'];
+    $('fontSizeBtn').addEventListener('click', function() {
+        fontSizeLevel = (fontSizeLevel + 1) > 1 ? -1 : fontSizeLevel + 1;
+        var sizes = ['0.85rem', '0.93rem', '1.05rem'];
+        resultsContent.style.fontSize = sizes[fontSizeLevel + 1];
+        this.textContent = fontLabels[fontSizeLevel + 1];
+    });
+
+    // ── Prompt 49: Session history ──────────────────────────────
+    function saveSessionHistory(filename, clauseCount, riskScore) {
+        try {
+            var history = JSON.parse(localStorage.getItem('flipside-history') || '[]');
+            history.unshift({
+                name: filename,
+                date: new Date().toISOString(),
+                clauses: clauseCount,
+                risk: riskScore
+            });
+            if (history.length > 10) history = history.slice(0, 10);
+            localStorage.setItem('flipside-history', JSON.stringify(history));
+        } catch(e) {}
+    }
+    function renderSessionHistory() {
+        try {
+            var history = JSON.parse(localStorage.getItem('flipside-history') || '[]');
+            if (history.length === 0) return;
+            var el = $('sessionHistory');
+            var html = '<h4>Recent analyses</h4>';
+            history.slice(0, 5).forEach(function(h) {
+                var ago = Math.round((Date.now() - new Date(h.date).getTime()) / 60000);
+                var timeStr = ago < 60 ? ago + 'm ago' : ago < 1440 ? Math.round(ago / 60) + 'h ago' : Math.round(ago / 1440) + 'd ago';
+                html += '<div class="session-item">' +
+                    '<span class="session-item-name">' + escapeHtml(h.name) + '</span>' +
+                    '<span class="session-item-meta">' + (h.clauses || '?') + ' clauses · Risk ' + (h.risk || '?') + ' · ' + timeStr + '</span>' +
+                    '</div>';
+            });
+            el.innerHTML = html;
+            el.classList.remove('hidden');
+        } catch(e) {}
+    }
+    renderSessionHistory();
+
+    // ── Prompt 47: Mobile swipe between clause cards ───────────
+    var touchStartX = 0, touchStartY = 0;
+    document.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+    document.addEventListener('touchend', function(e) {
+        var dx = e.changedTouches[0].screenX - touchStartX;
+        var dy = e.changedTouches[0].screenY - touchStartY;
+        if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            // Horizontal swipe detected
+            if (dx < 0) {
+                // Swipe left = next clause
+                revealedClauseCount = Math.min(revealedClauseCount + 1, resultsContent.querySelectorAll('.clause-card').length);
+            } else {
+                // Swipe right = scroll to previous clause
+                var cards = Array.from(resultsContent.querySelectorAll('.clause-card:not(.clause-hidden)'));
+                if (cards.length > 1) {
+                    cards[Math.max(0, cards.length - 2)].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                return;
+            }
+            applyProgressiveDisclosure();
+            var newCards = resultsContent.querySelectorAll('.clause-card:not(.clause-hidden)');
+            if (newCards.length > 0) {
+                newCards[newCards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }, { passive: true });
+
+    // ── Prompt 50: Easter egg ───────────────────────────────────
+    var eggClicks = 0;
+    var eggTimer = null;
+    $('headerBrand').addEventListener('click', function() {
+        eggClicks++;
+        clearTimeout(eggTimer);
+        eggTimer = setTimeout(function() { eggClicks = 0; }, 2000);
+        if (eggClicks >= 5) {
+            eggClicks = 0;
+            var msg = document.createElement('div');
+            msg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;' +
+                'background:var(--bg-card);border:2px solid var(--accent);border-radius:var(--radius);padding:2rem 2.5rem;' +
+                'box-shadow:var(--shadow-lg);text-align:center;max-width:400px;animation:clauseDropIn 0.5s ease';
+            msg.innerHTML = '<div style="font-size:1.5rem;margin-bottom:0.5rem">&#128064;</div>' +
+                '<div style="font-weight:700;font-size:1.1rem;margin-bottom:0.5rem">I am the drafter.</div>' +
+                '<div style="font-size:0.85rem;color:var(--text-secondary)">Every clause was placed with intent. ' +
+                'Every ambiguity is a feature, not a bug. The asymmetry is by design.</div>' +
+                '<div style="margin-top:1rem;font-size:0.7rem;color:var(--text-dim)">— FlipSide, thinking like the document</div>';
+            document.body.appendChild(msg);
+            setTimeout(function() {
+                msg.style.transition = 'opacity 0.5s';
+                msg.style.opacity = '0';
+                setTimeout(function() { msg.remove(); }, 500);
+            }, 4000);
+        }
+    });
+
+    // ── Mobile sidebar toggle ─────────────────────────────────
+    sidebarToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('open');
+        if (sidebar.classList.contains('open')) {
+            sidebarOverlay.classList.remove('hidden');
+        } else {
+            sidebarOverlay.classList.add('hidden');
+        }
+    });
+    sidebarOverlay.addEventListener('click', function() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.add('hidden');
+    });
+
+    // Prompt 12: Action checklist from RED/YELLOW findings
+    $('checklistBtn').addEventListener('click', function() {
+        var html = '';
+        var actionItems = [];
+        clauseIndexData.forEach(function(c) {
+            if (c.level === 'red' || c.level === 'yellow') {
+                actionItems.push(c);
+            }
+        });
+        if (actionItems.length === 0) {
+            html = '<p style="color:var(--text-muted)">No YELLOW or RED clauses found — no actions needed.</p>';
+        } else {
+            actionItems.sort(function(a, b) { return b.score - a.score; });
+            // Action items section
+            html = '<h4 style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.05em">Action Items (' + actionItems.length + ')</h4>';
+            actionItems.forEach(function(c) {
+                var color = c.level === 'red' ? 'var(--red)' : 'var(--yellow)';
+                html += '<div style="display:flex;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid var(--border-light)">' +
+                    '<input type="checkbox" style="accent-color:' + color + ';flex-shrink:0;margin-top:0.15rem">' +
+                    '<div><strong style="color:' + color + '">' + escapeHtml(c.title) + '</strong>' +
+                    '<span style="font-size:0.72rem;color:var(--text-muted)"> · ' + c.score + '/100 · ' + escapeHtml(c.trick || '') + '</span>' +
+                    '<div style="font-size:0.78rem;color:var(--text-secondary);margin-top:0.15rem">' + escapeHtml(c.section) + '</div>' +
+                    '</div></div>';
+            });
+            // Prompt 26: Negotiation checklist
+            html += '<h4 style="font-size:0.78rem;color:var(--text-muted);margin:1rem 0 0.4rem;text-transform:uppercase;letter-spacing:0.05em">Negotiation Strategy</h4>';
+            var redItems = actionItems.filter(function(c) { return c.level === 'red'; });
+            var yellowItems = actionItems.filter(function(c) { return c.level === 'yellow'; });
+            if (redItems.length > 0) {
+                html += '<div style="padding:0.5rem;background:var(--red-bg);border-radius:var(--radius-sm);margin-bottom:0.4rem;font-size:0.8rem">' +
+                    '<strong style="color:var(--red)">Must negotiate (' + redItems.length + '):</strong> ' +
+                    redItems.map(function(c) { return escapeHtml(c.title); }).join(', ') + '</div>';
+            }
+            if (yellowItems.length > 0) {
+                html += '<div style="padding:0.5rem;background:var(--yellow-bg);border-radius:var(--radius-sm);margin-bottom:0.4rem;font-size:0.8rem">' +
+                    '<strong style="color:var(--yellow)">Should review (' + yellowItems.length + '):</strong> ' +
+                    yellowItems.map(function(c) { return escapeHtml(c.title); }).join(', ') + '</div>';
+            }
+            html += '<p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem">Tip: Address red items first. Group related clauses for batch negotiation.</p>';
+        }
+        $('checklistContent').innerHTML = html;
+        $('checklistOverlay').classList.add('visible');
+    });
+
+    // ── Export analysis ────────────────────────────────────────
+    // Prompt 24: Print button
+    $('printBtn').addEventListener('click', function() {
+        // Temporarily reveal all cards for print
+        var prevRevealed = revealedClauseCount;
+        var cards = resultsContent.querySelectorAll('.clause-card');
+        cards.forEach(function(c) { c.classList.remove('clause-hidden', 'green-filtered'); });
+        var btn = resultsContent.querySelector('.next-clause-btn');
+        if (btn) btn.style.display = 'none';
+        window.print();
+        // Restore progressive disclosure
+        revealedClauseCount = prevRevealed;
+        applyProgressiveDisclosure();
+    });
+
+    // Prompt 25: Export bookmarked clauses
+    $('exportStarredBtn').addEventListener('click', function() {
+        if (bookmarkedClauses.size === 0) {
+            alert('No clauses bookmarked. Click the star on clauses you want to export.');
+            return;
+        }
+        var cards = resultsContent.querySelectorAll('.clause-card');
+        var text = 'FlipSide — Bookmarked Clauses\n' + '='.repeat(40) + '\n\n';
+        cards.forEach(function(card) {
+            var title = card.getAttribute('data-clause-title');
+            if (bookmarkedClauses.has(title)) {
+                text += card.innerText.trim() + '\n\n' + '-'.repeat(40) + '\n\n';
+            }
+        });
+        navigator.clipboard.writeText(text).then(function() {
+            var btn = $('exportStarredBtn');
+            btn.innerHTML = '&#10003; Copied!';
+            setTimeout(function() { btn.innerHTML = '&#9733; Export starred'; }, 2000);
+        });
+    });
+
+    // Prompt 36: Copy all findings
+    $('copyAllBtn').addEventListener('click', function() {
+        var text = resultsContent.innerText;
+        navigator.clipboard.writeText(text).then(function() {
+            var btn = $('copyAllBtn');
+            btn.innerHTML = '&#10003; Copied!';
+            setTimeout(function() { btn.innerHTML = '&#128203; Copy all'; }, 2000);
+        });
+    });
+
+    $('exportBtn').addEventListener('click', function() {
+        var title = docPreview.querySelector('.doc-preview-name');
+        var docName = title ? title.textContent : 'FlipSide Analysis';
+        var exportHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+            '<title>' + escapeHtml(docName) + ' — FlipSide Analysis</title>' +
+            '<style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1rem;color:#1a1a18;line-height:1.6}' +
+            'h1{font-size:1.5rem;border-bottom:2px solid #c44b28;padding-bottom:0.5rem}' +
+            'h2{margin-top:2rem;color:#3d3b36}h3{margin-top:1.5rem}' +
+            'blockquote{border-left:3px solid #c44b28;padding:0.5rem 1rem;margin:0.5rem 0;background:#faf8f4;font-style:italic}' +
+            '.risk-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.75rem;font-weight:700}' +
+            '.risk-green{background:#e8f5e9;color:#1e6b38}.risk-yellow{background:#fff8e1;color:#8a6508}.risk-red{background:#fce4ec;color:#a83d20}' +
+            'hr{border:none;border-top:1px solid #e2ddd4;margin:1.5rem 0}' +
+            '.footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e2ddd4;font-size:0.8rem;color:#9c9789}' +
+            '</style></head><body>' +
+            '<h1>' + escapeHtml(docName) + '</h1>' +
+            (summaryContainer.innerHTML || '') +
+            resultsContent.innerHTML +
+            '<div class="footer">Generated by FlipSide — The other side of small print.<br>Powered by Claude Opus 4.6 extended thinking.</div>' +
+            '</body></html>';
+        var blob = new Blob([exportHtml], { type: 'text/html' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = docName.replace(/[^a-z0-9]/gi, '_') + '_FlipSide.html';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    // ── Jump to top button + reading progress ──────────────
+    var jumpTopBtn = $('jumpTopBtn');
+    var readingFill = $('readingProgressFill');
+    window.addEventListener('scroll', function() {
+        if (!analysisSection.classList.contains('hidden')) {
+            if (window.scrollY > 600) jumpTopBtn.classList.remove('hidden');
+            else jumpTopBtn.classList.add('hidden');
+            // Update reading progress
+            var scrollHeight = document.body.scrollHeight - window.innerHeight;
+            if (scrollHeight > 0) {
+                var pct = Math.min(100, (window.scrollY / scrollHeight) * 100);
+                readingFill.style.width = pct + '%';
+                // Prompt 32: Reading progress percentage
+                var revealedCount = resultsContent.querySelectorAll('.clause-card:not(.clause-hidden)').length;
+                var totalCards = resultsContent.querySelectorAll('.clause-card').length;
+                if (totalCards > 0 && revealedCount > 0) {
+                    var readEl = $('readingTime');
+                    if (readEl) {
+                        var base = readEl.textContent.replace(/\s*·\s*\d+% read$/, '');
+                        readEl.textContent = base + ' · ' + Math.round(pct) + '% read';
+                    }
+                }
+            }
+        }
+    });
+    jumpTopBtn.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ── Keyboard shortcuts ───────────────────────────────────
+    document.addEventListener('keydown', function(e) {
+        // Prompt 8: Close shortcut overlay on any key
+        if (shortcutOverlay.classList.contains('visible')) {
+            shortcutOverlay.classList.remove('visible');
+            return;
+        }
+        if (analysisSection.classList.contains('hidden')) return;
+        if (e.key === 'Escape') { backBtn.click(); return; }
+        // Prompt 8: Show shortcuts on ?
+        if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+            shortcutOverlay.classList.add('visible');
+            e.preventDefault();
+            return;
+        }
+        // Arrow navigation between clause cards
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'j' || e.key === 'k') {
+            var cards = Array.from(resultsContent.querySelectorAll('.clause-card:not([style*="display: none"])'));
+            if (cards.length === 0) return;
+            var highlighted = resultsContent.querySelector('.clause-card.highlight');
+            var idx = highlighted ? cards.indexOf(highlighted) : -1;
+            if (highlighted) highlighted.classList.remove('highlight');
+            if (e.key === 'ArrowDown' || e.key === 'j') idx = Math.min(idx + 1, cards.length - 1);
+            else idx = Math.max(idx - 1, 0);
+            cards[idx].classList.add('highlight');
+            cards[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            e.preventDefault();
+        }
+        // Enter to toggle expand on highlighted card
+        if (e.key === 'Enter') {
+            var hl = resultsContent.querySelector('.clause-card.highlight');
+            if (hl) { hl.click(); e.preventDefault(); }
+        }
+    });
+
+    // ── Back button ───────────────────────────────────────────
+    backBtn.addEventListener('click', function() {
+        // If analysis is still running, confirm before leaving
+        if (eventSource && !statusPill.classList.contains('done')) {
+            if (!confirm('Analysis is still running. Start a new one?')) return;
+        }
+        if (eventSource) { eventSource.close(); eventSource = null; }
+        if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
+        stopStatusRotation();
+        stopThinkingProgress();
+        analysisSection.classList.add('hidden');
+        uploadSection.classList.remove('hidden');
+        resetUploadBtn();
+        sampleToggle.textContent = 'try sample policy';
+        sampleToggle.style.pointerEvents = '';
+        // Clear all state
+        activeRiskFilter = null;
+        $('clauseSearch').value = '';
+        readingFill.style.width = '0%';
+        $('elapsedTime').textContent = '';
+    });
+
+    // ══════════════════════════════════════════════════════════
+    // DEBUG: DOM Mutation Monitor for flicker diagnosis
+    // Press Ctrl+Shift+D to toggle the debug panel
+    // ══════════════════════════════════════════════════════════
+    (function initFlickerMonitor() {
+        var debugLog = [];
+        var mutationCount = 0;
+        var observing = false;
+        var observer = null;
+        var debugPanel = document.createElement('div');
+        debugPanel.id = 'flickerDebug';
+        debugPanel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;height:220px;background:#1a1a18;color:#e0e0d8;' +
+            'font-family:JetBrains Mono,monospace;font-size:11px;z-index:99999;overflow-y:auto;padding:8px 12px;' +
+            'border-top:2px solid #c44b28;display:none;line-height:1.5';
+        document.body.appendChild(debugPanel);
+
+        var colors = {
+            attributes: '#f0c674',   // yellow
+            childList: '#81a2be',    // blue
+            characterData: '#b5bd68' // green
+        };
+
+        function log(msg, color) {
+            var now = new Date();
+            var ts = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+            debugLog.push({ ts: ts, msg: msg, color: color || '#e0e0d8' });
+            if (debugLog.length > 200) debugLog.shift();
+            renderDebug();
+        }
+
+        function renderDebug() {
+            var html = '<div style="position:sticky;top:0;background:#1a1a18;padding:4px 0;border-bottom:1px solid #333;margin-bottom:4px">' +
+                '<strong style="color:#c44b28">FLICKER MONITOR</strong> ' +
+                '<span style="color:#888">' + mutationCount + ' mutations captured</span> ' +
+                '<span style="color:#555">| Ctrl+Shift+D to toggle | Ctrl+Shift+C to clear</span></div>';
+            for (var i = debugLog.length - 1; i >= Math.max(0, debugLog.length - 80); i--) {
+                var e = debugLog[i];
+                html += '<div><span style="color:#555">' + e.ts + '</span> <span style="color:' + e.color + '">' + e.msg + '</span></div>';
+            }
+            debugPanel.innerHTML = html;
+        }
+
+        function startObserving() {
+            if (observing) return;
+            var card = resultsContent.querySelector('.clause-card:not(.clause-hidden)');
+            if (!card) { log('No visible clause card found — waiting...', '#cc6666'); return; }
+
+            var cardTitle = card.getAttribute('data-clause-title') || 'unknown';
+            log('OBSERVING: "' + cardTitle.substring(0, 50) + '..."', '#c44b28');
+
+            observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(m) {
+                    mutationCount++;
+                    var target = m.target;
+                    var targetDesc = target.tagName ? target.tagName.toLowerCase() : 'text';
+                    if (target.className && typeof target.className === 'string') {
+                        targetDesc += '.' + target.className.split(' ')[0];
+                    }
+
+                    if (m.type === 'attributes') {
+                        var oldVal = (m.oldValue || '').substring(0, 40);
+                        var newVal = (target.getAttribute(m.attributeName) || '').substring(0, 40);
+                        if (oldVal === newVal) return; // no actual change
+                        log('[ATTR] ' + targetDesc + ' :: ' + m.attributeName +
+                            ' changed from "' + oldVal + '" to "' + newVal + '"',
+                            colors.attributes);
+                    }
+                    else if (m.type === 'childList') {
+                        if (m.addedNodes.length) {
+                            Array.from(m.addedNodes).forEach(function(n) {
+                                var desc = n.tagName ? n.tagName.toLowerCase() : 'text("' + (n.textContent || '').substring(0, 30) + '")';
+                                if (n.className) desc += '.' + n.className.split(' ')[0];
+                                log('[ADD] ' + targetDesc + ' << ' + desc, colors.childList);
+                            });
+                        }
+                        if (m.removedNodes.length) {
+                            Array.from(m.removedNodes).forEach(function(n) {
+                                var desc = n.tagName ? n.tagName.toLowerCase() : 'text("' + (n.textContent || '').substring(0, 30) + '")';
+                                if (n.className) desc += '.' + n.className.split(' ')[0];
+                                log('[DEL] ' + targetDesc + ' >> ' + desc, '#cc6666');
+                            });
+                        }
+                    }
+                    else if (m.type === 'characterData') {
+                        log('[TEXT] ' + targetDesc + ' in ' +
+                            (m.target.parentNode.tagName || '?').toLowerCase() + ' :: "' +
+                            (m.oldValue || '').substring(0, 25) + '" → "' +
+                            (m.target.textContent || '').substring(0, 25) + '"',
+                            colors.characterData);
+                    }
+                });
+            });
+
+            observer.observe(card, {
+                attributes: true,
+                attributeOldValue: true,
+                childList: true,
+                characterData: true,
+                characterDataOldValue: true,
+                subtree: true
+            });
+            observing = true;
+        }
+
+        function stopObserving() {
+            if (observer) { observer.disconnect(); observer = null; }
+            observing = false;
+        }
+
+        // Auto-start observing when first clause card appears
+        var checkInterval = setInterval(function() {
+            var card = resultsContent.querySelector('.clause-card:not(.clause-hidden)');
+            if (card && !observing) {
+                startObserving();
+            }
+        }, 500);
+
+        // Re-attach observer when card is swapped (after render)
+        var origDoRender = doRenderResults;
+        doRenderResults = function() {
+            stopObserving();
+            origDoRender();
+            startObserving();
+        };
+
+        // Keyboard toggles
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+                e.preventDefault();
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                debugLog = [];
+                mutationCount = 0;
+                renderDebug();
+                e.preventDefault();
+            }
+        });
+
+        log('Flicker monitor ready — waiting for clause cards...', '#888');
+        log('Press Ctrl+Shift+D to toggle this panel', '#888');
+    })();
+
+})();
+</script>
+
+</body>
+</html>

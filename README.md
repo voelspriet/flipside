@@ -64,6 +64,22 @@ FlipSide cannot work with a lesser model. Here's why:
 
 ---
 
+## The Meta-Prompting Discovery
+
+During the hackathon, we stumbled on something that even the Claude Code team couldn't fully explain.
+
+When you ask Claude to **"analyze this contract"**, you get a decent analysis. But when you ask Claude to **"write a prompt for analyzing this contract"** and then say **"now execute that prompt"** — the results are dramatically better.
+
+Why? The two-step approach forces the model to separate *planning* from *execution*. In the first step, it reasons about what makes a good analysis — what to look for, what perspectives to take, how to structure findings. In the second step, it follows its own expert framework. It's chain-of-thought at the meta level.
+
+**Cat Wu** (Product Lead and co-creator of Claude Code) confirmed this pattern during the hackathon AMA — the effect is real, though the exact mechanism isn't fully understood.
+
+FlipSide's entire architecture is a **productized version of this discovery**. The system prompt doesn't just say "analyze this document." It teaches Claude *how to think about documents*: adopt the drafter's perspective, apply a taxonomy of 18 legal trick types (Silent Waiver, Time Trap, Cascade Clause...), contrast "what the small print says" against "what you should read." The prompt is a pre-built reasoning framework that every uploaded document then executes against.
+
+The user never sees this meta-prompt. They just see better results.
+
+---
+
 ## The Principle
 
 FlipSide applies **"Think Like a Document"** (CHI 2026, Henk van Ess) to a new domain:
