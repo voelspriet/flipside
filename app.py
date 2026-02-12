@@ -810,8 +810,7 @@ Re-read your own analysis above with fresh eyes. Check for these failure modes:
 - The severity label MUST match the real-world stakes of the document, not just the numerical score
 - The Quality Check is your credibility section — be genuinely self-critical, brief (2-4 bullet points). Users trust analyses that acknowledge uncertainty more than false certainty
 
-## STRUCTURED DATA TOOLS
-You have two tools: `assess_risk` and `flag_interaction`. Call them AS YOU analyze — right after each clause or interaction in your prose. These capture structured data for the interactive dashboard. Your markdown output remains the primary analysis; tool calls add machine-readable metadata alongside it."""
+"""
 
 
 @app.route('/compare', methods=['POST'])
@@ -1016,11 +1015,15 @@ def analyze(doc_id):
                 })
 
         has_images = bool(page_images)
+        # NOTE: tools=DEEP_ANALYSIS_TOOLS is NOT passed here because the
+        # Messages API stops generating text when a tool is called
+        # (stop_reason: tool_use), truncating the report.  The tool schemas
+        # remain defined for reference / future agentic-loop integration.
         t_deep = threading.Thread(
             target=worker,
             args=('deep', build_deep_analysis_prompt(has_images=has_images),
                   deep_max_tokens, MODEL, True),
-            kwargs={'user_content': deep_user_content, 'tools': DEEP_ANALYSIS_TOOLS},
+            kwargs={'user_content': deep_user_content},
             daemon=True,
         )
 
