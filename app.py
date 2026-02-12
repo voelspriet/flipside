@@ -603,7 +603,14 @@ Output the Document Profile first, then each clause separated by --- on its own 
 
 Then for EACH significant clause, output exactly this format:
 
-### [Descriptive Title] ([Section Reference])
+### [Descriptive Title] ([Context — Section/Product/Coverage])
+
+The section reference MUST anchor the clause to the document structure so the reader knows WHERE they are. Examples:
+- Insurance policy: "Travel Cancellation Coverage, Article 4.2" not just "Article 4.2"
+- Coupon booklet: "Danone Alpro coupon — Carrefour hypermarkt only" not just "Page 3"
+- Lease: "Maintenance & Repairs, §2(b)" not just "§2(b)"
+- Employee handbook: "Termination Policy, Section 7" not just "Section 7"
+For multi-product documents (coupon books, product bundles): specify WHICH product or offer.
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
@@ -656,7 +663,8 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguo
 8. Do NOT include negotiation advice or action items — those come from deep analysis
 9. Do NOT include cross-clause interactions — analyze each clause independently
 10. Confidence: HIGH = language is clear, single reasonable interpretation; MEDIUM = some ambiguity or unusual phrasing; LOW = clause could reasonably be read multiple ways or meaning depends on context
-11. The Document Profile must appear BEFORE the first clause, followed by ---"""
+11. The Document Profile must appear BEFORE the first clause, followed by ---
+12. The section reference in parentheses MUST provide document context — which part, product, coverage area, or topic. A bare "§3" or "Page 5" is useless without context."""
 
 
 def build_deep_analysis_prompt(has_images=False):
@@ -694,7 +702,7 @@ For each interaction:
 
 **Read together, you'd realize:** What they ACTUALLY do when combined — the hidden compound risk. One sentence, visceral.
 
-**Clauses involved:** [list specific sections — e.g., §1, §2, §4. List them here ONCE and keep them OUT of the prose below.]
+**Clauses involved:** [list specific sections WITH context — e.g., "Late Fees (§1), Payment Waterfall (§1), Rent Withholding Prohibition (§2)". Anchor each to its topic so the reader knows which part of the document you mean. List them here ONCE and keep them OUT of the prose below.]
 
 **How they interact:** [2-3 sentences. The mechanism — be specific about HOW the clauses feed into each other. Write in plain English. Do NOT embed §-references in the flowing text — the clause list above handles that.]
 
