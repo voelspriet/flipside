@@ -342,6 +342,96 @@ Deployed to server behind `/flipside/` prefix. All JavaScript fetch/EventSource 
 - **Deployed to server** with reverse proxy support
 - **Phase 2 probes partially addressed**: #59 (follow-up), #60 (self-correction), #67 (confidence), #68 (jurisdiction via benchmark), #69 (vision/OCR)
 
+---
+
+### Phase 9: The Document's Perspective — UX as Argument
+
+**Entry 38 — Reassurance Headlines: Think Like the Drafter's Marketing Team**
+
+The flip card front showed clause titles like "SECTION 1 — RENT AND LATE FEES." Accurate but neutral. The human's insight: "make the front as POSITIVE as possible to increase the effect of the flip."
+
+This is "Think Like a Document" applied to UX design. The drafter doesn't just write clauses — they FRAME them. A late fee clause isn't presented as a punishment mechanism; it's framed as "Flexible payment grace period." The reassurance headline on each card front is how the drafter WANTS you to feel: warm, protected, taken care of. Then the back reveals what the clause actually does.
+
+Added `[REASSURANCE]` field to both card scan prompts. Parser extracts it. Card front shows it as large, bold, green text — the first thing the user reads. Maximum contrast when the card flips to red.
+
+**Entry 39 — Document Preview as Navigation Map**
+
+The sidebar showed a static document thumbnail. The human asked: "can we scroll the actual text in the left, and match the flip cards with what's happening in the text?"
+
+Implementation: the document preview became a scrollable, interactive map. Each clause detected during streaming gets a numbered marker (colored circle: green/yellow/red) injected at its position in the document text. Click a marker → navigate to the matching card. Navigate to a card → preview auto-scrolls to show the clause in context.
+
+**First approach failed**: sequential `innerHTML` modifications caused cascading corruption. When clause marker 1 was injected as a `<span>` tag, clause 2's search found different text because the HTML structure had changed. Each subsequent injection made it worse — clause numbers drifted, highlights overlapped, or disappeared.
+
+**Fix**: `rebuildPreviewHighlights()` — always rebuilds from clean `escapeHtml(documentFullText)` source. Stores all clause positions in a `clauseHighlightData[]` array, finds all positions in one pass, injects all markers simultaneously. No sequential corruption because the base text is never modified.
+
+**Why this matters for "Think Like a Document"**: The preview markers reveal the drafter's PLACEMENT STRATEGY. Clusters of red markers show where dangerous clauses are concentrated. Gaps between markers show safe zones. The spatial relationship between clauses becomes visible — you see the document the way the drafter structured it.
+
+**Entry 40 — Reversed Text: When You Can't Think Like a Document**
+
+A Belgian Carrefour coupon booklet produced garbled text: "teh ni neremusnoc eT" instead of "Te consumenre in het." The PDF had characters in reversed order — pdfminer extracted them faithfully wrong.
+
+You can't "Think Like a Document" if the document is unreadable. Three approaches attempted:
+
+1. **Hardcoded consonant heuristic** — Detected 5+ consecutive consonants. Failed: reversed Dutch still has vowels mixed in.
+2. **Haiku cleanup for all text** — Called Haiku 4.5 to clean every document. Worked but added 3.5 seconds to clean text that didn't need cleaning.
+3. **Hybrid gate (final)** — Fast dictionary-based detection (`_has_garbled_text()`) checks if reversed words match common words better than forward words. Only calls Haiku when garbled text is detected. 0ms for clean text, ~2s only when needed.
+
+**Key insight**: Postel's Law for document analysis — be liberal in what you accept (garbled, reversed, OCR artifacts), strict in what you analyze (clean text only). The cleanup step is a PREREQUISITE for any analysis.
+
+**Entry 41 — Sidebar Profile: Context Before Content**
+
+The sidebar evolved through three iterations:
+
+1. **2x2 metadata grid** — TYPE, DRAFTED BY, YOUR ROLE, JURISDICTION in a card with labels. Too tall, competed with document preview.
+2. **Horizontal pills** — Same metadata as compact pills on one line. Better, but still stacked vertically with thumbnail below.
+3. **Profile row (final)** — Small 72×96 thumbnail upper-left, pills flowing next to it. The thumbnail shows the full first page (`object-fit: contain`, no cropping) — you see what the document LOOKS like before any analysis.
+
+This is context-as-framing. Before a single flip card appears, the user knows: what type of document this is, who drafted it, what role they play, and what the document physically looks like. The drafter's identity is visible before the drafter's strategy is revealed.
+
+**Entry 42 — Bilingual Analysis: Two Languages, Two Perspectives**
+
+For non-English documents, analysis was in the document's language (correct per "Think Like a Document" — analyze in the drafter's language). But English-speaking users couldn't understand the results.
+
+Solution: bilingual cards. The primary analysis stays in the document's language. Each flip card gets collapsible English translations via `<details>` — "Show in English" reveals the small-print and should-read columns in English.
+
+For deep analysis: the model writes a `## English Summary` section at the end. Frontend detects it and wraps it in a collapsible toggle: "Show full report in English." The summary is condensed (cross-clause interaction summaries + top concerns + key actions), not a full translation.
+
+**Why "Think Like a Document" matters here**: The drafter wrote in their language for their jurisdiction. Analyzing in that language captures jurisdiction-specific nuances. But the USER thinks in their language. The bilingual approach serves both: drafter's language for accuracy, user's language for accessibility. Two perspectives, literally.
+
+**Entry 43 — MCP Evaluation: What FlipSide Doesn't Need**
+
+Evaluated whether MCPs (Model Context Protocol) would improve the product. Conclusion: no.
+
+FlipSide's value is in the reasoning (perspective flip, cross-clause detection, villain voice), not in data fetching. MCPs add latency mid-stream and complexity for zero analytical gain. The parallel streaming pipeline already takes 30-90s — tool calls during generation would make it slower.
+
+Where MCPs WOULD help (post-hackathon): pulling jurisdiction-specific consumer protection laws, standard contract templates for Fair Standard Comparison, or legal precedent databases. Not needed for the core product.
+
+---
+
+## What Exists Now
+
+| Artifact | Lines/Size | Purpose |
+|----------|-----------|---------|
+| `app.py` | 1,371 lines | Flask backend, 7 prompts, vision, bilingual, garbled text cleanup, SSE |
+| `templates/index.html` | 3,521 lines | Full frontend — flip cards, sidebar profile, bilingual, clause markers |
+| `hackaton.md` | 200 lines | 100 prompts: 48 executed (Phase 1) + 50 pending (Phase 2) |
+| `strategy.md` | ~370 lines | 10 strategy decisions documented |
+| `decision_monitor.py` | ~230 lines | Jury-facing decision timeline generator |
+| `docs/` | 18+ files | Methodology and decision documents |
+| This file | — | Bridge between phases |
+
+## What Changed Since Last Update
+
+- **+141 lines** in `app.py` (bilingual prompts, garbled text cleanup, thumbnail generation)
+- **+382 lines** in `templates/index.html` (sidebar profile, bilingual CSS/JS, clause markers, reassurance headlines)
+- **Bilingual analysis** — non-English documents get EN translations on cards + deep analysis summary
+- **Document preview** as interactive navigation map with clause markers
+- **Reassurance headlines** — positive framing on card fronts, maximizing flip contrast
+- **Reversed text cleanup** — hybrid dictionary + Haiku 4.5 gate for garbled PDFs
+- **Sidebar redesign** — thumbnail + pills in horizontal row, context before content
+- **MCP evaluated and rejected** — reasoning > data fetching for this product
+- **Phase 2 probes newly addressed**: #62 (multilingual via bilingual), #72 (RTL preparation via bilingual), #82 (keyboard 1-9 nav)
+
 ## What Does Not Exist Yet
 
 - Demo video

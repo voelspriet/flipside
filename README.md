@@ -27,10 +27,11 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
 1. **Upload** — Drag in a PDF, DOCX, or paste text.
 
 2. **Browse flip cards** — Cards appear one at a time within seconds. Each card is a clause:
-   - **Front**: What you'd think reading this ("seems fine, standard clause")
-   - **Back**: What the drafter intended ("this lets us charge you for repairs we should cover")
+   - **Front**: What you'd think reading this — a warm reassurance headline ("Your flexible payment timeline") followed by the reader's naive impression. This is how the drafter WANTS you to feel.
+   - **Back**: What the drafter intended ("this lets us charge you for repairs we should cover") — villain voice, risk analysis, concrete action
    - **Confidence badge**: HIGH / MEDIUM / LOW — how certain Opus is about each finding
    - Color-coded: **Green** (standard) · **Yellow** (notable) · **Red** (strategically asymmetric)
+   - **Bilingual**: Non-English documents include collapsible English translations per card
 
 3. **Read the Full Verdict** — After browsing cards, Opus 4.6's deep analysis reveals:
    - Cross-clause interactions (risks invisible when reading clause by clause)
@@ -63,36 +64,41 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
 
 ---
 
-## 10 Opus 4.6 Capabilities in One Product
+## 13 Opus 4.6 Capabilities in One Product
 
-FlipSide uses more Opus 4.6 capabilities than any single feature would require. Each capability is **visible in the product** — not a behind-the-scenes optimization.
+FlipSide uses more Opus 4.6 capabilities than any single feature would require — including five that Anthropic [specifically highlights in the Opus 4.6 announcement](https://www.anthropic.com/research/introducing-claude-opus-4-6): adaptive thinking, long-context retrieval, low over-refusals, effort controls, and context compaction. Each capability is **visible in the product** — not a behind-the-scenes optimization.
 
-| # | Capability | What the user sees |
+| # | Opus 4.6 Feature | What the user sees |
 |---|-----------|-------------------|
-| 1 | **Extended thinking (adaptive)** | Opus reasons across all clauses to find compound risks. Visible as a collapsible reasoning panel |
-| 2 | **Perspective adoption** | System prompt teaches Opus to think as the drafter's attorney |
-| 3 | **Vision / multimodal** | PDF pages sent as images — Opus detects fine print, buried placement, visual hierarchy tricks |
-| 4 | **Tool use** | `assess_risk` and `flag_interaction` tools structure findings during deep analysis |
-| 5 | **Multi-turn follow-up** | After analysis, users ask questions — Opus traces answers through all clauses |
-| 6 | **Confidence signaling** | Each flip card shows HIGH/MEDIUM/LOW confidence with hover-reveal reasoning |
-| 7 | **Self-correction** | Quality Check section — Opus reviews its own analysis for false positives and blind spots |
-| 8 | **Benchmark comparison** | Fair Standard Comparison — worst clauses measured against industry norms |
-| 9 | **Split-model parallel processing** | Haiku 4.5 for fast cards, Opus 4.6 for deep analysis, both running simultaneously |
-| 10 | **Prompt caching** | System prompts cached server-side for 90% cost reduction on repeated analyses |
+| 1 | **Adaptive thinking** | Opus decides its own reasoning depth per clause — spending more on complex cross-clause interactions, less on boilerplate. The reasoning stream IS the interface, not overhead |
+| 2 | **Long-context retrieval** | Cross-clause interaction detection across the full document. Clause 2(c) and Clause 2(e) together deny water claims — neither clause is dangerous alone. This is Opus 4.6's "76% on MRCR v2 8-needle" capability applied to legal traps deliberately spread across pages |
+| 3 | **Low over-refusals** | Every red-flagged clause includes a villain voice — adversarial role-play where Opus adopts the drafter's perspective. Previous models would self-censor on this. Opus 4.6's low over-refusal rate means it can fully commit to the adversarial framing |
+| 4 | **Effort controls** | The depth selector (Quick/Standard/Deep) maps to Opus 4.6's `effort` parameter (medium/high/max). Architecture ready; awaiting Python SDK support (v0.46.0 doesn't expose it yet). Currently using `max_tokens` as depth knob |
+| 5 | **Context compaction** | After analysis, users ask follow-up questions. Each follow-up sends the full document + analysis as context. Compaction enables extended Q&A without hitting the context window |
+| 6 | **Vision / multimodal** | PDF pages sent as images — Opus detects fine print, buried placement, visual hierarchy tricks invisible to text extraction |
+| 7 | **Tool use** | `assess_risk` and `flag_interaction` tools structure findings with risk level, confidence %, trick type during deep analysis |
+| 8 | **Confidence signaling** | Each flip card shows HIGH/MEDIUM/LOW confidence with hover-reveal reasoning |
+| 9 | **Self-correction** | Quality Check — Opus reviews its own analysis for false positives and blind spots before presenting results |
+| 10 | **Split-model parallel** | Haiku 4.5 for fast cards, Opus 4.6 for deep analysis, both running simultaneously |
+| 11 | **Prompt caching** | System prompts cached server-side for 90% cost reduction on repeated analyses |
+| 12 | **Benchmark comparison** | Fair Standard Comparison — worst clauses measured against industry norms |
+| 13 | **Multilingual + bilingual** | Analyzes in the document's language (drafter's perspective), offers EN translations on each flip card and deep analysis summary. Two languages = two perspectives |
 
 ### Why Opus 4.6 Specifically
 
-FlipSide cannot work with a lesser model. Here's why:
+Five capabilities from [Anthropic's Opus 4.6 announcement](https://www.anthropic.com/research/introducing-claude-opus-4-6) are **structurally necessary** for FlipSide to work. Remove any one and the product degrades:
 
-1. **Perspective adoption requires sustained reasoning.** Opus 4.6 must hold the entire document in context while reasoning from a different party's viewpoint for 10-15 steps per clause cluster. This is not summarization — it is adversarial role-play across a full legal document.
+1. **Adaptive thinking — the reasoning IS the product.** The extended thinking stream is not hidden behind a loading spinner — it IS the interface. Users watch Opus adopt the drafter's perspective in real time. The model decides how deeply to reason per clause, spending more thinking tokens on complex cross-clause interactions and less on standard boilerplate. Most projects use extended thinking as a black box. FlipSide makes it visible.
 
-2. **Cross-clause interaction detection.** Insurance exclusions, penalty cascades, and indemnification asymmetries only become visible when the model reasons across multiple clauses simultaneously. Clause 2(c) and Clause 2(e) together deny water claims — neither clause does this alone.
+2. **Long-context retrieval — finding legal traps spread across pages.** Anthropic reports "76% on MRCR v2 8-needle 1M — a qualitative shift in how much context a model can actually use." FlipSide applies this to cross-clause interaction detection: Clause 2(c) excludes water damage from "gradual seepage over 14 days." Clause 2(e) defines the inspection timeline at 30 days. Neither clause is dangerous alone. Together, they deny virtually all residential water damage claims. The model holds the entire document in working memory and reasons across distant clauses simultaneously.
 
-3. **The reasoning IS the product.** The user watches the extended thinking stream in real time. The visible chain of reasoning — "I am now thinking like the insurer's underwriting counsel..." — is not a debug feature. It is the interface. It is what makes the analysis trustworthy and educational.
+3. **Low over-refusals — the villain voice works.** Every red-flagged clause includes adversarial role-play where Opus adopts the drafter's voice: *"The math does the work. Two weeks late once and you'll never catch up."* Previous models would self-censor, add disclaimers, or refuse the adversarial framing entirely. Opus 4.6's low over-refusal rate means the perspective flip — the core product mechanic — actually works.
 
-4. **Vision catches what text extraction misses.** Fine print literally in smaller font, liability waivers buried on page 7 of 8, tables that obscure fee comparisons — these are invisible to text-only analysis.
+4. **Effort controls — user-facing intelligence dial.** The depth selector (Quick/Standard/Deep) is designed to map directly to Opus 4.6's new `effort` parameter (Quick→medium, Standard→high, Deep→max). The UI and backend architecture are ready — currently using `max_tokens` as the depth knob because the `effort` parameter is not yet available in the Python SDK (v0.46.0). When the SDK adds support, it's a one-line change per preset. This is a NEW 4.6 API feature that FlipSide is built to expose directly in the UI.
 
-5. **Tool use structures the reasoning.** When Opus calls `assess_risk` or `flag_interaction`, it commits to a structured assessment — risk level, confidence score, trick category, mechanism. This forces precision that free-text analysis often lacks.
+5. **Context compaction — follow-up without limits.** After analysis, users ask questions ("What happens if I'm 3 months late?"). Each follow-up sends the full document + previous analysis as context. Compaction summarizes prior exchanges while retaining the document — turning a one-shot analysis into an interactive consultation.
+
+Plus: **vision** catches formatting tricks text extraction misses, **tool use** structures the reasoning into assessable data, and **self-correction** reviews the analysis for false positives before the user sees it.
 
 ---
 
@@ -185,7 +191,7 @@ The underlying principle is the same: **don't take yourself as the measurement o
 
 Two models run in parallel: **Haiku 4.5** scans clauses fast (first card in ~5 seconds), while **Opus 4.6** with extended thinking reasons across all clauses simultaneously to find compound risks invisible when reading clause by clause. The user browses flip cards while Opus thinks in the background.
 
-**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend. No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
+**Tech stack:** Python/Flask (1,371 lines), Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend (3,521 lines). No external APIs beyond Anthropic. No database required. Bilingual analysis for non-English documents. Deployable behind a reverse proxy with URL prefix.
 
 ---
 
@@ -218,7 +224,7 @@ On February 2, 2026, Anthropic launched a [legal plugin for Claude Cowork](https
 |---|---|---|
 | **User** | In-house corporate counsel | Consumer who received a document they didn't write |
 | **Perspective** | Reviews FROM your configured playbook | Flips TO the drafter's perspective — no playbook needed |
-| **Opus 4.6 use** | Standard clause flagging | 10 capabilities: extended thinking, vision, tool use, confidence signaling, self-correction, follow-up, benchmark comparison, prompt caching, split-model parallel, methodology disclosure |
+| **Opus 4.6 use** | Standard clause flagging | 13 capabilities: adaptive thinking, long-context retrieval, low over-refusals, effort controls, context compaction, vision, tool use, confidence signaling, self-correction, prompt caching, split-model parallel, benchmark comparison |
 | **Input** | Contracts your legal team handles | Any document: leases, insurance, ToS, loans, employment, medical consent |
 | **Output** | Redline suggestions, NDA triage | Flip cards ("What you'd think" → "What they intended"), villain voice, YOUR MOVE actions |
 | **Requires** | Cowork enterprise license, MCP integrations, configured playbook | Nothing — upload and go |
@@ -228,12 +234,12 @@ On February 2, 2026, Anthropic launched a [legal plugin for Claude Cowork](https
 
 The legal plugin uses Opus for clause flagging and redline suggestions — standard contract review. FlipSide pushes Opus 4.6 into capabilities the plugin does not use:
 
-- **Adversarial perspective adoption** — Opus role-plays as the drafter's attorney, sustaining a hostile viewpoint across the entire document. This requires extended thinking that a review-against-playbook approach does not.
+- **Low over-refusals → villain voice** — Opus role-plays as the drafter's attorney, sustaining a hostile viewpoint across the entire document. Previous models would self-censor or add disclaimers. Opus 4.6's low over-refusal rate means it fully commits to the adversarial perspective that IS the product.
+- **Long-context retrieval → cross-clause detection** — The model holds the full document in working memory and reasons across distant clauses simultaneously to find compound risks (penalty cascades, exclusion interactions) invisible when reading clause by clause. This is the "qualitative shift in how much context a model can actually use" that Anthropic describes.
+- **Effort controls → user-facing intelligence dial** — Quick/Standard/Deep maps to the new `effort` API parameter (medium/high/max). Users choose their own speed/depth tradeoff.
+- **Context compaction → follow-up without limits** — After analysis, users ask questions ("What happens if I'm 3 months late?") and Opus traces the answer through all clauses. Compaction enables extended Q&A sessions without hitting the context window.
 - **Vision / multimodal** — PDF pages sent as images to detect visual formatting tricks (fine print, buried placement, table manipulation) that text extraction misses entirely.
-- **Tool use during analysis** — `assess_risk` and `flag_interaction` tools force structured data (risk level, confidence %, trick type) alongside prose. The plugin uses slash commands; FlipSide uses tool calls within the reasoning itself.
-- **Self-correction** — Opus reviews its own analysis for false positives and blind spots before presenting results. The plugin reviews against your playbook; FlipSide reviews against itself.
-- **Confidence signaling** — Each finding shows HIGH/MEDIUM/LOW confidence with reasoning. Transparent uncertainty is more trustworthy than false confidence.
-- **Multi-turn follow-up** — After analysis, users ask questions ("What happens if I'm 3 months late?") and Opus traces the answer through all clauses. The plugin is command-driven; FlipSide is conversational.
+- **Tool use during analysis** — `assess_risk` and `flag_interaction` tools force structured data (risk level, confidence %, trick type) alongside prose.
 
 The plugin is a **workflow tool** for professionals. FlipSide is a **thinking tool** for everyone else — and it uses more Opus 4.6 capabilities to get there.
 
@@ -260,7 +266,8 @@ This project documents not just the product, but the entire decision-making proc
 | [Live Demonstration](docs/LIVE_DEMONSTRATION.md) | "Think Like a Document" demonstrated on the AI itself |
 | [Prewash Prompt Collection](docs/PREWASH_PROMPT_COLLECTION.md) | 7 real before/after prompt examples |
 | [Three AI Failures](docs/ANCHORING_FAILURE.md) | Confirmation bias, framing bias, vocabulary bias — all caught by the human |
-| [All docs](docs/) | 18 methodology and decision documents |
+| [Strategy Decisions](strategy.md) | 10 strategy decisions with rationale (debugging, meta-prompting, architecture, "Think Like a Document" UX) |
+| [All docs](docs/) | 18+ methodology and decision documents |
 
 ## Builder
 

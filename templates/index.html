@@ -313,57 +313,94 @@
             background: var(--bg-warm);
         }
 
-        /* ── Document profile card ───────────────────── */
+        /* ── Analysis two-column layout ─────────────── */
+        .analysis-layout {
+            display: flex;
+            gap: 2rem;
+            padding: 0 2rem;
+            align-items: flex-start;
+        }
+        .analysis-sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 70px;
+            padding-top: 0.5rem;
+        }
+
+        /* ── Sidebar profile row: thumbnail + pills ─── */
+        .sidebar-profile {
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+        }
         .metadata-line {
-            max-width: var(--col-width); width: 100%; margin: 0 auto;
-            padding: 1.2rem 1.5rem; font-size: 0.82rem; color: var(--text-secondary);
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--rust);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 0.5rem 1.5rem;
-            opacity: 0; transform: translateY(12px);
+            flex: 1; min-width: 0;
+            display: flex; flex-wrap: wrap; gap: 0.25rem;
+            align-content: flex-start;
+            opacity: 0; transform: translateY(8px);
             transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
         }
         .metadata-line.visible {
             opacity: 1; transform: translateY(0);
         }
-        .metadata-line .meta-item {
-            display: flex; flex-direction: column; gap: 0.15rem;
+        .meta-pill {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            padding: 0.2rem 0.5rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 100px; font-size: 0.65rem;
+            color: var(--text-body); line-height: 1.2;
+            max-width: 100%; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
         }
-        .metadata-line .meta-label {
+        .meta-pill .meta-pill-label {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.12em;
-            color: var(--text-muted);
-        }
-        .metadata-line .meta-value {
-            font-size: 0.85rem; color: var(--text-body);
-            font-weight: 500; line-height: 1.3;
-        }
-        @media (max-width: 600px) {
-            .metadata-line { grid-template-columns: 1fr; }
+            font-size: 0.45rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-muted); white-space: nowrap;
         }
 
-        /* ── Content column ──────────────────────────── */
+        /* ── Content column (right of sidebar) ─────── */
         .content-col {
-            max-width: var(--col-width); width: 100%; margin: 0 auto;
-            padding: 0 1.5rem 4rem;
+            flex: 1;
+            max-width: var(--col-width);
+            padding: 0 0 4rem;
         }
+
+        /* ── Document thumbnail (upper-left of profile) */
+        .doc-thumbnail {
+            width: 72px; height: 96px;
+            flex-shrink: 0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            line-height: 0;
+        }
+        .doc-thumbnail img {
+            width: 100%; height: 100%;
+            display: block;
+            object-fit: contain;
+            object-position: top left;
+            background: #fff;
+            opacity: 0.85;
+            transition: opacity 0.3s;
+        }
+        .doc-thumbnail img:hover { opacity: 1; }
 
         /* ── Editorial loading state ────────────────── */
         .editorial-loading {
-            margin: 1.5rem 0; padding: 0;
-            max-width: 380px;
+            margin: 1rem 0 0; padding: 0;
+            width: 100%;
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: var(--radius); box-shadow: var(--shadow-md);
             transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
             overflow: hidden;
         }
-        @media (max-width: 600px) {
-            .editorial-loading { max-width: 100%; }
+
+        @media (max-width: 900px) {
+            .analysis-layout { flex-direction: column; padding: 0 1rem; gap: 1rem; }
+            .analysis-sidebar { width: 100%; position: static; }
         }
         .editorial-loading-label {
             font-family: 'JetBrains Mono', monospace;
@@ -373,16 +410,39 @@
             padding: 1rem 1.5rem 0.4rem;
         }
         .editorial-loading-text {
-            font-size: 0.85rem; line-height: 1.7;
-            color: var(--text-body);
+            font-size: 0.78rem; line-height: 1.65;
+            color: var(--text-secondary);
             padding: 0 1.5rem;
-            max-height: 260px; overflow: hidden;
-            -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-            mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+            max-height: 50vh; overflow-y: auto;
             border-left: 3px solid var(--border);
             margin-left: 1.5rem; margin-right: 1.5rem;
             padding-left: 1rem;
+            scroll-behavior: smooth;
         }
+        .editorial-loading-text::-webkit-scrollbar { width: 3px; }
+        .editorial-loading-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .editorial-loading-text .doc-highlight {
+            position: relative;
+            border-radius: 2px;
+            transition: background 0.4s var(--ease-out-expo);
+        }
+        .editorial-loading-text .doc-highlight-green { background: rgba(45, 138, 78, 0.06); }
+        .editorial-loading-text .doc-highlight-yellow { background: rgba(184, 134, 11, 0.06); }
+        .editorial-loading-text .doc-highlight-red { background: rgba(196, 75, 40, 0.06); }
+        .editorial-loading-text .doc-highlight.active.doc-highlight-green { background: rgba(45, 138, 78, 0.15); }
+        .editorial-loading-text .doc-highlight.active.doc-highlight-yellow { background: rgba(184, 134, 11, 0.15); }
+        .editorial-loading-text .doc-highlight.active.doc-highlight-red { background: rgba(196, 75, 40, 0.18); }
+        .doc-clause-marker {
+            display: inline-block; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; font-weight: 700; line-height: 1;
+            width: 15px; height: 15px; text-align: center; line-height: 15px;
+            border-radius: 50%; margin-right: 3px;
+            vertical-align: middle; color: #fff; cursor: pointer;
+        }
+        .doc-highlight { cursor: pointer; }
+        .doc-clause-marker-green { background: var(--green); }
+        .doc-clause-marker-yellow { background: var(--yellow); }
+        .doc-clause-marker-red { background: var(--red); }
         .editorial-loading-indicator {
             display: flex; align-items: center; gap: 0.75rem;
             margin: 0 1.5rem; padding: 1rem 0 1.2rem;
@@ -506,7 +566,7 @@
         }
         .summary-top { display: flex; gap: 1.5rem; align-items: flex-start; }
         .score-ring-container { flex-shrink: 0; }
-        .score-ring { width: 100px; height: 100px; }
+        .score-ring { width: 110px; height: 110px; overflow: visible; }
         .score-ring .ring-bg { fill: none; stroke: var(--border); stroke-width: 6; }
         .score-ring .ring-fill {
             fill: none; stroke-width: 6; stroke-linecap: round;
@@ -700,6 +760,12 @@
 
         /* Front content */
         .front-content { padding: 2rem 2rem 0; }
+        .clause-reassurance {
+            font-size: 1.3rem; font-weight: 700; color: var(--green-text);
+            line-height: 1.25; margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+        }
         .clause-section-ref {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.7rem; font-weight: 500; color: var(--text-dim);
@@ -728,6 +794,21 @@
         }
         .reader-voice-text {
             font-size: 0.92rem; line-height: 1.6; color: var(--text-body); font-style: italic;
+        }
+        .reader-voice-en {
+            font-size: 0.78rem; line-height: 1.5; color: var(--text-muted);
+            font-style: italic; margin-top: 0.4rem;
+            padding-top: 0.4rem; border-top: 1px dashed var(--border-light);
+        }
+        .reader-voice-en::before {
+            content: 'EN'; display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem; font-weight: 700; font-style: normal;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: 3px; padding: 0.1rem 0.3rem;
+            margin-right: 0.4rem; vertical-align: middle;
+            color: var(--text-muted);
         }
 
         /* Flip trigger — the invitation */
@@ -898,6 +979,76 @@
             color: var(--text-primary); font-weight: 500;
         }
         .juxtapose-read .juxtapose-label { color: var(--accent); }
+
+        /* English translation toggle (bilingual cards) */
+        .en-translation {
+            margin-top: 1rem; border-top: 1px dashed var(--border-light);
+            padding-top: 0.5rem;
+        }
+        .en-translation-toggle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); cursor: pointer;
+            padding: 0.4rem 0; list-style: none;
+            transition: color var(--transition);
+        }
+        .en-translation-toggle:hover { color: var(--accent); }
+        .en-translation-toggle::-webkit-details-marker { display: none; }
+        .en-translation-toggle::before {
+            content: '▸ '; font-size: 0.7rem;
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+        .en-translation[open] > .en-translation-toggle::before {
+            content: '▾ ';
+        }
+        .en-juxtapose {
+            margin-top: 0.6rem; opacity: 0.85;
+        }
+        .en-juxtapose .juxtapose-col {
+            font-size: 0.78rem;
+        }
+        .en-juxtapose .juxtapose-label::after {
+            content: ' (EN)'; font-weight: 400;
+        }
+
+        /* English report summary (bilingual deep analysis) */
+        .en-report-summary {
+            margin-top: 2rem; border: 1px dashed var(--border);
+            border-radius: var(--radius); padding: 0;
+            background: var(--bg-surface);
+        }
+        .en-report-toggle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); cursor: pointer;
+            padding: 1rem 1.5rem; list-style: none;
+            transition: color var(--transition);
+        }
+        .en-report-toggle:hover { color: var(--accent); }
+        .en-report-toggle::-webkit-details-marker { display: none; }
+        .en-report-toggle::before {
+            content: '▸ '; font-size: 0.75rem;
+            display: inline-block;
+        }
+        .en-report-summary[open] > .en-report-toggle::before {
+            content: '▾ ';
+        }
+        .en-report-toggle::after {
+            content: 'EN'; display: inline-block;
+            font-size: 0.5rem; font-weight: 700;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 3px; padding: 0.1rem 0.35rem;
+            margin-left: 0.5rem; vertical-align: middle;
+        }
+        .en-report-content {
+            padding: 0 1.5rem 1.5rem;
+        }
+        .en-report-content h3 {
+            font-size: 0.95rem; margin-top: 1.25rem;
+        }
 
         /* Flip-back trigger */
         .flip-back-trigger {
@@ -1129,7 +1280,7 @@
         @media (max-width: 600px) {
             .brand h1 { font-size: 2.4rem; }
             .upload-card { padding: 1.25rem; }
-            .content-col { padding: 0 1rem 3rem; }
+            .content-col { padding: 0 0 3rem; }
             .analysis-header { padding: 0.5rem 1rem; }
             .clause-card, .cross-clause-card, .playbook-card, .assessment-card {
                 padding: 1rem 1.1rem;
@@ -1249,10 +1400,15 @@
         </div>
     </header>
 
-    <div class="metadata-line hidden" id="metadataLine"></div>
-
-    <div class="content-col">
-        <!-- Editorial loading: user's document text with gradient mask -->
+    <div class="analysis-layout">
+    <!-- Left sidebar: document profile + preview (stays on screen) -->
+    <aside class="analysis-sidebar hidden" id="analysisSidebar">
+        <div class="sidebar-profile" id="sidebarProfile">
+            <div class="doc-thumbnail hidden" id="docThumbnail">
+                <img id="docThumbnailImg" alt="Document page 1">
+            </div>
+            <div class="metadata-line hidden" id="metadataLine"></div>
+        </div>
         <div class="editorial-loading hidden" id="editorialLoading">
             <div class="editorial-loading-label">What the small print says</div>
             <div class="editorial-loading-text" id="editorialLoadingText"></div>
@@ -1261,7 +1417,10 @@
                 <span class="editorial-loading-status" id="editorialLoadingStatus">FlipSide is reading between the lines...</span>
             </div>
         </div>
+    </aside>
 
+    <!-- Main content: cards + analysis -->
+    <div class="content-col">
         <!-- Thinking panel (starts collapsed as status line) -->
         <div class="thinking-panel hidden" id="thinkingPanel">
             <div class="thinking-header" id="thinkingHeader">
@@ -1309,6 +1468,7 @@
             </div>
         </div>
     </div>
+    </div><!-- /analysis-layout -->
 </section>
 
 <script>
@@ -1400,6 +1560,7 @@
     var activeFilters = new Set(); // 'red', 'yellow', 'green'
     var toolResults = [];
     var documentFullText = '';
+    var documentThumbnail = null;
     var currentDocId = '';
     var userHasScrolled = false;
     var lastAutoScrollY = 0;
@@ -1498,6 +1659,17 @@
         // verdict-link buttons removed — verdict now triggered via card navigation only
     });
 
+    // ── Click clause marker in preview → navigate to that card ──
+    $('editorialLoadingText').addEventListener('click', function(e) {
+        var highlight = e.target.closest('.doc-highlight');
+        if (highlight) {
+            var idx = parseInt(highlight.getAttribute('data-card-index'));
+            if (!isNaN(idx) && flipCardContainer.querySelectorAll('.flip-card').length > idx) {
+                showCardAtIndex(idx);
+            }
+        }
+    });
+
     // ── Keyboard navigation ──
     document.addEventListener('keydown', function(e) {
         if (analysisScreen.classList.contains('hidden')) return;
@@ -1532,6 +1704,14 @@
                             setTimeout(function() { fill.style.width = w + '%'; }, 300);
                         }
                     }
+                }
+                break;
+            default:
+                // Number keys 1-9 → jump to that card
+                var num = parseInt(e.key);
+                if (num >= 1 && num <= 9 && num <= cards.length) {
+                    e.preventDefault();
+                    showCardAtIndex(num - 1);
                 }
                 break;
         }
@@ -1705,6 +1885,7 @@
         .then(function(data) {
             if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the other side'; return; }
             documentFullText = data.full_text || '';
+            documentThumbnail = data.thumbnail || null;
             switchToAnalysis(data.doc_id, data.filename);
         })
         .catch(function(err) {
@@ -1743,6 +1924,7 @@
             .then(function(data) {
                 if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the other side'; return; }
                 documentFullText = data.full_text || '';
+                documentThumbnail = data.thumbnail || null;
                 switchToAnalysis(data.doc_id, data.filename);
             })
             .catch(function(err) {
@@ -1795,6 +1977,7 @@
         parsedClauseCount = 0;
         currentCardIndex = 0;
         cardViewTransitioned = false;
+        clauseHighlightData = [];
         userHasScrolled = false;
         lastAutoScrollY = 0;
         currentDocId = docId;
@@ -1831,16 +2014,30 @@
         $('exportBtn').classList.add('hidden');
         backBtn.classList.remove('hidden');
 
-        // Editorial loading — show document text with gradient mask
+        // Sidebar: show thumbnail + document preview + metadata area
+        var sidebar = $('analysisSidebar');
+        var thumbEl = $('docThumbnail');
+        var thumbImg = $('docThumbnailImg');
         if (documentFullText && !isCompareMode) {
+            sidebar.classList.remove('hidden');
+            // Thumbnail
+            if (documentThumbnail) {
+                thumbImg.src = 'data:image/jpeg;base64,' + documentThumbnail;
+                thumbEl.classList.remove('hidden');
+            } else {
+                thumbEl.classList.add('hidden');
+            }
+            // Text preview
             var loadingEl = $('editorialLoading');
             var loadingText = $('editorialLoadingText');
-            loadingText.textContent = documentFullText.substring(0, 800) + (documentFullText.length > 800 ? '...' : '');
+            loadingText.innerHTML = escapeHtml(documentFullText);
             loadingEl.classList.remove('hidden');
             loadingEl.style.opacity = '1';
             loadingEl.style.transform = '';
             startEditorialStatusRotation();
         } else {
+            sidebar.classList.add('hidden');
+            thumbEl.classList.add('hidden');
             $('editorialLoading').classList.add('hidden');
         }
 
@@ -1990,6 +2187,12 @@
                     }
                     statusText.textContent = timingStr;
 
+                    // Update sidebar status
+                    var sidebarStatus = $('editorialLoadingStatus');
+                    if (sidebarStatus) sidebarStatus.textContent = 'Analysis complete';
+                    var dots = $('editorialLoading') && $('editorialLoading').querySelector('.pulsing-dots');
+                    if (dots) dots.style.display = 'none';
+
                     // Show action buttons
                     $('copyAllBtn').classList.remove('hidden');
                     $('exportBtn').classList.remove('hidden');
@@ -2088,12 +2291,17 @@
         var parts = [];
         patterns.forEach(function(p) {
             var m = responseContent.match(p.re);
-            if (m) parts.push(
-                '<div class="meta-item">' +
-                '<span class="meta-label">' + escapeHtml(p.label) + '</span>' +
-                '<span class="meta-value">' + escapeHtml(m[1].trim()) + '</span>' +
-                '</div>'
-            );
+            if (m) {
+                var val = m[1].trim();
+                // Truncate long values for pill format
+                if (val.length > 28) val = val.substring(0, 26) + '\u2026';
+                parts.push(
+                    '<span class="meta-pill" title="' + escapeHtml(m[1].trim()) + '">' +
+                    '<span class="meta-pill-label">' + escapeHtml(p.label) + '</span> ' +
+                    escapeHtml(val) +
+                    '</span>'
+                );
+            }
         });
         if (parts.length > 0) {
             metadataLine.innerHTML = parts.join('');
@@ -2398,6 +2606,9 @@
         }
         var quote = quoteLines.join(' ').replace(/^["\u201C]|["\u201D]$/g, '').trim();
 
+        var reassuranceMatch = segment.match(/\[REASSURANCE\]\s*:\s*(.+)/i);
+        var reassurance = reassuranceMatch ? reassuranceMatch[1].trim().replace(/^["\u201C]|["\u201D]$/g, '') : '';
+
         var readerMatch = segment.match(/\[READER\]\s*:\s*([\s\S]*?)(?=\n\n|\n(?:GREEN|YELLOW|RED))/i);
         var reader = readerMatch ? readerMatch[1].trim() : '';
 
@@ -2419,11 +2630,21 @@
         // Fallback: if smallPrint is empty, use the quote (the actual contract text)
         if (!smallPrint && quote) smallPrint = quote;
 
+        // English translations (for non-English documents)
+        var enSmallPrintMatch = segment.match(/\*{1,2}\[EN\]\s*What the small print says:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What you should read|\n\n###|\n\n##|$)/i);
+        var enShouldReadMatch = segment.match(/\*{1,2}\[EN\]\s*What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\n\n###|\n\n##|\n\n---|\[EN-READER\]|$)/i);
+        var enReaderMatch = segment.match(/\[EN-READER\]\s*:\s*([\s\S]*?)(?=\n\n|\n(?:GREEN|YELLOW|RED)|\n---|\n###|$)/i);
+        var enSmallPrint = enSmallPrintMatch ? enSmallPrintMatch[1].trim() : '';
+        var enShouldRead = enShouldReadMatch ? enShouldReadMatch[1].trim() : '';
+        var enReader = enReaderMatch ? enReaderMatch[1].trim() : '';
+
         return {
-            title: title, section: sectionRef, quote: quote, reader: reader,
+            title: title, section: sectionRef, reassurance: reassurance,
+            quote: quote, reader: reader,
             risk: risk, score: score, trick: trick,
             confidence: confidence, confidenceReason: confidenceReason,
-            bottomLine: bottomLine, smallPrint: smallPrint, shouldRead: shouldRead
+            bottomLine: bottomLine, smallPrint: smallPrint, shouldRead: shouldRead,
+            enSmallPrint: enSmallPrint, enShouldRead: enShouldRead, enReader: enReader
         };
     }
 
@@ -2433,15 +2654,17 @@
         var trickDesc = TRICK_DESCRIPTIONS[clause.trick] || '';
         var borderColor = risk === 'red' ? 'var(--red)' : risk === 'yellow' ? 'var(--yellow)' : 'var(--green-border)';
 
-        // ── Front: section, title, quote, reader voice (calm, trusting) ──
+        // ── Front: reassurance headline, section, title, quote, reader voice ──
         var frontHtml = '<div class="flip-card-front">' +
             '<div class="front-content">' +
+            (clause.reassurance ? '<div class="clause-reassurance">' + escapeHtml(clause.reassurance) + '</div>' : '') +
             (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
             '<h3 class="clause-title">' + escapeHtml(clause.title) + '</h3>' +
             (clause.quote ? '<div class="clause-quote">' + escapeHtml(clause.quote) + '</div>' : '') +
             '<div class="reader-voice">' +
             '<span class="reader-voice-label">You\u2019d think</span>' +
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
+            (clause.enReader ? '<div class="reader-voice-en">' + escapeHtml(clause.enReader) + '</div>' : '') +
             '</div>' +
             '</div>' +
             '<button class="flip-trigger"><span>See the other side</span><span class="flip-trigger-arrow">&rarr;</span></button>' +
@@ -2467,6 +2690,15 @@
         if (clause.bottomLine) {
             backBodyHtml += '<div class="bottom-line bottom-line-' + risk + '">' +
                 escapeHtml(clause.bottomLine) + '</div>';
+        }
+
+        // English translation (for non-English documents)
+        if (clause.enSmallPrint || clause.enShouldRead) {
+            backBodyHtml += '<details class="en-translation"><summary class="en-translation-toggle">Show in English</summary>' +
+                '<div class="clause-juxtapose en-juxtapose">' +
+                '<div class="juxtapose-col juxtapose-says"><span class="juxtapose-label">What the small print says</span>' + escapeHtml(clause.enSmallPrint) + '</div>' +
+                '<div class="juxtapose-col juxtapose-read"><span class="juxtapose-label">What you should read</span>' + escapeHtml(clause.enShouldRead) + '</div>' +
+                '</div></details>';
         }
 
         // Verdict link removed — full verdict shown after all cards via navigation
@@ -2501,18 +2733,101 @@
         cardEl.setAttribute('data-section-ref', clause.section || '');
         cardEl.innerHTML = '<div class="flip-card-inner">' + frontHtml + backHtml + '</div>';
         flipCardContainer.appendChild(cardEl);
+
+        // Highlight this clause's quote in the document preview
+        highlightClauseInPreview(clause, index);
+    }
+
+    // ── Document preview: highlight clause quotes ─────────────
+    // Stores all clause highlight data; rebuilds from clean source each time
+    var clauseHighlightData = [];
+
+    function highlightClauseInPreview(clause, cardIndex) {
+        if (!clause.quote || clause.quote.length < 10) return;
+        clauseHighlightData.push({ quote: clause.quote, cardIndex: cardIndex, risk: clause.risk || 'green' });
+        rebuildPreviewHighlights();
+    }
+
+    function rebuildPreviewHighlights() {
+        var previewEl = $('editorialLoadingText');
+        if (!previewEl || !documentFullText) return;
+
+        // Always start from the clean escaped source
+        var text = escapeHtml(documentFullText);
+
+        // Find all match positions
+        var matches = [];
+        for (var i = 0; i < clauseHighlightData.length; i++) {
+            var d = clauseHighlightData[i];
+            var searchText = escapeHtml(d.quote.substring(0, 60).trim());
+            var idx = text.indexOf(searchText);
+            if (idx === -1) idx = text.toLowerCase().indexOf(searchText.toLowerCase());
+            if (idx === -1) continue;
+
+            var endSearch = d.quote.length > 80 ? escapeHtml(d.quote.substring(d.quote.length - 30)) : '';
+            var endIdx = endSearch ? text.indexOf(endSearch, idx) : -1;
+            var end = endIdx > idx ? endIdx + endSearch.length : idx + searchText.length;
+            matches.push({ start: idx, end: end, cardIndex: d.cardIndex, risk: d.risk });
+        }
+
+        // Sort by position, remove overlaps
+        matches.sort(function(a, b) { return a.start - b.start; });
+        var filtered = [];
+        var lastEnd = -1;
+        for (var i = 0; i < matches.length; i++) {
+            if (matches[i].start >= lastEnd) {
+                filtered.push(matches[i]);
+                lastEnd = matches[i].end;
+            }
+        }
+
+        // Build HTML in one pass
+        var html = '';
+        var pos = 0;
+        for (var i = 0; i < filtered.length; i++) {
+            var m = filtered[i];
+            html += text.substring(pos, m.start);
+            var num = m.cardIndex + 1;
+            html += '<span class="doc-highlight doc-highlight-' + m.risk + '" data-card-index="' + m.cardIndex + '">' +
+                '<span class="doc-clause-marker doc-clause-marker-' + m.risk + '">' + num + '</span>' +
+                text.substring(m.start, m.end) + '</span>';
+            pos = m.end;
+        }
+        html += text.substring(pos);
+        previewEl.innerHTML = html;
+    }
+
+    function scrollPreviewToCard(cardIndex) {
+        var previewEl = $('editorialLoadingText');
+        if (!previewEl) return;
+
+        // Remove active from all highlights
+        var highlights = previewEl.querySelectorAll('.doc-highlight');
+        for (var i = 0; i < highlights.length; i++) {
+            highlights[i].classList.remove('active');
+        }
+
+        // Activate the matching highlight
+        var target = previewEl.querySelector('.doc-highlight[data-card-index="' + cardIndex + '"]');
+        if (target) {
+            target.classList.add('active');
+            // Scroll into view within the scrollable preview
+            var containerTop = previewEl.scrollTop;
+            var containerHeight = previewEl.clientHeight;
+            var elTop = target.offsetTop - previewEl.offsetTop;
+            if (elTop < containerTop || elTop > containerTop + containerHeight - 40) {
+                previewEl.scrollTop = elTop - 40;
+            }
+        }
     }
 
     // ── Transition from editorial loading to card view ────────
     function transitionToCardView() {
         cardViewTransitioned = true;
         stopEditorialStatusRotation();
-        var loading = $('editorialLoading');
-        if (loading && !loading.classList.contains('hidden')) {
-            loading.style.opacity = '0';
-            loading.style.transform = 'translateY(-20px)';
-            setTimeout(function() { loading.classList.add('hidden'); }, 500);
-        }
+        // Sidebar stays visible — just update status text
+        var statusEl = $('editorialLoadingStatus');
+        if (statusEl) statusEl.textContent = 'Analysis in progress...';
         var viewport = $('cardViewport');
         viewport.classList.remove('hidden');
         resultsArea.classList.remove('hidden');
@@ -2597,6 +2912,9 @@
             setTimeout(function() { scoreBarFill.style.width = targetWidth + '%'; }, 100);
         }
 
+        // Scroll document preview to matching clause
+        scrollPreviewToCard(index);
+
         updateCardNavigation();
     }
 
@@ -2665,6 +2983,32 @@
         html = styleDrafterBlocks(html);
         html = styleSplitClauses(html);
         deepAnalysisEl.innerHTML = html;
+
+        // Wrap English Summary in collapsible details (bilingual reports)
+        var enSummaryH2 = null;
+        deepAnalysisEl.querySelectorAll('h2').forEach(function(h2) {
+            if (h2.textContent.trim().toLowerCase().indexOf('english summary') >= 0) enSummaryH2 = h2;
+        });
+        if (enSummaryH2) {
+            var details = document.createElement('details');
+            details.className = 'en-report-summary';
+            var summary = document.createElement('summary');
+            summary.className = 'en-report-toggle';
+            summary.textContent = 'Show full report in English';
+            details.appendChild(summary);
+            var wrapper = document.createElement('div');
+            wrapper.className = 'en-report-content';
+            // Collect all siblings from enSummaryH2 onward
+            var sibling = enSummaryH2.nextElementSibling;
+            while (sibling) {
+                var next = sibling.nextElementSibling;
+                wrapper.appendChild(sibling);
+                sibling = next;
+            }
+            enSummaryH2.replaceWith(details);
+            details.appendChild(wrapper);
+        }
+
         wrapClauseSections(deepAnalysisEl);
 
         // Animate new deep analysis cards
@@ -2926,8 +3270,10 @@
         // Format: "Overall Risk Score: 74/100 — Serious risk — seek professional legal review"
         var severityMatch = text.match(/Overall Risk Score[:\s]*\d+\/100[^—\-\n]*(?:—|[-–])\s*([^\n]+)/i);
         var scoreLabel = severityMatch ? severityMatch[1].trim().replace(/\*+/g, '') : (
-            score > 80 ? 'Do not sign without legal review' : score > 65 ? 'High risk — negotiate these terms' : score > 40 ? 'Moderate risk — review flagged clauses' : 'Low risk — standard terms'
+            score > 80 ? 'seek legal review' : score > 65 ? 'high risk' : score > 40 ? 'moderate risk' : 'low risk'
         );
+        // Truncate to fit inside the circle
+        if (scoreLabel.length > 20) scoreLabel = scoreLabel.substring(0, 18) + '\u2026';
         var piiColor = piiScore > 65 ? 'var(--red)' : piiScore > 35 ? 'var(--yellow)' : 'var(--green)';
         var circumference = 2 * Math.PI * 42;
         var offset = circumference * (1 - score / 100);

@@ -50,7 +50,7 @@ Previous models would self-censor on this. They'd add disclaimers, soften the la
 
 **Why this matters for judges:** This is a NEW Opus 4.6 feature (not available on previous models) directly exposed in the UI. Users can see the difference: Quick mode returns in 30 seconds with individual clause assessments. Deep mode takes 90+ seconds but finds cross-clause interactions, penalty cascades, and drafter profiling that Quick mode misses.
 
-**Implementation:** `effort` parameter in the API call, mapped to the UI depth selector.
+**Implementation:** The UI and backend architecture are ready — Quick/Standard/Deep selector maps to `effort` values. Currently using `max_tokens` as the depth knob because the Python SDK (v0.46.0) doesn't expose the `effort` parameter yet. When support lands, it's a one-line change per preset.
 
 ---
 

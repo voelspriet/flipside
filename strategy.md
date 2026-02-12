@@ -289,3 +289,81 @@
 **What happened**: One-line addition (`var BASE_URL = {{ request.script_root | tojson }};`) and 5 string concatenations. Works with any prefix or no prefix (returns empty string when running locally).
 
 **Key insight**: Always use server-injected base URLs in single-page apps. Hardcoded absolute paths break the moment you deploy behind any reverse proxy, subdirectory, or load balancer.
+
+---
+
+## Decision: Reassurance as Weapon — Frame the Front Like the Drafter Would
+
+**Date**: 2026-02-12
+**Context**: Flip card fronts showed neutral clause titles ("SECTION 1 — RENT AND LATE FEES"). The flip to the back was informative but lacked emotional punch. The human's instinct: "make the front as positive as possible to increase the effect of the flip."
+
+**The strategy**: Add a `[REASSURANCE]` field to every card. The model generates a warm, positive, 8-word-max headline that frames the clause the way the drafter WANTS the reader to feel. "Your flexible payment timeline" for a late fee trap. "Comprehensive protection for your home" for an exclusion-riddled insurance policy.
+
+**Why this is "Think Like a Document"**: The drafter doesn't just write clauses — they frame them. Marketing language, section titles, and document design all work to make the reader feel safe. The reassurance headline IS the drafter's framing strategy, made explicit. The flip then shatters it.
+
+**The UX mechanism**: Front shows large bold green text ("Fair and transparent pricing protection") → user feels calm → card flips → back shows red risk header + villain voice ("The math does the work. Once they're two days late, the waterfall makes it impossible to get current."). The emotional distance between front and back IS the product.
+
+**Key insight**: The strongest persuasion technique in documents is not what they say — it's how they make you FEEL before you read the details. Surfacing that emotional framing as the card front turns UX into argument.
+
+---
+
+## Decision: Rebuild From Source, Never From State
+
+**Date**: 2026-02-12
+**Context**: The document preview needed numbered markers (1, 2, 3...) injected at each clause's position in the text. First implementation modified innerHTML sequentially — inject marker 1, then search for clause 2's text and inject marker 2.
+
+**The failure**: Each injection changed the HTML structure. Marker 1 added `<span>` tags and digit text. When searching for clause 2's text, the search matched against this corrupted HTML. Each subsequent injection made it worse — numbers drifted, highlights overlapped, or text was duplicated. By clause 4, the preview was garbled.
+
+**The strategy**: Never modify state incrementally. Store all data in a clean array (`clauseHighlightData[]`). On every update, rebuild from the original source: `escapeHtml(documentFullText)`. Find all clause positions in one pass, inject all markers simultaneously.
+
+**Why this works**:
+
+- The source text is immutable — it never contains HTML artifacts from previous injections
+- All positions are calculated from the same base, so they can't drift
+- Adding clause N doesn't affect clauses 1 through N-1
+- The rebuild is idempotent — calling it twice produces the same result
+
+**When to use this pattern**:
+
+- Any time you're injecting content into text based on string matching
+- When multiple injections interact with each other (overlapping ranges, position-dependent)
+- When the base content is stable but annotations change (highlights, markers, selections)
+- When debugging "works for 1 item, breaks for N items" patterns
+
+**Key insight**: Sequential state mutation in string-based DOM manipulation is a quadratic bug factory. O(N) insertions into an O(M) string means each insertion shifts all subsequent positions. Rebuild from source makes it O(N×M) but correct.
+
+---
+
+## Decision: Postel's Law for Document Input — Clean Before You Analyze
+
+**Date**: 2026-02-12
+**Context**: A Belgian Carrefour coupon booklet produced reversed text from PDF extraction: "teh ni neremusnoc eT" instead of "Te consumenre in het." Pdfminer extracted characters in reversed order — faithfully wrong.
+
+**The failure progression**:
+
+1. Hardcoded consonant heuristic (5+ consecutive consonants = garbled). Failed: reversed Dutch has vowels mixed in.
+2. Haiku 4.5 cleanup for ALL text. Worked but added 3.5s to clean text that didn't need cleaning.
+3. Hybrid gate: fast dictionary check → Haiku only when garbled detected. 0ms for clean text, ~2s when needed.
+
+**The strategy**: Apply Postel's Law to document input: "Be liberal in what you accept, strict in what you process." Accept any PDF regardless of extraction quality. But before ANY analysis, verify the text is readable. If not, clean it with the cheapest model that can do the job.
+
+**Implementation**: `_has_garbled_text()` checks if reversed words match a common-word dictionary better than forward words. If true, calls `get_client().messages.create(model=FAST_MODEL)` to clean the text. If false, passes through instantly.
+
+**Why this matters**: You can't "Think Like a Document" if the document is unreadable. The cleanup step is a prerequisite — not a feature, but a foundation. Without it, the entire analysis pipeline produces garbage-in-garbage-out.
+
+**Key insight**: The gap between "text extraction worked" and "text is analyzable" is larger than expected. PDFs from real-world sources (scans, export artifacts, font encoding issues) regularly produce text that looks correct in a text editor but is semantically reversed or corrupted. A fast local gate + cheap model cleanup covers this gap without penalizing clean documents.
+
+---
+
+## Decision: Context Before Content — Show Who Before What
+
+**Date**: 2026-02-12
+**Context**: The sidebar showed analysis results immediately. Users saw clause cards before knowing what they were looking at — what type of document, who drafted it, what jurisdiction.
+
+**The strategy**: Before any analysis appears, show the document's identity: a small thumbnail of the first page (72×96px, full page visible), metadata pills (TYPE, DRAFTED BY, YOUR ROLE, JURISDICTION), and a scrollable text preview.
+
+**Why this is "Think Like a Document"**: The principle says: understand WHAT the document is before you analyze what it SAYS. A lease from a property management company reads differently from a handwritten agreement between neighbors. An insurance policy from a listed company has different implications than one from a mutual fund. The metadata pills and thumbnail provide this framing.
+
+**The UX mechanism**: User uploads → sidebar immediately shows thumbnail + pills → document text appears in scrollable preview → first flip card arrives in the content column. At no point does the user see an analysis result without knowing the document's context.
+
+**Key insight**: Information architecture is an argument. By showing WHO drafted the document before showing WHAT they hid in it, you create a narrative frame. The user forms an impression of the drafter before seeing the drafter's tricks revealed. This makes the analysis feel like a story, not a report.

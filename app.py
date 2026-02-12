@@ -33,6 +33,14 @@ documents = {}
 MODEL = os.environ.get('FLIPSIDE_MODEL', 'claude-opus-4-6')
 FAST_MODEL = os.environ.get('FLIPSIDE_FAST_MODEL', 'claude-haiku-4-5-20251001')
 
+# Module-level client for utility functions (text cleaning etc.)
+_client = None
+def get_client():
+    global _client
+    if _client is None:
+        _client = anthropic.Anthropic()
+    return _client
+
 ROLES = {
     'tenant': 'a tenant signing a lease agreement',
     'freelancer': 'a freelancer signing a client contract',
@@ -45,11 +53,11 @@ ROLES = {
     'other': 'a party who did NOT draft this document',
 }
 
-# Analysis depth presets — maps to Opus 4.6 effort parameter + token budget
+# Analysis depth presets — token budget per depth level
 DEPTH_PRESETS = {
-    'quick':    {'max_tokens': 16000, 'effort': 'medium'},
-    'standard': {'max_tokens': 32000, 'effort': 'high'},
-    'deep':     {'max_tokens': 64000, 'effort': 'max'},
+    'quick':    {'max_tokens': 16000},
+    'standard': {'max_tokens': 32000},
+    'deep':     {'max_tokens': 64000},
 }
 
 TRICK_TAXONOMY = {
@@ -154,6 +162,72 @@ MAX_VISION_PAGES = 10
 VISION_DPI = 150
 
 
+def _has_garbled_text(text):
+    """Fast local check: does this text likely contain reversed segments?
+
+    Counts common function words in original vs reversed version of each line.
+    If any line scores better reversed, the text needs cleaning.
+    """
+    import re
+    COMMON = {
+        'de', 'het', 'van', 'en', 'een', 'voor', 'in', 'te', 'op', 'aan',
+        'met', 'bij', 'uit', 'naar', 'dat', 'die', 'niet', 'ook', 'maar',
+        'per', 'door', 'tot', 'je', 'zijn', 'kan', 'was',
+        'the', 'and', 'for', 'of', 'to', 'is', 'with', 'on', 'at', 'by',
+        'not', 'but', 'or', 'this', 'that', 'you', 'your', 'all', 'can',
+        'le', 'la', 'les', 'des', 'du', 'un', 'une', 'et', 'est', 'dans',
+        'pour', 'par', 'sur', 'avec', 'que', 'qui', 'ce',
+        'der', 'die', 'das', 'und', 'ist', 'ein', 'von', 'auf', 'mit',
+    }
+    def hits(words):
+        return sum(1 for w in words
+                   if re.sub(r'[^a-zA-Z]', '', w).lower() in COMMON)
+
+    for line in text.split('\n'):
+        words = line.split()
+        if len(words) < 4:
+            continue
+        rev_words = line[::-1].split()
+        if hits(rev_words) > hits(words) + 1:
+            return True
+    return False
+
+
+def clean_extracted_text(text):
+    """Use Haiku 4.5 to fix garbled/reversed text from PDF extraction.
+
+    Only calls Haiku when the fast local check detects garbled segments.
+    Clean text passes through with zero delay.
+    """
+    if not text or len(text) < 50:
+        return text
+
+    if not _has_garbled_text(text):
+        return text  # Clean text — no API call needed
+
+    try:
+        result = get_client().messages.create(
+            model=FAST_MODEL,
+            max_tokens=len(text) + 500,
+            messages=[{'role': 'user', 'content': text}],
+            system=(
+                'You are a text cleaning tool. The input is extracted from a PDF and may contain '
+                'garbled, reversed, or duplicated text segments from complex layouts. '
+                'Fix any reversed text (characters in wrong order), remove obvious duplicates, '
+                'and clean up extraction artifacts. '
+                'Return ONLY the cleaned text — no commentary, no explanations. '
+                'If the text looks fine, return it unchanged.'
+            ),
+        )
+        cleaned = result.content[0].text.strip()
+        # Sanity check: cleaned text shouldn't be drastically different in length
+        if cleaned and 0.3 < len(cleaned) / len(text) < 2.0:
+            return cleaned
+    except Exception as e:
+        print(f'[clean_extracted_text] Haiku cleanup failed, using raw text: {e}')
+    return text
+
+
 def extract_pdf(file_storage):
     import pdfplumber
     pdf_bytes = file_storage.read()
@@ -172,7 +246,8 @@ def extract_pdf(file_storage):
                     page_images.append(base64.b64encode(buf.getvalue()).decode())
                 except Exception:
                     pass
-    return '\n\n'.join(text_parts), page_images
+    raw_text = '\n\n'.join(text_parts)
+    return clean_extracted_text(raw_text), page_images
 
 
 def extract_docx(file_storage):
@@ -399,12 +474,27 @@ def upload():
             'page_images': page_images,
         }
 
+        # Generate a small thumbnail from the first page image
+        thumbnail = None
+        if page_images:
+            try:
+                from PIL import Image
+                img_bytes = base64.b64decode(page_images[0])
+                img = Image.open(BytesIO(img_bytes))
+                img.thumbnail((200, 280))
+                buf = BytesIO()
+                img.save(buf, format='JPEG', quality=50)
+                thumbnail = base64.b64encode(buf.getvalue()).decode()
+            except Exception:
+                pass
+
         return jsonify({
             'doc_id': doc_id,
             'filename': filename,
             'text_length': len(text),
             'preview': text[:300],
             'full_text': text[:5000],
+            'thumbnail': thumbnail,
         })
 
     except Exception as e:
@@ -509,6 +599,13 @@ def build_quick_scan_prompt():
 ## LANGUAGE RULE
 Respond in the SAME LANGUAGE as the document.
 
+## BILINGUAL RULE
+If the document is NOT in English, add English translations for each clause:
+**[EN] What the small print says:** [English translation]
+**[EN] What you should read:** [English translation]
+[EN-READER]: [English translation of the READER line]
+Skip these for English documents.
+
 ## AUTO-DETECTION
 Determine from the document:
 1. **Reader's Role**: Who is the non-drafting party?
@@ -532,6 +629,8 @@ Based on your determination:
 For EACH significant clause:
 
 ### [Descriptive Title] ([Section Reference])
+
+[REASSURANCE]: [One short, warm, positive headline (max 8 words) that frames this clause as beneficial or fair — how the drafter WANTS you to feel. Genuinely reassuring, not sarcastic. Examples: "Your home is fully protected" / "Clear and simple payment terms"]
 
 > "[Quote key language from the document]"
 
@@ -588,6 +687,13 @@ def build_card_scan_prompt():
 ## LANGUAGE RULE
 Respond in the SAME LANGUAGE as the document. If the document is in Dutch, respond entirely in Dutch. If German, German. Match the document's language for ALL output including headers and labels.
 
+## BILINGUAL RULE
+If the document is NOT in English, add an English translation for each clause's key fields:
+**[EN] What the small print says:** [English translation of the small print line]
+**[EN] What you should read:** [English translation of the should-read line]
+[EN-READER]: [English translation of the READER line]
+Only add these [EN] lines for non-English documents. For English documents, skip them entirely.
+
 ## OUTPUT FORMAT
 
 Output the Document Profile first, then each clause separated by --- on its own line.
@@ -611,6 +717,8 @@ The section reference MUST anchor the clause to the document structure so the re
 - Lease: "Maintenance & Repairs, §2(b)" not just "§2(b)"
 - Employee handbook: "Termination Policy, Section 7" not just "Section 7"
 For multi-product documents (coupon books, product bundles): specify WHICH product or offer.
+
+[REASSURANCE]: [One short, warm, positive headline (max 8 words) that frames this clause as beneficial, protective, or fair — how the drafter WANTS you to feel. Must sound genuinely reassuring, not sarcastic. Examples: "Your home is fully protected" / "Clear and simple payment terms" / "Fair process for both parties" / "Comprehensive coverage for your peace of mind". The more positive and warm this reads, the stronger the contrast when the card flips to reveal the trap.]
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
@@ -687,6 +795,28 @@ If you detect visual formatting tricks, include them as cross-clause interaction
 {visual_block}
 ## LANGUAGE RULE
 Respond in the SAME LANGUAGE as the document.
+
+## BILINGUAL RULE
+If the document is NOT in English, add an English summary at the very end of your output:
+
+## English Summary
+
+### Cross-Clause Interactions (EN)
+[For each interaction: 2-3 sentence English summary of the compound risk and recommended action]
+
+### Overall Assessment (EN)
+**Overall Risk Score: [same score]/100** — [English severity label]
+**Top Concerns:**
+1. [English one-liner]
+2. [English one-liner]
+3. [English one-liner]
+
+**Key Actions:**
+- [English action item]
+- [English action item]
+- [English action item]
+
+Only add this section for non-English documents. For English documents, skip it entirely.
 
 ## OUTPUT FORMAT
 
@@ -950,8 +1080,6 @@ def analyze(doc_id):
                 'messages': [{'role': 'user', 'content': user_msg}],
                 'stream': True,
             }
-            if preset.get('effort'):
-                create_kwargs['effort'] = preset['effort']
             stream = client.messages.create(**create_kwargs)
             for event in stream:
                 for chunk in process_stream_event(event, state):
@@ -968,8 +1096,7 @@ def analyze(doc_id):
         timings = {}
 
         def worker(label, system_prompt, max_out,
-                   model=MODEL, use_thinking=True, user_content=None, tools=None,
-                   effort=None):
+                   model=MODEL, use_thinking=True, user_content=None, tools=None):
             stream = None
             t0 = time.time()
             try:
@@ -983,8 +1110,6 @@ def analyze(doc_id):
                 }
                 if use_thinking:
                     create_kwargs['thinking'] = {'type': 'adaptive'}
-                if effort:
-                    create_kwargs['effort'] = effort
                 if tools:
                     create_kwargs['tools'] = tools
                 stream = client.messages.create(**create_kwargs)
@@ -1036,8 +1161,7 @@ def analyze(doc_id):
             target=worker,
             args=('deep', build_deep_analysis_prompt(has_images=has_images),
                   deep_max_tokens, MODEL, True),
-            kwargs={'user_content': deep_user_content,
-                    'effort': preset.get('effort', 'high')},
+            kwargs={'user_content': deep_user_content},
             daemon=True,
         )
 
