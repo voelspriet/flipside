@@ -360,12 +360,114 @@
             color: var(--text-muted); white-space: nowrap;
         }
 
-        /* ── Content column (right of sidebar) ─────── */
+        /* ── Content column (center) ──────────────── */
         .content-col {
             flex: 1;
             max-width: var(--col-width);
             padding: 0 0 4rem;
         }
+
+        /* ── Insight column (right — "What you should read") */
+        .insight-column {
+            width: 280px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 70px;
+            padding-top: 0.5rem;
+        }
+        .insight-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.15em;
+            color: var(--text-dim); margin-bottom: 0.75rem;
+        }
+        .insight-card {
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.5s var(--ease-out-expo), opacity 0.4s var(--ease-out-expo);
+        }
+        .insight-card.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .insight-card-inner {
+            padding: 1.25rem 1.25rem;
+            font-size: 0.88rem; line-height: 1.65;
+            color: var(--text-primary); font-weight: 500;
+        }
+        .insight-card-red {
+            background: linear-gradient(135deg, rgba(196,75,40,0.06), rgba(196,75,40,0.12));
+            border: 1px solid var(--red-border);
+            border-left: 4px solid var(--red);
+        }
+        .insight-card-yellow {
+            background: linear-gradient(135deg, rgba(196,155,40,0.06), rgba(196,155,40,0.12));
+            border: 1px solid var(--yellow-border);
+            border-left: 4px solid var(--yellow);
+        }
+        .insight-card-green {
+            background: linear-gradient(135deg, rgba(45,138,78,0.04), rgba(45,138,78,0.08));
+            border: 1px solid var(--green-border);
+            border-left: 4px solid var(--green);
+        }
+        .insight-card .insight-en {
+            font-size: 0.78rem; color: var(--text-muted);
+            font-style: italic; margin-top: 0.6rem;
+            padding-top: 0.6rem; border-top: 1px dashed var(--border-light);
+        }
+        .insight-card .insight-en::before {
+            content: 'EN'; display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem; font-weight: 700; font-style: normal;
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: 3px; padding: 0.1rem 0.3rem;
+            margin-right: 0.4rem; vertical-align: middle;
+        }
+        .insight-should-read {
+            margin-bottom: 0.5rem;
+        }
+        .insight-example {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--border-light);
+        }
+        .insight-example-label {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+        .insight-figure {
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 0.6rem;
+            letter-spacing: -0.01em;
+        }
+        .insight-figure-red { color: var(--red); }
+        .insight-figure-yellow { color: var(--yellow); }
+        .insight-figure-green { color: var(--green); }
+        .insight-narrative {
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .insight-figure-en {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .insight-num {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .insight-card-red .insight-num { color: var(--red); }
+        .insight-card-yellow .insight-num { color: var(--yellow); }
+        .insight-card-green .insight-num { color: var(--green); }
 
         /* ── Document thumbnail (upper-left of profile) */
         .doc-thumbnail {
@@ -398,9 +500,14 @@
             overflow: hidden;
         }
 
+        @media (max-width: 1200px) {
+            .insight-column { width: 220px; }
+        }
         @media (max-width: 900px) {
             .analysis-layout { flex-direction: column; padding: 0 1rem; gap: 1rem; }
             .analysis-sidebar { width: 100%; position: static; }
+            .insight-column { width: 100%; position: static; order: 2; }
+            .content-col { order: 1; }
         }
         .editorial-loading-label {
             font-family: 'JetBrains Mono', monospace;
@@ -781,6 +888,17 @@
             border-left: 3px solid var(--border); font-size: 0.84rem;
             line-height: 1.65; color: var(--text-secondary); font-style: italic;
         }
+        .find-in-doc {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-dim); cursor: pointer;
+            margin-bottom: 1rem; padding: 0.2rem 0;
+            transition: color var(--transition);
+            text-decoration: none;
+        }
+        .find-in-doc:hover { color: var(--accent); }
         .reader-voice {
             padding: 1rem 1.1rem; border-radius: var(--radius-sm);
             background: linear-gradient(135deg, rgba(45, 138, 78, 0.04), rgba(45, 138, 78, 0.08));
@@ -814,19 +932,25 @@
         /* Flip trigger — the invitation */
         .flip-trigger {
             display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-            width: 100%; padding: 1rem 2rem; margin-top: 1.25rem;
-            background: none; border: none; border-top: 1px solid var(--border-light);
-            cursor: pointer; font-family: inherit; font-size: 0.82rem;
-            font-weight: 600; color: var(--accent); transition: all var(--transition);
+            width: calc(100% - 2.5rem); margin: 1.25rem auto 0; padding: 0.9rem 2rem;
+            background: var(--accent); border: none; border-radius: var(--radius);
+            cursor: pointer; font-family: inherit; font-size: 0.85rem;
+            font-weight: 700; color: #fff; letter-spacing: 0.02em;
+            transition: background 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo), box-shadow 0.25s;
             position: relative; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(196,75,40,0.18);
         }
         .flip-trigger::before {
             content: ''; position: absolute; inset: 0;
-            background: linear-gradient(135deg, var(--accent-light), transparent);
+            background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
             opacity: 0; transition: opacity var(--transition);
         }
         .flip-trigger:hover::before { opacity: 1; }
-        .flip-trigger:hover { color: var(--accent-hover); }
+        .flip-trigger:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(196,75,40,0.25);
+        }
         .flip-trigger-arrow {
             display: inline-block; font-size: 1rem;
             transition: transform 0.4s var(--ease-out-expo);
@@ -979,6 +1103,14 @@
             color: var(--text-primary); font-weight: 500;
         }
         .juxtapose-read .juxtapose-label { color: var(--accent); }
+
+        /* Small print block (card back, full-width) */
+        .smallprint-block {
+            padding: 0.9rem 1rem; border-radius: var(--radius-sm);
+            background: var(--bg-surface); border: 1px solid var(--border-light);
+            font-size: 0.84rem; line-height: 1.6; color: var(--text-body);
+            margin-bottom: 1rem;
+        }
 
         /* English translation toggle (bilingual cards) */
         .en-translation {
@@ -1277,15 +1409,96 @@
         /* ══════════════════════════════════════════════════════
            RESPONSIVE
            ══════════════════════════════════════════════════════ */
+
+        /* Tablet: sidebar stacks above content (handled at 900px above) */
+
         @media (max-width: 600px) {
+            /* Upload screen */
             .brand h1 { font-size: 2.4rem; }
             .upload-card { padding: 1.25rem; }
+
+            /* Layout */
+            .analysis-layout { padding: 0 0.5rem; }
             .content-col { padding: 0 0 3rem; }
-            .analysis-header { padding: 0.5rem 1rem; }
+            .analysis-header { padding: 0.5rem 0.75rem; }
+
+            /* Sidebar profile: stack thumbnail above pills on small screens */
+            .sidebar-profile { flex-direction: column; gap: 0.4rem; }
+            .doc-thumbnail { width: 100%; height: 80px; }
+            .doc-thumbnail img { height: 80px; object-fit: cover; object-position: top center; }
+            .metadata-line { gap: 0.2rem; }
+            .meta-pill { font-size: 0.6rem; padding: 0.15rem 0.4rem; }
+            .meta-pill .meta-pill-label { font-size: 0.4rem; }
+
+            /* Editorial loading / document preview */
+            .editorial-loading-text {
+                max-height: 30vh; font-size: 0.72rem;
+                margin-left: 0.75rem; margin-right: 0.75rem;
+                padding-left: 0.75rem;
+            }
+
+            /* Flip cards */
+            .flip-card { margin-bottom: 1rem; }
+            .front-content { padding: 1.25rem 1.25rem 0; }
+            .clause-reassurance { font-size: 1.05rem; }
+            .flip-card .clause-title { font-size: 1rem; }
+            .flip-card .clause-quote { padding: 0.7rem 0.9rem; font-size: 0.78rem; }
+            .reader-voice { padding: 0.75rem 0.9rem; }
+            .reader-voice-text { font-size: 0.84rem; }
+            .flip-trigger { padding: 0.75rem 1.25rem; font-size: 0.78rem; width: calc(100% - 2rem); }
+
+            /* Card back */
+            .risk-header { padding: 1rem 1.25rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .back-body { padding: 1.25rem; }
+            .clause-juxtapose { grid-template-columns: 1fr; gap: 0.5rem; }
+            .juxtapose-col { padding: 0.7rem 0.85rem; font-size: 0.78rem; }
+            .drafter-voice { padding: 0.75rem 0.9rem; font-size: 0.82rem; }
+            .bottom-line { padding: 0.7rem 0.9rem; font-size: 0.78rem; }
+            .flip-back-trigger { padding: 0.7rem 1.25rem; font-size: 0.75rem; }
+
+            /* Card navigation */
+            .card-navigation { gap: 0.75rem; padding: 1rem 0; }
+            .card-nav-btn { padding: 0.45rem 0.8rem; font-size: 0.75rem; }
+            .card-nav-counter { font-size: 0.7rem; }
+
+            /* Deep analysis cards */
             .clause-card, .cross-clause-card, .playbook-card, .assessment-card {
                 padding: 1rem 1.1rem;
             }
-            .summary-top { flex-direction: column; align-items: center; text-align: center; }
+
+            /* Summary */
+            .summary-top { flex-direction: column; align-items: center; text-align: center; gap: 1rem; }
+            .score-ring { width: 90px; height: 90px; }
+
+            /* Follow-up */
+            .followup-input { font-size: 0.85rem; }
+
+            /* Bilingual */
+            .en-translation-toggle { font-size: 0.6rem; padding: 0.3rem 0; }
+            .en-juxtapose .juxtapose-col { font-size: 0.72rem; }
+            .en-report-toggle { font-size: 0.65rem; padding: 0.75rem 1rem; }
+            .en-report-content { padding: 0 1rem 1rem; }
+
+            /* Deep analysis header */
+            .deep-analysis-header { padding: 0 0.5rem; }
+
+            /* Insight column on mobile */
+            .insight-column { width: 100%; margin-top: 0.5rem; }
+            .insight-card-inner { padding: 1rem; font-size: 0.84rem; }
+            .insight-figure { font-size: 1.15rem; }
+            .insight-narrative { font-size: 0.78rem; }
+            .insight-example-label { font-size: 0.55rem; }
+            .insight-label { font-size: 0.55rem; margin-bottom: 0.5rem; }
+        }
+
+        /* Very small screens (iPhone SE, etc.) */
+        @media (max-width: 380px) {
+            .brand h1 { font-size: 2rem; }
+            .front-content { padding: 1rem 1rem 0; }
+            .risk-header { padding: 0.75rem 1rem; }
+            .card-navigation { gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+            .card-nav-btn { padding: 0.4rem 0.6rem; font-size: 0.7rem; }
+            .clause-reassurance { font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -1468,6 +1681,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Right column: "What you should read" (animated on flip) -->
+    <aside class="insight-column hidden" id="insightColumn">
+        <div class="insight-label">Your reality check</div>
+        <div class="insight-card hidden" id="insightCard">
+            <div class="insight-card-inner" id="insightCardInner"></div>
+        </div>
+    </aside>
     </div><!-- /analysis-layout -->
 </section>
 
@@ -1633,6 +1854,7 @@
                     var w = fill.getAttribute('data-width');
                     setTimeout(function() { fill.style.width = w + '%'; }, 300);
                 }
+                showInsightForCard(card);
             }
             return;
         }
@@ -1640,6 +1862,20 @@
         if (flipBack) {
             var card = flipBack.closest('.flip-card');
             if (card) card.classList.remove('flipped');
+            hideInsightColumn();
+            return;
+        }
+        var findInDoc = e.target.closest('.find-in-doc');
+        if (findInDoc) {
+            var cardIdx = parseInt(findInDoc.getAttribute('data-card-index'));
+            if (!isNaN(cardIdx)) {
+                scrollPreviewToCard(cardIdx);
+                // On mobile (sidebar stacked above), scroll page to the preview
+                var previewEl = $('editorialLoadingText');
+                if (previewEl && window.innerWidth <= 900) {
+                    previewEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
             return;
         }
         var navPrev = e.target.closest('.card-nav-prev');
@@ -1696,13 +1932,16 @@
                 e.preventDefault();
                 if (cards[currentCardIndex]) {
                     cards[currentCardIndex].classList.toggle('flipped');
-                    // Animate score bar on flip
                     if (cards[currentCardIndex].classList.contains('flipped')) {
+                        // Animate score bar on flip
                         var fill = cards[currentCardIndex].querySelector('.back-score-bar-fill');
                         if (fill && !fill.style.width) {
                             var w = fill.getAttribute('data-width');
                             setTimeout(function() { fill.style.width = w + '%'; }, 300);
                         }
+                        showInsightForCard(cards[currentCardIndex]);
+                    } else {
+                        hideInsightColumn();
                     }
                 }
                 break;
@@ -2010,6 +2249,8 @@
         resultsArea.classList.add('hidden');
         $('cardViewport').classList.add('hidden');
         $('cardNavigation').classList.add('hidden');
+        $('insightColumn').classList.add('hidden');
+        hideInsightColumn();
         $('copyAllBtn').classList.add('hidden');
         $('exportBtn').classList.add('hidden');
         backBtn.classList.remove('hidden');
@@ -2624,18 +2865,33 @@
         var bottomLine = bottomLineMatch ? bottomLineMatch[1].trim() : '';
 
         var smallPrintMatch = segment.match(/\*{1,2}What the small print says:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}What you should read|\n\n###|\n\n##|$)/i);
-        var shouldReadMatch = segment.match(/\*{1,2}What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\n\n###|\n\n##|$)/i);
+        var shouldReadMatch = segment.match(/\*{1,2}What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}What does this mean|\n\n###|\n\n##|$)/i);
         var smallPrint = smallPrintMatch ? smallPrintMatch[1].trim() : '';
         var shouldRead = shouldReadMatch ? shouldReadMatch[1].trim() : '';
         // Fallback: if smallPrint is empty, use the quote (the actual contract text)
         if (!smallPrint && quote) smallPrint = quote;
 
+        // "What does this mean for you" — structured: [FIGURE] + [EXAMPLE]
+        var figureMatch = segment.match(/\[FIGURE\]\s*:\s*(.+)/i);
+        var figure = figureMatch ? figureMatch[1].trim() : '';
+        var exampleNarrativeMatch = segment.match(/\[EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\n###|\n\n##|\n\n---|\*{1,2}\[EN\]|$)/i);
+        var exampleNarrative = exampleNarrativeMatch ? exampleNarrativeMatch[1].trim() : '';
+        // Fallback: if no [FIGURE]/[EXAMPLE] tags, try old free-text format
+        if (!figure && !exampleNarrative) {
+            var exampleMatch = segment.match(/\*{1,2}What does this mean for you:?\*{0,2}:?\s*([\s\S]*?)(?=\n\n###|\n\n##|\n\n---|\*{1,2}\[EN\]|$)/i);
+            if (exampleMatch) exampleNarrative = exampleMatch[1].trim();
+        }
+
         // English translations (for non-English documents)
         var enSmallPrintMatch = segment.match(/\*{1,2}\[EN\]\s*What the small print says:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What you should read|\n\n###|\n\n##|$)/i);
-        var enShouldReadMatch = segment.match(/\*{1,2}\[EN\]\s*What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\n\n###|\n\n##|\n\n---|\[EN-READER\]|$)/i);
+        var enShouldReadMatch = segment.match(/\*{1,2}\[EN\]\s*What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What does this mean|\n\n###|\n\n##|\n\n---|\[EN-READER\]|\[EN-FIGURE\]|$)/i);
+        var enFigureMatch = segment.match(/\[EN-FIGURE\]\s*:\s*(.+)/i);
+        var enExampleNarrativeMatch = segment.match(/\[EN-EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\n###|\n\n##|\n\n---|\[EN-READER\]|$)/i);
         var enReaderMatch = segment.match(/\[EN-READER\]\s*:\s*([\s\S]*?)(?=\n\n|\n(?:GREEN|YELLOW|RED)|\n---|\n###|$)/i);
         var enSmallPrint = enSmallPrintMatch ? enSmallPrintMatch[1].trim() : '';
         var enShouldRead = enShouldReadMatch ? enShouldReadMatch[1].trim() : '';
+        var enFigure = enFigureMatch ? enFigureMatch[1].trim() : '';
+        var enExampleNarrative = enExampleNarrativeMatch ? enExampleNarrativeMatch[1].trim() : '';
         var enReader = enReaderMatch ? enReaderMatch[1].trim() : '';
 
         return {
@@ -2644,7 +2900,9 @@
             risk: risk, score: score, trick: trick,
             confidence: confidence, confidenceReason: confidenceReason,
             bottomLine: bottomLine, smallPrint: smallPrint, shouldRead: shouldRead,
-            enSmallPrint: enSmallPrint, enShouldRead: enShouldRead, enReader: enReader
+            figure: figure, exampleNarrative: exampleNarrative,
+            enSmallPrint: enSmallPrint, enShouldRead: enShouldRead,
+            enFigure: enFigure, enExampleNarrative: enExampleNarrative, enReader: enReader
         };
     }
 
@@ -2661,13 +2919,14 @@
             (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
             '<h3 class="clause-title">' + escapeHtml(clause.title) + '</h3>' +
             (clause.quote ? '<div class="clause-quote">' + escapeHtml(clause.quote) + '</div>' : '') +
+            (documentFullText && !isCompareMode ? '<a class="find-in-doc" data-card-index="' + index + '">Find in document &uarr;</a>' : '') +
             '<div class="reader-voice">' +
             '<span class="reader-voice-label">You\u2019d think</span>' +
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
             (clause.enReader ? '<div class="reader-voice-en">' + escapeHtml(clause.enReader) + '</div>' : '') +
             '</div>' +
             '</div>' +
-            '<button class="flip-trigger"><span>See the other side</span><span class="flip-trigger-arrow">&rarr;</span></button>' +
+            '<button class="flip-trigger"><span>Now flip it</span><span class="flip-trigger-arrow">&rarr;</span></button>' +
             '</div>';
 
         // ── Back body: verdict for green, juxtaposition + verdict link for others ──
@@ -2679,26 +2938,23 @@
                 '</div>';
         }
 
-        if (clause.smallPrint || clause.shouldRead) {
-            backBodyHtml += '<div class="clause-juxtapose">' +
-                '<div class="juxtapose-col juxtapose-says"><span class="juxtapose-label">What the small print says</span>' + escapeHtml(clause.smallPrint) + '</div>' +
-                '<div class="juxtapose-col juxtapose-read"><span class="juxtapose-label">What you should read</span>' + escapeHtml(clause.shouldRead) + '</div>' +
-                '</div>';
+        // "What the small print says" stays on the card
+        if (clause.smallPrint) {
+            backBodyHtml += '<div class="smallprint-block"><span class="juxtapose-label">What the small print says</span>' +
+                escapeHtml(clause.smallPrint) + '</div>';
+        }
+        // EN small print (collapsible)
+        if (clause.enSmallPrint) {
+            backBodyHtml += '<details class="en-translation"><summary class="en-translation-toggle">Show in English</summary>' +
+                '<div class="smallprint-block" style="margin-top:0.5rem">' +
+                '<span class="juxtapose-label">What the small print says</span>' + escapeHtml(clause.enSmallPrint) +
+                '</div></details>';
         }
 
         // Bottom line — the reveal after flipping
         if (clause.bottomLine) {
             backBodyHtml += '<div class="bottom-line bottom-line-' + risk + '">' +
                 escapeHtml(clause.bottomLine) + '</div>';
-        }
-
-        // English translation (for non-English documents)
-        if (clause.enSmallPrint || clause.enShouldRead) {
-            backBodyHtml += '<details class="en-translation"><summary class="en-translation-toggle">Show in English</summary>' +
-                '<div class="clause-juxtapose en-juxtapose">' +
-                '<div class="juxtapose-col juxtapose-says"><span class="juxtapose-label">What the small print says</span>' + escapeHtml(clause.enSmallPrint) + '</div>' +
-                '<div class="juxtapose-col juxtapose-read"><span class="juxtapose-label">What you should read</span>' + escapeHtml(clause.enShouldRead) + '</div>' +
-                '</div></details>';
         }
 
         // Verdict link removed — full verdict shown after all cards via navigation
@@ -2731,6 +2987,12 @@
         cardEl.setAttribute('data-risk-level', risk);
         cardEl.setAttribute('data-clause-title', escapeHtml(clause.title));
         cardEl.setAttribute('data-section-ref', clause.section || '');
+        if (clause.shouldRead) cardEl.setAttribute('data-should-read', clause.shouldRead);
+        if (clause.figure) cardEl.setAttribute('data-figure', clause.figure);
+        if (clause.exampleNarrative) cardEl.setAttribute('data-example', clause.exampleNarrative);
+        if (clause.enShouldRead) cardEl.setAttribute('data-en-should-read', clause.enShouldRead);
+        if (clause.enFigure) cardEl.setAttribute('data-en-figure', clause.enFigure);
+        if (clause.enExampleNarrative) cardEl.setAttribute('data-en-example', clause.enExampleNarrative);
         cardEl.innerHTML = '<div class="flip-card-inner">' + frontHtml + backHtml + '</div>';
         flipCardContainer.appendChild(cardEl);
 
@@ -2831,6 +3093,8 @@
         var viewport = $('cardViewport');
         viewport.classList.remove('hidden');
         resultsArea.classList.remove('hidden');
+        // Show insight column (card inside starts hidden, shown on flip)
+        if (!isCompareMode) $('insightColumn').classList.remove('hidden');
         showCardAtIndex(0);
     }
 
@@ -2887,6 +3151,75 @@
     }
 
     // ── Show one card, hide rest, update nav ─────────────────
+    // ── Insight column: "What you should read" + "What does this mean for you" ──
+    // Highlight dollar amounts, percentages, and day counts in text
+    function highlightNumbers(text) {
+        return escapeHtml(text).replace(
+            /(\$[\d,]+(?:\.\d{2})?|\d+%|\d+\s*(?:days?|months?|years?|hours?))/gi,
+            '<span class="insight-num">$1</span>'
+        );
+    }
+
+    function showInsightForCard(cardEl) {
+        var col = $('insightColumn');
+        var card = $('insightCard');
+        var inner = $('insightCardInner');
+        if (!col || !card || !inner) return;
+
+        var shouldRead = cardEl.getAttribute('data-should-read');
+        if (!shouldRead) { hideInsightColumn(); return; }
+
+        var risk = cardEl.getAttribute('data-risk-level') || 'green';
+        var enShouldRead = cardEl.getAttribute('data-en-should-read');
+        var figure = cardEl.getAttribute('data-figure');
+        var example = cardEl.getAttribute('data-example');
+        var enFigure = cardEl.getAttribute('data-en-figure');
+        var enExample = cardEl.getAttribute('data-en-example');
+
+        // "What you should read" section
+        var html = '<div class="insight-should-read">' + highlightNumbers(shouldRead) + '</div>';
+        if (enShouldRead) {
+            html += '<div class="insight-en">' + highlightNumbers(enShouldRead) + '</div>';
+        }
+
+        // "What does this mean for you" — headline figure + narrative
+        if (figure || example) {
+            html += '<div class="insight-example">' +
+                '<span class="insight-example-label">What does this mean for you</span>';
+            if (figure) {
+                html += '<div class="insight-figure insight-figure-' + risk + '">' + highlightNumbers(figure) + '</div>';
+            }
+            if (example) {
+                html += '<div class="insight-narrative">' + highlightNumbers(example) + '</div>';
+            }
+            html += '</div>';
+            // EN translations for example section
+            if (enFigure || enExample) {
+                html += '<div class="insight-en">';
+                if (enFigure) html += '<div class="insight-figure-en">' + highlightNumbers(enFigure) + '</div>';
+                if (enExample) html += '<div>' + highlightNumbers(enExample) + '</div>';
+                html += '</div>';
+            }
+        }
+        inner.innerHTML = html;
+
+        // Set risk color
+        card.className = 'insight-card insight-card-' + risk;
+        col.classList.remove('hidden');
+
+        // Trigger drop-in animation
+        requestAnimationFrame(function() {
+            card.classList.add('visible');
+        });
+    }
+
+    function hideInsightColumn() {
+        var card = $('insightCard');
+        if (card) {
+            card.classList.remove('visible');
+        }
+    }
+
     function showCardAtIndex(index) {
         var cards = flipCardContainer.querySelectorAll('.flip-card');
         if (index < 0 || index >= cards.length) return;
@@ -2903,6 +3236,9 @@
                 cards[i].classList.add('hidden');
             }
         }
+
+        // Hide insight column when navigating (card is un-flipped)
+        hideInsightColumn();
 
         // Animate score bar on visible card
         var visibleCard = cards[index];

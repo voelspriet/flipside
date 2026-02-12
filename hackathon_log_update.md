@@ -406,14 +406,46 @@ FlipSide's value is in the reasoning (perspective flip, cross-clause detection, 
 
 Where MCPs WOULD help (post-hackathon): pulling jurisdiction-specific consumer protection laws, standard contract templates for Fair Standard Comparison, or legal precedent databases. Not needed for the core product.
 
+### Phase 10: The Reality Check Column — Making Analysis Tangible
+
+**Entry 44 — Three-Column Layout: Spatial Information Architecture**
+
+The flip card had everything on two sides: front (reassurance + reader voice) and back (small print + should-read + bottom line + villain voice). The user insight: "What you should read" doesn't belong on the card back — it belongs in its OWN space, because it's what the user takes away.
+
+New layout: left sidebar (document preview), center (flip cards), right column ("Your reality check"). The insight column drops in animated when a card flips, color-coded by risk (red/yellow/green gradient + left border). Disappears when you navigate or flip back.
+
+**Why three columns**: Each column maps to a conceptual layer:
+- Left = the raw document (what the drafter published)
+- Center = the drafter's intent (what the small print really says)
+- Right = your reality (what this means for your wallet/rights)
+
+**Entry 45 — "Find in Document" Bidirectional Navigation**
+
+Cards already had preview→card navigation (click numbered markers). Added the reverse: "Find in document ↑" link on each card front. Click it → preview scrolls to the matching clause. On mobile (≤900px), also scrolls the page to show the preview.
+
+**Entry 46 — "What Does This Mean For You": From Abstract to Concrete**
+
+"What you should read" says the PRINCIPLE ("your debt grows faster than you can pay"). But consumers need EXAMPLES with numbers. Added `[FIGURE]` and `[EXAMPLE]` structured output to the prompt:
+
+- `[FIGURE]`: Single worst-case stat, rendered at 1.35rem bold in risk color. Examples: "$4,100 total debt from one missed payment" / "$0 payout on a $50,000 claim" / "30 days or you lose all rights"
+- `[EXAMPLE]`: 2-3 sentence scenario using the document's actual figures. Rendered smaller, muted, with dollar amounts and time periods highlighted in risk color via regex.
+
+**Zero processing delay**: Same Haiku streaming call, ~30 extra tokens per clause. The structured format (`[FIGURE]`/`[EXAMPLE]` tags) is more reliable than parsing numbers from free text.
+
+**Why this matters**: The figure IS the graphic. "$4,100" in 1.35rem bold red is more visually impactful than any chart. Financial literacy research shows consumers understand "$160 extra next month" far better than "8% compound rate." The insight column now escalates from abstract (should-read) to concrete (figure + example).
+
+**Entry 47 — "Now Flip It" Call to Action**
+
+The flip trigger was a subtle text link ("See the other side →"). Invisible to many users. Changed to a solid rust-colored pill button with white bold text: "Now flip it →". Hover lifts 1px with deeper shadow. The button IS the invitation — it must look clickable, not like a footnote.
+
 ---
 
 ## What Exists Now
 
 | Artifact | Lines/Size | Purpose |
 |----------|-----------|---------|
-| `app.py` | 1,371 lines | Flask backend, 7 prompts, vision, bilingual, garbled text cleanup, SSE |
-| `templates/index.html` | 3,521 lines | Full frontend — flip cards, sidebar profile, bilingual, clause markers |
+| `app.py` | ~1,385 lines | Flask backend, prompts with [FIGURE]/[EXAMPLE], vision, bilingual, SSE |
+| `templates/index.html` | ~3,800 lines | Three-column layout, flip cards, insight column, clause markers |
 | `hackaton.md` | 200 lines | 100 prompts: 48 executed (Phase 1) + 50 pending (Phase 2) |
 | `strategy.md` | ~370 lines | 10 strategy decisions documented |
 | `decision_monitor.py` | ~230 lines | Jury-facing decision timeline generator |
@@ -422,15 +454,14 @@ Where MCPs WOULD help (post-hackathon): pulling jurisdiction-specific consumer p
 
 ## What Changed Since Last Update
 
-- **+141 lines** in `app.py` (bilingual prompts, garbled text cleanup, thumbnail generation)
-- **+382 lines** in `templates/index.html` (sidebar profile, bilingual CSS/JS, clause markers, reassurance headlines)
-- **Bilingual analysis** — non-English documents get EN translations on cards + deep analysis summary
-- **Document preview** as interactive navigation map with clause markers
-- **Reassurance headlines** — positive framing on card fronts, maximizing flip contrast
-- **Reversed text cleanup** — hybrid dictionary + Haiku 4.5 gate for garbled PDFs
-- **Sidebar redesign** — thumbnail + pills in horizontal row, context before content
-- **MCP evaluated and rejected** — reasoning > data fetching for this product
-- **Phase 2 probes newly addressed**: #62 (multilingual via bilingual), #72 (RTL preparation via bilingual), #82 (keyboard 1-9 nav)
+- **Three-column layout**: sidebar (document) + center (flip cards) + right (insight column)
+- **Insight column**: animated drop-in on flip, risk-colored, with "What you should read" + "What does this mean for you"
+- **[FIGURE] + [EXAMPLE]**: structured prompt output → big headline stat + narrative with highlighted numbers
+- **Number highlighting**: dollar amounts, percentages, and time periods auto-highlighted in risk color
+- **"Find in document"**: bidirectional card↔preview navigation
+- **"Now flip it"**: prominent rust-colored CTA button replacing subtle text link
+- **Mobile responsive**: all new elements scale properly down to 380px
+- **Bilingual support**: [EN-FIGURE] and [EN-EXAMPLE] for non-English documents
 
 ## What Does Not Exist Yet
 

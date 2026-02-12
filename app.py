@@ -642,6 +642,10 @@ For EACH significant clause:
 
 **What you should read:** [what this ACTUALLY means for you — direct, specific, concrete. Show the gap between the words and reality.]
 
+**What does this mean for you:**
+[FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "$0 payout on a $50,000 claim".]
+[EXAMPLE]: [One concrete scenario using the document's own figures. 2-3 sentences max.]
+
 Then include the appropriate action items based on negotiability.
 
 ---
@@ -691,6 +695,9 @@ Respond in the SAME LANGUAGE as the document. If the document is in Dutch, respo
 If the document is NOT in English, add an English translation for each clause's key fields:
 **[EN] What the small print says:** [English translation of the small print line]
 **[EN] What you should read:** [English translation of the should-read line]
+**[EN] What does this mean for you:**
+[EN-FIGURE]: [English translation of the FIGURE line]
+[EN-EXAMPLE]: [English translation of the EXAMPLE line]
 [EN-READER]: [English translation of the READER line]
 Only add these [EN] lines for non-English documents. For English documents, skip them entirely.
 
@@ -732,6 +739,10 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguo
 **What the small print says:** [One sentence. Plain restatement of what this clause literally says. Neutral tone.]
 
 **What you should read:** [One sentence. What this ACTUALLY means for the reader. Direct, specific. If alarming, be alarming.]
+
+**What does this mean for you:**
+[FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "$0 payout on a $50,000 claim" / "30 days or you lose all rights" / "0 notice required to change your rate". For GREEN clauses: the positive figure, e.g. "$50,000 coverage confirmed" / "Full 30-day refund window".]
+[EXAMPLE]: [One concrete scenario using the document's own figures. Walk through what happens step by step. Be specific with dollar amounts, timelines, consequences. Keep to 2-3 sentences max.]
 
 ---
 

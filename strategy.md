@@ -367,3 +367,29 @@
 **The UX mechanism**: User uploads → sidebar immediately shows thumbnail + pills → document text appears in scrollable preview → first flip card arrives in the content column. At no point does the user see an analysis result without knowing the document's context.
 
 **Key insight**: Information architecture is an argument. By showing WHO drafted the document before showing WHAT they hid in it, you create a narrative frame. The user forms an impression of the drafter before seeing the drafter's tricks revealed. This makes the analysis feel like a story, not a report.
+
+---
+
+## Decision: The Figure IS the Graphic — Structured Output for Visual Impact
+
+**Date**: 2026-02-12
+**Context**: The insight column showed "What you should read" as a text paragraph. Accurate but a wall of text. The user's example: "Miss rent by one day: $75 fee. By day 10, $750 in fees alone..." — great content, but buried in prose.
+
+**The strategy**: Instead of parsing free text to find numbers (fragile), push the structure upstream into the prompt. Ask the model to output `[FIGURE]` (single worst-case stat) and `[EXAMPLE]` (2-3 sentence scenario) as tagged fields. Render the figure large and bold in risk color. The number IS the graphic.
+
+**Why this works**:
+
+- "$4,100" in 1.35rem bold red is more visually impactful than any chart or icon
+- The model is better at deciding "what's the headline stat" than a regex is at guessing it from prose
+- Works universally: dollar amounts for fee clauses, time periods for deadlines, zero payouts for insurance exclusions, coverage amounts for green clauses
+- Number highlighting (regex on escaped HTML) catches remaining amounts in the narrative text
+
+**Three evaluated approaches**:
+
+1. **Highlight numbers in-place** — Parse `$X` from free text with regex. Fragile, can't distinguish the headline from minor figures.
+2. **Big headline number + narrative** — Model outputs the key stat first, rendered large. Universal, reliable.
+3. **Structured escalation cascade** — Model outputs timeline steps rendered as CSS bars. Only works for escalation scenarios (late fees), not for binary outcomes (insurance exclusions).
+
+**Chosen**: Hybrid of 1+2. Structured `[FIGURE]` for the headline, regex highlighting for remaining numbers in the `[EXAMPLE]` narrative. Covers all clause types.
+
+**Key insight**: When you want visual differentiation in the frontend, push the structure upstream into the prompt format. Don't try to extract structure from prose — ask for structure directly. The model is a better information architect than a regex.
