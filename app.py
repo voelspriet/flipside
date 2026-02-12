@@ -246,7 +246,12 @@ def extract_pdf(file_storage):
                     page_images.append(base64.b64encode(buf.getvalue()).decode())
                 except Exception:
                     pass
-    raw_text = '\n\n'.join(text_parts)
+    # Tag each page so the sidebar can render page dividers
+    # and later clauses from page 3+ are matchable
+    tagged = []
+    for i, part in enumerate(text_parts):
+        tagged.append(f'\n\n— Page {i + 1} —\n\n{part}')
+    raw_text = ''.join(tagged).strip()
     return clean_extracted_text(raw_text), page_images
 
 
@@ -493,7 +498,7 @@ def upload():
             'filename': filename,
             'text_length': len(text),
             'preview': text[:300],
-            'full_text': text[:5000],
+            'full_text': text[:15000],
             'thumbnail': thumbnail,
         })
 
@@ -522,7 +527,7 @@ def sample():
         'filename': 'QuickRent Lease Agreement (Sample)',
         'text_length': len(SAMPLE_DOCUMENT),
         'preview': SAMPLE_DOCUMENT[:300],
-        'full_text': SAMPLE_DOCUMENT[:5000],
+        'full_text': SAMPLE_DOCUMENT[:15000],
     })
 
 
@@ -1008,7 +1013,7 @@ def compare():
             'filename': filenames[0] + ' vs ' + filenames[1],
             'text_length': len(texts[0]) + len(texts[1]),
             'preview': texts[0][:150] + '\n---\n' + texts[1][:150],
-            'full_text': texts[0][:5000],
+            'full_text': texts[0][:15000],
             'mode': 'compare',
         })
     except Exception as e:

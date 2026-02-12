@@ -255,7 +255,7 @@
         }
         .upload-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
         .upload-links a.sample-btn-red {
-            color: var(--red-text); border-bottom-color: var(--red);
+            color: var(--text-secondary); border-bottom-color: var(--text-dim);
             font-weight: 600;
         }
         .upload-links a.sample-btn-red:hover { color: var(--accent); border-bottom-color: var(--accent); }
@@ -376,6 +376,17 @@
             position: sticky;
             top: 70px;
             padding-top: 0.5rem;
+            transition: opacity 0.5s var(--ease-out-expo);
+        }
+        /* Dim side columns when card is flipped — focus on the reveal */
+        .analysis-sidebar, .insight-column {
+            transition: opacity 0.5s var(--ease-out-expo);
+        }
+        .layout-flipped .analysis-sidebar {
+            opacity: 0.35;
+        }
+        .layout-flipped .analysis-sidebar:hover {
+            opacity: 1;
         }
         .insight-label {
             font-family: 'JetBrains Mono', monospace;
@@ -584,6 +595,21 @@
         .doc-clause-marker-green { background: var(--green); }
         .doc-clause-marker-yellow { background: var(--yellow); }
         .doc-clause-marker-red { background: var(--red); }
+        .doc-page-marker {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin: 1.2rem 0 0.8rem; padding: 0;
+            color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase;
+        }
+        .doc-page-marker::before, .doc-page-marker::after {
+            content: ''; flex: 1; height: 1px;
+            background: var(--border);
+        }
+        .doc-page-marker span {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 50%;
+            border: 1px solid var(--border); font-size: 0.55rem; font-weight: 600;
+        }
         .editorial-loading-indicator {
             display: flex; align-items: center; gap: 0.75rem;
             margin: 0 1.5rem; padding: 1rem 0 1.2rem;
@@ -881,6 +907,10 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             box-shadow: var(--shadow-md);
+            transition: opacity 0.25s ease-out;
+        }
+        .flip-card.flipped .flip-card-front {
+            opacity: 0;
         }
         .flip-card-back {
             transform: rotateY(180deg);
@@ -900,7 +930,7 @@
         }
 
         /* Front content */
-        .front-content { padding: 2rem 2rem 0; }
+        .front-content { padding: 2rem 2rem 1.25rem; }
         .clause-reassurance {
             font-size: 1.3rem; font-weight: 700; color: var(--green-text);
             line-height: 1.25; margin-bottom: 1rem;
@@ -1043,30 +1073,20 @@
             color: var(--text-muted);
         }
 
-        /* Flip trigger — the invitation */
+        /* Flip trigger — quiet invitation */
         .flip-trigger {
-            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-            width: calc(100% - 2.5rem); margin: 1.25rem auto 0; padding: 0.9rem 2rem;
-            background: var(--accent); border: none; border-radius: var(--radius);
-            cursor: pointer; font-family: inherit; font-size: 0.85rem;
-            font-weight: 700; color: #fff; letter-spacing: 0.02em;
-            transition: background 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo), box-shadow 0.25s;
-            position: relative; overflow: hidden;
-            box-shadow: 0 2px 8px rgba(196,75,40,0.18);
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            width: 100%; margin: 0; padding: 0.9rem 2rem;
+            background: none; border: none; border-top: 1px solid var(--border-light);
+            cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+            font-weight: 500; color: var(--text-dim); letter-spacing: 0.04em;
+            transition: color 0.25s var(--ease-out-expo);
         }
-        .flip-trigger::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
-            opacity: 0; transition: opacity var(--transition);
-        }
-        .flip-trigger:hover::before { opacity: 1; }
         .flip-trigger:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(196,75,40,0.25);
+            color: var(--text-secondary);
         }
         .flip-trigger-arrow {
-            display: inline-block; font-size: 1rem;
+            display: inline-block; font-size: 0.85rem;
             transition: transform 0.4s var(--ease-out-expo);
         }
         .flip-trigger:hover .flip-trigger-arrow {
@@ -1347,8 +1367,9 @@
             margin-bottom: 0.6rem;
         }
         .back-figure {
-            font-size: 1.25rem; font-weight: 800;
-            line-height: 1.25; margin-bottom: 0.75rem;
+            font-size: 1.4rem; font-weight: 800;
+            line-height: 1.3; margin-bottom: 1rem;
+            padding: 0.75rem 0 0.5rem;
         }
         .back-figure-red { color: var(--red-text); }
         .back-figure-yellow { color: var(--yellow-text); }
@@ -1577,7 +1598,7 @@
             .flip-card .clause-quote { padding: 0.7rem 0.9rem; font-size: 0.78rem; }
             .reader-voice { padding: 0.75rem 0.9rem; }
             .reader-voice-text { font-size: 0.84rem; }
-            .flip-trigger { padding: 0.75rem 1.25rem; font-size: 0.78rem; width: calc(100% - 2rem); }
+            .flip-trigger { padding: 0.75rem 1.25rem; font-size: 0.68rem; }
 
             /* Card back */
             .risk-header { padding: 1rem 1.25rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
@@ -1996,6 +2017,9 @@
             var card = flipTrigger.closest('.flip-card');
             if (card) {
                 card.classList.add('flipped');
+                // Dim side columns to focus on the reveal
+                var layout = card.closest('.analysis-layout');
+                if (layout) layout.classList.add('layout-flipped');
                 // Animate score bar fill on flip
                 var fill = card.querySelector('.back-score-bar-fill');
                 if (fill && !fill.style.width) {
@@ -2018,6 +2042,9 @@
             var card = flipBack.closest('.flip-card');
             if (card) {
                 card.classList.remove('flipped');
+                // Restore side columns
+                var layout = card.closest('.analysis-layout');
+                if (layout) layout.classList.remove('layout-flipped');
                 showInsightContext(card); // revert to context-only
             }
             return;
@@ -2107,7 +2134,9 @@
                 e.preventDefault();
                 if (cards[currentCardIndex]) {
                     cards[currentCardIndex].classList.toggle('flipped');
+                    var kbLayout = flipCardContainer.closest('.analysis-layout');
                     if (cards[currentCardIndex].classList.contains('flipped')) {
+                        if (kbLayout) kbLayout.classList.add('layout-flipped');
                         // Animate score bar on flip
                         var fill = cards[currentCardIndex].querySelector('.back-score-bar-fill');
                         if (fill && !fill.style.width) {
@@ -2116,6 +2145,7 @@
                         }
                         showInsightForCard(cards[currentCardIndex]);
                     } else {
+                        if (kbLayout) kbLayout.classList.remove('layout-flipped');
                         showInsightContext(cards[currentCardIndex]);
                     }
                 }
@@ -2462,7 +2492,8 @@
             // Text preview — populate but keep hidden until first card triggers woosh
             var loadingEl = $('editorialLoading');
             var loadingText = $('editorialLoadingText');
-            loadingText.innerHTML = escapeHtml(documentFullText);
+            loadingText.innerHTML = escapeHtml(documentFullText)
+                .replace(/— Page (\d+) —/g, '<div class="doc-page-marker"><span>$1</span></div>');
             loadingEl.classList.add('hidden');
             loadingEl.classList.remove('woosh-in-sidebar');
         } else {
@@ -3126,10 +3157,9 @@
             '<button class="flip-trigger"><span>Now flip it</span><span class="flip-trigger-arrow">&rarr;</span></button>' +
             '</div>';
 
-        // ── Back body: "What does this mean for you" — figure + example ──
+        // ── Back body: full reveal — figure, example, bottom line ──
         var backBodyHtml = '';
 
-        // "What does this mean for you" — the core reveal (all risk levels)
         if (clause.figure || clause.exampleNarrative) {
             backBodyHtml += '<div class="back-meaning-label">What does this mean for you</div>';
             if (clause.figure) {
@@ -3145,7 +3175,6 @@
             }
         }
 
-        // Bottom line as quiet italic footer
         if (clause.bottomLine) {
             backBodyHtml += '<div class="back-bottom-line">' +
                 escapeHtml(clause.bottomLine) + '</div>';
@@ -3160,7 +3189,7 @@
                 '</span>';
         }
 
-        // ── Back wrapper ──
+        // ── Back wrapper: risk header → full reveal (no contrast block, no toggle) ──
         var backHtml = '<div class="flip-card-back"><div class="back-content">' +
             '<div class="risk-header risk-header-' + risk + '">' +
             '<h3 class="clause-title">' + escapeHtml(clause.title) + '</h3>' +
@@ -3210,18 +3239,103 @@
         // Always start from the clean escaped source
         var text = escapeHtml(documentFullText);
 
+        // Build normalized version with position map for fuzzy matching
+        // posMap[i] = index in 'text' that normalized[i] originated from
+        var normalized = '';
+        var posMap = [];
+        for (var c = 0; c < text.length; c++) {
+            if (/\s/.test(text[c])) {
+                if (normalized.length > 0 && normalized[normalized.length - 1] !== ' ') {
+                    normalized += ' ';
+                    posMap.push(c);
+                }
+            } else {
+                normalized += text[c].toLowerCase();
+                posMap.push(c);
+            }
+        }
+
+        function normalizeStr(s) {
+            return s.replace(/\s+/g, ' ').replace(/[\u201c\u201d\u201e]/g, '"').replace(/[\u2018\u2019\u201a]/g, "'").replace(/[\u2013\u2014]/g, '-').trim().toLowerCase();
+        }
+
+        // Map a range in normalized space back to original space
+        function normRangeToOrig(normStart, normLen) {
+            var origStart = posMap[normStart] || 0;
+            var lastNorm = Math.min(normStart + normLen - 1, posMap.length - 1);
+            var origEnd = (posMap[lastNorm] || 0) + 1;
+            return { start: origStart, end: origEnd };
+        }
+
         // Find all match positions
         var matches = [];
         for (var i = 0; i < clauseHighlightData.length; i++) {
             var d = clauseHighlightData[i];
             var searchText = escapeHtml(d.quote.substring(0, 60).trim());
-            var idx = text.indexOf(searchText);
-            if (idx === -1) idx = text.toLowerCase().indexOf(searchText.toLowerCase());
-            if (idx === -1) continue;
+            var idx = -1;
+            var end;
 
-            var endSearch = d.quote.length > 80 ? escapeHtml(d.quote.substring(d.quote.length - 30)) : '';
-            var endIdx = endSearch ? text.indexOf(endSearch, idx) : -1;
-            var end = endIdx > idx ? endIdx + endSearch.length : idx + searchText.length;
+            // ── Start match: try exact, then case-insensitive, then normalized ──
+            idx = text.indexOf(searchText);
+            if (idx === -1) idx = text.toLowerCase().indexOf(searchText.toLowerCase());
+
+            if (idx >= 0) {
+                // Found via exact/case-insensitive — find end the original way
+                var endSearch = d.quote.length > 80 ? escapeHtml(d.quote.substring(d.quote.length - 30)) : '';
+                var endIdx = endSearch ? text.indexOf(endSearch, idx) : -1;
+                if (endIdx === -1 && endSearch) endIdx = text.toLowerCase().indexOf(endSearch.toLowerCase(), idx);
+                // Normalized fallback for end match
+                if (endIdx === -1 && endSearch) {
+                    var endNorm = normalizeStr(endSearch);
+                    var startNormSearch = 0;
+                    for (var si = 0; si < posMap.length; si++) {
+                        if (posMap[si] >= idx) { startNormSearch = si; break; }
+                    }
+                    var endNormIdx = normalized.indexOf(endNorm, startNormSearch);
+                    if (endNormIdx >= 0) {
+                        var endRange = normRangeToOrig(endNormIdx, endNorm.length);
+                        end = endRange.end;
+                    } else {
+                        end = idx + searchText.length;
+                    }
+                } else {
+                    end = endIdx > idx ? endIdx + endSearch.length : idx + searchText.length;
+                }
+            } else {
+                // Try normalized whitespace match
+                var searchNorm = normalizeStr(searchText);
+                var normIdx = normalized.indexOf(searchNorm);
+                if (normIdx >= 0) {
+                    var startRange = normRangeToOrig(normIdx, searchNorm.length);
+                    idx = startRange.start;
+                    end = startRange.end;
+                    // Try to extend to full quote end
+                    if (d.quote.length > 80) {
+                        var endNorm2 = normalizeStr(escapeHtml(d.quote.substring(d.quote.length - 30)));
+                        var endNormIdx2 = normalized.indexOf(endNorm2, normIdx);
+                        if (endNormIdx2 >= 0) {
+                            end = normRangeToOrig(endNormIdx2, endNorm2.length).end;
+                        }
+                    }
+                }
+
+                // Try first significant words as anchor
+                if (idx === -1) {
+                    var rawQuote = escapeHtml(d.quote.trim());
+                    var words = rawQuote.replace(/\s+/g, ' ').trim().split(' ').filter(function(w) { return w.length > 3; });
+                    if (words.length >= 3) {
+                        var anchor = normalizeStr(words.slice(0, 4).join(' '));
+                        var anchorIdx = normalized.indexOf(anchor);
+                        if (anchorIdx >= 0) {
+                            var anchorRange = normRangeToOrig(anchorIdx, anchor.length);
+                            idx = anchorRange.start;
+                            end = anchorRange.end;
+                        }
+                    }
+                }
+            }
+
+            if (idx === -1) continue;
             matches.push({ start: idx, end: end, cardIndex: d.cardIndex, risk: d.risk });
         }
 
@@ -3249,6 +3363,10 @@
             pos = m.end;
         }
         html += text.substring(pos);
+
+        // Re-inject page dividers after highlight pass
+        html = html.replace(/— Page (\d+) —/g, '<div class="doc-page-marker"><span>$1</span></div>');
+
         previewEl.innerHTML = html;
     }
 
@@ -3451,6 +3569,9 @@
         if (index < 0 || index >= cards.length) return;
 
         currentCardIndex = index;
+        // Restore side columns when navigating (un-flips the card)
+        var layout = flipCardContainer.closest('.analysis-layout');
+        if (layout) layout.classList.remove('layout-flipped');
         for (var i = 0; i < cards.length; i++) {
             if (i === index) {
                 cards[i].classList.remove('hidden');
