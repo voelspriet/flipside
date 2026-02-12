@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlipSide — Card Component</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════
+           DESIGN SYSTEM (from FlipSide)
+           ═══════════════════════════════════════════════════════ */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-cream: #f7f5f0;
+            --bg-warm: #f0ede6;
+            --bg-card: #ffffff;
+            --bg-surface: #faf8f4;
+            --border: #e2ddd4;
+            --border-light: #ece8e0;
+            --text-primary: #1a1a18;
+            --text-body: #3d3b36;
+            --text-secondary: #6b6860;
+            --text-muted: #9c9789;
+            --text-dim: #bfb9ad;
+            --accent: #c44b28;
+            --accent-hover: #a83d20;
+            --accent-light: rgba(196, 75, 40, 0.08);
+            --accent-medium: rgba(196, 75, 40, 0.15);
+            --green: #2d8a4e;
+            --green-bg: rgba(45, 138, 78, 0.07);
+            --green-border: rgba(45, 138, 78, 0.22);
+            --green-text: #1e6b38;
+            --yellow: #b8860b;
+            --yellow-bg: rgba(184, 134, 11, 0.07);
+            --yellow-border: rgba(184, 134, 11, 0.22);
+            --yellow-text: #8a6508;
+            --red: #c44b28;
+            --red-bg: rgba(196, 75, 40, 0.07);
+            --red-border: rgba(196, 75, 40, 0.22);
+            --red-text: #a83d20;
+            --radius: 12px;
+            --radius-md: 8px;
+            --radius-sm: 6px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
+            --col-width: 680px;
+        }
+
+        body {
+            font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            padding: 3rem 1.5rem;
+        }
+
+        .demo-container {
+            max-width: var(--col-width);
+            margin: 0 auto;
+        }
+
+        .demo-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .demo-spacer { height: 3rem; }
+
+        /* ═══════════════════════════════════════════════════════
+           FLIP CARD — THE CORE COMPONENT
+           ═══════════════════════════════════════════════════════ */
+
+        /* Entrance animation — card wooshes in from below */
+        @keyframes cardWoosh {
+            0% {
+                transform: translateY(80px) scale(0.96);
+                opacity: 0;
+                filter: blur(6px);
+            }
+            55% {
+                transform: translateY(-6px) scale(1.005);
+                opacity: 1;
+                filter: blur(0);
+            }
+            75% { transform: translateY(2px) scale(0.999); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        .flip-card {
+            perspective: 1200px;
+            margin-bottom: 1.5rem;
+            /* Entrance */
+            animation: cardWoosh 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .flip-card:nth-child(2) { animation-delay: 0.08s; }
+        .flip-card:nth-child(3) { animation-delay: 0.16s; }
+
+        .flip-card-inner {
+            position: relative;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* Both faces */
+        .flip-card-front,
+        .flip-card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        /* Back face: rotated, positioned behind */
+        .flip-card-back {
+            transform: rotateY(180deg);
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+        }
+
+        /* When flipped: swap positioning for correct height */
+        .flip-card.flipped .flip-card-front {
+            visibility: hidden;
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+        }
+        .flip-card.flipped .flip-card-back {
+            position: relative;
+        }
+
+        /* ─── FRONT FACE ────────────────────────────────────
+           The trick working on you. Calm. Reassuring.
+           The clause doing its job of seeming harmless.
+           ──────────────────────────────────────────────── */
+        .flip-card-front {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            cursor: default;
+        }
+
+        .front-content {
+            padding: 2rem 2rem 0;
+        }
+
+        .clause-section-ref {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.35rem;
+        }
+
+        .clause-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.3;
+            margin-bottom: 1rem;
+        }
+
+        /* The actual clause text — muted, legal feel */
+        .clause-quote {
+            position: relative;
+            padding: 0.9rem 1.1rem;
+            margin-bottom: 1.25rem;
+            background: var(--bg-surface);
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--border);
+            font-size: 0.84rem;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Your naive reading — the front of the trick */
+        .reader-voice {
+            padding: 1rem 1.1rem;
+            background: linear-gradient(135deg, rgba(45, 138, 78, 0.04), rgba(45, 138, 78, 0.08));
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--green);
+            margin-bottom: 0;
+        }
+
+        .reader-voice-label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--green-text);
+            margin-bottom: 0.4rem;
+        }
+
+        .reader-voice-text {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: var(--text-body);
+            font-style: italic;
+        }
+
+        /* ─── THE FLIP TRIGGER ─────────────────────────────
+           The invitation. Make it irresistible.
+           ──────────────────────────────────────────────── */
+        .flip-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 1rem 2rem;
+            margin-top: 1.25rem;
+            background: none;
+            border: none;
+            border-top: 1px solid var(--border-light);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.01em;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flip-trigger::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-light), transparent);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .flip-trigger:hover::before {
+            opacity: 1;
+        }
+
+        .flip-trigger:hover {
+            color: var(--accent-hover);
+        }
+
+        .flip-trigger-arrow {
+            display: inline-block;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+        }
+
+        .flip-trigger:hover .flip-trigger-arrow {
+            transform: translateX(4px) rotateY(30deg);
+        }
+
+        /* Hover: subtle card tilt teasing the flip */
+        .flip-card:not(.flipped) .flip-card-front:hover {
+            /* Not on the card itself to avoid jank with 3D */
+        }
+
+        /* ─── BACK FACE ────────────────────────────────────
+           The truth. The drafter's strategy revealed.
+           ──────────────────────────────────────────────── */
+        .flip-card-back {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            box-shadow:
+                var(--shadow-md),
+                inset 0 0 0 1px rgba(0,0,0,0.02);
+        }
+
+        .back-content {
+            padding: 0;
+        }
+
+        /* Risk header — color-coded strip at top */
+        .risk-header {
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .risk-header-red {
+            background: linear-gradient(135deg, rgba(196, 75, 40, 0.08), rgba(196, 75, 40, 0.14));
+            border-bottom: 2px solid var(--red);
+        }
+        .risk-header-yellow {
+            background: linear-gradient(135deg, rgba(184, 134, 11, 0.06), rgba(184, 134, 11, 0.12));
+            border-bottom: 2px solid var(--yellow);
+        }
+        .risk-header-green {
+            background: linear-gradient(135deg, rgba(45, 138, 78, 0.06), rgba(45, 138, 78, 0.10));
+            border-bottom: 2px solid var(--green);
+        }
+
+        .risk-header .clause-title {
+            margin-bottom: 0;
+            font-size: 1.05rem;
+        }
+
+        .risk-badge-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .risk-badge-red { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-border); }
+        .risk-badge-yellow { background: var(--yellow-bg); color: var(--yellow-text); border: 1px solid var(--yellow-border); }
+        .risk-badge-green { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+
+        .risk-score {
+            font-size: 0.82rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .risk-score-red { color: var(--red-text); }
+        .risk-score-yellow { color: var(--yellow-text); }
+        .risk-score-green { color: var(--green-text); }
+
+        .trick-label {
+            padding: 0.15rem 0.5rem;
+            background: var(--bg-warm);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* Back face body */
+        .back-body {
+            padding: 1.5rem 2rem 0;
+        }
+
+        /* The drafter's voice — eavesdropping on a strategy meeting */
+        .drafter-voice {
+            padding: 1rem 1.1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .drafter-voice-red {
+            background: linear-gradient(135deg, rgba(196, 75, 40, 0.06), rgba(196, 75, 40, 0.10));
+            border-left: 3px solid var(--red);
+        }
+        .drafter-voice-yellow {
+            background: linear-gradient(135deg, rgba(184, 134, 11, 0.05), rgba(184, 134, 11, 0.09));
+            border-left: 3px solid var(--yellow);
+        }
+        .drafter-voice-green {
+            background: linear-gradient(135deg, rgba(45, 138, 78, 0.04), rgba(45, 138, 78, 0.08));
+            border-left: 3px solid var(--green);
+        }
+
+        .drafter-voice-label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.4rem;
+        }
+        .drafter-voice-label-red { color: var(--red-text); }
+        .drafter-voice-label-yellow { color: var(--yellow-text); }
+        .drafter-voice-label-green { color: var(--green-text); }
+
+        .drafter-voice-text {
+            font-size: 0.9rem;
+            line-height: 1.65;
+            color: var(--text-body);
+            font-style: italic;
+        }
+
+        /* Juxtaposition: "What the small print says" vs "What you should read" */
+        .clause-juxtapose {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        @media (max-width: 560px) {
+            .clause-juxtapose { grid-template-columns: 1fr; }
+        }
+
+        .juxtapose-col {
+            padding: 0.9rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.84rem;
+            line-height: 1.6;
+        }
+
+        .juxtapose-label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.4rem;
+        }
+
+        .juxtapose-says {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            color: var(--text-body);
+        }
+        .juxtapose-says .juxtapose-label { color: var(--text-muted); }
+
+        .juxtapose-read {
+            background: var(--accent-light);
+            border: 1px solid var(--accent-medium);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .juxtapose-read .juxtapose-label { color: var(--accent); }
+
+        /* Green card special back: "No hidden intent" */
+        .green-verdict {
+            padding: 1.25rem 1.1rem;
+            background: linear-gradient(135deg, rgba(45, 138, 78, 0.06), rgba(45, 138, 78, 0.10));
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--green-border);
+            margin-bottom: 1.25rem;
+            text-align: center;
+        }
+
+        .green-verdict-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .green-verdict-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--green-text);
+            margin-bottom: 0.25rem;
+        }
+
+        .green-verdict-text {
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Flip-back trigger */
+        .flip-back-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.9rem 2rem;
+            background: none;
+            border: none;
+            border-top: 1px solid var(--border-light);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flip-back-trigger::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--bg-surface);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .flip-back-trigger:hover::before { opacity: 1; }
+        .flip-back-trigger:hover { color: var(--text-secondary); }
+
+        .flip-back-arrow {
+            display: inline-block;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
+        }
+        .flip-back-trigger:hover .flip-back-arrow {
+            transform: translateX(-4px) rotateY(-30deg);
+        }
+
+        /* ─── CLAUSE NAVIGATION ────────────────────────────
+           Simple. Minimal. The card is the star.
+           ──────────────────────────────────────────────── */
+        .clause-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1.5rem 0;
+        }
+
+        .clause-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: none;
+            border: 1px solid var(--border);
+            padding: 0.45rem 1rem;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .clause-nav-btn:hover:not(:disabled) {
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+
+        .clause-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .clause-nav-counter {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .clause-nav-counter strong {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        /* "Show next clause" progressive disclosure button */
+        .next-clause-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1.1rem;
+            margin: 0.5rem 0 1.5rem;
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--accent);
+            transition: all var(--transition);
+        }
+
+        .next-clause-btn:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .next-clause-btn .remaining {
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        /* ─── REDUCED MOTION ───────────────────────────── */
+        @media (prefers-reduced-motion: reduce) {
+            .flip-card { animation: none; }
+            .flip-card-inner { transition: none; }
+            .flip-card.flipped .flip-card-back {
+                position: static;
+                transform: none;
+            }
+            .flip-card.flipped .flip-card-front { display: none; }
+            .flip-trigger-arrow,
+            .flip-back-arrow { transition: none; }
+        }
+
+        /* ─── MOBILE ──────────────────────────────────── */
+        @media (max-width: 500px) {
+            .front-content,
+            .back-body { padding: 1.25rem 1.25rem 0; }
+            .risk-header { padding: 1rem 1.25rem; }
+            .flip-trigger,
+            .flip-back-trigger { padding: 0.8rem 1.25rem; }
+            .clause-title { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+
+        <div class="demo-label">Red clause — front (click to flip)</div>
+
+        <!-- ═══════ RED CLAUSE — FULL EXAMPLE ═══════ -->
+        <div class="flip-card" id="card-red">
+            <div class="flip-card-inner">
+
+                <!-- FRONT: The trick working on you -->
+                <div class="flip-card-front">
+                    <div class="front-content">
+                        <div class="clause-section-ref">Section 4.2</div>
+                        <h3 class="clause-title">Late Payment Fee</h3>
+
+                        <div class="clause-quote">
+                            "Tenant shall pay a late fee of $50 if rent is not received within five (5) days of the due date. This fee is in addition to any other remedies available to Landlord."
+                        </div>
+
+                        <div class="reader-voice">
+                            <span class="reader-voice-label">You'd think</span>
+                            <div class="reader-voice-text">
+                                This seems fair — five days is a reasonable grace period, and $50 isn't unreasonable for a late fee. Most leases have something like this.
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="flip-trigger" onclick="toggleFlip('card-red')">
+                        <span>See the other side</span>
+                        <span class="flip-trigger-arrow">&rarr;</span>
+                    </button>
+                </div>
+
+                <!-- BACK: The truth revealed -->
+                <div class="flip-card-back">
+                    <div class="back-content">
+                        <div class="risk-header risk-header-red">
+                            <h3 class="clause-title">Late Payment Fee</h3>
+                            <div class="risk-badge-group">
+                                <span class="risk-badge risk-badge-red">RED</span>
+                                <span class="risk-score risk-score-red">72/100</span>
+                                <span class="trick-label">Time Trap</span>
+                            </div>
+                        </div>
+
+                        <div class="back-body">
+                            <div class="drafter-voice drafter-voice-red">
+                                <span class="drafter-voice-label drafter-voice-label-red">The drafter's thinking</span>
+                                <div class="drafter-voice-text">
+                                    "The 5-day grace period generates approximately $40K in annual late-fee revenue across our portfolio. We set the fee just below the threshold where tenants actually push back or seek legal advice. The 'other remedies' language stacks this on top of our eviction rights."
+                                </div>
+                            </div>
+
+                            <div class="clause-juxtapose">
+                                <div class="juxtapose-col juxtapose-says">
+                                    <span class="juxtapose-label">What the small print says</span>
+                                    A $50 fee applies after a 5-day grace period, alongside other available remedies.
+                                </div>
+                                <div class="juxtapose-col juxtapose-read">
+                                    <span class="juxtapose-label">What you should read</span>
+                                    The fee is a revenue strategy, not a courtesy. "Other remedies" means they can charge you AND start eviction proceedings simultaneously.
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="flip-back-trigger" onclick="toggleFlip('card-red')">
+                            <span class="flip-back-arrow">&larr;</span>
+                            <span>Flip back</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="demo-spacer"></div>
+        <div class="demo-label">Yellow clause — front (click to flip)</div>
+
+        <!-- ═══════ YELLOW CLAUSE ═══════ -->
+        <div class="flip-card" id="card-yellow">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="front-content">
+                        <div class="clause-section-ref">Section 7.1</div>
+                        <h3 class="clause-title">Maintenance and Repairs</h3>
+
+                        <div class="clause-quote">
+                            "Tenant shall promptly report any damage or needed repairs to Landlord. Failure to report within 24 hours may result in Tenant being responsible for resulting damage."
+                        </div>
+
+                        <div class="reader-voice">
+                            <span class="reader-voice-label">You'd think</span>
+                            <div class="reader-voice-text">
+                                Standard maintenance responsibility. Makes sense that you'd report issues quickly — you want things fixed too.
+                            </div>
+                        </div>
+                    </div>
+                    <button class="flip-trigger" onclick="toggleFlip('card-yellow')">
+                        <span>See the other side</span>
+                        <span class="flip-trigger-arrow">&rarr;</span>
+                    </button>
+                </div>
+
+                <div class="flip-card-back">
+                    <div class="back-content">
+                        <div class="risk-header risk-header-yellow">
+                            <h3 class="clause-title">Maintenance and Repairs</h3>
+                            <div class="risk-badge-group">
+                                <span class="risk-badge risk-badge-yellow">YELLOW</span>
+                                <span class="risk-score risk-score-yellow">48/100</span>
+                                <span class="trick-label">Burden Shift</span>
+                            </div>
+                        </div>
+                        <div class="back-body">
+                            <div class="drafter-voice drafter-voice-yellow">
+                                <span class="drafter-voice-label drafter-voice-label-yellow">The drafter's thinking</span>
+                                <div class="drafter-voice-text">
+                                    "The 24-hour reporting window converts a reasonable maintenance request into a liability transfer. Most tenants won't report a small crack within 24 hours — and when it becomes water damage in six months, that's on them now."
+                                </div>
+                            </div>
+                            <div class="clause-juxtapose">
+                                <div class="juxtapose-col juxtapose-says">
+                                    <span class="juxtapose-label">What the small print says</span>
+                                    Report damage within 24 hours or you may be held responsible.
+                                </div>
+                                <div class="juxtapose-col juxtapose-read">
+                                    <span class="juxtapose-label">What you should read</span>
+                                    A missed 24-hour window on a minor issue could make you liable for major repairs months later.
+                                </div>
+                            </div>
+                        </div>
+                        <button class="flip-back-trigger" onclick="toggleFlip('card-yellow')">
+                            <span class="flip-back-arrow">&larr;</span>
+                            <span>Flip back</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-spacer"></div>
+        <div class="demo-label">Green clause — front (click to flip)</div>
+
+        <!-- ═══════ GREEN CLAUSE ═══════ -->
+        <div class="flip-card" id="card-green">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="front-content">
+                        <div class="clause-section-ref">Section 8.1</div>
+                        <h3 class="clause-title">Notice Period</h3>
+
+                        <div class="clause-quote">
+                            "Either party may terminate this agreement by providing sixty (60) days written notice to the other party."
+                        </div>
+
+                        <div class="reader-voice">
+                            <span class="reader-voice-label">You'd think</span>
+                            <div class="reader-voice-text">
+                                60 days' notice for both sides. Balanced and reasonable — you can leave, they can ask you to leave, same rules apply.
+                            </div>
+                        </div>
+                    </div>
+                    <button class="flip-trigger" onclick="toggleFlip('card-green')">
+                        <span>See the other side</span>
+                        <span class="flip-trigger-arrow">&rarr;</span>
+                    </button>
+                </div>
+
+                <div class="flip-card-back">
+                    <div class="back-content">
+                        <div class="risk-header risk-header-green">
+                            <h3 class="clause-title">Notice Period</h3>
+                            <div class="risk-badge-group">
+                                <span class="risk-badge risk-badge-green">GREEN</span>
+                                <span class="risk-score risk-score-green">12/100</span>
+                            </div>
+                        </div>
+                        <div class="back-body">
+                            <div class="green-verdict">
+                                <div class="green-verdict-title">No hidden intent</div>
+                                <div class="green-verdict-text">
+                                    This clause is genuinely balanced. Both parties have equal notice periods with no hidden conditions, penalty triggers, or escape hatches for either side.
+                                </div>
+                            </div>
+                            <div class="clause-juxtapose">
+                                <div class="juxtapose-col juxtapose-says">
+                                    <span class="juxtapose-label">What the small print says</span>
+                                    Either party can end the agreement with 60 days' notice.
+                                </div>
+                                <div class="juxtapose-col juxtapose-read">
+                                    <span class="juxtapose-label">What you should read</span>
+                                    Exactly what it says. Mutual termination rights with equal notice. This is fair.
+                                </div>
+                            </div>
+                        </div>
+                        <button class="flip-back-trigger" onclick="toggleFlip('card-green')">
+                            <span class="flip-back-arrow">&larr;</span>
+                            <span>Flip back</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-spacer"></div>
+        <div class="demo-label">Navigation</div>
+
+        <!-- ═══════ NAVIGATION ═══════ -->
+        <nav class="clause-nav">
+            <button class="clause-nav-btn" disabled>
+                <span>&larr;</span> Previous
+            </button>
+            <span class="clause-nav-counter">
+                Clause <strong>1</strong> of <strong>7</strong>
+            </span>
+            <button class="clause-nav-btn">
+                Next <span>&rarr;</span>
+            </button>
+        </nav>
+
+        <div class="demo-spacer"></div>
+        <div class="demo-label">Progressive disclosure button</div>
+
+        <button class="next-clause-btn">
+            Show next clause <span class="remaining">(4 remaining)</span>
+        </button>
+
+    </div>
+
+    <script>
+        function toggleFlip(id) {
+            document.getElementById(id).classList.toggle('flipped');
+        }
+    </script>
+</body>
+</html>

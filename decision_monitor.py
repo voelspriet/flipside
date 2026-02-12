@@ -26,7 +26,9 @@ WATCHED_FILES = [
     "strategy.md",
     "hackaton.md",
     "HACKATHON_LOG.md",
+    "hackathon_log_update.md",
     "templates/index.html",
+    "app.py",
 ]
 
 
@@ -129,6 +131,25 @@ def count_frontend_features(content):
     return markers
 
 
+def detect_model_architecture(backend_content):
+    """Detect model configuration from app.py."""
+    arch = {"models": [], "parallel": False, "fast_model": None, "deep_model": None}
+
+    # Match os.environ.get('...', 'default') — capture the default value (last quoted string)
+    fast_match = re.search(r"FAST_MODEL\s*=.*?,\s*['\"]([^'\"]+)['\"]", backend_content)
+    if fast_match:
+        arch["fast_model"] = fast_match.group(1)
+        arch["models"].append(fast_match.group(1))
+
+    model_match = re.search(r"^MODEL\s*=.*?,\s*['\"]([^'\"]+)['\"]", backend_content, re.MULTILINE)
+    if model_match:
+        arch["deep_model"] = model_match.group(1)
+        arch["models"].append(model_match.group(1))
+
+    arch["parallel"] = bool(re.search(r"threading\.Thread", backend_content))
+    return arch
+
+
 def extract_failure_patterns(log_content):
     """Extract documented AI failures from HACKATHON_LOG.md."""
     failures = []
@@ -170,9 +191,16 @@ def build_report(output_json=False):
     frontend = read_file("templates/index.html")
     report["frontend"] = count_frontend_features(frontend)
 
-    # Documented failures
+    # Model architecture
+    backend = read_file("app.py")
+    report["architecture"] = detect_model_architecture(backend)
+
+    # Documented failures (from both log files)
     log = read_file("HACKATHON_LOG.md")
-    report["failures"] = extract_failure_patterns(log)
+    log_update = read_file("hackathon_log_update.md")
+    failures = extract_failure_patterns(log)
+    failures.extend(extract_failure_patterns(log_update))
+    report["failures"] = failures
 
     # Decision count and categories
     strategy_count = len(report["strategies"])
@@ -203,6 +231,18 @@ def build_report(output_json=False):
     lines.append(f"  CSS animations:     {f['css_animations']}")
     lines.append(f"  JS functions:       {f['dom_functions']}")
     lines.append("")
+
+    # Model architecture
+    arch = report.get("architecture", {})
+    if arch.get("fast_model") or arch.get("deep_model"):
+        lines.append("MODEL ARCHITECTURE")
+        lines.append("-" * 40)
+        if arch.get("fast_model"):
+            lines.append(f"  Fast model (cards): {arch['fast_model']}")
+        if arch.get("deep_model"):
+            lines.append(f"  Deep model (Opus):  {arch['deep_model']}")
+        lines.append(f"  Parallel threads:   {'Yes' if arch.get('parallel') else 'No'}")
+        lines.append("")
 
     # Strategy decisions
     lines.append("STRATEGY DECISIONS")

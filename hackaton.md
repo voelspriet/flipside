@@ -168,7 +168,7 @@ Categories: Reasoning Depth, Adversarial Input, Multilingual, Scale, Meta-Cognit
 | 68 | Submit a document that contradicts applicable law (e.g., non-compete in California) — does Opus flag the unenforceable clause? | pending | Reasoning Depth |
 | 69 | Upload a PDF with scanned images (OCR required) — test the boundary between text extraction and analysis | pending | Scale |
 | 70 | Feed the app its own source code (index.html) as a "document" — what does it analyze? Does it crash or produce something interesting? | pending | Adversarial |
-| 71 | Add a "drafter perspective" toggle that switches the analysis from consumer view to drafter view — show both sides of the same clause | pending | Reasoning Depth |
+| 71 | Add a "drafter perspective" toggle that switches the analysis from consumer view to drafter view — show both sides of the same clause | **evolved → core product** | Reasoning Depth |
 | 72 | Submit a document in right-to-left script (Arabic/Hebrew contract) — does the UI render correctly? Does analysis quality hold? | pending | Multilingual |
 | 73 | Upload a document where important clauses are buried in footnotes or appendices — does the model still find them? | pending | Adversarial |
 | 74 | Feed 5 different insurance policies and compare which one is the worst deal overall — test multi-document reasoning | pending | Scale |

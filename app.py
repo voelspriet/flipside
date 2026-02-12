@@ -12,6 +12,7 @@ Optimized for Claude Opus 4.6 extended thinking:
 import os
 import uuid
 import json
+import time
 import threading
 import queue as queue_module
 from io import BytesIO
@@ -24,10 +25,12 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 documents = {}
 
 MODEL = os.environ.get('FLIPSIDE_MODEL', 'claude-opus-4-6')
+FAST_MODEL = os.environ.get('FLIPSIDE_FAST_MODEL', 'claude-haiku-4-5-20251001')
 
 ROLES = {
     'tenant': 'a tenant signing a lease agreement',
@@ -41,11 +44,11 @@ ROLES = {
     'other': 'a party who did NOT draft this document',
 }
 
-# Analysis depth presets — leverages Opus 4.6's extended thinking advantage
+# Analysis depth presets — adaptive thinking lets the model decide budget
 DEPTH_PRESETS = {
-    'quick':    {'budget_tokens': 8000,  'max_tokens': 16000},
-    'standard': {'budget_tokens': 16000, 'max_tokens': 32000},
-    'deep':     {'budget_tokens': 32000, 'max_tokens': 64000},
+    'quick':    {'max_tokens': 16000},
+    'standard': {'max_tokens': 32000},
+    'deep':     {'max_tokens': 64000},
 }
 
 TRICK_TAXONOMY = {
@@ -81,119 +84,30 @@ PHASE_MARKERS = [
 # Sample document
 # ---------------------------------------------------------------------------
 
-SAMPLE_DOCUMENT = """SECUREHOME INSURANCE COMPANY
-HOMEOWNER'S INSURANCE POLICY
+SAMPLE_DOCUMENT = """QUICKRENT PROPERTY MANAGEMENT
+STANDARD RESIDENTIAL LEASE AGREEMENT
 
-Policy Number: SH-2024-78432
-Effective Date: January 1, 2024
-Expiration Date: January 1, 2025
+Unit 4B, 221 Elm Street, Portland, OR 97201
 
-DECLARATIONS
-Named Insured: [Policyholder Name]
-Property Address: [Insured Property Address]
-Coverage A — Dwelling: $350,000
-Coverage B — Personal Property: $175,000
-Coverage C — Loss of Use: $70,000
-Coverage D — Personal Liability: $300,000
-Deductible: $2,500
+1. RENT AND LATE FEES
 
-SECTION 1 — INSURING AGREEMENT
+Monthly rent is $1,850, due on the 1st of each month. If rent is not received by 11:59 PM on the 1st, a late fee of $75 per day shall be assessed beginning on the 2nd, with no cap on accumulated late fees. Partial payments shall be applied first to any outstanding late fees, then to the oldest unpaid rent balance. Acceptance of partial payment does not waive the right to collect the full amount owed, including all accumulated late fees. Tenant waives any right to dispute the reasonableness of late fees by signing this lease.
 
-We will provide the insurance described in this policy in return for the premium and compliance with all applicable provisions of this policy. We will provide coverage for direct physical loss to the property described in the Declarations, subject to the terms, conditions, and exclusions of this policy. Coverage applies to your dwelling, other structures on the residence premises, and personal property owned or used by an insured.
+2. MAINTENANCE AND REPAIRS
 
-SECTION 2 — COVERAGE A: DWELLING
+Tenant shall notify Landlord in writing of any needed repairs within 24 hours of discovery. Landlord will make repairs within a reasonable timeframe, as determined solely by Landlord. If Tenant fails to report a condition within 24 hours, Tenant assumes full financial responsibility for any resulting damage, including damage to adjacent units. Tenant may not withhold rent for any reason, including failure by Landlord to complete repairs. Tenant may not make any repairs or hire any contractor without prior written consent from Landlord.
 
-We insure your dwelling, including attached structures, against direct physical loss caused by any peril not otherwise excluded. This includes fixtures, installations, and building materials on or adjacent to the premises intended for use in construction, alteration, or repair of the dwelling. We insure at replacement cost unless otherwise stated herein.
+3. ENTRY AND INSPECTION
 
-SECTION 3 — COVERAGE B: PERSONAL PROPERTY
+Landlord or Landlord's agents may enter the premises for inspection, maintenance, or showing to prospective tenants or buyers upon 12 hours' notice delivered by any method, including text message, email, or note left at the door. In case of emergency, as determined by Landlord, no notice is required. Tenant agrees that determination of what constitutes an emergency rests solely with Landlord. Landlord may install and maintain smart lock systems and retains a master access code at all times.
 
-We insure personal property owned or used by an insured while anywhere in the world. Coverage is limited to 50% of the Coverage A limit unless otherwise stated in the Declarations. Special limits of liability apply to the following categories regardless of the total Coverage B limit:
-(a) $200 on money, bank notes, bullion, gold, silver, and platinum;
-(b) $1,500 on securities, accounts, deeds, evidences of debt, letters of credit, notes other than bank notes, manuscripts, personal records, passports, and tickets;
-(c) $1,500 on watercraft including their trailers, furnishings, equipment, and outboard engines;
-(d) $1,500 on jewelry, watches, furs, and precious and semi-precious stones;
-(e) $2,500 on firearms and related equipment;
-(f) $2,500 on silverware, silver-plated ware, goldware, gold-plated ware, and pewterware;
-(g) $5,000 on electronic data processing equipment and associated media;
-(h) $2,500 on property used at any time or in any manner for any business purpose.
+4. TERMINATION AND SECURITY DEPOSIT
 
-SECTION 4 — COVERAGE C: LOSS OF USE
+Either party may terminate with 60 days' written notice. Upon termination, Landlord shall inspect the premises and deduct from the security deposit the cost of any cleaning, repairs, or restoration needed to return the unit to its original condition, normal wear and tear excluded. Landlord reserves sole discretion to determine what constitutes normal wear and tear. Disputes regarding deductions shall be resolved by binding arbitration in Landlord's county of registration, with each party bearing its own costs. Tenant waives the right to a jury trial for any dispute arising from this lease.
 
-If a covered loss makes the residence premises uninhabitable, we will pay the reasonable increase in living expenses necessary to maintain your normal standard of living for up to 12 months. The 12-month period begins on the date of the loss, not the date of your claim. We are not responsible for loss of income, economic opportunity, market value, or any consequential damages during this period. If you can inhabit part of the dwelling, we will reduce the loss of use payment proportionally based on our assessment of habitability.
+By signing below, Tenant agrees to all terms and conditions of this lease.
 
-SECTION 5 — EXCLUSIONS
-
-We do not insure for loss caused directly or indirectly by any of the following. Such loss is excluded regardless of any other cause or event contributing concurrently or in any sequence to the loss:
-
-5(a) Earth Movement — Including but not limited to earthquake, landslide, mudflow, mudslide, sinkhole, subsidence, erosion, or earth sinking, rising, or shifting. This exclusion applies regardless of whether the earth movement is caused by natural events or human activity, including but not limited to mining, fracking, excavation, or construction.
-
-5(b) Water Damage — Including flood, surface water, waves, tidal water, tsunami, overflow of a body of water, or spray from any of these, whether or not driven by wind. This exclusion also applies to water that backs up through sewers or drains, or water below the surface of the ground including water which exerts pressure on or seeps or leaks through a building, sidewalk, driveway, foundation, swimming pool, or other structure. Damage from water that enters the dwelling through roof, wall, or window openings caused by wind is covered only if the opening was caused by direct force of wind during the loss event.
-
-5(c) Gradual Water Damage — Water damage resulting from continuous or repeated seepage or leakage of water or the presence of condensation, over a period of 14 or more days. If you report water damage, we may investigate the origin and timeline of the damage. Any portion of the damage attributable to seepage, leakage, or condensation exceeding 14 days shall be excluded from coverage. The burden of proving that water damage occurred within the 14-day window rests with the insured.
-
-5(d) Mold, Fungus, and Rot — Mold, fungus, wet rot, or dry rot, however caused, including any ensuing loss of use, investigation, remediation, removal, abatement, or disposal costs. This exclusion applies regardless of whether the mold or fungus resulted from a covered peril. This exclusion applies to mold or fungus whether or not the mold or fungus was present prior to the loss event.
-
-5(e) Neglect — Your failure to use all reasonable means to save and preserve property at and after the time of a loss, or when property is endangered. This includes failure to protect property from further damage after an initial loss event and failure to maintain the property in reasonable condition prior to a loss.
-
-5(f) Wear and Tear — Deterioration, inherent vice, latent defect, mechanical breakdown, rust, corrosion, dampness of atmosphere, or extremes of temperature, unless the ensuing loss is itself a covered peril.
-
-5(g) Intentional Loss — Any loss arising out of any act committed by or at the direction of an insured with the intent to cause a loss.
-
-5(h) Ordinance or Law — The enforcement of any ordinance or law regulating the construction, repair, or demolition of a building or other structure, unless the Ordinance or Law Coverage endorsement is attached to this policy.
-
-SECTION 6 — DUTIES AFTER LOSS
-
-In the event of a loss to any property that may be covered by this policy, you must:
-
-6(a) Immediate Notice — Give immediate notice to us or our agent. For claims involving water damage, wind or storm damage, fire damage, or theft, written notice must be received by us within 48 hours of the loss event or discovery of the loss, whichever is earlier. Failure to provide timely notice may result in denial of the claim.
-
-6(b) Protect Property — Protect the property from further damage, make reasonable and necessary temporary repairs to protect the property, and keep an accurate record of repair expenses. You may not undertake permanent repairs without our written authorization. Failure to protect the property from further damage constitutes neglect under Section 5(e) of this policy.
-
-6(c) Cooperation — Cooperate with us in the investigation and settlement of any claim. This includes granting us access to the damaged property at reasonable times for inspection, documentation, and testing.
-
-6(d) Inventory — Prepare an inventory of damaged personal property showing the quantity, description, actual cash value, replacement cost, and amount of loss. You must attach all bills, receipts, and related documents that substantiate the figures in the inventory.
-
-6(e) Examination Under Oath — Submit to examination under oath, while not in the presence of any other insured, as often as we may reasonably require, and produce for examination at such times as we may reasonably require all records and documents we request and permit us to make copies.
-
-6(f) Proof of Loss — Within 60 days after the loss, submit to us a signed, sworn proof of loss which sets forth, to the best of your knowledge and belief: the time and cause of loss; interest of the insured and all others in the property; all encumbrances on the property; other insurance which may cover the loss; changes in title or occupancy during the term of the policy; specifications of damaged buildings and detailed repair estimates; an inventory of damaged personal property; and receipts for additional living expenses incurred.
-
-SECTION 7 — LOSS SETTLEMENT
-
-7(a) Actual Cash Value — We will pay the actual cash value of the damaged property at the time of loss, not to exceed the amount necessary to repair or replace the damaged property, minus the applicable deductible. Actual cash value is determined by the replacement cost of the property at the time of loss minus depreciation. We reserve the sole right to determine the method, factors, and rate of depreciation applicable to any claim.
-
-7(b) Right to Repair — We may, at our sole option and discretion, repair, rebuild, or replace the damaged property with property of like kind and quality, rather than paying the claim in cash. Materials and methods used in repair need not be identical to the original construction, provided they are of like kind and quality as determined by us. Our election to repair, rebuild, or replace does not constitute an admission of liability.
-
-7(c) No Abandonment — You may not abandon property to us.
-
-7(d) Limitation — We will pay no more than the applicable limit of liability shown in the Declarations. In no event will we pay more than the actual cash value of the damage or the cost to repair or replace, whichever is less, minus the applicable deductible. We will not pay on a replacement cost basis unless and until the damaged property is actually repaired or replaced.
-
-SECTION 8 — APPRAISAL
-
-If you and we fail to agree on the amount of loss, either party may demand an appraisal of the loss. Each party will select a competent and impartial appraiser and notify the other of the appraiser selected within 20 days of the demand. The two appraisers will select an umpire. If they cannot agree upon an umpire within 15 days, either may request that selection be made by a judge of a court having jurisdiction. Each party will pay its own chosen appraiser. Other expenses of the appraisal and the umpire shall be shared equally. The appraisal award shall be binding only if agreed to by both the umpire and at least one appraiser. An appraisal determines only the amount of loss and does not determine whether the loss is covered under this policy.
-
-SECTION 9 — SUBROGATION
-
-If we make a payment under this policy, we may require you to assign to us your right of recovery against any party responsible for the loss. You shall do nothing after a loss to prejudice our rights of recovery. If you waive any right of recovery prior to a loss, we will waive our right to subrogation for that loss. We may prosecute any claim by suit or otherwise at our expense. Any amount recovered shall first reimburse us for payments made under this policy, including our costs of recovery; any excess shall be paid to you, minus a proportional share of recovery costs.
-
-SECTION 10 — GENERAL CONDITIONS
-
-10(a) Cancellation — We may cancel this policy by mailing to you at the address shown in the Declarations written notice stating when, not less than 30 days after mailing, such cancellation shall be effective. You may cancel at any time by returning this policy to us or by notifying us in writing of the date cancellation is to take effect. If we cancel, the return premium shall be computed pro rata. If you cancel, the return premium shall be computed according to our customary short-rate table, which may result in a return of less than a pro rata share of the premium.
-
-10(b) Assignment — Assignment of this policy shall not be valid except with our prior written consent.
-
-10(c) Concealment or Fraud — The entire policy shall be void if, whether before or after a loss, an insured has willfully concealed or misrepresented any material fact or circumstance concerning this insurance or the subject thereof, or the interest of the insured therein, or in case of any fraud or false swearing by the insured relating thereto.
-
-10(d) Suit Against Us — No action can be brought against us unless there has been full compliance with all of the terms of this policy. Any action must be started within one year after the date of loss. This limitations period applies regardless of when the insured discovered or should have discovered the loss.
-
-10(e) Liberalization — If we adopt any revision that would broaden coverage under this policy without additional premium, the broader coverage will apply to this policy.
-
-10(f) Policy Modifications — This policy contains all of the agreements between you and us concerning the insurance afforded. Its terms may not be waived or changed except by endorsement issued by us to be added to this policy. A waiver or change of any provision of this policy must be in writing and signed by us.
-
-This policy is a legal contract between you and SecureHome Insurance Company. By accepting this policy, you agree to all of its terms and conditions.
-
-IN WITNESS WHEREOF, SecureHome Insurance Company has caused this policy to be signed by its authorized officers.
-
-SecureHome Insurance Company
+QuickRent Property Management
 [Authorized Signature]
 """
 
@@ -389,7 +303,9 @@ Use EXACTLY ONE of these per clause, on its own line, followed by the trick cate
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    resp = app.make_response(render_template('index.html'))
+    resp.headers['Cache-Control'] = 'no-store'
+    return resp
 
 
 @app.route('/upload', methods=['POST'])
@@ -439,6 +355,7 @@ def upload():
             'filename': filename,
             'text_length': len(text),
             'preview': text[:300],
+            'full_text': text[:5000],
         })
 
     except Exception as e:
@@ -448,14 +365,14 @@ def upload():
 @app.route('/sample', methods=['POST'])
 def sample():
     data = request.get_json(silent=True) or {}
-    role = data.get('role', 'policyholder')
-    negotiable = data.get('negotiable', False)
+    role = data.get('role', 'tenant')
+    negotiable = data.get('negotiable', True)
     depth = data.get('depth', 'standard')
 
     doc_id = str(uuid.uuid4())
     documents[doc_id] = {
         'text': SAMPLE_DOCUMENT,
-        'filename': 'SecureHome Insurance Policy (Sample)',
+        'filename': 'QuickRent Lease Agreement (Sample)',
         'role': role,
         'negotiable': negotiable,
         'depth': depth,
@@ -463,9 +380,10 @@ def sample():
 
     return jsonify({
         'doc_id': doc_id,
-        'filename': 'SecureHome Insurance Policy (Sample)',
+        'filename': 'QuickRent Lease Agreement (Sample)',
         'text_length': len(SAMPLE_DOCUMENT),
         'preview': SAMPLE_DOCUMENT[:300],
+        'full_text': SAMPLE_DOCUMENT[:5000],
     })
 
 
@@ -536,7 +454,7 @@ Things present in one document but MISSING from the other. These absences are of
 
 
 def build_quick_scan_prompt():
-    """Fast individual clause analysis. Runs with low thinking budget (~30-60s)."""
+    """Fast individual clause analysis with READER perspective for flip cards."""
     return """You are a senior attorney who drafted documents like this for 20 years. Analyze each clause individually from the drafter's strategic perspective.
 
 ## LANGUAGE RULE
@@ -566,9 +484,9 @@ For EACH significant clause:
 
 ### [Descriptive Title] ([Section Reference])
 
-**Why this clause exists:** [1-2 sentences from the drafter's perspective — what strategic purpose this clause serves for the drafting party. Think like the person who wrote it.]
-
 > "[Quote key language from the document]"
+
+[READER]: [1-2 sentences of what a normal, non-expert reader would think upon first reading this clause. Trusting, reasonable, slightly optimistic but not naive. This must feel authentic — something the reader would recognize as their own thought. Examples: "This seems fair — five days is a reasonable grace period." or "Standard maintenance responsibility. Makes sense that I'd report issues quickly." Write in second person.]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
 
@@ -607,15 +525,91 @@ Then include the appropriate action items based on negotiability.
 
 ## RULES
 - Output each clause AS SOON as you analyze it
-- Every clause gets: "Why this clause exists" + quote + risk level + score + trick + juxtaposition
-- "Why this clause exists" reveals the drafter's strategic intent — think like the document
-- "What you should read" reveals the reader's reality — think like the user
+- Every clause gets: quote + [READER] perspective + risk level + score + trick + juxtaposition
+- The [READER] line captures the reader's naive first impression — what they'd think before seeing the analysis
+- "What you should read" reveals the reader's reality — the gap between words and what they mean
 - Quote exact language from the document
 - Be thorough but fast — cross-clause interactions will be analyzed separately"""
 
 
+def build_card_scan_prompt():
+    """Fast card scan for Haiku — SHORT flip card content, one sentence per field."""
+    return """You are a contract analyst performing a fast initial scan. Analyze each clause individually, producing SHORT flip-card content. Speed matters — output each clause as soon as you analyze it.
+
+## LANGUAGE RULE
+Respond in the SAME LANGUAGE as the document. If the document is in Dutch, respond entirely in Dutch. If German, German. Match the document's language for ALL output including headers and labels.
+
+## OUTPUT FORMAT
+
+Output the Document Profile first, then each clause separated by --- on its own line.
+
+## Document Profile
+- **Document Type**: [type of document]
+- **Drafted By**: [who drafted it]
+- **Your Role**: [the non-drafting party's role]
+- **Jurisdiction**: [jurisdiction if identifiable, otherwise "Not specified"]
+- **Sections**: [number of major sections]
+
+---
+
+Then for EACH significant clause, output exactly this format:
+
+### [Descriptive Title] ([Section Reference])
+
+> "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
+
+[READER]: [One sentence. What a reasonable person would think when first reading this clause. Trusting, slightly optimistic tone. Second person. Examples: "Seems fair — five days is plenty of time to pay." / "Standard maintenance rules. Of course I'd report problems quickly." / "Makes sense they'd need to enter for emergencies."]
+
+[GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
+
+**Bottom line:** [One sentence visible before flipping. GREEN: confirm it's fair. YELLOW/RED: name the specific risk in plain language. Be concrete, not vague.]
+
+**What the small print says:** [One sentence. Plain restatement of what this clause literally says. Neutral tone.]
+
+**What you should read:** [One sentence. What this ACTUALLY means for the reader. Direct, specific. If alarming, be alarming.]
+
+---
+
+## RISK LEVELS
+- GREEN · Score: 0-30 — Fair, balanced, no hidden intent
+- YELLOW · Score: 31-65 — Imbalanced, unusual, or worth scrutiny
+- RED · Score: 66-100 — Clearly favors the drafter, potential harm to reader
+
+## TRICK CATEGORIES (pick exactly one per clause, best match):
+- Silent Waiver — Quietly surrenders your legal rights
+- Burden Shift — Moves proof/action duty onto you
+- Time Trap — Tight deadlines that forfeit your rights
+- Escape Hatch — Drafter can exit, you can't
+- Moving Target — Can change terms unilaterally after you agree
+- Forced Arena — Disputes in drafter's chosen forum/method
+- Phantom Protection — Broad coverage eaten by hidden exceptions
+- Cascade Clause — One trigger activates penalties in others
+- Sole Discretion — Drafter decides everything, no appeal
+- Liability Cap — Limits payout regardless of harm
+- Reverse Shield — You cover their costs, not vice versa
+- Auto-Lock — Auto-renewal with hard cancellation
+- Content Grab — Claims rights over your content/work
+- Data Drain — Expansive hidden data permissions
+- Penalty Disguise — Punitive charges disguised as legitimate fees
+- Gag Clause — Prohibits negative reviews or discussion
+- Scope Creep — Vague terms stretch beyond reasonable expectation
+- Ghost Standard — References external docs not included
+
+## RULES
+1. Output each clause immediately — do NOT wait to analyze all clauses before outputting
+2. Every clause MUST end with --- on its own line
+3. Every clause MUST have: quote, [READER] line, risk level with score and trick, bottom line, juxtaposition
+4. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
+5. Keep each field to ONE sentence. Cards must be scannable, not essays
+6. The [READER] voice should feel like the reader's own inner monologue — natural, not robotic
+7. "What you should read" is the core insight — make it visceral
+8. Do NOT include negotiation advice or action items — those come from deep analysis
+9. Do NOT include cross-clause interactions — analyze each clause independently
+10. The Document Profile must appear BEFORE the first clause, followed by ---"""
+
+
 def build_deep_analysis_prompt():
-    """Deep cross-clause analysis, playbook, and assessment. Full thinking budget."""
+    """Deep cross-clause analysis with DRAFTER perspective, playbook, and assessment."""
     return """You are a senior attorney who has read this entire document. Perform the DEEP analysis: cross-clause interactions, the drafter's strategic playbook, and overall risk assessment. This requires reasoning across ALL clauses simultaneously — finding what is invisible when reading clause by clause.
 
 ## LANGUAGE RULE
@@ -631,15 +625,17 @@ For each interaction:
 
 ### [Descriptive Interaction Title]
 
+**Read separately, you'd see:** What these clauses appear to say independently. One sentence.
+
+**Read together, you'd realize:** What they ACTUALLY do when combined — the hidden compound risk. One sentence, visceral.
+
 **Clauses Involved**: [list specific sections]
 
-**How They Interact**: [the mechanism — be very specific]
+**How They Interact**: [2-3 sentences. The mechanism — be very specific about HOW the clauses feed into each other.]
 
-[RED/YELLOW] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
+[RED/YELLOW] · Trick: [TRICK_CATEGORY]
 
-**What the small print says:** What these clauses appear to say independently.
-
-**What you should read:** What they ACTUALLY do when combined — the hidden compound risk.
+**If the drafter could speak freely:** [2-3 sentences reconstructing what the person who designed this clause combination was likely trying to achieve. Speak as if the drafter is explaining the strategy to a colleague. Professional, strategic, calm — not villainous. Use "we" language. Example: "The 24-hour reporting requirement pairs nicely with the damage liability clause. If a tenant misses the window — and most will for minor issues — they've assumed financial responsibility. We've converted a reporting rule into a revenue mechanism."]
 
 ---
 
@@ -661,9 +657,9 @@ If I were the attorney who designed this document, my strategic approach was:
 
 ## Overall Assessment
 
-**Overall Risk Score: [0-100]/100**
+**Overall Risk Score: [0-100]/100** — How much this document can hurt you.
 
-**Power Imbalance Index: [0-100]/100**
+**Power Imbalance Index: [0-100]/100** — How little you can do about it.
 
 **Risk Distribution**: [X] Green · [Y] Yellow · [Z] Red
 
@@ -700,6 +696,9 @@ If I were the attorney who designed this document, my strategic approach was:
 ## RULES
 - Focus exclusively on cross-clause interactions, playbook, and assessment
 - Do NOT re-analyze individual clauses — that has been done separately
+- Every cross-clause interaction MUST include an "If the drafter could speak freely" section — the drafter's voice explaining the strategic architecture
+- The drafter's voice should sound like a professional in a meeting, not a villain. Use "we" language.
+- LEAD each interaction with "Read separately / Read together" — that's the hook. The drafter's voice is supporting evidence, placed AFTER.
 - Cross-clause interactions are your HIGHEST VALUE finding — reason deeply
 - The Playbook must reveal strategic architecture, not just list problems
 - Use your full extended thinking budget to reason across the entire document
@@ -754,6 +753,7 @@ def compare():
             'filename': filenames[0] + ' vs ' + filenames[1],
             'text_length': len(texts[0]) + len(texts[1]),
             'preview': texts[0][:150] + '\n---\n' + texts[1][:150],
+            'full_text': texts[0][:5000],
             'mode': 'compare',
         })
     except Exception as e:
@@ -810,10 +810,7 @@ def analyze(doc_id):
             stream = client.messages.create(
                 model=MODEL,
                 max_tokens=preset['max_tokens'],
-                thinking={
-                    'type': 'enabled',
-                    'budget_tokens': preset['budget_tokens'],
-                },
+                thinking={'type': 'adaptive'},
                 system=system_prompt,
                 messages=[{'role': 'user', 'content': user_msg}],
                 stream=True,
@@ -828,23 +825,25 @@ def analyze(doc_id):
                 stream.close()
 
     def run_parallel(client, user_msg, preset):
-        """Two parallel API calls: quick clause scan + deep cross-clause analysis."""
+        """Two parallel API calls: Haiku card scan (fast) + Opus deep analysis."""
         q = queue_module.Queue()
+        timings = {}
 
-        def worker(label, system_prompt, budget, max_out):
+        def worker(label, system_prompt, max_out,
+                   model=MODEL, use_thinking=True):
             stream = None
+            t0 = time.time()
             try:
-                stream = client.messages.create(
-                    model=MODEL,
-                    max_tokens=max_out,
-                    thinking={
-                        'type': 'enabled',
-                        'budget_tokens': budget,
-                    },
-                    system=system_prompt,
-                    messages=[{'role': 'user', 'content': user_msg}],
-                    stream=True,
-                )
+                create_kwargs = {
+                    'model': model,
+                    'max_tokens': max_out,
+                    'system': system_prompt,
+                    'messages': [{'role': 'user', 'content': user_msg}],
+                    'stream': True,
+                }
+                if use_thinking:
+                    create_kwargs['thinking'] = {'type': 'adaptive'}
+                stream = client.messages.create(**create_kwargs)
                 for event in stream:
                     q.put((label, event))
             except anthropic.APIError as e:
@@ -854,18 +853,21 @@ def analyze(doc_id):
             finally:
                 if stream:
                     stream.close()
+                timings[label] = round(time.time() - t0, 1)
                 q.put((f'{label}_done', None))
 
-        # Launch quick scan (4K thinking) + deep analysis (full budget)
+        # Haiku for fast card scan (no extended thinking)
         t_quick = threading.Thread(
             target=worker,
-            args=('quick', build_quick_scan_prompt(), 4000, 16000),
+            args=('quick', build_card_scan_prompt(), 8000,
+                  FAST_MODEL, False),
             daemon=True,
         )
+        # Opus for deep cross-clause analysis (extended thinking)
         t_deep = threading.Thread(
             target=worker,
             args=('deep', build_deep_analysis_prompt(),
-                  preset['budget_tokens'], preset['max_tokens']),
+                  preset['max_tokens'], MODEL, True),
             daemon=True,
         )
 
@@ -890,7 +892,9 @@ def analyze(doc_id):
 
             if source == 'quick_done':
                 quick_done = True
-                yield sse('quick_done')
+                qt = timings.get('quick', 0)
+                yield sse('quick_done', json.dumps({
+                    'seconds': qt, 'model': FAST_MODEL}))
                 # Flush buffered deep events
                 for evt in deep_buffer:
                     for chunk in process_stream_event(evt, state):
@@ -916,7 +920,10 @@ def analyze(doc_id):
                 else:
                     deep_buffer.append(event)
 
-        yield sse('done')
+        dt = timings.get('deep', 0)
+        yield sse('done', json.dumps({
+            'quick_seconds': timings.get('quick', 0),
+            'deep_seconds': dt, 'model': MODEL}))
 
     def generate():
         try:
@@ -976,7 +983,8 @@ if __name__ == '__main__':
         print('  Set it in your environment or create a .env file.')
         print('=' * 60 + '\n')
 
+    port = int(os.environ.get('FLIPSIDE_PORT', 5001))
     print('\n  FlipSide — The other side of small print.')
-    print('  Powered by Claude Opus 4.6 extended thinking.')
-    print('  http://127.0.0.1:5000\n')
-    app.run(debug=True, port=5000)
+    print(f'  Powered by Claude Opus 4.6 + Haiku 4.5 (fast cards).')
+    print(f'  http://127.0.0.1:{port}\n')
+    app.run(debug=True, port=port)

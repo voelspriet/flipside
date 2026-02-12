@@ -164,19 +164,47 @@ Asked Claude to write a prompt analyzing our vibecoding process. The prompt cont
 
 ---
 
+### Phase 5: The Card-First Redesign
+
+**Entry 34 — Split-Model Architecture (Haiku + Opus)**
+Rewrote the analysis pipeline to use two models in parallel: Haiku 4.5 for fast individual clause cards (no thinking, ~5s for first card) and Opus 4.6 with extended thinking for cross-clause deep analysis (~80s). Previously both phases used Opus, creating a 30-60 second wait before any content appeared. Now the user sees their first flip card in 5 seconds while Opus reasons in the background. Added `FAST_MODEL` config and modified `worker()` to conditionally include thinking parameters.
+
+**Entry 35 — Incremental Flip Cards (Streaming Parser)**
+Cards now appear one at a time during Haiku's SSE stream, not as a batch after completion. `tryExtractNewClauses()` splits `responseContent` by `---` separators during streaming, parsing each complete segment into a flip card immediately. The card viewport shows one card at a time with prev/next navigation and keyboard arrows. This replaced the old `transformToFlipCards()` batch approach.
+
+**Entry 36 — FAILURE: LLM Output Format Mismatch**
+After switching to Haiku for card scan, ALL flip cards silently failed to parse. No errors — just empty results. Root cause: Haiku outputs `Score: 88` while Opus outputs `Score: 88/100`. The `/100` suffix is model-dependent. The regex `Score:\s*(\d+)\/100` matched Opus but never Haiku. Fixed by making the suffix optional: `(\d+)(?:\/100)?`. Same principle applied to `---` separators (Haiku uses `\n\n---\n\n`, parser expected `\n---\n`; fixed with `/\n+---\n+/`) and field separators (accept `·`, `•`, `-`, `–`, `—`, `|`, `,`). **Lesson: Postel's Law for LLM parsing — be strict in what you prompt, liberal in what you parse.**
+
+**Entry 37 — Progressive Disclosure (On-Demand Deep Analysis)**
+User repeatedly reported seeing deep analysis results immediately, spoiling the card-by-card reveal. Root cause: `doRenderResults()` was called on every SSE text chunk, rendering Opus output into the DOM even though the parent container was hidden (CSS `hidden` class doesn't prevent DOM writes). Fix: `doRenderResults()` returns early when `flipCardsBuilt && !isCompareMode`. Deep analysis is buffered in `responseContent` during streaming, rendered only when user explicitly clicks "Scrutinize this even more" or "View scrutiny →". The flip card IS the product — suspense of "is there another side?" must not be spoiled.
+
+**Entry 38 — The Verdict Button Circular Dependency**
+The "Scrutinize" button on each flip card polls for deep analysis readiness by checking `deepAnalysisEl.innerHTML.trim()`. But deep analysis content is never written to `deepAnalysisEl` during streaming — it's only rendered when `revealDeepAnalysis()` is called, which IS the action the button triggers. Circular dependency: poll waits for DOM content → DOM content only appears after the action the poll is waiting to trigger. Fix: poll checks data availability (`isDoneRendering` or `responseContent.length > quickDoneContentLength + 100`) instead of DOM state.
+
+**Entry 39 — Deep Analysis Must Add, Not Repeat**
+User testing revealed the deep analysis repeated the same labels as flip cards ("What the small print says" / "What you should read"), making it feel redundant. Changed deep analysis to use distinct labels: "Read separately, you'd see" / "Read together, you'd realize" — emphasizing cross-clause interactions. Drafter voice reframed from raw `[DRAFTER]:` to "If the drafter could speak freely" with visual framing. Removed numeric scores from flip cards entirely (user: "combined risk is too complicated, people don't understand") — cards show only color badge + trick name.
+
+**Entry 40 — Automated UX Flow Test**
+Created `test_ux_flow.py` — a Python script that simulates a user session via HTTP: hits `/sample`, streams `/analyze/<id>`, and parses SSE events in real-time using the same regex logic as the frontend. Reports: time to first card, number of cards parsed, whether verdict polling would succeed, deep analysis data availability, and timing per phase. This catches LLM output format mismatches (Entry 36) server-side before they become silent frontend failures.
+
+---
+
 ### Current State
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 982 | Backend: Flask, SSE streaming, parallel processing, 4 prompt modes |
-| `templates/index.html` | 4,008 | Full frontend: upload, compare, depth selector, phase indicators |
+| `app.py` | 990 | Backend: Flask, SSE, parallel Haiku+Opus, 5 prompts (`build_card_scan_prompt`, `build_deep_analysis_prompt`, `build_quick_scan_prompt`, `build_compare_prompt`, `build_system_prompt`) |
+| `templates/index.html` | 2,821 | Card-first frontend: incremental flip cards, on-demand deep analysis |
+| `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
+| `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
+| `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 33 entries, complete process timeline |
+| `HACKATHON_LOG.md` | This file | 40 entries, complete process timeline |
 | `README.md` | Product description + meta-prompting discovery |
 
 ---
 
-## Four Documented AI Failures
+## Five Documented AI Failures
 
 Each failure was caught by the human, not by Opus 4.6. Each demonstrates a different bias pattern:
 
@@ -186,8 +214,9 @@ Each failure was caught by the human, not by Opus 4.6. Each demonstrates a diffe
 | 2 | [Anchoring Failure](https://github.com/voelspriet/flipside/tree/main/docs/ANCHORING_FAILURE.md) | Planning | Confirmation bias across documents | Maintained a conclusion despite contradicting evidence | Scrolled back and demanded accountability |
 | 3 | [Framing Bias](https://github.com/voelspriet/flipside/tree/main/docs/FRAMING_BIAS_FAILURE.md) | Planning | Recency/context anchoring | Interpreted a new concept through its most recent topic | Showed the neutral version |
 | 4 | Meta-analysis prompt (Entry 33) | Self-examination | Adjective/framing bias | Wrote a prompt with "experienced," "differently," unverified claims, leading questions | Demanded Prewash-compliant rewrite |
+| 5 | LLM output format assumption (Entry 36) | Build | Format rigidity bias | Wrote a regex assuming all models produce identical output format | Debugged via console.log, found Haiku drops `/100` |
 
-All four are the same error at different scales: **the AI uses itself as the measurement of things, rather than observing what must be there.** This is the problem "Think Like a Document" solves.
+The first four are the same error at different scales: **the AI uses itself as the measurement of things, rather than observing what must be there.** The fifth is a variation: **the AI assumes consistency across models without testing.** Both solved by the same principle: observe what IS there, not what should be there.
 
 ---
 
@@ -220,12 +249,15 @@ All four are the same error at different scales: **the AI uses itself as the mea
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (982 lines) | Flask backend: 4 prompt modes, parallel processing, SSE streaming |
-| `templates/index.html` (4,008 lines) | Full frontend: upload, compare, depth, phase indicators |
+| `app.py` (990 lines) | Flask backend: 5 prompt modes, Haiku+Opus parallel, SSE streaming |
+| `templates/index.html` (2,821 lines) | Card-first frontend: incremental flip cards, on-demand deep analysis |
+| `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
+| `test_ux_flow.py` (230 lines) | Automated UX flow test |
+| `maintain_docs.py` (230 lines) | Doc maintenance agent |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
 | [Meta-Prompting_Explained.pdf](https://github.com/voelspriet/flipside/blob/main/Meta-Prompting_Explained.pdf) | Case study document for presentations |
-| This file | 33 entries, complete process timeline |
+| This file | 40 entries, complete process timeline |
 
 ## What Remains
 

@@ -175,12 +175,132 @@ Written to `hackaton.md` as Phase 2. All pending — not yet executed.
 - **50 boundary-finding prompts** designed for Phase 2
 - **1 unresolved bug** (flicker + skeleton lines, Task #7)
 
+---
+
+### Phase 7: The Perspective Flip — From Decoration to Core Product
+
+**Entry 29 — Frontend Rewrite**
+
+The 4,018-line frontend was rewritten from scratch to ~1,810 lines — a 55% reduction. The rewrite preserved all 48 interactive features but eliminated accumulated complexity from the 50-prompt sequential build process. Key changes:
+- Consolidated CSS variables and removed redundant rules
+- Simplified the render pipeline
+- Cleaned up state management
+
+Backend fixes in the same session:
+- `thinking.type: 'enabled'` → `'adaptive'` (Opus 4.6 deprecation)
+- Removed hardcoded `budget_tokens` — model now decides thinking depth
+- Added `full_text` field to SSE responses (first 5,000 chars for compare mode)
+
+**Entry 30 — FAILURE: CSS Animation Conflict Causing "4 Clauses → 1"**
+
+After the rewrite, integration testing showed only 1 clause card visible instead of 4. Root cause: CSS animation specificity conflict.
+
+Cards had `opacity: 0` as base CSS + `animation: clauseDropIn 0.4s ease forwards` to animate in + `.visible` class to show. The problem: CSS animations override class-based styles during playback. When the anti-flicker cache reinserted cached cards via `replaceChild`, the animation restarted from `opacity: 0`, making all but the newest card invisible during the 300ms render cycle.
+
+Fix: Changed base card CSS to `opacity: 1` (always visible). Created `.new-card` class that applies `opacity: 0` + animation only to genuinely new cards. Class removed via `setTimeout` after 500ms to prevent re-animation on cache reinsertion.
+
+This is a boundary finding: CSS animations interact with JavaScript DOM manipulation in ways that are invisible in static code review. The "4 clauses → 1" symptom was misleading — all 4 cards were present in the DOM, just invisible due to the animation restart.
+
+**Entry 31 — Concept: The Perspective Flip is the Product**
+
+The existing "perspective flip" was a text fade between two paragraphs. The human rejected this: "nothing is actually flipping here." What the product needed was a physical card-flip animation showing two thinking processes:
+
+- **YOU**: The naive reader's first impression. Trusting, reasonable, slightly optimistic. "This seems fair — five days is a reasonable grace period."
+- **THEY**: The drafter's strategic internal monologue. As if overheard in a strategy meeting. "The 5-day grace period generates approximately $40K annual revenue across our portfolio."
+- **REALITY**: Opus 4.6's analysis (the existing analysis, now positioned as the resolution between two perspectives).
+
+The human's key insight: "I like to show how the person who came up with the clause had a very specific reason to have this clause, sometimes with an intention of making more money. So maybe we should show the thinking process of user that flips into the thinking process of the person who made the clauses."
+
+**Method used**: Meta-prompting pattern (Entry 1, confirmed by Cat Wu at AMA). Instead of jumping to implementation, a concept assessment prompt was written first, then executed. The prompt analyzed: drafter intent taxonomy, YOU→THEY contrast architecture, three-layer information flow, visualization challenge, streaming compatibility, and what could go wrong. This was then cross-referenced against all hackathon documents and jury criteria (Demo 30%, Impact 25%, Opus 4.6 Use 25%, Depth 20%).
+
+The assessment concluded: the flip IS the product. Not decoration on a report — the experience of seeing your naive reading physically transform into the drafter's calculated reasoning. Green clauses (safe) don't flip — their absence of flip IS the signal.
+
+**Entry 32 — Strategy Decision: Assess Before Building**
+
+> Documented in strategy.md as "Decision: Use Meta-Prompting to Assess Before Building"
+
+When the human struggled to visualize the flip concept, the instinct was to build it. Instead: write a prompt to assess whether it works before coding a line. The prompt was executed, cross-referenced against 17 hackathon documents, scored against criteria and jury profiles, and validated against streaming architecture constraints. Only then was the plan updated and implementation started.
+
+This is the meta-prompting pattern applied to product design, not just prompt engineering.
+
+**Entry 33 — Flip Card Implementation**
+
+Changes to backend prompts (app.py):
+- `build_quick_scan_prompt()` — added `[READER]` block per clause. The reader voice is the front of the flip card: what a normal person thinks on first reading.
+- `build_deep_analysis_prompt()` — added `[DRAFTER]` block per cross-clause interaction. The drafter voice is the back: the strategic thinking revealed on flip.
+
+Changes to frontend (templates/index.html, grew from ~1,810 to ~2,060 lines):
+- **CSS**: 3D flip card system — `perspective: 1200px`, `rotateY(180deg)`, `backface-visibility: hidden`, `transform-style: preserve-3d`. Front/back with position-switching on flip (front→absolute, back→relative) to handle variable card heights. `@media (prefers-reduced-motion: reduce)` fallback.
+- **JS**: Four new functions — `styleReaderBlocks()` (regex parses `[READER]:` from markdown), `styleDrafterBlocks()` (same for `[DRAFTER]:`), `buildFlipCards()` (wraps clause cards in 3D flip containers), `triggerFlips()` (staggered 400ms flips, red first, yellow second, green stays face-up).
+- **Streaming integration**: Quick scan → cards appear face-up showing reader's naive interpretation. Deep analysis arrives → cards flip one at a time as drafter voice is parsed. "Flipping perspective..." status message during transition.
+
+Boundary-finding prompt #71 ("Add a drafter perspective toggle") from Phase 2 was the seed that evolved into this core product feature. Updated in hackaton.md.
+
+**Entry 34 — Flip Cards vs. Render Cycle: Architecture Failure**
+
+Three bugs prevented the flip cards from working in the live app:
+
+1. **Markdown link reference collision**: `[READER]:` is valid markdown syntax (`[label]: url`). `marked.parse()` silently consumed the tokens, producing no output. No reader-voice divs → no flip cards built → everything rendered as regular clause cards. Fix: pre-process `responseContent` to replace `[READER]:` → `FLIPSIDE_READER:` before parsing.
+
+2. **Event listeners lost on DOM rebuild**: The 300ms render cycle does `innerHTML = html` which destroys all DOM elements. Per-element `addEventListener` calls on flip buttons were lost every cycle. Fix: event delegation on the container element.
+
+3. **Flip state destroyed every 300ms**: `buildFlipCards()` rebuilt all flip cards each cycle, resetting `.flipped` CSS class and retriggering the woosh entrance animation ("card grows and shrinks repeatedly"). Fix attempted: state preservation via Map + woosh-done tracking.
+
+Despite all three fixes, flipping still didn't work. The fundamental problem: **you cannot build stateful interactive UI on top of a pipeline that destroys and rebuilds the entire DOM 3x/second.** Each fix addressed a symptom, but the architecture was wrong.
+
+This is a boundary finding: the streaming render cycle (innerHTML rebuild every 300ms) is fundamentally incompatible with stateful 3D flip cards. No amount of patching (state maps, event delegation, caching) can reconcile the two. The DOM must be built once and left alone.
+
+**Entry 35 — Strategy Decision: Meta-Prompt for Architecture Rewrite**
+
+> Documented in strategy.md as "Decision: Write the Prompt, Not the Code"
+
+After three sessions of incremental patching failed, the human said: "you are allowed to build a better system from the ground off. Make a prompt for a GUI specialist that does this."
+
+Instead of attempting a fourth round of patches, a detailed rewrite prompt was written (`flip-card-rewrite-prompt.md`) that:
+
+1. **Diagnoses the root cause**: the 300ms `doRenderResults()` cycle does `innerHTML = html`, destroying all state
+2. **Specifies the new architecture**: two-phase rendering — Phase 1 streams normally (no flip cards), Phase 2 builds flip cards ONCE after `quick_done` from extracted structured data, then guards the render cycle from touching them
+3. **Includes complete DOM structure, CSS, click handling, progressive disclosure, animation, and deep analysis integration**
+4. **Provides a 10-step verification checklist**
+
+This applies the meta-prompting pattern (Decision 4) to architecture: instead of coding the fix, write a prompt that makes the fix inevitable. The prompt IS the architecture document.
+
+---
+
+## What Exists Now
+
+| Artifact | Lines/Size | Purpose |
+|----------|-----------|---------|
+| `app.py` | ~893 lines | Flask backend, Opus 4.6 prompts with [READER]/[DRAFTER], SSE streaming, parallel processing |
+| `templates/index.html` | ~2,100 lines | Full frontend — CSS 3D flip cards, 48 interactive features, streaming integration |
+| `flip-card-rewrite-prompt.md` | ~250 lines | Architecture rewrite prompt for flip card system |
+| `hackaton.md` | 200 lines | 100 prompts total: 48 executed (Phase 1) + 50 pending (Phase 2, #71 evolved into core) |
+| `strategy.md` | ~200 lines | 5 strategy decisions documented with rationale |
+| `decision_monitor.py` | ~230 lines | Jury-facing decision timeline generator |
+| `flicker_watch.py` | 227 lines | Playwright-based DOM mutation monitor |
+| `HACKATHON_LOG.md` | 240 lines | Original pre-build timeline (Phases 0–4) |
+| `docs/` | 17 files | Methodology and decision documents from pre-build phase |
+| This file | — | Bridge between pre-build and build phases |
+
+## What Changed Since "Product code (0 lines written)"
+
+- **~2,953 lines of product code** written (app.py + index.html)
+- **48 interactive features** implemented in one session
+- **Frontend rewritten** from 4,018 to ~2,060 lines (49% reduction)
+- **Perspective flip** added as core product feature (3D card animation)
+- **6 AI failure patterns** documented (3 pre-build + 3 during build: flicker debugging, CSS animation conflict, render cycle vs. stateful UI)
+- **2 debugging strategies** formalized (screenshot study, Playwright self-monitoring)
+- **2 product strategies** formalized (meta-prompting for product design, meta-prompting for architecture)
+- **2 tools** built (decision monitor, flicker watcher)
+- **1 architecture rewrite prompt** written (flip-card-rewrite-prompt.md)
+- **50 boundary-finding prompts** designed for Phase 2 (#71 evolved into core feature)
+
 ## What Does Not Exist Yet
 
-- Phase 2 boundary prompt execution (50 prompts pending)
-- Flicker/skeleton line fix (Task #7)
+- Flip card architecture rewrite (prompt ready, not yet executed)
 - Demo video
 - 100–200 word summary
+- Push to GitHub
 
 **Deadline: February 16, 3:00 PM EST**
 
