@@ -210,6 +210,35 @@ Clauses turn red as risks are identified. The audience — every one of whom has
 
 ---
 
+## FlipSide vs. Anthropic's Legal Plugin
+
+On February 2, 2026, Anthropic launched a [legal plugin for Claude Cowork](https://legaltechnology.com/2026/02/03/anthropic-unveils-claude-legal-plugin-and-causes-market-meltdown/) — enterprise contract review that crashed legal tech stocks by $50B+. FlipSide, built during this hackathon, approaches the same domain from the opposite direction. The plugin reviews contracts FOR legal teams. FlipSide reveals what the drafting team intended — for the 250M+ people who sign documents without a legal team. Same model. Different side of the table.
+
+| | Anthropic Legal Plugin | FlipSide |
+|---|---|---|
+| **User** | In-house corporate counsel | Consumer who received a document they didn't write |
+| **Perspective** | Reviews FROM your configured playbook | Flips TO the drafter's perspective — no playbook needed |
+| **Opus 4.6 use** | Standard clause flagging | 10 capabilities: extended thinking, vision, tool use, confidence signaling, self-correction, follow-up, benchmark comparison, prompt caching, split-model parallel, methodology disclosure |
+| **Input** | Contracts your legal team handles | Any document: leases, insurance, ToS, loans, employment, medical consent |
+| **Output** | Redline suggestions, NDA triage | Flip cards ("What you'd think" → "What they intended"), villain voice, YOUR MOVE actions |
+| **Requires** | Cowork enterprise license, MCP integrations, configured playbook | Nothing — upload and go |
+| **Approach** | Automates what a lawyer already does | Reveals what the lawyer on the other side was thinking |
+
+### How FlipSide pushes Opus 4.6 further
+
+The legal plugin uses Opus for clause flagging and redline suggestions — standard contract review. FlipSide pushes Opus 4.6 into capabilities the plugin does not use:
+
+- **Adversarial perspective adoption** — Opus role-plays as the drafter's attorney, sustaining a hostile viewpoint across the entire document. This requires extended thinking that a review-against-playbook approach does not.
+- **Vision / multimodal** — PDF pages sent as images to detect visual formatting tricks (fine print, buried placement, table manipulation) that text extraction misses entirely.
+- **Tool use during analysis** — `assess_risk` and `flag_interaction` tools force structured data (risk level, confidence %, trick type) alongside prose. The plugin uses slash commands; FlipSide uses tool calls within the reasoning itself.
+- **Self-correction** — Opus reviews its own analysis for false positives and blind spots before presenting results. The plugin reviews against your playbook; FlipSide reviews against itself.
+- **Confidence signaling** — Each finding shows HIGH/MEDIUM/LOW confidence with reasoning. Transparent uncertainty is more trustworthy than false confidence.
+- **Multi-turn follow-up** — After analysis, users ask questions ("What happens if I'm 3 months late?") and Opus traces the answer through all clauses. The plugin is command-driven; FlipSide is conversational.
+
+The plugin is a **workflow tool** for professionals. FlipSide is a **thinking tool** for everyone else — and it uses more Opus 4.6 capabilities to get there.
+
+---
+
 ## Problem Statement Fit
 
 **Primary: Break the Barriers**
