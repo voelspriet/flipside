@@ -1377,6 +1377,7 @@
     var statusRotateInterval = null;
     var currentStatusIdx = 0;
     var isDoneRendering = false;
+    var deepTextComplete = false;  // Set when deep analysis text block finishes (text_done)
     var animatedCardTitles = new Set();
     var activeFilters = new Set(); // 'red', 'yellow', 'green'
     var toolResults = [];
@@ -1768,6 +1769,7 @@
         opusReasoningDone = false;
         $('reportToggle').classList.add('hidden');
         isDoneRendering = false;
+        deepTextComplete = false;
         animatedCardTitles = new Set();
         activeFilters = new Set();
         flipCardsBuilt = false;
@@ -1912,8 +1914,11 @@
                     // If Opus reasoning was done and quick scan was done,
                     // this text_done is from the deep analysis — report is ready
                     if (opusReasoningDone && quickDone) {
+                        deepTextComplete = true;
                         thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Opus 4.6: Reasoning complete';
                         $('reportToggle').classList.remove('hidden');
+                        // Update card nav in case user is on last card
+                        if (flipCardsBuilt) updateCardNavigation();
                     }
                     break;
 
@@ -2500,8 +2505,8 @@
 
     // ── Reveal full verdict (on demand only) ──────
     function revealDeepAnalysis() {
-        // Check if deep analysis data is ready
-        var deepDataReady = isDoneRendering || (quickDoneContentLength > 0 && responseContent.length > quickDoneContentLength + 100);
+        // Check if deep analysis text has fully streamed
+        var deepDataReady = deepTextComplete || isDoneRendering;
         if (!deepDataReady) {
             // Show waiting state in the section
             var section = $('deepAnalysisSection');
@@ -2518,7 +2523,7 @@
             thinkingToggle.textContent = 'Hide reasoning';
             // Poll for completion
             var pollInterval = setInterval(function() {
-                var ready = isDoneRendering || (quickDoneContentLength > 0 && responseContent.length > quickDoneContentLength + 100);
+                var ready = deepTextComplete || isDoneRendering;
                 if (ready) {
                     clearInterval(pollInterval);
                     revealDeepAnalysis(); // Call again now that data is ready
@@ -2603,8 +2608,8 @@
             nextBtn.disabled = true;
             nextBtn.removeAttribute('data-action');
         } else if (currentCardIndex >= total - 1 && flipCardsBuilt) {
-            // Check if Opus is done
-            var opusDone = isDoneRendering || (quickDoneContentLength > 0 && responseContent.length > quickDoneContentLength + 100);
+            // Check if deep analysis text has fully streamed
+            var opusDone = deepTextComplete || isDoneRendering;
             if (opusDone) {
                 nextLabel.textContent = 'Full Verdict \u2192';
             } else {
