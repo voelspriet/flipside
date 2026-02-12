@@ -634,7 +634,7 @@ For EACH significant clause:
 
 > "[Quote key language from the document]"
 
-[READER]: [1-2 sentences of what a normal person would think BEFORE knowing the trap. Actively reassuring — downplay any worries, emphasize that this clause sounds reasonable and fair. The reader shrugs and moves on. No red flags, no hedging, no "but." This is the false comfort that makes the flip devastating. Examples: "Five days is plenty of time. And $75 is a reasonable incentive to pay on time." / "Standard maintenance rules — of course I'd report issues quickly." Write in second person.]
+[READER]: [2-4 sentences. STAY IN CHARACTER as the reader thinking out loud in FIRST PERSON ("I"). Explain the clause to yourself and shrug it off. CAN mention basic facts (amounts, timeframes) but IMMEDIATELY dismiss them. NEVER mention: "no cap," "no limit," "waive my right," "sole discretion," "unlimited," "cannot dispute." NEVER break character with third-person commentary like "They don't realize..." or "What they miss is..." — the entire text must be the reader's own thoughts. Always first person ("I/my/me"). Examples: "There's a late fee if I'm late — $75 a day. But I'd obviously pay on time, so it's not a real problem. Just incentive to pay by the deadline, which is fair." / "If I make a partial payment, they put it toward fees first, then rent. That's just bookkeeping — as long as I pay the full amount, the order doesn't matter." / "They can enter my place with some notice for inspections. Makes sense — it's their property too."]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
 
@@ -643,8 +643,8 @@ For EACH significant clause:
 **What you should read:** [what this ACTUALLY means for you — direct, specific, concrete. Show the gap between the words and reality.]
 
 **What does this mean for you:**
-[FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "$0 payout on a $50,000 claim".]
-[EXAMPLE]: [One concrete scenario using the document's own figures. 2-3 sentences max.]
+[FIGURE]: [The single key number. RED/YELLOW: worst-case stat — "$4,100 total debt from one missed payment". GREEN: the protection — "24-hour notice protects your deposit" / "Full 30-day refund window".]
+[EXAMPLE]: [One concrete scenario using the document's own figures. 2-3 sentences max. For GREEN: explain what makes this clause fair and how it protects you specifically.]
 
 Then include the appropriate action items based on negotiability.
 
@@ -678,7 +678,7 @@ Then include the appropriate action items based on negotiability.
 ## RULES
 - Output each clause AS SOON as you analyze it
 - Every clause gets: quote + [READER] perspective + risk level + score + trick + juxtaposition
-- The [READER] line is the FALSE COMFORT — actively reassuring, no hints of problems, no hedging. The worse the trap, the more reassuring the reader voice should sound
+- The [READER] thinks out loud in first person ("I"): mentions basic facts but dismisses them ("$75 a day, but I'd pay on time"). NEVER mentions "no cap/no limit/waive rights/sole discretion" — those stay hidden until the flip
 - "What you should read" reveals the reader's reality — the gap between words and what they mean
 - Quote exact language from the document
 - Be thorough but fast — cross-clause interactions will be analyzed separately"""
@@ -729,12 +729,12 @@ For multi-product documents (coupon books, product bundles): specify WHICH produ
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
-[READER]: [One sentence. What a reasonable person would think BEFORE knowing the trap. Actively reassuring — downplay worries, emphasize that this sounds fair and normal. No hints of problems. No "but" or hedging. This is the false comfort that makes the flip devastating. Examples: "Five days is plenty of time, and $75 is a fair incentive to pay on time." / "Standard maintenance rules — of course I'd report problems quickly." / "Makes sense they'd need to enter for emergencies." Second person.]
+[READER]: [2-4 sentences. STAY IN CHARACTER as the reader thinking out loud in FIRST PERSON ("I"). Explain the clause to yourself and shrug it off. CAN mention basic facts (amounts, timeframes) but IMMEDIATELY dismiss them. NEVER mention: "no cap," "no limit," "waive my right," "sole discretion," "unlimited," "cannot dispute." NEVER break character with "They don't realize..." or "What they miss is..." — entire text must be reader's own thoughts. Always first person ("I/my/me"). Examples: "There's a late fee if I'm late — $75 a day. But I'd obviously pay on time, so not a real problem. Just incentive to pay by the deadline, which is fair." / "If I make a partial payment, they put it toward fees first. Just bookkeeping — pay the full amount and the order doesn't matter." / "They can enter my place with some notice for inspections. Makes sense — it's their property too."]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
 Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguous" or "two interpretations possible" or "depends on jurisdiction"]
 
-**Bottom line:** [One sentence visible before flipping. GREEN: confirm it's fair. YELLOW/RED: name the specific risk in plain language. Be concrete, not vague.]
+**Bottom line:** [One sentence. GREEN: explain specifically WHY this clause is fair and what protection it gives you — not just "it's balanced." YELLOW/RED: name the specific risk in plain language. Be concrete, not vague.]
 
 **What the small print says:** [One sentence. Plain restatement of what this clause literally says. Neutral tone.]
 
@@ -777,7 +777,7 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguo
 3. Every clause MUST have: quote, [READER] line, risk level with score and trick, confidence, bottom line, juxtaposition
 4. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
 5. Keep each field to ONE sentence. Cards must be scannable, not essays
-6. The [READER] voice is FALSE COMFORT — actively reassuring, no red flags, no "but." The worse the clause, the MORE reassuring the reader should sound. This is what makes the flip devastating
+6. The [READER] thinks out loud in first person ("I"): mentions basic facts but dismisses them ("$75 a day, but I'd pay on time"). NEVER mentions "no cap/no limit/waive rights/sole discretion" — those stay hidden for the flip. The reader signs without reading twice
 7. "What you should read" is the core insight — make it visceral
 8. Do NOT include negotiation advice or action items — those come from deep analysis
 9. Do NOT include cross-clause interactions — analyze each clause independently

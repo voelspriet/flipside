@@ -254,6 +254,11 @@
             border-bottom: 1px dotted var(--text-dim); transition: color var(--transition);
         }
         .upload-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+        .upload-links a.sample-btn-red {
+            color: var(--red-text); border-bottom-color: var(--red);
+            font-weight: 600;
+        }
+        .upload-links a.sample-btn-red:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
         .upload-error {
             margin-top: 0.8rem; padding: 0.6rem 0.8rem; background: var(--red-bg);
@@ -313,15 +318,15 @@
             background: var(--bg-warm);
         }
 
-        /* ── Analysis two-column layout ─────────────── */
+        /* ── Analysis three-column layout ────────────── */
         .analysis-layout {
             display: flex;
-            gap: 2rem;
-            padding: 0 2rem;
+            gap: 1.5rem;
+            padding: 0 1.5rem;
             align-items: flex-start;
         }
         .analysis-sidebar {
-            width: 320px;
+            width: 240px;
             flex-shrink: 0;
             position: sticky;
             top: 70px;
@@ -336,8 +341,7 @@
         }
         .metadata-line {
             flex: 1; min-width: 0;
-            display: flex; flex-wrap: wrap; gap: 0.25rem;
-            align-content: flex-start;
+            display: flex; flex-direction: column; gap: 0.2rem;
             opacity: 0; transform: translateY(8px);
             transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
         }
@@ -345,19 +349,17 @@
             opacity: 1; transform: translateY(0);
         }
         .meta-pill {
-            display: inline-flex; align-items: center; gap: 0.25rem;
-            padding: 0.2rem 0.5rem;
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 100px; font-size: 0.65rem;
-            color: var(--text-body); line-height: 1.2;
-            max-width: 100%; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis;
+            display: flex; align-items: baseline; gap: 0.3rem;
+            padding: 0.15rem 0;
+            font-size: 0.65rem; line-height: 1.35;
+            color: var(--text-body);
         }
         .meta-pill .meta-pill-label {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.45rem; font-weight: 600;
+            font-size: 0.5rem; font-weight: 600;
             text-transform: uppercase; letter-spacing: 0.08em;
             color: var(--text-muted); white-space: nowrap;
+            flex-shrink: 0;
         }
 
         /* ── Content column (center) ──────────────── */
@@ -369,7 +371,7 @@
 
         /* ── Insight column (right — "What you should read") */
         .insight-column {
-            width: 280px;
+            width: 220px;
             flex-shrink: 0;
             position: sticky;
             top: 70px;
@@ -394,8 +396,8 @@
             opacity: 1;
         }
         .insight-card-inner {
-            padding: 1.25rem 1.25rem;
-            font-size: 0.88rem; line-height: 1.65;
+            padding: 1rem 1rem;
+            font-size: 0.82rem; line-height: 1.6;
             color: var(--text-primary); font-weight: 500;
         }
         .insight-card-red {
@@ -532,7 +534,8 @@
         }
 
         @media (max-width: 1200px) {
-            .insight-column { width: 220px; }
+            .analysis-sidebar { width: 200px; }
+            .insight-column { width: 190px; }
         }
         @media (max-width: 900px) {
             .analysis-layout { flex-direction: column; padding: 0 1rem; gap: 1rem; }
@@ -542,19 +545,19 @@
         }
         .editorial-loading-label {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem; font-weight: 600;
+            font-size: 0.55rem; font-weight: 600;
             text-transform: uppercase; letter-spacing: 0.15em;
             color: var(--text-muted);
-            padding: 1rem 1.5rem 0.4rem;
+            padding: 0.75rem 1rem 0.3rem;
         }
         .editorial-loading-text {
-            font-size: 0.78rem; line-height: 1.65;
+            font-size: 0.72rem; line-height: 1.6;
             color: var(--text-secondary);
-            padding: 0 1.5rem;
+            padding: 0 1rem;
             max-height: 50vh; overflow-y: auto;
-            border-left: 3px solid var(--border);
-            margin-left: 1.5rem; margin-right: 1.5rem;
-            padding-left: 1rem;
+            border-left: 2px solid var(--border);
+            margin-left: 1rem; margin-right: 1rem;
+            padding-left: 0.75rem;
             scroll-behavior: smooth;
         }
         .editorial-loading-text::-webkit-scrollbar { width: 3px; }
@@ -1126,7 +1129,7 @@
         }
         .confidence-badge:hover .confidence-reason { max-width: 220px; padding-left: 0.3rem; }
 
-        .back-body { padding: 1.5rem 2rem 0; }
+        .back-body { padding: 1.25rem 1.75rem 0.5rem; }
 
         /* Drafter's voice — risk-colored */
         .drafter-voice {
@@ -1335,31 +1338,44 @@
             color: var(--text-secondary); white-space: nowrap;
         }
 
-        /* ── Bottom line (risk-tinted summary on card front) ── */
-        .bottom-line {
-            margin: 0.75rem 0 0;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.82rem;
-            font-weight: 500;
-            line-height: 1.4;
+        /* ── "What does this mean for you" on card back ── */
+        .back-meaning-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
+        .back-figure {
+            font-size: 1.25rem; font-weight: 800;
+            line-height: 1.25; margin-bottom: 0.75rem;
+        }
+        .back-figure-red { color: var(--red-text); }
+        .back-figure-yellow { color: var(--yellow-text); }
+        .back-figure-green { color: var(--green-text); }
+        .back-example {
+            font-size: 0.84rem; line-height: 1.65;
             color: var(--text-body);
+            padding: 0.75rem 1rem;
+            background: var(--bg-surface);
+            border-radius: var(--radius-sm);
             border-left: 3px solid var(--border);
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
         }
-        .bottom-line-red {
-            border-left-color: var(--red);
-            background: var(--red-bg);
-            color: var(--red-text);
+        .back-example-red { border-left-color: var(--red); background: var(--red-bg); }
+        .back-example-yellow { border-left-color: var(--yellow); background: var(--yellow-bg); }
+        .back-example-green { border-left-color: var(--green); background: var(--green-bg); }
+        .back-example .hl-number {
+            font-weight: 700;
         }
-        .bottom-line-yellow {
-            border-left-color: var(--yellow);
-            background: var(--yellow-bg);
-            color: var(--yellow-text);
-        }
-        .bottom-line-green {
-            border-left-color: var(--green);
-            background: var(--green-bg);
-            color: var(--green-text);
+        .back-example-red .hl-number { color: var(--red-text); }
+        .back-example-yellow .hl-number { color: var(--yellow-text); }
+        .back-example-green .hl-number { color: var(--green-text); }
+        .back-bottom-line {
+            font-size: 0.78rem; font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            margin-top: 0.75rem;
+            font-style: italic;
         }
 
         /* ── Verdict link (CTA on card back → deep analysis) ── */
@@ -1701,7 +1717,7 @@
         <div class="upload-links fade-up fade-up-d2">
             <a id="pasteToggle">Paste text instead</a>
             <a id="compareToggle">Compare two documents</a>
-            <a id="sampleBtn">Try sample lease</a>
+            <a id="sampleBtn" class="sample-btn-red">Try sample</a>
         </div>
 
         <div class="disclaimer fade-up fade-up-d3">
@@ -2707,10 +2723,8 @@
             var m = responseContent.match(p.re);
             if (m) {
                 var val = m[1].trim();
-                // Truncate long values for pill format
-                if (val.length > 28) val = val.substring(0, 26) + '\u2026';
                 parts.push(
-                    '<span class="meta-pill" title="' + escapeHtml(m[1].trim()) + '">' +
+                    '<span class="meta-pill">' +
                     '<span class="meta-pill-label">' + escapeHtml(p.label) + '</span> ' +
                     escapeHtml(val) +
                     '</span>'
@@ -3059,11 +3073,11 @@
         // "What does this mean for you" — structured: [FIGURE] + [EXAMPLE]
         var figureMatch = segment.match(/\[FIGURE\]\s*:\s*(.+)/i);
         var figure = figureMatch ? figureMatch[1].trim() : '';
-        var exampleNarrativeMatch = segment.match(/\[EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\n###|\n\n##|\n\n---|\*{1,2}\[EN\]|$)/i);
+        var exampleNarrativeMatch = segment.match(/\[EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\[READER\]|\n\n###|\n\n##|\n\n---|\*{1,2}\[EN\]|\[EN-FIGURE\]|\[EN-EXAMPLE\]|$)/i);
         var exampleNarrative = exampleNarrativeMatch ? exampleNarrativeMatch[1].trim() : '';
         // Fallback: if no [FIGURE]/[EXAMPLE] tags, try old free-text format
         if (!figure && !exampleNarrative) {
-            var exampleMatch = segment.match(/\*{1,2}What does this mean for you:?\*{0,2}:?\s*([\s\S]*?)(?=\n\n###|\n\n##|\n\n---|\*{1,2}\[EN\]|$)/i);
+            var exampleMatch = segment.match(/\*{1,2}What does this mean for you:?\*{0,2}:?\s*([\s\S]*?)(?=\n\[READER\]|\n\n###|\n\n##|\n\n---|\*{1,2}\[EN\]|$)/i);
             if (exampleMatch) exampleNarrative = exampleMatch[1].trim();
         }
 
@@ -3071,7 +3085,7 @@
         var enSmallPrintMatch = segment.match(/\*{1,2}\[EN\]\s*What the small print says:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What you should read|\n\n###|\n\n##|$)/i);
         var enShouldReadMatch = segment.match(/\*{1,2}\[EN\]\s*What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What does this mean|\n\n###|\n\n##|\n\n---|\[EN-READER\]|\[EN-FIGURE\]|$)/i);
         var enFigureMatch = segment.match(/\[EN-FIGURE\]\s*:\s*(.+)/i);
-        var enExampleNarrativeMatch = segment.match(/\[EN-EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\n###|\n\n##|\n\n---|\[EN-READER\]|$)/i);
+        var enExampleNarrativeMatch = segment.match(/\[EN-EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\[EN-READER\]|\n\n###|\n\n##|\n\n---|$)/i);
         var enReaderMatch = segment.match(/\[EN-READER\]\s*:\s*([\s\S]*?)(?=\n\n|\n(?:GREEN|YELLOW|RED)|\n---|\n###|$)/i);
         var enSmallPrint = enSmallPrintMatch ? enSmallPrintMatch[1].trim() : '';
         var enShouldRead = enShouldReadMatch ? enShouldReadMatch[1].trim() : '';
@@ -3104,32 +3118,38 @@
             (clause.reassurance ? '<div class="clause-reassurance">' + escapeHtml(clause.reassurance) + '</div>' : '') +
             (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
             '<div class="reader-voice">' +
-            '<span class="reader-voice-label">You\u2019d think</span>' +
+            '<span class="reader-voice-label">I\u2019d think</span>' +
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
-            (clause.enReader ? '<div class="reader-voice-en">' + escapeHtml(clause.enReader) + '</div>' : '') +
+            (clause.enReader && clause.enReader !== clause.reader ? '<div class="reader-voice-en">' + escapeHtml(clause.enReader) + '</div>' : '') +
             '</div>' +
             '</div>' +
             '<button class="flip-trigger"><span>Now flip it</span><span class="flip-trigger-arrow">&rarr;</span></button>' +
             '</div>';
 
-        // ── Back body: verdict for green, juxtaposition + verdict link for others ──
+        // ── Back body: "What does this mean for you" — figure + example ──
         var backBodyHtml = '';
-        if (risk === 'green') {
-            backBodyHtml = '<div class="green-verdict">' +
-                '<div class="green-verdict-title">No hidden intent</div>' +
-                '<div class="green-verdict-text">This clause is genuinely balanced and fair to both parties.</div>' +
-                '</div>';
+
+        // "What does this mean for you" — the core reveal (all risk levels)
+        if (clause.figure || clause.exampleNarrative) {
+            backBodyHtml += '<div class="back-meaning-label">What does this mean for you</div>';
+            if (clause.figure) {
+                backBodyHtml += '<div class="back-figure back-figure-' + risk + '">' +
+                    escapeHtml(clause.figure) + '</div>';
+            }
+            if (clause.exampleNarrative) {
+                var exHtml = escapeHtml(clause.exampleNarrative).replace(
+                    /(\$[\d,]+(?:\.\d{2})?|\d+%|\d+\s*(?:days?|months?|years?|hours?))/gi,
+                    '<span class="hl-number">$1</span>'
+                );
+                backBodyHtml += '<div class="back-example back-example-' + risk + '">' + exHtml + '</div>';
+            }
         }
 
-        // Small print removed — clause text is in the insight column
-
-        // Bottom line — the reveal after flipping
+        // Bottom line as quiet italic footer
         if (clause.bottomLine) {
-            backBodyHtml += '<div class="bottom-line bottom-line-' + risk + '">' +
+            backBodyHtml += '<div class="back-bottom-line">' +
                 escapeHtml(clause.bottomLine) + '</div>';
         }
-
-        // Verdict link removed — full verdict shown after all cards via navigation
 
         // ── Confidence badge ──
         var confidenceBadgeHtml = '';
@@ -3396,12 +3416,8 @@
         var risk = cardEl.getAttribute('data-risk-level') || 'green';
         var shouldRead = cardEl.getAttribute('data-should-read') || '';
         var enShouldRead = cardEl.getAttribute('data-en-should-read');
-        var figure = cardEl.getAttribute('data-figure');
-        var example = cardEl.getAttribute('data-example');
-        var enFigure = cardEl.getAttribute('data-en-figure');
-        var enExample = cardEl.getAttribute('data-en-example');
 
-        // Clause context at top (neutral)
+        // Clause context at top (title + quote)
         var html = buildInsightContextHtml(cardEl);
 
         // "What you should read" section
@@ -3412,24 +3428,7 @@
             }
         }
 
-        // "What does this mean for you" — headline figure + narrative
-        if (figure || example) {
-            html += '<div class="insight-example">' +
-                '<span class="insight-example-label">What does this mean for you</span>';
-            if (figure) {
-                html += '<div class="insight-figure insight-figure-' + risk + '">' + highlightNumbers(figure) + '</div>';
-            }
-            if (example) {
-                html += '<div class="insight-narrative">' + highlightNumbers(example) + '</div>';
-            }
-            html += '</div>';
-            if (enFigure || enExample) {
-                html += '<div class="insight-en">';
-                if (enFigure) html += '<div class="insight-figure-en">' + highlightNumbers(enFigure) + '</div>';
-                if (enExample) html += '<div>' + highlightNumbers(enExample) + '</div>';
-                html += '</div>';
-            }
-        }
+        // Figure + Example moved to card back — no duplication here
 
         if (!html) { hideInsightColumn(); return; }
         inner.innerHTML = html;
