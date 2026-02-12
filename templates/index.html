@@ -1882,12 +1882,11 @@
                 case 'thinking_done':
                     removeCursor();
                     if (quickDone) {
-                        // Opus done thinking — show both buttons
+                        // Opus done thinking — text still streaming, don't show report button yet
                         opusReasoningDone = true;
-                        thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Opus 4.6: Reasoning complete';
+                        thinkingLabel.innerHTML = '<span class="phase-icon">&#9679;</span> Opus 4.6: Writing report...';
                         thinkingPanel.classList.add('collapsed');
                         thinkingToggle.textContent = 'Show reasoning';
-                        $('reportToggle').classList.remove('hidden');
                     } else {
                         thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Quick Scan complete';
                         thinkingPanel.classList.add('collapsed');
@@ -1974,6 +1973,12 @@
                     }
                     // Update card nav to show "View assessment →"
                     if (flipCardsBuilt) updateCardNavigation();
+
+                    // Now that everything is done, show "Show the full report" button
+                    if (opusReasoningDone) {
+                        thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Opus 4.6: Reasoning complete';
+                        $('reportToggle').classList.remove('hidden');
+                    }
 
                     // Show follow-up input for non-compare mode
                     if (!isCompareMode) followupSection.classList.remove('hidden');
