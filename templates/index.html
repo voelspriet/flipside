@@ -2151,21 +2151,21 @@
     function styleRiskBadges(html) {
         // Match: LEVEL · Score: NN/100 · Trick: NAME (or Score: NN without /100)
         html = html.replace(
-            /(?:<strong>)?(GREEN|YELLOW|RED)(?:<\/strong>)?\s*(?:·|&#xB7;|&middot;)\s*Score:\s*\d+(?:\/100)?\s*(?:·|&#xB7;|&middot;)\s*Trick:\s*([^<\n]+)/gi,
+            /\[?(?:<strong>)?(GREEN|YELLOW|RED)(?:<\/strong>)?\]?\s*(?:·|&#xB7;|&middot;)\s*Score:\s*\d+(?:\/100)?\s*(?:·|&#xB7;|&middot;)\s*Trick:\s*([^<\n]+)/gi,
             function(_, level, trick) {
                 return buildBadgeHtml(level.toLowerCase(), level.toUpperCase(), trick.trim());
             }
         );
         // Match: LEVEL · Trick: NAME (no score — cross-clause format)
         html = html.replace(
-            /(?:<strong>)?(GREEN|YELLOW|RED)(?:<\/strong>)?\s*(?:·|&#xB7;|&middot;)\s*Trick:\s*([^<\n]+)/gi,
+            /\[?(?:<strong>)?(GREEN|YELLOW|RED)(?:<\/strong>)?\]?\s*(?:·|&#xB7;|&middot;)\s*Trick:\s*([^<\n]+)/gi,
             function(_, level, trick) {
                 return buildBadgeHtml(level.toLowerCase(), level.toUpperCase(), trick.trim());
             }
         );
         // Fallback: LEVEL · Score: NN/100 (no trick)
         html = html.replace(
-            /(?:<strong>)?(GREEN|YELLOW|RED)(?:<\/strong>)?\s*(?:·|&#xB7;|&middot;)\s*Score:\s*\d+(?:\/100)?/gi,
+            /\[?(?:<strong>)?(GREEN|YELLOW|RED)(?:<\/strong>)?\]?\s*(?:·|&#xB7;|&middot;)\s*Score:\s*\d+(?:\/100)?/gi,
             function(_, level) {
                 return buildBadgeHtml(level.toLowerCase(), level.toUpperCase(), '');
             }
@@ -2337,7 +2337,7 @@
     function extractSingleClause(segment) {
         if (!segment.match(/^### /m)) return null;
 
-        var riskMatch = segment.match(/(GREEN|YELLOW|RED)\s*[·•\u00B7\u2022\-–—|,]\s*Score:\s*(\d+)(?:\/100)?(?:\s*[·•\u00B7\u2022\-–—|,]\s*Trick:\s*([^\n]+))?/i);
+        var riskMatch = segment.match(/\[?(GREEN|YELLOW|RED)\]?\s*[·•\u00B7\u2022\-–—|,]\s*Score:\s*(\d+)(?:\/100)?(?:\s*[·•\u00B7\u2022\-–—|,]\s*Trick:\s*([^\n]+))?/i);
         if (!riskMatch) return null;
 
         var headerMatch = segment.match(/^### \s*(.+)\s+\(([^)]+)\)\s*$/m);
@@ -2788,7 +2788,7 @@
     // ── Clause data extraction ────────────────────────────────
     function extractClausesFromResponse() {
         var clauses = [];
-        var clauseRe = /###\s+(.+?)\s*\(([^)]+)\)[\s\S]*?(GREEN|YELLOW|RED)\s*(?:·|·)\s*Score:\s*(\d+)(?:\/100)?(?:\s*(?:·|·)\s*Trick:\s*(.+?))?$/gm;
+        var clauseRe = /###\s+(.+?)\s*\(([^)]+)\)[\s\S]*?\[?(GREEN|YELLOW|RED)\]?\s*(?:·|·)\s*Score:\s*(\d+)(?:\/100)?(?:\s*(?:·|·)\s*Trick:\s*(.+?))?$/gm;
         var match;
         while ((match = clauseRe.exec(responseContent)) !== null) {
             clauses.push({
