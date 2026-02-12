@@ -1909,6 +1909,12 @@
 
                 case 'text_done':
                     renderResultsFinal();
+                    // If Opus reasoning was done and quick scan was done,
+                    // this text_done is from the deep analysis — report is ready
+                    if (opusReasoningDone && quickDone) {
+                        thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Opus 4.6: Reasoning complete';
+                        $('reportToggle').classList.remove('hidden');
+                    }
                     break;
 
                 case 'tool_start':
