@@ -3145,8 +3145,11 @@
         // ── Front: reassurance headline, section ref, reader voice ──
         // Title + quote moved to insight column (shown on flip)
         var frontHtml = '<div class="flip-card-front">' +
+            '<div class="risk-header risk-header-green">' +
+            (clause.reassurance ? '<h3 class="clause-title" style="color:var(--green-text)">' + escapeHtml(clause.reassurance) + '</h3>' : '') +
+            '<span class="risk-badge risk-badge-green">\u2713</span>' +
+            '</div>' +
             '<div class="front-content">' +
-            (clause.reassurance ? '<div class="clause-reassurance">' + escapeHtml(clause.reassurance) + '</div>' : '') +
             (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
             '<div class="reader-voice">' +
             '<span class="reader-voice-label">I\u2019d think</span>' +
