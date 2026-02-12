@@ -1017,6 +1017,29 @@
             font-weight: 600; color: var(--text-muted);
         }
 
+        /* Flip prompt — one-time message above first card */
+        .flip-prompt {
+            text-align: center;
+            padding: 0.6rem 1rem 0.8rem;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.5s var(--ease-out-expo);
+        }
+        .flip-prompt.visible {
+            opacity: 1;
+        }
+        .flip-prompt.fade-out {
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        .flip-prompt-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
         /* Flip trigger — the invitation */
         .flip-trigger {
             display: flex; align-items: center; justify-content: center; gap: 0.6rem;
@@ -1744,6 +1767,9 @@
 
         <!-- Card viewport: one card at a time -->
         <div class="card-viewport hidden" id="cardViewport">
+            <div class="flip-prompt hidden" id="flipPrompt">
+                <span class="flip-prompt-text">Everything looks fine&hellip; until you flip it.</span>
+            </div>
             <!-- Skeleton card: shown while waiting for first clause -->
             <div class="skeleton-card hidden" id="skeletonCard">
                 <div class="skeleton-pulse skeleton-reassurance"></div>
@@ -1961,6 +1987,13 @@
                     setTimeout(function() { fill.style.width = w + '%'; }, 300);
                 }
                 showInsightForCard(card);
+                // Fade out flip prompt on first flip
+                var prompt = $('flipPrompt');
+                if (prompt && prompt.classList.contains('visible')) {
+                    prompt.classList.add('fade-out');
+                    prompt.classList.remove('visible');
+                    setTimeout(function() { prompt.classList.add('hidden'); }, 600);
+                }
             }
             return;
         }
@@ -2352,6 +2385,8 @@
         resultsContent.innerHTML = '';
         flipCardContainer.innerHTML = '';
         $('skeletonCard').classList.add('hidden');
+        var fp = $('flipPrompt');
+        if (fp) { fp.classList.add('hidden'); fp.classList.remove('visible', 'fade-out'); }
         deepAnalysisEl.innerHTML = '';
         // Remove the deep analysis header (sibling) if it exists
         var oldHeader = deepAnalysisEl.previousElementSibling;
@@ -2381,12 +2416,15 @@
         $('exportBtn').classList.add('hidden');
         backBtn.classList.remove('hidden');
 
-        // Show skeleton card in center while waiting for first clause
+        // Show flip prompt + skeleton card in center while waiting for first clause
         var skeleton = $('skeletonCard');
         var skeletonMsg = $('skeletonMessage');
         skeleton.classList.remove('hidden');
         $('cardViewport').classList.remove('hidden');
         resultsArea.classList.remove('hidden');
+        // Show flip prompt immediately
+        var fp2 = $('flipPrompt');
+        if (fp2) { fp2.classList.remove('hidden'); requestAnimationFrame(function() { fp2.classList.add('visible'); }); }
         var wordCount = documentFullText ? documentFullText.split(/\s+/).length : 0;
         skeletonMsg.innerHTML = wordCount > 0
             ? '<strong>' + wordCount.toLocaleString() + ' words</strong> of legal text. FlipSide is reading every one.'
@@ -3244,7 +3282,7 @@
             }, 300);
         }
 
-        // Step 3: At 500ms, hide skeleton and show the real first card
+        // Step 3: At 500ms, hide skeleton and show the real first card (prompt already visible)
         setTimeout(function() {
             skeleton.classList.add('hidden');
             skeleton.classList.remove('fly-to-sidebar');

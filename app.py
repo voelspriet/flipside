@@ -634,7 +634,7 @@ For EACH significant clause:
 
 > "[Quote key language from the document]"
 
-[READER]: [1-2 sentences of what a normal, non-expert reader would think upon first reading this clause. Trusting, reasonable, slightly optimistic but not naive. This must feel authentic — something the reader would recognize as their own thought. Examples: "This seems fair — five days is a reasonable grace period." or "Standard maintenance responsibility. Makes sense that I'd report issues quickly." Write in second person.]
+[READER]: [1-2 sentences of what a normal person would think BEFORE knowing the trap. Actively reassuring — downplay any worries, emphasize that this clause sounds reasonable and fair. The reader shrugs and moves on. No red flags, no hedging, no "but." This is the false comfort that makes the flip devastating. Examples: "Five days is plenty of time. And $75 is a reasonable incentive to pay on time." / "Standard maintenance rules — of course I'd report issues quickly." Write in second person.]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
 
@@ -678,7 +678,7 @@ Then include the appropriate action items based on negotiability.
 ## RULES
 - Output each clause AS SOON as you analyze it
 - Every clause gets: quote + [READER] perspective + risk level + score + trick + juxtaposition
-- The [READER] line captures the reader's naive first impression — what they'd think before seeing the analysis
+- The [READER] line is the FALSE COMFORT — actively reassuring, no hints of problems, no hedging. The worse the trap, the more reassuring the reader voice should sound
 - "What you should read" reveals the reader's reality — the gap between words and what they mean
 - Quote exact language from the document
 - Be thorough but fast — cross-clause interactions will be analyzed separately"""
@@ -729,7 +729,7 @@ For multi-product documents (coupon books, product bundles): specify WHICH produ
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
-[READER]: [One sentence. What a reasonable person would think when first reading this clause. Trusting, slightly optimistic tone. Second person. Examples: "Seems fair — five days is plenty of time to pay." / "Standard maintenance rules. Of course I'd report problems quickly." / "Makes sense they'd need to enter for emergencies."]
+[READER]: [One sentence. What a reasonable person would think BEFORE knowing the trap. Actively reassuring — downplay worries, emphasize that this sounds fair and normal. No hints of problems. No "but" or hedging. This is the false comfort that makes the flip devastating. Examples: "Five days is plenty of time, and $75 is a fair incentive to pay on time." / "Standard maintenance rules — of course I'd report problems quickly." / "Makes sense they'd need to enter for emergencies." Second person.]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
 Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguous" or "two interpretations possible" or "depends on jurisdiction"]
@@ -777,7 +777,7 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguo
 3. Every clause MUST have: quote, [READER] line, risk level with score and trick, confidence, bottom line, juxtaposition
 4. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
 5. Keep each field to ONE sentence. Cards must be scannable, not essays
-6. The [READER] voice should feel like the reader's own inner monologue — natural, not robotic
+6. The [READER] voice is FALSE COMFORT — actively reassuring, no red flags, no "but." The worse the clause, the MORE reassuring the reader should sound. This is what makes the flip devastating
 7. "What you should read" is the core insight — make it visceral
 8. Do NOT include negotiation advice or action items — those come from deep analysis
 9. Do NOT include cross-clause interactions — analyze each clause independently

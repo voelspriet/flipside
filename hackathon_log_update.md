@@ -488,6 +488,8 @@ The 200ms overlap between skeleton flying left and sidebar appearing from right 
 - **Removed clause text from card front/back**: cards show only reassurance (front) and reveal (back)
 - **Skeleton-to-sidebar fly**: 3-step choreography — skeleton flies left, document slides in, first card appears
 - **Event-driven woosh**: tied to first-card detection, not fixed timers
+- **Reader voice = false comfort**: prompts rewritten so "You'd think" actively downplays worries — no hints, no hedging, no "but." The worse the trap, the more reassuring the front sounds
+- **"Everything looks fine... until you flip it"**: tagline appears above skeleton card from analysis start, stays through loading, fades on first flip — teaches the mechanic and sets the tone
 
 ## What Does Not Exist Yet
 
