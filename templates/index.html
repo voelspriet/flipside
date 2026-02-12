@@ -2222,7 +2222,7 @@
     function styleSplitClauses(html) {
         // Card-level juxtapose (from Haiku quick scan)
         html = html.replace(
-            /<p><strong>What the small print says:<\/strong>\s*([\s\S]*?)<\/p>\s*<p><strong>What you should read:<\/strong>\s*([\s\S]*?)<\/p>/gi,
+            /<p><strong>What the small print says:?<\/strong>:?\s*([\s\S]*?)<\/p>\s*<p><strong>What you should read:?<\/strong>:?\s*([\s\S]*?)<\/p>/gi,
             function(_, left, right) {
                 return '<div class="clause-split-header">' +
                     '<div class="clause-split-label clause-split-label-left">What the small print says</div>' +
@@ -2388,13 +2388,15 @@
         var confidence = confidenceMatch ? confidenceMatch[1].toLowerCase() : '';
         var confidenceReason = confidenceMatch ? confidenceMatch[2].trim() : '';
 
-        var bottomLineMatch = segment.match(/\*\*Bottom line:\*\*\s*([\s\S]*?)(?=\n\n|\*\*What the small print says:)/i);
+        var bottomLineMatch = segment.match(/\*{1,2}Bottom line:?\*{0,2}:?\s*([\s\S]*?)(?=\n\n|\*{1,2}What the small print says)/i);
         var bottomLine = bottomLineMatch ? bottomLineMatch[1].trim() : '';
 
-        var smallPrintMatch = segment.match(/\*\*What the small print says:\*\*\s*([\s\S]*?)(?=\*\*What you should read:|\n\n###|\n\n##|$)/i);
-        var shouldReadMatch = segment.match(/\*\*What you should read:\*\*\s*([\s\S]*?)(?=\n\n###|\n\n##|$)/i);
+        var smallPrintMatch = segment.match(/\*{1,2}What the small print says:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}What you should read|\n\n###|\n\n##|$)/i);
+        var shouldReadMatch = segment.match(/\*{1,2}What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\n\n###|\n\n##|$)/i);
         var smallPrint = smallPrintMatch ? smallPrintMatch[1].trim() : '';
         var shouldRead = shouldReadMatch ? shouldReadMatch[1].trim() : '';
+        // Fallback: if smallPrint is empty, use the quote (the actual contract text)
+        if (!smallPrint && quote) smallPrint = quote;
 
         return {
             title: title, section: sectionRef, quote: quote, reader: reader,
