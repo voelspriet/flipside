@@ -393,3 +393,28 @@
 **Chosen**: Hybrid of 1+2. Structured `[FIGURE]` for the headline, regex highlighting for remaining numbers in the `[EXAMPLE]` narrative. Covers all clause types.
 
 **Key insight**: When you want visual differentiation in the frontend, push the structure upstream into the prompt format. Don't try to extract structure from prose — ask for structure directly. The model is a better information architect than a regex.
+
+---
+
+## Decision: Event-Driven Choreography — Tie Animations to Semantic Events, Not Clocks
+
+**Date**: 2026-02-12
+**Context**: The sidebar document preview needed to appear with a woosh after the skeleton card phase. First attempt used fixed-delay timers (3s, 4s, 6s fallback). Failed repeatedly — the document appeared too early, too late, or without animation.
+
+**The strategy**: Abandon timer-based animation triggers. Tie every visual transition to the SEMANTIC EVENT it represents:
+- Skeleton card appears → `switchToAnalysis()` (analysis starts)
+- Skeleton message updates → `extractMetadata()` (drafter name detected)
+- Skeleton flies left + sidebar wooshes in + first card appears → `transitionToCardView()` (first clause parsed)
+
+**Why timers failed**:
+
+1. **Multiple call paths**: `extractMetadata()` was called from both `handlePhase('profile')` (2s delay) and `tryExtractNewClauses()` (no delay, every text chunk). The no-delay path fired within 1 second, before the skeleton had time to breathe.
+2. **Stale closures**: `setTimeout` callbacks captured DOM element references and survived Back-button navigation. When the user started a new analysis, old timers fired on the new element, undoing the reset.
+3. **Variable model speed**: Haiku response times vary. A fixed 4-second delay was sometimes too early (cards not ready) and sometimes too late (cards already there).
+
+**The choreography pattern**: Three staggered events at `transitionToCardView()`:
+- T+0ms: skeleton flies left (`translateX(-40%) + scale(0.6) + fade`)
+- T+300ms: sidebar document slides in from right (`translateX(200px) → 0`)
+- T+500ms: skeleton hidden, first real card shown
+
+**Key insight**: In streaming UIs, animations should be anchored to data events (first token, first clause, metadata detected), not wall-clock time. The model IS the clock — when it produces the first clause, that's when the transition happens. This makes the UX resilient to variable response times.

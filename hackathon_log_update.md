@@ -438,14 +438,43 @@ Cards already had preview→card navigation (click numbered markers). Added the 
 
 The flip trigger was a subtle text link ("See the other side →"). Invisible to many users. Changed to a solid rust-colored pill button with white bold text: "Now flip it →". Hover lifts 1px with deeper shadow. The button IS the invitation — it must look clickable, not like a footnote.
 
+### Phase 11: Choreographed Loading — The Skeleton-to-Sidebar Handoff
+
+**Entry 48 — Skeleton Card: Loading State as Product**
+
+Problem: the user stares at an empty center column for 15-30 seconds while Haiku streams its first clause. No indication anything is happening.
+
+Solution: a skeleton card — a card-shaped placeholder with shimmer-pulsing gray bars where the reassurance headline, section ref, and reader voice will go. Below the pulses: a message showing the word count ("401 words of legal text. FlipSide is reading every one."). When metadata streams in and the drafter name is detected, the message updates: "401 words. This is what QuickRent Property Management expects you to read and agree to."
+
+The skeleton card is NOT a spinner. It's a promise of structure — it shows the user exactly what's coming (a flip card) and what the tool is doing (counting, identifying, reading). The shimmer animation (1.8s infinite) keeps the eye engaged without demanding attention.
+
+**Entry 49 — Clause Context Moves to Insight Column**
+
+Removed clause title + quote text from the card front AND small print from the card back. This content now lives exclusively in the right-hand insight column, visible even BEFORE flipping. When you navigate to a card, the insight column shows the clause title + verbatim quote + "Find in document" link. When you flip, the full analysis appears (should-read, figure, example).
+
+**Why**: The card front should only show the REASSURANCE (what you'd think) and the card back only the REVEAL (what the drafter intended). The actual clause text is CONTEXT, not content — it belongs beside the card, not on it.
+
+**Entry 50 — Skeleton-to-Sidebar Fly Animation**
+
+The document preview in the left sidebar should be hidden initially (the skeleton card in the center is the hero) and appear with a visual connection — the text "moves" from center to left.
+
+Three-step staggered choreography triggered when the first clause is parsed:
+1. **T+0ms**: Skeleton card flies left — `translateX(-40%) + scale(0.6) + fade out` over 0.7s
+2. **T+300ms**: Sidebar document slides in from right — `translateX(200px) → 0 + fade in` over 0.9s
+3. **T+500ms**: Skeleton removed, first real flip card appears
+
+The 200ms overlap between skeleton flying left and sidebar appearing from right creates a single perceived motion — text leaves center, arrives left. The user's eye follows the leftward trajectory.
+
+**Key debugging insight**: First attempt used fixed-delay timers (3s, 4s, 6s fallback) to control when the sidebar appeared. This failed because: (a) `extractMetadata()` was called from two paths — `handlePhase` with 2s delay AND `tryExtractNewClauses` with no delay — causing premature triggers; (b) `setTimeout` closures captured DOM references and survived Back-button navigation, firing stale timers on the next analysis run. The fix: abandoned timer-based approach entirely. Tied the woosh to `transitionToCardView()` — the one function that fires exactly when the first card is ready. Event-driven > clock-driven.
+
 ---
 
 ## What Exists Now
 
 | Artifact | Lines/Size | Purpose |
 |----------|-----------|---------|
-| `app.py` | ~1,385 lines | Flask backend, prompts with [FIGURE]/[EXAMPLE], vision, bilingual, SSE |
-| `templates/index.html` | ~3,800 lines | Three-column layout, flip cards, insight column, clause markers |
+| `app.py` | ~1,382 lines | Flask backend, prompts with [FIGURE]/[EXAMPLE], vision, bilingual, SSE |
+| `templates/index.html` | ~4,046 lines | Three-column layout, flip cards, insight column, skeleton-to-sidebar fly |
 | `hackaton.md` | 200 lines | 100 prompts: 48 executed (Phase 1) + 50 pending (Phase 2) |
 | `strategy.md` | ~370 lines | 10 strategy decisions documented |
 | `decision_monitor.py` | ~230 lines | Jury-facing decision timeline generator |
@@ -454,14 +483,11 @@ The flip trigger was a subtle text link ("See the other side →"). Invisible to
 
 ## What Changed Since Last Update
 
-- **Three-column layout**: sidebar (document) + center (flip cards) + right (insight column)
-- **Insight column**: animated drop-in on flip, risk-colored, with "What you should read" + "What does this mean for you"
-- **[FIGURE] + [EXAMPLE]**: structured prompt output → big headline stat + narrative with highlighted numbers
-- **Number highlighting**: dollar amounts, percentages, and time periods auto-highlighted in risk color
-- **"Find in document"**: bidirectional card↔preview navigation
-- **"Now flip it"**: prominent rust-colored CTA button replacing subtle text link
-- **Mobile responsive**: all new elements scale properly down to 380px
-- **Bilingual support**: [EN-FIGURE] and [EN-EXAMPLE] for non-English documents
+- **Skeleton card**: shimmer-pulsing placeholder during loading, shows word count + drafter name
+- **Clause context in insight column**: title + quote visible before flip, full analysis on flip
+- **Removed clause text from card front/back**: cards show only reassurance (front) and reveal (back)
+- **Skeleton-to-sidebar fly**: 3-step choreography — skeleton flies left, document slides in, first card appears
+- **Event-driven woosh**: tied to first-card detection, not fixed timers
 
 ## What Does Not Exist Yet
 

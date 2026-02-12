@@ -426,6 +426,30 @@
             border-radius: 3px; padding: 0.1rem 0.3rem;
             margin-right: 0.4rem; vertical-align: middle;
         }
+        .insight-context {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .insight-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+        .insight-quote {
+            font-size: 0.76rem;
+            line-height: 1.55;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .insight-find {
+            display: inline-block;
+            margin-top: 0.4rem;
+            font-size: 0.65rem;
+        }
         .insight-should-read {
             margin-bottom: 0.5rem;
         }
@@ -496,8 +520,15 @@
             width: 100%;
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: var(--radius); box-shadow: var(--shadow-md);
-            transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
             overflow: hidden;
+        }
+        .editorial-loading.woosh-in-sidebar {
+            animation: wooshInSidebar 0.9s var(--ease-out-expo) both;
+        }
+        @keyframes wooshInSidebar {
+            0% { opacity: 0; transform: translateX(200px) scale(0.85); }
+            30% { opacity: 0.6; }
+            100% { opacity: 1; transform: translateX(0) scale(1); }
         }
 
         @media (max-width: 1200px) {
@@ -927,6 +958,63 @@
             border-radius: 3px; padding: 0.1rem 0.3rem;
             margin-right: 0.4rem; vertical-align: middle;
             color: var(--text-muted);
+        }
+
+        /* Skeleton card — loading placeholder */
+        .skeleton-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem 2rem 0;
+            box-shadow: var(--shadow-md);
+            transition: none;
+        }
+        .skeleton-card.fly-to-sidebar {
+            animation: flyToSidebar 0.7s var(--ease-out-expo) both;
+            pointer-events: none;
+        }
+        @keyframes flyToSidebar {
+            0% { opacity: 1; transform: translateX(0) scale(1); }
+            100% { opacity: 0; transform: translateX(-40%) scale(0.6); }
+        }
+        .skeleton-pulse {
+            background: linear-gradient(90deg, var(--bg-surface) 25%, var(--border-light) 50%, var(--bg-surface) 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.8s ease-in-out infinite;
+            border-radius: 6px;
+        }
+        @keyframes skeletonShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .skeleton-reassurance {
+            height: 1.6rem; width: 75%; margin-bottom: 1rem;
+        }
+        .skeleton-section {
+            height: 0.7rem; width: 40%; margin-bottom: 1.5rem;
+        }
+        .skeleton-reader {
+            height: 0.85rem; width: 90%; margin-bottom: 0.6rem;
+        }
+        .skeleton-reader-short {
+            height: 0.85rem; width: 60%; margin-bottom: 1.5rem;
+        }
+        .skeleton-message {
+            font-size: 0.82rem; line-height: 1.6;
+            color: var(--text-muted);
+            padding: 1rem 0; margin-top: 0.5rem;
+            border-top: 1px dashed var(--border-light);
+        }
+        .skeleton-message strong {
+            color: var(--text-primary); font-weight: 600;
+        }
+        .skeleton-btn {
+            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+            width: calc(100% + 4rem); margin: 1rem -2rem 0; padding: 0.9rem 2rem;
+            background: var(--border-light);
+            border-radius: 0 0 var(--radius) var(--radius);
+            font-family: inherit; font-size: 0.85rem;
+            font-weight: 600; color: var(--text-muted);
         }
 
         /* Flip trigger — the invitation */
@@ -1413,6 +1501,11 @@
         /* Tablet: sidebar stacks above content (handled at 900px above) */
 
         @media (max-width: 600px) {
+            /* Skeleton card */
+            .skeleton-card { padding: 1.5rem 1.25rem 0; }
+            .skeleton-message { font-size: 0.78rem; }
+            .skeleton-btn { width: calc(100% + 2.5rem); margin: 1rem -1.25rem 0; font-size: 0.78rem; }
+
             /* Upload screen */
             .brand h1 { font-size: 2.4rem; }
             .upload-card { padding: 1.25rem; }
@@ -1485,6 +1578,8 @@
             /* Insight column on mobile */
             .insight-column { width: 100%; margin-top: 0.5rem; }
             .insight-card-inner { padding: 1rem; font-size: 0.84rem; }
+            .insight-title { font-size: 0.7rem; }
+            .insight-quote { font-size: 0.72rem; }
             .insight-figure { font-size: 1.15rem; }
             .insight-narrative { font-size: 0.78rem; }
             .insight-example-label { font-size: 0.55rem; }
@@ -1649,6 +1744,17 @@
 
         <!-- Card viewport: one card at a time -->
         <div class="card-viewport hidden" id="cardViewport">
+            <!-- Skeleton card: shown while waiting for first clause -->
+            <div class="skeleton-card hidden" id="skeletonCard">
+                <div class="skeleton-pulse skeleton-reassurance"></div>
+                <div class="skeleton-pulse skeleton-section"></div>
+                <div class="skeleton-pulse skeleton-reader"></div>
+                <div class="skeleton-pulse skeleton-reader-short"></div>
+                <div class="skeleton-message" id="skeletonMessage"></div>
+                <div class="skeleton-btn">
+                    <span>Reading for you...</span><span class="flip-trigger-arrow">&rarr;</span>
+                </div>
+            </div>
             <div id="flipCardContainer"></div>
             <nav class="card-navigation hidden" id="cardNavigation">
                 <button class="card-nav-btn card-nav-prev" disabled>
@@ -1861,8 +1967,10 @@
         var flipBack = e.target.closest('.flip-back-trigger');
         if (flipBack) {
             var card = flipBack.closest('.flip-card');
-            if (card) card.classList.remove('flipped');
-            hideInsightColumn();
+            if (card) {
+                card.classList.remove('flipped');
+                showInsightContext(card); // revert to context-only
+            }
             return;
         }
         var findInDoc = e.target.closest('.find-in-doc');
@@ -1906,6 +2014,24 @@
         }
     });
 
+    // ── Insight column click delegation (find-in-doc) ──
+    var insightCol = $('insightColumn');
+    if (insightCol) {
+        insightCol.addEventListener('click', function(e) {
+            var findLink = e.target.closest('.find-in-doc');
+            if (findLink) {
+                var cardIdx = parseInt(findLink.getAttribute('data-card-index'));
+                if (!isNaN(cardIdx)) {
+                    scrollPreviewToCard(cardIdx);
+                    var previewEl = $('editorialLoadingText');
+                    if (previewEl && window.innerWidth <= 900) {
+                        previewEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }
+        });
+    }
+
     // ── Keyboard navigation ──
     document.addEventListener('keydown', function(e) {
         if (analysisScreen.classList.contains('hidden')) return;
@@ -1941,7 +2067,7 @@
                         }
                         showInsightForCard(cards[currentCardIndex]);
                     } else {
-                        hideInsightColumn();
+                        showInsightContext(cards[currentCardIndex]);
                     }
                 }
                 break;
@@ -2225,6 +2351,7 @@
         thinkingText.innerHTML = '';
         resultsContent.innerHTML = '';
         flipCardContainer.innerHTML = '';
+        $('skeletonCard').classList.add('hidden');
         deepAnalysisEl.innerHTML = '';
         // Remove the deep analysis header (sibling) if it exists
         var oldHeader = deepAnalysisEl.previousElementSibling;
@@ -2249,11 +2376,21 @@
         resultsArea.classList.add('hidden');
         $('cardViewport').classList.add('hidden');
         $('cardNavigation').classList.add('hidden');
-        $('insightColumn').classList.add('hidden');
         hideInsightColumn();
         $('copyAllBtn').classList.add('hidden');
         $('exportBtn').classList.add('hidden');
         backBtn.classList.remove('hidden');
+
+        // Show skeleton card in center while waiting for first clause
+        var skeleton = $('skeletonCard');
+        var skeletonMsg = $('skeletonMessage');
+        skeleton.classList.remove('hidden');
+        $('cardViewport').classList.remove('hidden');
+        resultsArea.classList.remove('hidden');
+        var wordCount = documentFullText ? documentFullText.split(/\s+/).length : 0;
+        skeletonMsg.innerHTML = wordCount > 0
+            ? '<strong>' + wordCount.toLocaleString() + ' words</strong> of legal text. FlipSide is reading every one.'
+            : 'FlipSide is reading your document...';
 
         // Sidebar: show thumbnail + document preview + metadata area
         var sidebar = $('analysisSidebar');
@@ -2268,14 +2405,12 @@
             } else {
                 thumbEl.classList.add('hidden');
             }
-            // Text preview
+            // Text preview — populate but keep hidden until first card triggers woosh
             var loadingEl = $('editorialLoading');
             var loadingText = $('editorialLoadingText');
             loadingText.innerHTML = escapeHtml(documentFullText);
-            loadingEl.classList.remove('hidden');
-            loadingEl.style.opacity = '1';
-            loadingEl.style.transform = '';
-            startEditorialStatusRotation();
+            loadingEl.classList.add('hidden');
+            loadingEl.classList.remove('woosh-in-sidebar');
         } else {
             sidebar.classList.add('hidden');
             thumbEl.classList.add('hidden');
@@ -2553,6 +2688,18 @@
                     metadataLine.classList.add('visible');
                 });
             });
+            // Update skeleton message with drafter name
+            var drafterMatch = responseContent.match(/\*\*Drafted By\*\*[:\s]*([^\n*]+)/i);
+            var skMsg = $('skeletonMessage');
+            if (drafterMatch && skMsg) {
+                var drafter = drafterMatch[1].trim();
+                var wc = documentFullText ? documentFullText.split(/\s+/).length : 0;
+                skMsg.innerHTML = '<strong>' + (wc > 0 ? wc.toLocaleString() + ' words' : 'This document') +
+                    '.</strong> This is what ' + escapeHtml(drafter) +
+                    ' expects you to read and agree to.';
+
+                // Woosh is now triggered by transitionToCardView() when first card appears
+            }
         }
     }
 
@@ -2912,14 +3059,12 @@
         var trickDesc = TRICK_DESCRIPTIONS[clause.trick] || '';
         var borderColor = risk === 'red' ? 'var(--red)' : risk === 'yellow' ? 'var(--yellow)' : 'var(--green-border)';
 
-        // ── Front: reassurance headline, section, title, quote, reader voice ──
+        // ── Front: reassurance headline, section ref, reader voice ──
+        // Title + quote moved to insight column (shown on flip)
         var frontHtml = '<div class="flip-card-front">' +
             '<div class="front-content">' +
             (clause.reassurance ? '<div class="clause-reassurance">' + escapeHtml(clause.reassurance) + '</div>' : '') +
             (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
-            '<h3 class="clause-title">' + escapeHtml(clause.title) + '</h3>' +
-            (clause.quote ? '<div class="clause-quote">' + escapeHtml(clause.quote) + '</div>' : '') +
-            (documentFullText && !isCompareMode ? '<a class="find-in-doc" data-card-index="' + index + '">Find in document &uarr;</a>' : '') +
             '<div class="reader-voice">' +
             '<span class="reader-voice-label">You\u2019d think</span>' +
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
@@ -2938,18 +3083,7 @@
                 '</div>';
         }
 
-        // "What the small print says" stays on the card
-        if (clause.smallPrint) {
-            backBodyHtml += '<div class="smallprint-block"><span class="juxtapose-label">What the small print says</span>' +
-                escapeHtml(clause.smallPrint) + '</div>';
-        }
-        // EN small print (collapsible)
-        if (clause.enSmallPrint) {
-            backBodyHtml += '<details class="en-translation"><summary class="en-translation-toggle">Show in English</summary>' +
-                '<div class="smallprint-block" style="margin-top:0.5rem">' +
-                '<span class="juxtapose-label">What the small print says</span>' + escapeHtml(clause.enSmallPrint) +
-                '</div></details>';
-        }
+        // Small print removed — clause text is in the insight column
 
         // Bottom line — the reveal after flipping
         if (clause.bottomLine) {
@@ -2985,8 +3119,9 @@
         cardEl.className = 'flip-card hidden';
         cardEl.setAttribute('data-clause-index', index);
         cardEl.setAttribute('data-risk-level', risk);
-        cardEl.setAttribute('data-clause-title', escapeHtml(clause.title));
+        cardEl.setAttribute('data-clause-title', clause.title);
         cardEl.setAttribute('data-section-ref', clause.section || '');
+        if (clause.quote) cardEl.setAttribute('data-quote', clause.quote);
         if (clause.shouldRead) cardEl.setAttribute('data-should-read', clause.shouldRead);
         if (clause.figure) cardEl.setAttribute('data-figure', clause.figure);
         if (clause.exampleNarrative) cardEl.setAttribute('data-example', clause.exampleNarrative);
@@ -3087,15 +3222,36 @@
     function transitionToCardView() {
         cardViewTransitioned = true;
         stopEditorialStatusRotation();
-        // Sidebar stays visible — just update status text
         var statusEl = $('editorialLoadingStatus');
         if (statusEl) statusEl.textContent = 'Analysis in progress...';
+
+        var skeleton = $('skeletonCard');
+        var loadingEl = $('editorialLoading');
         var viewport = $('cardViewport');
-        viewport.classList.remove('hidden');
-        resultsArea.classList.remove('hidden');
-        // Show insight column (card inside starts hidden, shown on flip)
-        if (!isCompareMode) $('insightColumn').classList.remove('hidden');
-        showCardAtIndex(0);
+
+        // Step 1: Skeleton flies left toward sidebar (0.7s animation)
+        skeleton.classList.add('fly-to-sidebar');
+
+        // Step 2: At 300ms into the fly animation, sidebar document wooshes in from right
+        // This overlap creates the illusion of text moving from center → left
+        if (loadingEl && loadingEl.classList.contains('hidden')) {
+            setTimeout(function() {
+                loadingEl.classList.remove('hidden');
+                void loadingEl.offsetHeight;
+                loadingEl.classList.add('woosh-in-sidebar');
+                startEditorialStatusRotation();
+                console.log('[FlipSide] Sidebar woosh at T=' + (Date.now() - analysisStartTime) + 'ms');
+            }, 300);
+        }
+
+        // Step 3: At 500ms, hide skeleton and show the real first card
+        setTimeout(function() {
+            skeleton.classList.add('hidden');
+            skeleton.classList.remove('fly-to-sidebar');
+            viewport.classList.remove('hidden');
+            resultsArea.classList.remove('hidden');
+            showCardAtIndex(0);
+        }, 500);
     }
 
     // ── Reveal full verdict (on demand only) ──────
@@ -3160,26 +3316,62 @@
         );
     }
 
+    // Build the clause context HTML (title + quote + find link) — shared by both modes
+    function buildInsightContextHtml(cardEl) {
+        var title = cardEl.getAttribute('data-clause-title') || '';
+        var quote = cardEl.getAttribute('data-quote') || '';
+        var cardIndex = cardEl.getAttribute('data-clause-index') || '';
+        if (!title && !quote) return '';
+        var html = '<div class="insight-context">';
+        if (title) html += '<div class="insight-title">' + escapeHtml(title) + '</div>';
+        if (quote) html += '<div class="insight-quote">' + escapeHtml(quote) + '</div>';
+        if (documentFullText && !isCompareMode && cardIndex) {
+            html += '<a class="find-in-doc insight-find" data-card-index="' + cardIndex + '">Find in document &uarr;</a>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    // Show clause context only (on navigate, before flip)
+    function showInsightContext(cardEl) {
+        var col = $('insightColumn');
+        var card = $('insightCard');
+        var inner = $('insightCardInner');
+        if (!col || !card || !inner) return;
+
+        var html = buildInsightContextHtml(cardEl);
+        if (!html) { hideInsightColumn(); return; }
+
+        inner.innerHTML = html;
+        card.className = 'insight-card';
+        col.classList.remove('hidden');
+        requestAnimationFrame(function() { card.classList.add('visible'); });
+    }
+
+    // Show full insight (on flip — context + should-read + figure + example)
     function showInsightForCard(cardEl) {
         var col = $('insightColumn');
         var card = $('insightCard');
         var inner = $('insightCardInner');
         if (!col || !card || !inner) return;
 
-        var shouldRead = cardEl.getAttribute('data-should-read');
-        if (!shouldRead) { hideInsightColumn(); return; }
-
         var risk = cardEl.getAttribute('data-risk-level') || 'green';
+        var shouldRead = cardEl.getAttribute('data-should-read') || '';
         var enShouldRead = cardEl.getAttribute('data-en-should-read');
         var figure = cardEl.getAttribute('data-figure');
         var example = cardEl.getAttribute('data-example');
         var enFigure = cardEl.getAttribute('data-en-figure');
         var enExample = cardEl.getAttribute('data-en-example');
 
+        // Clause context at top (neutral)
+        var html = buildInsightContextHtml(cardEl);
+
         // "What you should read" section
-        var html = '<div class="insight-should-read">' + highlightNumbers(shouldRead) + '</div>';
-        if (enShouldRead) {
-            html += '<div class="insight-en">' + highlightNumbers(enShouldRead) + '</div>';
+        if (shouldRead) {
+            html += '<div class="insight-should-read">' + highlightNumbers(shouldRead) + '</div>';
+            if (enShouldRead) {
+                html += '<div class="insight-en">' + highlightNumbers(enShouldRead) + '</div>';
+            }
         }
 
         // "What does this mean for you" — headline figure + narrative
@@ -3193,7 +3385,6 @@
                 html += '<div class="insight-narrative">' + highlightNumbers(example) + '</div>';
             }
             html += '</div>';
-            // EN translations for example section
             if (enFigure || enExample) {
                 html += '<div class="insight-en">';
                 if (enFigure) html += '<div class="insight-figure-en">' + highlightNumbers(enFigure) + '</div>';
@@ -3201,23 +3392,21 @@
                 html += '</div>';
             }
         }
+
+        if (!html) { hideInsightColumn(); return; }
         inner.innerHTML = html;
 
         // Set risk color
         card.className = 'insight-card insight-card-' + risk;
         col.classList.remove('hidden');
-
-        // Trigger drop-in animation
-        requestAnimationFrame(function() {
-            card.classList.add('visible');
-        });
+        requestAnimationFrame(function() { card.classList.add('visible'); });
     }
 
     function hideInsightColumn() {
+        var col = $('insightColumn');
         var card = $('insightCard');
-        if (card) {
-            card.classList.remove('visible');
-        }
+        if (card) card.classList.remove('visible');
+        if (col) col.classList.add('hidden');
     }
 
     function showCardAtIndex(index) {
@@ -3237,8 +3426,8 @@
             }
         }
 
-        // Hide insight column when navigating (card is un-flipped)
-        hideInsightColumn();
+        // Show clause context in insight column (title + quote only)
+        showInsightContext(cards[index]);
 
         // Animate score bar on visible card
         var visibleCard = cards[index];
