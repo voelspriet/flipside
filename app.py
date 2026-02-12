@@ -998,9 +998,10 @@ def analyze(doc_id):
         # Opus for deep cross-clause analysis (extended thinking)
         # Deep analysis needs higher token budget: adaptive thinking eats
         # into max_tokens, and the structured output (villain voice, YOUR MOVE,
-        # cross-clause interactions, drafter profile, assessment) is heavy.
-        # Floor of 48000 ensures Opus can think ~20K + output ~28K.
-        deep_max_tokens = max(preset['max_tokens'], 48000)
+        # cross-clause interactions, drafter profile, fair standard comparison,
+        # quality check, assessment) is very heavy.
+        # Floor of 80000 ensures Opus can think ~30K + output ~50K.
+        deep_max_tokens = max(preset['max_tokens'], 80000)
 
         # Build vision content for deep analysis if page images exist
         page_images = doc.get('page_images', [])
