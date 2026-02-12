@@ -8,7 +8,7 @@
 
 ## The Product
 
-**FlipSide: the other side of small print.**
+**FlipSide: the dark side of small print.**
 
 Upload a document you didn't write — a contract, Terms of Service, insurance policy, loan agreement, employee handbook. Opus 4.6 adopts the perspective of the party who drafted it and reveals what each clause strategically accomplishes for them.
 
@@ -94,7 +94,7 @@ Tested whether ContractLens and document comparison could be one product. Answer
 → [docs/PRODUCT_UNITY_ANALYSIS.md](https://github.com/voelspriet/flipside/tree/main/docs/PRODUCT_UNITY_ANALYSIS.md)
 
 **Entry 17 — FlipSide**
-Product named. Tagline chosen: *"FlipSide: the other side of small print."*
+Product named. Tagline chosen: *"FlipSide: the dark side of small print."*
 
 ---
 

@@ -1,4 +1,4 @@
-# FlipSide: the other side of small print
+# FlipSide: the dark side of small print
 
 > Upload a document you didn't write. See what the other side intended.
 

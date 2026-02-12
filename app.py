@@ -1,5 +1,5 @@
 """
-FlipSide — The other side of small print.
+FlipSide — The dark side of small print.
 Upload a document you didn't write. See what the other side intended.
 
 Optimized for Claude Opus 4.6 extended thinking:
@@ -1228,7 +1228,7 @@ if __name__ == '__main__':
         print('=' * 60 + '\n')
 
     port = int(os.environ.get('FLIPSIDE_PORT', 5001))
-    print('\n  FlipSide — The other side of small print.')
+    print('\n  FlipSide — The dark side of small print.')
     print(f'  Powered by Claude Opus 4.6 + Haiku 4.5 (fast cards).')
     print(f'  http://127.0.0.1:{port}\n')
     app.run(debug=True, port=port)

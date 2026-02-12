@@ -6,7 +6,7 @@
 
 ## CONTEXT
 
-You are auditing a hackathon project called **FlipSide** ("the other side of small print") for the "Built with Opus 4.6: a Claude Code Hackathon" (Anthropic, February 2026). Deadline: **February 16, 3:00 PM EST**.
+You are auditing a hackathon project called **FlipSide** ("the dark side of small print") for the "Built with Opus 4.6: a Claude Code Hackathon" (Anthropic, February 2026). Deadline: **February 16, 3:00 PM EST**.
 
 The project is a contract analysis tool: upload a document you didn't write → Opus 4.6 reconstructs the drafter's strategic intent → flip cards show the asymmetry between "what you'd think" and "what they intended."
 

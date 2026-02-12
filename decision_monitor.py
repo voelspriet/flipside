@@ -168,7 +168,7 @@ def build_report(output_json=False):
     """Build the full decision monitoring report."""
     report = {
         "generated": datetime.now().isoformat(),
-        "project": "FlipSide — the other side of small print",
+        "project": "FlipSide — the dark side of small print",
     }
 
     # Git activity

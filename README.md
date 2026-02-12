@@ -1,6 +1,6 @@
 # FlipSide
 
-**The other side of small print.**
+**The dark side of small print.**
 
 > Upload a document you didn't write. See what the other side intended.
 
@@ -272,4 +272,4 @@ Built with Opus 4.6: a Claude Code Hackathon (February 2026)
 
 ---
 
-<sub>FlipSide: the other side of small print. Built during the Claude Code Hackathon 2026.</sub>
+<sub>FlipSide: the dark side of small print. Built during the Claude Code Hackathon 2026.</sub>
