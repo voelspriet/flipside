@@ -226,19 +226,41 @@ Deployed to a server behind a URL prefix (`/flipside/`). All 5 JavaScript fetch/
 
 ---
 
+### Phase 7: Long Documents, Progress & Security
+
+**Entry 52 — Full Document Text (No Truncation)**
+Removed the 15,000-character truncation from all three endpoints (upload, sample, compare). The sidebar now receives the complete document text. This was the root cause of clause markers failing to appear for clauses beyond ~page 4 — the fuzzy matching was correct, but the text it searched was cut off. Modern browsers handle 200KB in a scrollable div without issue.
+
+**Entry 53 — Dynamic Haiku Token Budget**
+Haiku's hardcoded 8,000-token output limit was insufficient for long documents (50+ pages, 80+ clauses). Replaced with `max(8000, min(16000, len(text) // 5))` — short docs stay at 8K, long docs scale up to 16K. Haiku cost is negligible; the extra tokens enable ~100 cards instead of ~50.
+
+**Entry 54 — Page Navigation Tabs (Finding-Only)**
+Initial implementation showed a tab for every page (53 circles for a 53-page document — overwhelming). Redesigned: tabs start hidden and appear progressively as Haiku finds clauses on each page. A 53-page document with findings on 8 pages shows 8 tabs, not 53. Click handlers use `data-page-idx` attributes to find current DOM markers (avoiding stale closure references after `rebuildPreviewHighlights()` replaces innerHTML).
+
+**Entry 55 — Live Clause Counter + Deep Status Indicator**
+Two progress signals added: (1) "5 clauses found so far..." updates the status bar and sidebar each time a new card appears during scanning. (2) After cards complete (`quick_done`), a persistent pulsing status line shows "Opus 4.6 is building your Full Verdict..." below the card navigation. Disappears when the verdict is ready. Both give users concrete feedback instead of generic rotating messages.
+
+**Entry 56 — Document Suitability Gate**
+Added rule 13 to `build_card_scan_prompt()`: if the document has no terms/conditions/obligations (recipe, novel, academic paper), Haiku outputs `**Not Applicable**: [reason]` and skips clauses. Frontend detects this in `extractMetadata()` and shows "Not a match for FlipSide" with the explanation. Two distinct zero-card paths: unsuitable doc (wrong type) vs. clean doc (nothing concerning). Flip prompt changes to "Not everything is a contract in life."
+
+**Entry 57 — XSS Defense with DOMPurify**
+Security audit revealed that deep analysis, compare mode, and follow-up answers passed LLM output through `marked.parse()` → `innerHTML` without sanitization. A crafted document could trick the LLM into outputting malicious HTML. Added DOMPurify CDN + `safeMd2Html()` wrapper applied to all 4 `marked.parse()` call sites. Flip cards were already safe (all fields go through `escapeHtml()`).
+
+---
+
 ### Current State
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 1,230 | Backend: Flask, SSE, parallel Haiku+Opus, vision, tool use, follow-up, prompt caching, 7 prompts |
-| `templates/index.html` | 3,139 | Card-first frontend: flip cards, confidence badges, follow-up UI, tool handlers, prefix-aware paths |
+| `app.py` | 1,815 | Backend: Flask, SSE, parallel Haiku+Opus, vision, tool use, follow-up, prompt caching, 7 prompts, dynamic token budget, suitability gate |
+| `templates/index.html` | 4,469 | Card-first frontend: flip cards, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 51 entries, complete process timeline |
-| `README.md` | Product description + 10 Opus capabilities + meta-prompting discovery |
+| `HACKATHON_LOG.md` | This file | 57 entries, complete process timeline |
+| `README.md` | Product description + 13 Opus capabilities + meta-prompting discovery |
 
 ---
 
@@ -287,8 +309,8 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (1,230 lines) | Flask backend: 7 prompts, Haiku+Opus parallel, vision, tool use, follow-up, prompt caching, SSE streaming |
-| `templates/index.html` (3,139 lines) | Card-first frontend: flip cards, confidence badges, follow-up UI, tool handlers, prefix-aware paths |
+| `app.py` (1,815 lines) | Flask backend: 7 prompts, Haiku+Opus parallel, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate |
+| `templates/index.html` (4,469 lines) | Card-first frontend: flip cards, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
@@ -297,7 +319,7 @@ The first four are the same error at different scales: **the AI uses itself as t
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
 | This file | 51 entries, complete process timeline |
 
-## 10 Opus 4.6 Capabilities Used
+## 13 Opus 4.6 Capabilities Used
 
 | # | Capability | Visible in product |
 |---|-----------|-------------------|
@@ -311,6 +333,9 @@ The first four are the same error at different scales: **the AI uses itself as t
 | 8 | Benchmark comparison | Fair Standard Comparison against industry norms |
 | 9 | Split-model parallel | Haiku 4.5 (fast cards) + Opus 4.6 (deep analysis) |
 | 10 | Prompt caching | System prompts cached for 90% cost reduction |
+| 11 | Long-context retrieval | Cross-clause interaction detection across full documents (no truncation) |
+| 12 | Low over-refusals | Villain voice sustains adversarial role-play without self-censoring |
+| 13 | Multilingual + bilingual | Analyzes in document's language, EN translations on cards |
 
 ## What Remains
 

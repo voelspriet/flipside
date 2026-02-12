@@ -544,6 +544,126 @@ MegaMart Rewards Program
 """
 },
 
+'wedding': {
+    'filename': 'Evergreen Estate Venue Contract (Sample)',
+    'text': """EVERGREEN ESTATE EVENT VENUE
+WEDDING & RECEPTION RENTAL AGREEMENT
+
+Event Date: Saturday, September 13, 2026
+Client: [Bride/Groom Names]
+Venue: Evergreen Estate, 44 Orchard Lane, Napa Valley, CA 94558
+
+1. RENTAL FEE AND DEPOSIT
+
+Total venue rental fee is $18,500 for use of the Main Hall, Garden Terrace, and Bridal Suite from 10:00 AM to 11:00 PM. A non-refundable deposit of $7,400 (40%) is due upon signing. The remaining balance is due 90 days before the event date. If the remaining balance is not received by the due date, Evergreen Estate reserves the right to cancel the reservation and retain the deposit. All payments are by certified check or wire transfer only; credit card payments incur a 4.5% processing surcharge.
+
+2. OVERTIME AND EXTENDED USE
+
+The venue must be vacated by 11:00 PM. Any use beyond 11:00 PM will be billed at $1,200 per 30-minute increment, or any portion thereof, with a minimum charge of one increment. Overtime charges include mandatory additional staffing fees of $350 per half hour. If the event has not concluded by 11:30 PM, Evergreen Estate may, at its sole discretion, direct the DJ or band to stop playing, turn on house lights, and begin breakdown. Client is responsible for ensuring all guests vacate the premises. Any guest remaining on the property after midnight will result in a $500 trespassing remediation fee.
+
+3. VENDOR RESTRICTIONS
+
+All catering must be provided by one of Evergreen Estate's three Preferred Caterers. Outside catering is not permitted under any circumstances, including for dietary, cultural, or religious requirements. Client may submit a written request for an exception no later than 120 days before the event; approval is at Evergreen Estate's sole discretion and subject to an outside caterer surcharge of $3,500. Photography and videography vendors must carry $2,000,000 in liability insurance naming Evergreen Estate as additional insured. Drone photography is prohibited. All vendor vehicles must be removed from the property by 5:00 PM on the event day.
+
+4. CANCELLATION AND FORCE MAJEURE
+
+Cancellation more than 180 days before the event: deposit forfeited. Cancellation 90–180 days: 75% of total fee is due. Cancellation less than 90 days: 100% of total fee is due. In the event of force majeure (defined exclusively as government-mandated closure of the specific venue property), Evergreen Estate will offer a replacement date within 18 months, subject to availability, with no refund option. Weather, illness, travel disruption, vendor cancellation, family emergency, or change of personal plans do not constitute force majeure. Evergreen Estate strongly recommends purchasing wedding insurance, though no specific policy is endorsed.
+
+5. DAMAGE, CLEANUP, AND INDEMNIFICATION
+
+Client is responsible for all damage to the venue, grounds, furnishings, and landscaping caused by Client, guests, or vendors. A refundable damage deposit of $3,000 is required 30 days before the event. Evergreen Estate will assess damages within 14 business days following the event and deduct costs from the deposit. If damages exceed the deposit, Client is liable for the balance. Assessment of damage is at Evergreen Estate's sole discretion. Client agrees to indemnify and hold harmless Evergreen Estate against any claims arising from the event, including but not limited to guest injuries, alcohol-related incidents, and vendor disputes.
+
+By signing below, Client acknowledges reading all terms and agrees to the conditions of this contract.
+
+Evergreen Estate Event Venue
+[Venue Director]
+"""
+},
+
+'escape': {
+    'filename': 'Puzzle Panic Escape Room Waiver (Sample)',
+    'text': """PUZZLE PANIC ESCAPE ROOMS
+PARTICIPANT WAIVER, RELEASE & ASSUMPTION OF RISK
+
+Location: Puzzle Panic — Downtown, 88 Industrial Blvd, Suite 200, Denver, CO 80204
+
+Please read carefully before signing. This document affects your legal rights.
+
+1. ASSUMPTION OF RISK
+
+Participant acknowledges that escape room activities involve inherent risks including but not limited to: physical exertion, confined spaces, low-light conditions, fog and haze effects, sudden loud sounds, physical contact with props and set pieces, tripping hazards, moving mechanical elements, and simulated scenarios involving psychological stress. Participant voluntarily assumes all risks, known and unknown, foreseeable and unforeseeable, arising from participation. Puzzle Panic makes no representations regarding the safety of any room, prop, mechanism, or effect.
+
+2. WAIVER AND RELEASE OF LIABILITY
+
+Participant, on behalf of themselves, their heirs, executors, administrators, and assigns, hereby releases, waives, and forever discharges Puzzle Panic Escape Rooms, its owners, officers, employees, contractors, affiliates, and landlord from any and all liability, claims, demands, and causes of action arising from or related to participation, including claims for personal injury, death, emotional distress, property damage, or property loss. This release applies regardless of whether the harm is caused by negligence, gross negligence, or recklessness of the released parties. This waiver is binding even if Puzzle Panic fails to maintain equipment, ignores known hazards, or inadequately trains staff.
+
+3. HEALTH AND PHYSICAL CONDITION
+
+Participant represents that they are in adequate physical and mental health to participate. Puzzle Panic does not provide medical personnel on-site. In the event of a medical emergency, Participant authorizes Puzzle Panic to contact emergency services and consents to any emergency medical treatment, the cost of which shall be Participant's sole responsibility. Participants with claustrophobia, epilepsy, heart conditions, or anxiety disorders participate entirely at their own risk. Puzzle Panic is not required to disclose room-specific triggers or effects in advance.
+
+4. RECORDING AND MEDIA RIGHTS
+
+Participant consents to being filmed, photographed, and audio-recorded via security cameras and in-room monitoring systems during the entire experience. Puzzle Panic retains all rights to this footage and may use it for security, training, marketing, social media, promotional materials, and commercial purposes without compensation, notification, or additional consent. Participant waives any right to review, approve, or receive payment for use of their likeness, voice, or image. Footage may be retained indefinitely.
+
+5. PERSONAL PROPERTY AND PROHIBITED ITEMS
+
+Participant agrees to store personal belongings in provided lockers. Puzzle Panic is not responsible for lost, stolen, or damaged personal property, including items left in lockers. Cell phones, smart watches, cameras, and recording devices must be surrendered before entering any room. If a personal device is discovered during gameplay, Puzzle Panic reserves the right to immediately end the session without refund. Puzzle Panic may inspect any personal item brought onto the premises.
+
+6. BOOKING, REFUNDS, AND NO-SHOW POLICY
+
+All bookings are final. No refunds for cancellations made less than 48 hours before the scheduled time. Rescheduling is permitted once, subject to availability, with a $25 per person rescheduling fee. If any member of the booked group fails to arrive within 10 minutes of the scheduled start time, Puzzle Panic may start or cancel the session without adjusting the price. Groups smaller than the minimum room capacity (4 persons) will be merged with other participants at Puzzle Panic's discretion. No refunds for incomplete sessions, technical difficulties, or dissatisfaction with the experience.
+
+I have read, understood, and voluntarily agree to all terms above.
+
+Participant Signature: _________________________ Date: _____________
+
+Puzzle Panic Escape Rooms
+[Operations Manager]
+"""
+},
+
+'pet': {
+    'filename': 'Forever Friends Animal Shelter Adoption Contract (Sample)',
+    'text': """FOREVER FRIENDS ANIMAL SHELTER
+ADOPTION CONTRACT AND AGREEMENT
+
+Shelter Location: 1220 County Road 9, Shelter Building C, Minneapolis, MN 55412
+Animal ID: FF-2026-03892
+Animal Name: [Pet Name] — [Breed/Description], approx. [Age]
+
+This contract is legally binding. Please read all terms before signing.
+
+1. ADOPTION FEE AND INCLUDED SERVICES
+
+Adoption fee of $350 includes initial veterinary exam, age-appropriate vaccinations, spay/neuter surgery (or spay/neuter deposit if underage), microchip with registration, and a 14-day health guarantee covering pre-existing conditions documented at adoption. The health guarantee covers veterinary costs up to the adoption fee amount only and requires Adopter to use a Forever Friends-approved veterinarian for the initial visit. Use of a non-approved veterinarian within the first 30 days voids the health guarantee.
+
+2. HOME ENVIRONMENT REQUIREMENTS
+
+Adopter certifies that all members of the household have been informed of and consent to the adoption. If Adopter rents, Adopter must provide written landlord approval before the animal may be released. Adopter agrees to keep the animal indoors (cats) or in a securely fenced yard (dogs) at all times. Dogs may not be tethered outdoors as a primary containment method. Adopter agrees to provide adequate food, water, shelter, veterinary care, and socialization appropriate to the species. Failure to meet these requirements constitutes a breach of contract and grounds for animal recovery.
+
+3. HOME VISITS AND INSPECTIONS
+
+Adopter grants Forever Friends the right to conduct a pre-adoption home inspection and follow-up post-adoption home visits at 2 weeks, 3 months, and 12 months. Additional visits may be conducted at any time if Forever Friends receives a concern about the animal's welfare, from any source. Inspections will be scheduled with at least 24 hours' notice when possible, but Forever Friends reserves the right to conduct unannounced welfare checks if it has reasonable cause for concern, as determined solely by Forever Friends. Refusal to allow a home visit is grounds for animal recovery.
+
+4. TRANSFER, REHOMING, AND RETURN POLICY
+
+Adopter may NOT sell, give away, or transfer the animal to any third party under any circumstances. If Adopter can no longer care for the animal at any point during the animal's lifetime, Adopter MUST return the animal to Forever Friends. No refund of adoption fees will be issued upon return. If the animal is found in the possession of anyone other than the Adopter without prior written approval, Forever Friends may recover the animal immediately and pursue legal action for breach of contract. Adopter is responsible for all costs associated with recovery, including attorney fees.
+
+5. BREEDING PROHIBITION AND MEDICAL DECISIONS
+
+The adopted animal may not be bred under any circumstances. If the animal has not been spayed/neutered at the time of adoption, Adopter agrees to complete the surgery within 30 days or by 6 months of age, whichever comes later, using a Forever Friends-approved veterinarian. Failure to provide proof of spay/neuter by the deadline results in forfeiture of the $150 spay/neuter deposit and is grounds for animal recovery. Adopter may not have the animal declawed, devocalized, or subjected to any cosmetic surgical procedure. Euthanasia decisions require prior consultation with Forever Friends unless a licensed veterinarian certifies the animal is in acute, untreatable suffering.
+
+6. MICROCHIP AND LIFETIME TRACKING
+
+The microchip registered to the adopted animal shall remain registered to Forever Friends as the secondary contact in perpetuity. Adopter agrees to keep registration information current, including address and phone number, and to notify Forever Friends within 7 days of any change of address. Failure to maintain current registration is a breach of this contract. Forever Friends retains the right to contact the Adopter at any time to inquire about the animal's welfare. This obligation survives for the lifetime of the animal.
+
+By signing below, Adopter acknowledges reading all terms and agrees to the conditions of this contract.
+
+Forever Friends Animal Shelter
+[Adoption Coordinator]
+"""
+},
+
 }
 
 # Default sample for backward compatibility
@@ -565,6 +685,8 @@ for _key in SAMPLE_DOCUMENTS:
 
 MAX_VISION_PAGES = 10
 VISION_DPI = 150
+MAX_IMAGE_DIMENSION = 4000   # px – well under Anthropic's 8000px hard limit
+MAX_IMAGE_BYTES = 4 * 1024 * 1024  # 4 MB – under the 5 MB API limit
 
 
 def _has_garbled_text(text):
@@ -635,6 +757,7 @@ def clean_extracted_text(text):
 
 def extract_pdf(file_storage):
     import pdfplumber
+    from PIL import Image
     pdf_bytes = file_storage.read()
     text_parts = []
     page_images = []
@@ -646,8 +769,20 @@ def extract_pdf(file_storage):
             if i < MAX_VISION_PAGES:
                 try:
                     img = page.to_image(resolution=VISION_DPI)
+                    pil_img = img.original
+                    # Constrain dimensions to stay under API limit
+                    if max(pil_img.size) > MAX_IMAGE_DIMENSION:
+                        pil_img.thumbnail(
+                            (MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION),
+                            Image.LANCZOS,
+                        )
+                    # Encode as JPEG to keep file size bounded
                     buf = BytesIO()
-                    img.original.save(buf, format='PNG')
+                    pil_img.convert('RGB').save(buf, format='JPEG', quality=80)
+                    # If still too large, reduce quality
+                    if buf.tell() > MAX_IMAGE_BYTES:
+                        buf = BytesIO()
+                        pil_img.convert('RGB').save(buf, format='JPEG', quality=50)
                     page_images.append(base64.b64encode(buf.getvalue()).decode())
                 except Exception:
                     pass
@@ -903,7 +1038,7 @@ def upload():
             'filename': filename,
             'text_length': len(text),
             'preview': text[:300],
-            'full_text': text[:15000],
+            'full_text': text,
             'thumbnail': thumbnail,
         })
 
@@ -937,7 +1072,7 @@ def sample():
         'filename': filename,
         'text_length': len(text),
         'preview': text[:300],
-        'full_text': text[:15000],
+        'full_text': text,
         'thumbnail': SAMPLE_THUMBNAILS.get(sample_type),
     })
 
@@ -1199,7 +1334,8 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguo
 9. Do NOT include cross-clause interactions — analyze each clause independently
 10. Confidence: HIGH = language is clear, single reasonable interpretation; MEDIUM = some ambiguity or unusual phrasing; LOW = clause could reasonably be read multiple ways or meaning depends on context
 11. The Document Profile must appear BEFORE the first clause, followed by ---
-12. The section reference in parentheses MUST provide document context — which part, product, coverage area, or topic. A bare "§3" or "Page 5" is useless without context."""
+12. The section reference in parentheses MUST provide document context — which part, product, coverage area, or topic. A bare "§3" or "Page 5" is useless without context.
+13. If the document has NO terms, conditions, or obligations imposed by one party on another (e.g. a recipe, novel, personal letter, news article, academic paper), output ONLY the Document Profile with **Document Type** set to what it actually is, and add a line: **Not Applicable**: [1-sentence explanation of why this document has no terms to analyze]. Do NOT output any clauses."""
 
 
 def build_deep_analysis_prompt(has_images=False):
@@ -1424,7 +1560,7 @@ def compare():
             'filename': filenames[0] + ' vs ' + filenames[1],
             'text_length': len(texts[0]) + len(texts[1]),
             'preview': texts[0][:150] + '\n---\n' + texts[1][:150],
-            'full_text': texts[0][:15000],
+            'full_text': texts[0],
             'mode': 'compare',
         })
     except Exception as e:
@@ -1553,9 +1689,10 @@ def analyze(doc_id):
                 q.put((f'{label}_done', None))
 
         # Haiku for fast card scan (no extended thinking)
+        quick_max = max(8000, min(16000, len(doc['text']) // 5))
         t_quick = threading.Thread(
             target=worker,
-            args=('quick', build_card_scan_prompt(), 8000,
+            args=('quick', build_card_scan_prompt(), quick_max,
                   FAST_MODEL, False),
             daemon=True,
         )
@@ -1576,7 +1713,7 @@ def analyze(doc_id):
                 deep_user_content.append({'type': 'text', 'text': f'[Page {i + 1} visual layout:]'})
                 deep_user_content.append({
                     'type': 'image',
-                    'source': {'type': 'base64', 'media_type': 'image/png', 'data': img_b64},
+                    'source': {'type': 'base64', 'media_type': 'image/jpeg', 'data': img_b64},
                 })
 
         has_images = bool(page_images)

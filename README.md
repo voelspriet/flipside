@@ -32,7 +32,9 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
    - **Confidence badge**: HIGH / MEDIUM / LOW — how certain Opus is about each finding
    - Color-coded: **Green** (standard) · **Yellow** (notable) · **Red** (strategically asymmetric)
    - **Bilingual**: Non-English documents include collapsible English translations per card
-   - **Document preview**: Sidebar shows the full document text with page dividers and numbered clause markers (①②③) that highlight when you navigate cards. Fuzzy matching ensures markers appear even when PDF text extraction differs from model quotes.
+   - **Document preview**: Sidebar shows the full document text with page dividers and numbered clause markers (①②③) that highlight when you navigate cards. Page navigation tabs appear progressively — only for pages that contain findings — so a 50-page document might show 8 tabs, not 50. Fuzzy matching ensures markers appear even when PDF text extraction differs from model quotes.
+   - **Live progress**: During scanning, a clause counter updates in real-time ("5 clauses found so far..."). After cards complete, a persistent status line shows "Opus 4.6 is building your Full Verdict..." until the deep analysis is ready.
+   - **Document suitability**: If a document has no terms to analyze (recipe, novel, personal letter), Haiku detects this immediately and shows a clear explanation instead of empty results.
 
 3. **Read the Full Verdict** — After browsing cards, Opus 4.6's deep analysis reveals:
    - Cross-clause interactions (risks invisible when reading clause by clause)
@@ -150,7 +152,7 @@ The underlying principle is the same: **don't take yourself as the measurement o
         │              │      │                          │
         │  Card scan   │      │  Deep analysis           │
         │  No thinking │      │  Ext. thinking           │
-        │  8K tokens   │      │  48K+ tokens             │
+        │  8-16K tokens│      │  48K+ tokens             │
         │  Confidence  │      │  + Vision (PDF images)   │
         │  badges      │      │  + Tool use (assess_risk,│
         │              │      │    flag_interaction)      │
@@ -193,7 +195,7 @@ The underlying principle is the same: **don't take yourself as the measurement o
 
 Two models run in parallel: **Haiku 4.5** scans clauses fast (first card in ~5 seconds), while **Opus 4.6** with extended thinking reasons across all clauses simultaneously to find compound risks invisible when reading clause by clause. The user browses flip cards while Opus thinks in the background.
 
-**Tech stack:** Python/Flask (1,798 lines), Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend (4,298 lines). 9 built-in sample documents with generated thumbnails. No external APIs beyond Anthropic. No database required. Bilingual analysis for non-English documents. Deployable behind a reverse proxy with URL prefix.
+**Tech stack:** Python/Flask (1,815 lines), Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend (4,469 lines), DOMPurify for XSS protection on LLM output. 9 built-in sample documents with generated thumbnails. No external APIs beyond Anthropic. No database required. Bilingual analysis for non-English documents. Deployable behind a reverse proxy with URL prefix.
 
 ---
 

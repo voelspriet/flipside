@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
     <style>
         /* ══════════════════════════════════════════════════════
            RESET & DESIGN SYSTEM
@@ -277,7 +278,9 @@
             border-color: var(--accent);
         }
         .demo-tile:hover .demo-tile-label { color: var(--accent); }
-        .demo-tile-icon { font-size: 1.6rem; line-height: 1; margin-bottom: 0.4rem; }
+        .demo-tile:hover .demo-tile-icon { color: var(--accent); }
+        .demo-tile-icon { width: 26px; height: 26px; margin-bottom: 0.5rem; color: var(--text-muted); transition: color 0.25s ease; }
+        .demo-tile-icon svg { width: 100%; height: 100%; }
         .demo-tile-label {
             font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
             font-weight: 500; color: var(--text-secondary); margin-bottom: 0.15rem;
@@ -661,6 +664,34 @@
             border-radius: 50%; background: var(--accent);
             margin-left: 0.4rem; animation: pulse 1.5s infinite;
             vertical-align: middle;
+        }
+
+        /* ── Page navigation tabs ──────────────────── */
+        .doc-page-nav {
+            display: flex; gap: 3px; padding: 0.3rem 1rem;
+            flex-wrap: wrap;
+        }
+        .doc-page-nav:empty { display: none; }
+        .page-tab {
+            width: 18px; height: 18px; border-radius: 50%;
+            border: 1px solid var(--border); background: transparent;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.5rem;
+            font-weight: 600; color: var(--text-muted); cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .page-tab:hover { border-color: var(--accent); color: var(--accent); }
+        .page-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .page-tab.has-finding { border-color: var(--red); }
+        .page-tab.has-finding.active { background: var(--red); border-color: var(--red); }
+
+        /* ── Deep analysis status ─────────────────── */
+        .deep-status {
+            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+            padding: 0.6rem 1rem; margin-top: 0.5rem;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted);
         }
 
         /* ── Card viewport ──────────────────────────── */
@@ -1760,7 +1791,7 @@
                 <button class="depth-btn" data-depth="deep">Deep</button>
             </div>
 
-            <button class="analyze-btn hidden" id="analyzeBtn" disabled>Show me the other side</button>
+            <button class="analyze-btn hidden" id="analyzeBtn" disabled>Show me the dark side of small print</button>
             <div id="uploadError" class="upload-error hidden"></div>
 
         </div>
@@ -1768,15 +1799,15 @@
         <div class="demo-grid-section fade-up fade-up-d1" id="demoGridSection">
             <div class="demo-grid-title">Or try a sample</div>
             <div class="demo-grid">
-                <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon">🏠</div><div class="demo-tile-label">Lease</div><div class="demo-tile-desc">Late fees that cascade</div></div>
-                <div class="demo-tile" data-sample="coupon"><div class="demo-tile-icon">🛒</div><div class="demo-tile-label">Coupon Booklet</div><div class="demo-tile-desc">Hidden conditions on offers</div></div>
-                <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon">🛡️</div><div class="demo-tile-label">Insurance Policy</div><div class="demo-tile-desc">Exclusions eat coverage</div></div>
-                <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon">📱</div><div class="demo-tile-label">Terms of Service</div><div class="demo-tile-desc">Your data, their profit</div></div>
-                <div class="demo-tile" data-sample="employment"><div class="demo-tile-icon">💼</div><div class="demo-tile-label">Employment</div><div class="demo-tile-desc">Non-competes &amp; at-will</div></div>
-                <div class="demo-tile" data-sample="loan"><div class="demo-tile-icon">🏦</div><div class="demo-tile-label">Loan Agreement</div><div class="demo-tile-desc">Penalties designed to stack</div></div>
-                <div class="demo-tile" data-sample="gym"><div class="demo-tile-icon">🏋️</div><div class="demo-tile-label">Gym Membership</div><div class="demo-tile-desc">Cancellation by design</div></div>
-                <div class="demo-tile" data-sample="medical"><div class="demo-tile-icon">🏥</div><div class="demo-tile-label">Medical Consent</div><div class="demo-tile-desc">Liability in health forms</div></div>
-                <div class="demo-tile" data-sample="hoa"><div class="demo-tile-icon">🏘️</div><div class="demo-tile-label">HOA Rules</div><div class="demo-tile-desc">Fines without limit</div></div>
+                <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"/><path d="M12 11l9-9"/><path d="M17 6l4-4"/><path d="M18.5 7.5L22 7l-3-3"/></svg></div><div class="demo-tile-label">Lease</div><div class="demo-tile-desc">Late fees that cascade</div></div>
+                <div class="demo-tile" data-sample="coupon"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg></div><div class="demo-tile-label">Coupon Booklet</div><div class="demo-tile-desc">Hidden conditions on offers</div></div>
+                <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="demo-tile-label">Insurance Policy</div><div class="demo-tile-desc">Exclusions eat coverage</div></div>
+                <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div><div class="demo-tile-label">Terms of Service</div><div class="demo-tile-desc">Your data, their profit</div></div>
+                <div class="demo-tile" data-sample="employment"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="demo-tile-label">Employment</div><div class="demo-tile-desc">Non-competes &amp; at-will</div></div>
+                <div class="demo-tile" data-sample="loan"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18V11"/><path d="M10 18V11"/><path d="M14 18V11"/><path d="M18 18V11"/><path d="M4 7h16l-8-5z"/></svg></div><div class="demo-tile-label">Loan Agreement</div><div class="demo-tile-desc">Penalties designed to stack</div></div>
+                <div class="demo-tile" data-sample="gym"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div class="demo-tile-label">Gym Membership</div><div class="demo-tile-desc">Cancellation by design</div></div>
+                <div class="demo-tile" data-sample="medical"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div><div class="demo-tile-label">Medical Consent</div><div class="demo-tile-desc">Liability in health forms</div></div>
+                <div class="demo-tile" data-sample="hoa"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="demo-tile-label">HOA Rules</div><div class="demo-tile-desc">Fines without limit</div></div>
             </div>
         </div>
 
@@ -1823,6 +1854,7 @@
         </div>
         <div class="editorial-loading hidden" id="editorialLoading">
             <div class="editorial-loading-label">What the small print says</div>
+            <div class="doc-page-nav" id="docPageNav"></div>
             <div class="editorial-loading-text" id="editorialLoadingText"></div>
             <div class="editorial-loading-indicator">
                 <span class="pulsing-dots"><span></span><span></span><span></span></span>
@@ -1859,7 +1891,7 @@
                 <div class="skeleton-pulse skeleton-reader-short"></div>
                 <div class="skeleton-message" id="skeletonMessage"></div>
                 <div class="skeleton-btn">
-                    <span>Reading for you...</span><span class="flip-trigger-arrow">&rarr;</span>
+                    <span>Reading for you...</span>
                 </div>
             </div>
             <div id="flipCardContainer"></div>
@@ -1872,6 +1904,10 @@
                     <span class="card-nav-next-label">Next clause &rarr;</span>
                 </button>
             </nav>
+            <div class="deep-status hidden" id="deepStatus">
+                <span class="pulsing-dots"><span></span><span></span><span></span></span>
+                <span id="deepStatusText">Opus 4.6 is building your Full Verdict...</span>
+            </div>
         </div>
 
         <!-- Results: summary + deep analysis (compare mode uses resultsContent) -->
@@ -1963,7 +1999,8 @@
         deep: [
             "Analyzing cross-clause interactions...",
             "Revealing the drafter's playbook...",
-            "Measuring power imbalance..."
+            "Measuring power imbalance...",
+            "Full Verdict coming soon..."
         ]
     };
 
@@ -2052,8 +2089,11 @@
     var followupSend = $('followupSend');
     var followupAnswers = $('followupAnswers');
 
-    // Configure marked
+    // Configure marked + DOMPurify for safe LLM output rendering
     marked.setOptions({ breaks: true, gfm: true });
+    function safeMd2Html(md) {
+        return DOMPurify.sanitize(marked.parse(md));
+    }
 
     // ── Event delegation for flip cards + card navigation ──
     document.querySelector('.content-col').addEventListener('click', function(e) {
@@ -2321,7 +2361,7 @@
         $('singleUpload').classList.toggle('hidden', isCompareMode);
         $('compareUpload').classList.toggle('hidden', !isCompareMode);
         compareToggle.textContent = isCompareMode ? 'Single document analysis' : 'Compare two documents';
-        analyzeBtn.textContent = isCompareMode ? 'Compare documents' : 'Show me the other side';
+        analyzeBtn.textContent = isCompareMode ? 'Compare documents' : 'Show me the dark side of small print';
         // Reset state
         selectedFile = null; compareFile1 = null; compareFile2 = null;
         updateAnalyzeBtn();
@@ -2394,7 +2434,7 @@
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the other side'; return; }
+            if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the dark side of small print'; return; }
             documentFullText = data.full_text || '';
             documentThumbnail = data.thumbnail || null;
             switchToAnalysis(data.doc_id, data.filename);
@@ -2402,7 +2442,7 @@
         .catch(function(err) {
             showError('Failed to load sample: ' + err.message);
             analyzeBtn.disabled = false;
-            analyzeBtn.textContent = 'Show me the other side';
+            analyzeBtn.textContent = 'Show me the dark side of small print';
         });
     }
 
@@ -2433,7 +2473,7 @@
         fetch(BASE_URL + '/upload', { method: 'POST', body: formData })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the other side'; return; }
+                if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the dark side of small print'; return; }
                 documentFullText = data.full_text || '';
                 documentThumbnail = data.thumbnail || null;
                 switchToAnalysis(data.doc_id, data.filename);
@@ -2441,7 +2481,7 @@
             .catch(function(err) {
                 showError('Upload failed: ' + err.message);
                 analyzeBtn.disabled = false;
-                analyzeBtn.textContent = 'Show me the other side';
+                analyzeBtn.textContent = 'Show me the dark side of small print';
             });
     }
 
@@ -2490,6 +2530,7 @@
         hasFlippedOnce = false;
         cardViewTransitioned = false;
         clauseHighlightData = [];
+        documentNotApplicable = '';
         userHasScrolled = false;
         lastAutoScrollY = 0;
         currentDocId = docId;
@@ -2525,6 +2566,8 @@
         resultsArea.classList.add('hidden');
         $('cardViewport').classList.add('hidden');
         $('cardNavigation').classList.add('hidden');
+        $('deepStatus').classList.add('hidden');
+        $('docPageNav').innerHTML = '';
         hideInsightColumn();
         $('copyAllBtn').classList.add('hidden');
         $('exportBtn').classList.add('hidden');
@@ -2562,6 +2605,8 @@
             var loadingText = $('editorialLoadingText');
             loadingText.innerHTML = escapeHtml(documentFullText)
                 .replace(/— Page (\d+) —/g, '<div class="doc-page-marker"><span>$1</span></div>');
+            // Build page navigation tabs
+            buildPageNavTabs(loadingText);
             loadingEl.classList.add('hidden');
             loadingEl.classList.remove('woosh-in-sidebar');
         } else {
@@ -2691,6 +2736,8 @@
                     statusText.textContent = 'Cards ready' + (qdSec ? ' (' + qdSec + ')' : '') + ' \u2014 Deep analysis starting...';
                     startStatusRotation('deep');
                     stopEditorialStatusRotation();
+                    // Show deep analysis progress indicator
+                    $('deepStatus').classList.remove('hidden');
                     // Final clause sweep — last clause may lack trailing ---
                     if (!isCompareMode) {
                         finalClauseSweep();
@@ -2704,6 +2751,8 @@
                     stopStatusRotation();
                     stopEditorialStatusRotation();
                     removeCursor();
+                    // Hide deep analysis progress indicator
+                    $('deepStatus').classList.add('hidden');
 
                     // Parse timing data from SSE
                     var doneData = {};
@@ -2810,6 +2859,8 @@
     }
 
     // ── Metadata extraction from streamed text ────────────────
+    var documentNotApplicable = ''; // Set when Haiku determines doc has no terms to analyze
+
     function extractMetadata() {
         var patterns = [
             { re: /\*\*Document Type\*\*[:\s]*([^\n*]+)/i, label: 'Type' },
@@ -2830,6 +2881,11 @@
                 );
             }
         });
+        // Detect "Not Applicable" signal from Haiku
+        var naMatch = responseContent.match(/\*\*Not Applicable\*\*[:\s]*([^\n*]+)/i);
+        if (naMatch) {
+            documentNotApplicable = naMatch[1].trim();
+        }
         if (parts.length > 0) {
             metadataLine.innerHTML = parts.join('');
             metadataLine.classList.remove('hidden');
@@ -2863,6 +2919,11 @@
         statusRotateInterval = setInterval(function() {
             currentStatusIdx = (currentStatusIdx + 1) % messages.length;
             statusText.textContent = messages[currentStatusIdx];
+            // Mirror deep status text
+            if (group === 'deep') {
+                var dst = $('deepStatusText');
+                if (dst) dst.textContent = messages[currentStatusIdx];
+            }
         }, 4000);
     }
 
@@ -2925,7 +2986,7 @@
                 .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
                 .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
                 .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
-            var html = marked.parse(safeMd);
+            var html = safeMd2Html(safeMd);
             html = styleRiskBadges(html);
             html = styleWhyClauses(html);
             html = styleReaderBlocks(html);
@@ -3086,6 +3147,11 @@
                 } else {
                     updateCardNavigation();
                 }
+                // Live clause counter
+                var cardCount = flipCardContainer.querySelectorAll('.flip-card').length;
+                statusText.textContent = cardCount + ' clause' + (cardCount !== 1 ? 's' : '') + ' found so far...';
+                var sidebarStatus = $('editorialLoadingStatus');
+                if (sidebarStatus) sidebarStatus.textContent = cardCount + ' clause' + (cardCount !== 1 ? 's' : '') + ' flagged';
             }
         }
         parsedClauseCount = Math.max(parsedClauseCount, segments.length - 1);
@@ -3113,6 +3179,37 @@
         parsedClauseCount = segments.length;
         flipCardsBuilt = true;
         updateCardNavigation();
+
+        // If no cards were found, show an explanation
+        var totalCards = flipCardContainer.querySelectorAll('.flip-card').length;
+        if (totalCards === 0) {
+            var skeleton = $('skeletonCard');
+            var skMsg = $('skeletonMessage');
+            skeleton.classList.remove('hidden');
+            $('cardViewport').classList.remove('hidden');
+            // Extract doc type for the message
+            var typeMatch = responseContent.match(/\*\*Document Type\*\*[:\s]*([^\n*]+)/i);
+            var docType = typeMatch ? typeMatch[1].trim() : 'document';
+            if (documentNotApplicable) {
+                // Swap flip prompt to a wry acknowledgment
+                var fpText = document.querySelector('.flip-prompt-text');
+                if (fpText) fpText.textContent = 'Not everything is a contract in life.';
+                skMsg.innerHTML = '<strong>Not a match for FlipSide</strong><br>' +
+                    escapeHtml(documentNotApplicable) +
+                    '<br><br>FlipSide analyzes documents where one party sets terms that bind another — contracts, leases, terms of service, insurance policies, coupons with conditions, and similar.';
+            } else {
+                skMsg.innerHTML = '<strong>No clauses flagged</strong><br>' +
+                    'FlipSide scanned this ' + escapeHtml(docType).toLowerCase() +
+                    ' but found no terms that need your attention. This is a good sign — the document appears straightforward.';
+            }
+            // Restyle skeleton as a static message (no pulse)
+            skeleton.querySelectorAll('.skeleton-pulse').forEach(function(el) { el.style.display = 'none'; });
+            skeleton.querySelector('.skeleton-btn').style.display = 'none';
+            // Hide deep status — no point showing Opus progress for unsuitable docs
+            if (documentNotApplicable) {
+                $('deepStatus').classList.add('hidden');
+            }
+        }
     }
 
     // ── Parse one clause from a raw markdown segment ─────────
@@ -3293,6 +3390,78 @@
         highlightClauseInPreview(clause, index);
     }
 
+    // ── Page navigation tabs ──────────────────────────────────
+    function buildPageNavTabs(previewEl) {
+        var nav = $('docPageNav');
+        if (!nav) return;
+        nav.innerHTML = '';
+        var markers = previewEl.querySelectorAll('.doc-page-marker');
+        if (markers.length <= 1) return; // No tabs for single-page docs
+        for (var i = 0; i < markers.length; i++) {
+            var pageNum = markers[i].querySelector('span').textContent;
+            var btn = document.createElement('button');
+            btn.className = 'page-tab';
+            btn.textContent = pageNum;
+            btn.style.display = 'none'; // Hidden until a finding lands on this page
+            btn.setAttribute('data-page-idx', i);
+            btn.addEventListener('click', function() {
+                // Look up the CURRENT marker (innerHTML gets rebuilt, so old refs are stale)
+                var idx = parseInt(this.getAttribute('data-page-idx'));
+                var currentMarkers = $('editorialLoadingText').querySelectorAll('.doc-page-marker');
+                if (currentMarkers[idx]) {
+                    currentMarkers[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                var tabs = nav.querySelectorAll('.page-tab');
+                for (var t = 0; t < tabs.length; t++) tabs[t].classList.remove('active');
+                this.classList.add('active');
+            });
+            nav.appendChild(btn);
+        }
+    }
+
+    function updatePageTabFindings() {
+        var nav = $('docPageNav');
+        var previewEl = $('editorialLoadingText');
+        if (!nav || !previewEl) return;
+        var tabs = nav.querySelectorAll('.page-tab');
+        var markers = previewEl.querySelectorAll('.doc-page-marker');
+        if (tabs.length === 0) return;
+        for (var t = 0; t < tabs.length; t++) {
+            var markerEl = markers[t];
+            var nextMarker = markers[t + 1] || null;
+            var hasFinding = false;
+            var sibling = markerEl.nextElementSibling;
+            while (sibling && sibling !== nextMarker) {
+                if (sibling.classList && sibling.classList.contains('doc-highlight')) {
+                    hasFinding = true; break;
+                }
+                if (sibling.querySelector && sibling.querySelector('.doc-highlight')) {
+                    hasFinding = true; break;
+                }
+                sibling = sibling.nextElementSibling;
+            }
+            // Only show tabs for pages that have findings
+            tabs[t].style.display = hasFinding ? '' : 'none';
+            tabs[t].classList.toggle('has-finding', hasFinding);
+        }
+    }
+
+    function updateActivePageTab(scrollTarget) {
+        var nav = $('docPageNav');
+        var previewEl = $('editorialLoadingText');
+        if (!nav || !previewEl) return;
+        var tabs = nav.querySelectorAll('.page-tab');
+        var markers = previewEl.querySelectorAll('.doc-page-marker');
+        if (tabs.length === 0) return;
+        var targetTop = scrollTarget.offsetTop;
+        var activeIdx = 0;
+        for (var m = 0; m < markers.length; m++) {
+            if (markers[m].offsetTop <= targetTop) activeIdx = m;
+        }
+        for (var t = 0; t < tabs.length; t++) tabs[t].classList.remove('active');
+        if (tabs[activeIdx]) tabs[activeIdx].classList.add('active');
+    }
+
     // ── Document preview: highlight clause quotes ─────────────
     // Stores all clause highlight data; rebuilds from clean source each time
     var clauseHighlightData = [];
@@ -3439,6 +3608,7 @@
         html = html.replace(/— Page (\d+) —/g, '<div class="doc-page-marker"><span>$1</span></div>');
 
         previewEl.innerHTML = html;
+        updatePageTabFindings();
     }
 
     function scrollPreviewToCard(cardIndex) {
@@ -3462,6 +3632,7 @@
             if (elTop < containerTop || elTop > containerTop + containerHeight - 40) {
                 previewEl.scrollTop = elTop - 40;
             }
+            updateActivePageTab(target);
         }
     }
 
@@ -3753,7 +3924,7 @@
             .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
             .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
             .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
-        var html = marked.parse(safeMd);
+        var html = safeMd2Html(safeMd);
         html = styleRiskBadges(html);
         html = styleWhyClauses(html);
         html = styleReaderBlocks(html);
@@ -4134,7 +4305,7 @@
         uploadScreen.classList.remove('hidden');
 
         // Reset upload UI
-        analyzeBtn.textContent = isCompareMode ? 'Compare documents' : 'Show me the other side';
+        analyzeBtn.textContent = isCompareMode ? 'Compare documents' : 'Show me the dark side of small print';
         updateAnalyzeBtn();
     });
 
@@ -4255,9 +4426,9 @@
                     if (msg.type === 'text') {
                         if (!thinkingDone) { thinkingDone = true; answerContent.innerHTML = ''; }
                         responseText += msg.content;
-                        answerContent.innerHTML = marked.parse(responseText);
+                        answerContent.innerHTML = safeMd2Html(responseText);
                     } else if (msg.type === 'done') {
-                        if (responseText) answerContent.innerHTML = marked.parse(responseText);
+                        if (responseText) answerContent.innerHTML = safeMd2Html(responseText);
                         resetFollowupUI();
                         return;
                     } else if (msg.type === 'error') {

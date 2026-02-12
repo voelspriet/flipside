@@ -464,6 +464,39 @@
 2. **Tier 2 — Normalized match**: Collapse whitespace, normalize smart quotes (`""''` → `"`), normalize dashes (`–—` → `-`), lowercase both strings. Build a position map (`posMap[]`) that translates normalized indices back to original text positions so highlights land correctly.
 3. **Tier 3 — Word anchor**: Extract the first 4 significant words (>3 chars) from the quote, join with `\s+` regex, search the normalized text. Most resilient to whitespace/formatting differences.
 
-**Supporting fix**: Increased `full_text` limit from 5,000 to 15,000 characters — enough for ~20 pages of legal text. Later-page clauses were unfindable because their text was truncated. Also added `— Page N —` markers between pages, rendered as styled dividers in the sidebar.
+**Supporting fix**: Removed `full_text` truncation entirely — the full document text is now sent to the frontend. Previously limited to 15,000 characters (~4 pages), which silently broke clause markers for any clause beyond page 4. Modern browsers handle 200KB of text in a scrollable div without issue. Also added `— Page N —` markers between pages, rendered as styled dividers in the sidebar, with page navigation tabs that appear progressively as findings land on each page.
 
 **Key insight**: When matching LLM output against extracted text, exact matching is the exception, not the rule. Build the fuzzy matching from day one — the cost is low (one extra pass over the text) and the benefit is fundamental (clause markers ARE the navigation).
+
+---
+
+## Decision: Suitability Gate — Let Haiku Say "Not For Me"
+
+**Date**: 2026-02-13
+**Context**: Users might upload documents that aren't contracts or agreements — a recipe, a novel, an academic paper. The tool would either produce zero cards (confusing) or force nonsensical findings (worse). No signal to the user about what went wrong.
+
+**The strategy**: Don't add a separate classification API call. Instead, add one line to Haiku's existing card scan prompt: if the document has no terms/conditions/obligations, output `**Not Applicable**: [reason]` in the Document Profile and skip clauses. The frontend detects this field in the metadata it already parses.
+
+**Two zero-card paths**:
+
+1. **"Not a match for FlipSide"** — Haiku flagged `Not Applicable`. Shows the explanation + what FlipSide does analyze. The flip prompt changes to "Not everything is a contract in life." Deep status hidden.
+2. **"No clauses flagged"** — Valid document type, but nothing concerning. Positive feedback: "the document appears straightforward."
+
+**Why not use Opus for the gate**: Both threads launch in parallel. The suitability signal comes from Haiku (~5s) while Opus is still thinking (~80s). Haiku's classification is a byproduct of the scan it already does — zero extra cost or latency.
+
+**Key insight**: The smartest use of an expensive model is knowing when NOT to run it. Haiku gates Opus — if the document isn't suitable, the user sees the explanation in 5 seconds instead of waiting 80 seconds for a useless deep analysis.
+
+---
+
+## Decision: DOMPurify — Sanitize LLM Output Before innerHTML
+
+**Date**: 2026-02-13
+**Context**: The deep analysis, compare mode, and follow-up answers all pass LLM output through `marked.parse()` (Markdown → HTML) and inject it via `innerHTML`. A malicious document could contain text designed to trick the LLM into outputting `<img src=x onerror="...">` or `<script>` tags in its markdown response.
+
+**The attack chain**: Document embeds adversarial text → LLM includes it in markdown output → `marked.parse()` converts to real HTML → `innerHTML` executes it. This is the application-layer prompt injection vector Anthropic describes in their [prompt injection defenses research](https://www.anthropic.com/research/prompt-injection-defenses).
+
+**The fix**: Added DOMPurify CDN script + `safeMd2Html()` wrapper that runs `DOMPurify.sanitize(marked.parse(md))`. Applied to all 4 call sites (deep analysis, compare mode, 2× follow-up answers). DOMPurify strips dangerous attributes (`onerror`, `onclick`) and tags (`<script>`, `<iframe>`) while preserving safe formatting.
+
+**What was already safe**: Flip card content — all clause fields (`title`, `reassurance`, `reader`, `figure`, `bottomLine`, etc.) go through `escapeHtml()` before `innerHTML`. Document preview text uses `escapeHtml(documentFullText)`.
+
+**Key insight**: `escapeHtml()` and `DOMPurify` solve different problems. `escapeHtml()` is for rendering plain text safely (flip cards, document preview). DOMPurify is for rendering *intended* HTML safely (markdown output where you want `<strong>` and `<h2>` to work but not `<script>`). Use both, in the right places.
