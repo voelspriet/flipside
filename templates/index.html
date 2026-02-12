@@ -161,7 +161,7 @@
             display: flex; align-items: center; justify-content: center;
             padding: 2rem;
         }
-        .upload-container { max-width: 520px; width: 100%; }
+        .upload-container { max-width: 560px; width: 100%; }
 
         .brand { text-align: center; margin-bottom: 2.5rem; }
         .brand h1 {
@@ -254,11 +254,38 @@
             border-bottom: 1px dotted var(--text-dim); transition: color var(--transition);
         }
         .upload-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
-        .upload-links a.sample-btn-red {
-            color: var(--text-secondary); border-bottom-color: var(--text-dim);
-            font-weight: 600;
+        /* Demo document grid */
+        .demo-grid-title {
+            font-size: 0.82rem; font-weight: 500; color: var(--text-muted);
+            text-align: center; margin: 1.5rem 0 0.8rem;
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
-        .upload-links a.sample-btn-red:hover { color: var(--accent); border-bottom-color: var(--accent); }
+        .demo-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+        }
+        .demo-tile {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 0.9rem 0.5rem 0.7rem;
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; cursor: pointer;
+            transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s var(--ease-out-expo), border-color 0.25s ease;
+        }
+        .demo-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 40, 37, 0.08);
+            border-color: var(--accent);
+        }
+        .demo-tile:hover .demo-tile-label { color: var(--accent); }
+        .demo-tile-icon { font-size: 1.6rem; line-height: 1; margin-bottom: 0.4rem; }
+        .demo-tile-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+            font-weight: 500; color: var(--text-secondary); margin-bottom: 0.15rem;
+            letter-spacing: 0.02em; transition: color 0.25s ease;
+        }
+        .demo-tile-desc {
+            font-size: 0.6rem; color: var(--text-muted); line-height: 1.3;
+        }
 
         .upload-error {
             margin-top: 0.8rem; padding: 0.6rem 0.8rem; background: var(--red-bg);
@@ -1053,8 +1080,8 @@
         /* Flip prompt — one-time message above first card */
         .flip-prompt {
             text-align: center;
-            padding: 0.6rem 1rem 0.8rem;
-            margin-bottom: 0.5rem;
+            padding: 1.5rem 1rem 1.8rem;
+            margin-bottom: 1rem;
             opacity: 0;
             transition: opacity 0.5s var(--ease-out-expo);
         }
@@ -1066,11 +1093,12 @@
             transition: opacity 0.6s ease;
         }
         .flip-prompt-text {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            color: var(--text-primary);
         }
 
         /* Flip trigger — quiet invitation */
@@ -1666,7 +1694,8 @@
     <div class="upload-container">
         <div class="brand fade-up">
             <h1>FlipSide</h1>
-            <div class="tagline">The dark side of small print</div>
+            <div class="tagline">The dark side of small print.</div>
+            <div class="tagline" style="font-style: normal; font-weight: 400; margin-top: 0.3rem; font-size: 0.88rem; color: var(--text-muted);">Upload a document you didn't write. See what the other side intended.</div>
         </div>
 
         <div class="upload-card fade-up fade-up-d1">
@@ -1725,20 +1754,35 @@
                 </div>
             </div>
 
-            <div class="depth-selector" id="depthSelector">
+            <div class="depth-selector hidden" id="depthSelector">
                 <button class="depth-btn" data-depth="quick">Quick</button>
                 <button class="depth-btn active" data-depth="standard">Standard</button>
                 <button class="depth-btn" data-depth="deep">Deep</button>
             </div>
 
-            <button class="analyze-btn" id="analyzeBtn" disabled>Show me the other side</button>
+            <button class="analyze-btn hidden" id="analyzeBtn" disabled>Show me the other side</button>
             <div id="uploadError" class="upload-error hidden"></div>
+
+        </div>
+
+        <div class="demo-grid-section fade-up fade-up-d1" id="demoGridSection">
+            <div class="demo-grid-title">Or try a sample</div>
+            <div class="demo-grid">
+                <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon">🏠</div><div class="demo-tile-label">Lease</div><div class="demo-tile-desc">Late fees that cascade</div></div>
+                <div class="demo-tile" data-sample="coupon"><div class="demo-tile-icon">🛒</div><div class="demo-tile-label">Coupon Booklet</div><div class="demo-tile-desc">Hidden conditions on offers</div></div>
+                <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon">🛡️</div><div class="demo-tile-label">Insurance Policy</div><div class="demo-tile-desc">Exclusions eat coverage</div></div>
+                <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon">📱</div><div class="demo-tile-label">Terms of Service</div><div class="demo-tile-desc">Your data, their profit</div></div>
+                <div class="demo-tile" data-sample="employment"><div class="demo-tile-icon">💼</div><div class="demo-tile-label">Employment</div><div class="demo-tile-desc">Non-competes &amp; at-will</div></div>
+                <div class="demo-tile" data-sample="loan"><div class="demo-tile-icon">🏦</div><div class="demo-tile-label">Loan Agreement</div><div class="demo-tile-desc">Penalties designed to stack</div></div>
+                <div class="demo-tile" data-sample="gym"><div class="demo-tile-icon">🏋️</div><div class="demo-tile-label">Gym Membership</div><div class="demo-tile-desc">Cancellation by design</div></div>
+                <div class="demo-tile" data-sample="medical"><div class="demo-tile-icon">🏥</div><div class="demo-tile-label">Medical Consent</div><div class="demo-tile-desc">Liability in health forms</div></div>
+                <div class="demo-tile" data-sample="hoa"><div class="demo-tile-icon">🏘️</div><div class="demo-tile-label">HOA Rules</div><div class="demo-tile-desc">Fines without limit</div></div>
+            </div>
         </div>
 
         <div class="upload-links fade-up fade-up-d2">
             <a id="pasteToggle">Paste text instead</a>
             <a id="compareToggle">Compare two documents</a>
-            <a id="sampleBtn" class="sample-btn-red">Try sample</a>
         </div>
 
         <div class="disclaimer fade-up fade-up-d3">
@@ -1805,7 +1849,7 @@
         <!-- Card viewport: one card at a time -->
         <div class="card-viewport hidden" id="cardViewport">
             <div class="flip-prompt hidden" id="flipPrompt">
-                <span class="flip-prompt-text">Everything looks fine&hellip; until you flip it.</span>
+                <span class="flip-prompt-text">Everything looks standard&hellip; until you flip it.</span>
             </div>
             <!-- Skeleton card: shown while waiting for first clause -->
             <div class="skeleton-card hidden" id="skeletonCard">
@@ -1853,7 +1897,7 @@
 
     <!-- Right column: "What you should read" (animated on flip) -->
     <aside class="insight-column hidden" id="insightColumn">
-        <div class="insight-label">Your reality check</div>
+        <div class="insight-label" id="insightLabel">Clause text</div>
         <div class="insight-card hidden" id="insightCard">
             <div class="insight-card-inner" id="insightCardInner"></div>
         </div>
@@ -1958,6 +2002,7 @@
     var quickDoneContentLength = 0;
     var parsedClauseCount = 0;   // How many --- segments we've already parsed
     var currentCardIndex = 0;    // Which card is currently shown
+    var hasFlippedOnce = false;  // Force first flip before allowing navigation
     var cardViewTransitioned = false; // Whether we've transitioned from loading to cards
     var editorialStatusInterval = null;
     var editorialStatusIdx = 0;
@@ -1981,7 +2026,7 @@
     var pasteToggle    = $('pasteToggle');
     var analyzeBtn     = $('analyzeBtn');
     var uploadError    = $('uploadError');
-    var sampleBtn      = $('sampleBtn');
+    var demoGridSection = $('demoGridSection');
     var compareToggle  = $('compareToggle');
     var depthSelector  = $('depthSelector');
 
@@ -2027,6 +2072,11 @@
                     setTimeout(function() { fill.style.width = w + '%'; }, 300);
                 }
                 showInsightForCard(card);
+                // First flip unlocks navigation
+                if (!hasFlippedOnce) {
+                    hasFlippedOnce = true;
+                    updateCardNavigation();
+                }
                 // Fade out flip prompt on first flip
                 var prompt = $('flipPrompt');
                 if (prompt && prompt.classList.contains('visible')) {
@@ -2144,6 +2194,10 @@
                             setTimeout(function() { fill.style.width = w + '%'; }, 300);
                         }
                         showInsightForCard(cards[currentCardIndex]);
+                        if (!hasFlippedOnce) {
+                            hasFlippedOnce = true;
+                            updateCardNavigation();
+                        }
                     } else {
                         if (kbLayout) kbLayout.classList.remove('layout-flipped');
                         showInsightContext(cards[currentCardIndex]);
@@ -2181,14 +2235,26 @@
     }
 
     function updateAnalyzeBtn() {
+        var ready;
         if (isCompareMode) {
             var hasA = compareFile1 !== null || $('pasteArea1').value.trim().length > 0;
             var hasB = compareFile2 !== null || $('pasteArea2').value.trim().length > 0;
-            analyzeBtn.disabled = !(hasA && hasB);
+            ready = hasA && hasB;
         } else {
             var hasFile = selectedFile !== null;
             var hasText = pasteArea.value.trim().length > 0;
-            analyzeBtn.disabled = !(hasFile || hasText);
+            ready = hasFile || hasText;
+        }
+        analyzeBtn.disabled = !ready;
+        // Show/hide depth selector + analyze button; toggle demo grid
+        if (ready) {
+            depthSelector.classList.remove('hidden');
+            analyzeBtn.classList.remove('hidden');
+            demoGridSection.classList.add('hidden');
+        } else {
+            depthSelector.classList.add('hidden');
+            analyzeBtn.classList.add('hidden');
+            demoGridSection.classList.remove('hidden');
         }
     }
 
@@ -2310,20 +2376,21 @@
         analysisDepth = btn.getAttribute('data-depth');
     });
 
-    // ── Sample document ───────────────────────────────────────
-    sampleBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        startSampleAnalysis();
+    // ── Demo grid tile clicks ───────────────────────────────────
+    demoGridSection.addEventListener('click', function(e) {
+        var tile = e.target.closest('.demo-tile');
+        if (!tile) return;
+        startSampleAnalysis(tile.getAttribute('data-sample') || 'lease');
     });
 
-    function startSampleAnalysis() {
+    function startSampleAnalysis(sampleType) {
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = 'Loading...';
 
         fetch(BASE_URL + '/sample', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ depth: analysisDepth })
+            body: JSON.stringify({ depth: analysisDepth, type: sampleType || 'lease' })
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -2420,6 +2487,7 @@
         quickDoneContentLength = 0;
         parsedClauseCount = 0;
         currentCardIndex = 0;
+        hasFlippedOnce = false;
         cardViewTransitioned = false;
         clauseHighlightData = [];
         userHasScrolled = false;
@@ -3147,7 +3215,6 @@
         var frontHtml = '<div class="flip-card-front">' +
             '<div class="risk-header risk-header-green">' +
             (clause.reassurance ? '<h3 class="clause-title" style="color:var(--green-text)">' + escapeHtml(clause.reassurance) + '</h3>' : '') +
-            '<span class="risk-badge risk-badge-green">\u2713</span>' +
             '</div>' +
             '<div class="front-content">' +
             (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
@@ -3211,6 +3278,7 @@
         cardEl.setAttribute('data-risk-level', risk);
         cardEl.setAttribute('data-clause-title', clause.title);
         cardEl.setAttribute('data-section-ref', clause.section || '');
+        if (clause.reassurance) cardEl.setAttribute('data-reassurance', clause.reassurance);
         if (clause.quote) cardEl.setAttribute('data-quote', clause.quote);
         if (clause.shouldRead) cardEl.setAttribute('data-should-read', clause.shouldRead);
         if (clause.figure) cardEl.setAttribute('data-figure', clause.figure);
@@ -3495,8 +3563,26 @@
         );
     }
 
-    // Build the clause context HTML (title + quote + find link) — shared by both modes
+    // Build neutral clause context (pre-flip): section ref + quote only — no analysis title
     function buildInsightContextHtml(cardEl) {
+        var section = cardEl.getAttribute('data-section-ref') || '';
+        var reassurance = cardEl.getAttribute('data-reassurance') || '';
+        var quote = cardEl.getAttribute('data-quote') || '';
+        var cardIndex = cardEl.getAttribute('data-clause-index') || '';
+        if (!section && !quote && !reassurance) return '';
+        var html = '<div class="insight-context">';
+        // Show section reference (neutral) — NOT the analysis title
+        if (section) html += '<div class="insight-title">' + escapeHtml(section) + '</div>';
+        if (quote) html += '<div class="insight-quote">' + escapeHtml(quote) + '</div>';
+        if (documentFullText && !isCompareMode && cardIndex) {
+            html += '<a class="find-in-doc insight-find" data-card-index="' + cardIndex + '">Find in document &uarr;</a>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    // Build full insight context (post-flip): analysis title + quote
+    function buildInsightRevealHtml(cardEl) {
         var title = cardEl.getAttribute('data-clause-title') || '';
         var quote = cardEl.getAttribute('data-quote') || '';
         var cardIndex = cardEl.getAttribute('data-clause-index') || '';
@@ -3524,10 +3610,13 @@
         inner.innerHTML = html;
         card.className = 'insight-card';
         col.classList.remove('hidden');
+        // Neutral label before flip
+        var label = $('insightLabel');
+        if (label) label.textContent = 'Clause text';
         requestAnimationFrame(function() { card.classList.add('visible'); });
     }
 
-    // Show full insight (on flip — context + should-read + figure + example)
+    // Show full insight (on flip — analysis title + should-read + figure + example)
     function showInsightForCard(cardEl) {
         var col = $('insightColumn');
         var card = $('insightCard');
@@ -3538,8 +3627,8 @@
         var shouldRead = cardEl.getAttribute('data-should-read') || '';
         var enShouldRead = cardEl.getAttribute('data-en-should-read');
 
-        // Clause context at top (title + quote)
-        var html = buildInsightContextHtml(cardEl);
+        // Full analysis context (title + quote) — reveals the analysis title
+        var html = buildInsightRevealHtml(cardEl);
 
         // "What you should read" section
         if (shouldRead) {
@@ -3554,9 +3643,11 @@
         if (!html) { hideInsightColumn(); return; }
         inner.innerHTML = html;
 
-        // Set risk color
+        // Set risk color and reveal label
         card.className = 'insight-card insight-card-' + risk;
         col.classList.remove('hidden');
+        var label = $('insightLabel');
+        if (label) label.textContent = 'Your reality check';
         requestAnimationFrame(function() { card.classList.add('visible'); });
     }
 
@@ -3611,7 +3702,7 @@
         var nav = $('cardNavigation');
         if (!nav) return;
 
-        if (total === 0) { nav.classList.add('hidden'); return; }
+        if (total === 0 || !hasFlippedOnce) { nav.classList.add('hidden'); return; }
 
         nav.classList.remove('hidden');
         var counter = nav.querySelector('.card-nav-counter');
@@ -4043,8 +4134,8 @@
         uploadScreen.classList.remove('hidden');
 
         // Reset upload UI
-        analyzeBtn.disabled = false;
         analyzeBtn.textContent = isCompareMode ? 'Compare documents' : 'Show me the other side';
+        updateAnalyzeBtn();
     });
 
     // ── Header brand = back ───────────────────────────────────

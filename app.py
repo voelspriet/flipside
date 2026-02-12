@@ -126,7 +126,11 @@ DEEP_ANALYSIS_TOOLS = [
 # Sample document
 # ---------------------------------------------------------------------------
 
-SAMPLE_DOCUMENT = """QUICKRENT PROPERTY MANAGEMENT
+SAMPLE_DOCUMENTS = {
+
+'lease': {
+    'filename': 'QuickRent Lease Agreement (Sample)',
+    'text': """QUICKRENT PROPERTY MANAGEMENT
 STANDARD RESIDENTIAL LEASE AGREEMENT
 
 Unit 4B, 221 Elm Street, Portland, OR 97201
@@ -152,6 +156,407 @@ By signing below, Tenant agrees to all terms and conditions of this lease.
 QuickRent Property Management
 [Authorized Signature]
 """
+},
+
+'insurance': {
+    'filename': 'SafeGuard Home Insurance Policy (Sample)',
+    'text': """SAFEGUARD MUTUAL INSURANCE COMPANY
+HOMEOWNER'S INSURANCE POLICY — STANDARD COVERAGE
+
+Policy No. HO-2026-4481927
+Effective: January 1, 2026 – December 31, 2026
+Named Insured: [Policyholder]
+Covered Property: 847 Maple Drive, Austin, TX 78703
+
+SECTION 1 — DWELLING COVERAGE
+
+Your dwelling is covered for direct physical loss up to $425,000, including attached structures, built-in appliances, and permanent fixtures. This broad coverage protects your home from fire, lightning, windstorm, hail, explosion, riot, aircraft, vehicles, smoke, vandalism, theft, falling objects, weight of ice and snow, and sudden accidental discharge of water or steam.
+
+SECTION 2 — PERSONAL PROPERTY
+
+Personal belongings are covered up to 70% of dwelling coverage ($297,500) at actual cash value. Replacement cost coverage is available for an additional premium. Items stored off-premises are covered up to 10% of personal property coverage. Special limits apply: $200 for cash and securities; $1,500 for jewelry, watches, and furs (aggregate); $2,500 for firearms; $1,000 for watercraft.
+
+SECTION 3 — LIABILITY PROTECTION
+
+Personal liability coverage of $100,000 per occurrence for bodily injury or property damage claims. Medical payments coverage of $1,000 per person for injuries on your property regardless of fault.
+
+SECTION 4 — EXCLUSIONS
+
+4(a) Earth Movement. Loss caused by earthquake, landslide, mudflow, sinkhole, subsidence, or any earth movement, whether natural or man-made, is excluded. This exclusion applies even if fire, explosion, or flooding follows the earth movement.
+
+4(b) Water Damage. Loss caused by flood, surface water, waves, tidal water, overflow of a body of water, or spray from any of these, whether or not driven by wind, is excluded. Loss caused by water that backs up through sewers or drains, or water below the surface of the ground that seeps through foundations, walls, or floors is excluded.
+
+4(c) Gradual Damage. Loss resulting from wear and tear, deterioration, rust, corrosion, mold, wet or dry rot, contamination, smog, settling, cracking, shrinkage, bulging, or expansion is excluded. Loss caused by insects, rodents, or vermin is excluded. Loss caused by gradual seepage or leakage of water or steam over a period of more than 14 days is excluded.
+
+4(d) Maintenance Failures. Loss resulting from faulty, inadequate, or defective planning, design, workmanship, materials, or maintenance is excluded. If a covered peril ensues, we cover the ensuing loss, but not the cost of correcting the original defect.
+
+4(e) Vacancy. If the dwelling has been vacant for more than 60 consecutive days, coverage for vandalism, glass breakage, water damage, and theft is suspended. All other covered losses are subject to a 25% reduction in payment.
+
+4(f) Timing of Claims. All claims must be filed within 90 days of the date of loss. Failure to file within this period constitutes a waiver of the claim. Proof of loss must include dated photographs, original receipts, and a sworn statement. The insurer reserves the right to inspect the premises and examine the insured under oath before paying any claim.
+
+SECTION 5 — DEDUCTIBLES AND PAYMENT
+
+Standard deductible: $2,500 per occurrence. Wind/hail deductible: 2% of dwelling coverage ($8,500). The insurer shall pay covered losses within 60 days of proof of loss, or within such longer period as may be reasonably necessary to complete investigation. Payment shall be made at actual cash value until repairs are completed, at which point the difference to replacement cost will be paid upon submission of receipts. If the cost of repairs exceeds 50% of the dwelling's replacement value, the insurer may elect to pay the actual cash value of the dwelling and cancel the policy.
+
+SECTION 6 — POLICY CONDITIONS
+
+This policy may be cancelled by the insurer with 30 days' written notice for any reason during the first 60 days. After 60 days, the insurer may cancel for non-payment of premium (10 days' notice) or material misrepresentation. The insured may cancel at any time; refunds are calculated on a short-rate basis (not pro rata). In the event of a loss, the insured's duties include protecting the property from further damage, cooperating fully with the insurer's investigation, and submitting to examination under oath. Any disagreement about the value of a claim shall be resolved by appraisal, with each party selecting an appraiser at its own expense.
+
+SafeGuard Mutual Insurance Company
+[Authorized Representative]
+"""
+},
+
+'tos': {
+    'filename': 'CloudVault Terms of Service (Sample)',
+    'text': """CLOUDVAULT INC.
+TERMS OF SERVICE
+Last updated: January 15, 2026
+
+By creating an account or using any CloudVault service, you agree to these Terms of Service ("Terms"). If you do not agree, do not use our services.
+
+1. YOUR ACCOUNT
+
+You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must be at least 16 years old to create an account. You agree to provide accurate, current, and complete information. CloudVault reserves the right to suspend or terminate accounts that contain inaccurate information or that have been inactive for more than 12 months. Upon termination of an inactive account, all stored data will be permanently deleted without notice.
+
+2. YOUR CONTENT
+
+You retain ownership of content you upload to CloudVault ("Your Content"). By uploading Your Content, you grant CloudVault a worldwide, royalty-free, sublicensable, transferable license to use, reproduce, modify, distribute, display, and create derivative works from Your Content for the purposes of operating, promoting, and improving our services. This license survives termination of your account. You represent that you have all rights necessary to grant this license.
+
+3. DATA COLLECTION AND USE
+
+CloudVault collects: (a) information you provide (name, email, payment info); (b) content you upload or create; (c) usage data including access times, pages viewed, files accessed, search queries, and features used; (d) device information including IP address, browser type, operating system, device identifiers, and location data; (e) information from third-party services you connect. We may share aggregated or de-identified data with third parties for any purpose, including advertising, analytics, and research. We may share personal data with service providers, business partners, and affiliates. In the event of a merger, acquisition, or sale of assets, your data may be transferred to the acquiring entity.
+
+4. PRIVACY AND SECURITY
+
+CloudVault employs industry-standard security measures to protect your data. However, no method of electronic storage is 100% secure. CloudVault does not guarantee absolute security and shall not be liable for any unauthorized access to your data. You acknowledge that you upload content at your own risk. CloudVault may access your content to enforce these Terms, comply with legal requirements, or respond to claims that content violates third-party rights. CloudVault may also access, analyze, and scan your content using automated systems for the purposes of service improvement, feature development, and training of machine learning models.
+
+5. SERVICE AVAILABILITY
+
+CloudVault aims to provide 99.9% uptime but does not guarantee uninterrupted service. We may modify, suspend, or discontinue any feature or service at any time without notice. Free-tier accounts may experience reduced performance, limited storage, or feature restrictions at CloudVault's discretion. We are not liable for any loss of data, lost profits, or business interruption resulting from service unavailability, regardless of the cause.
+
+6. PAYMENT AND SUBSCRIPTION
+
+Paid subscriptions automatically renew at the end of each billing period at the then-current rate. Price increases take effect at the next renewal date. You must cancel at least 7 days before the renewal date to avoid being charged. Refunds are not provided for partial billing periods or unused time. If payment fails, CloudVault will attempt to charge the payment method on file for 14 days. After 14 days of failed payment, your account will be downgraded to free tier and data exceeding the free storage limit will be scheduled for deletion after 30 days.
+
+7. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, CLOUDVAULT'S TOTAL LIABILITY FOR ANY CLAIMS ARISING FROM THESE TERMS OR YOUR USE OF THE SERVICES SHALL NOT EXCEED THE AMOUNT YOU PAID TO CLOUDVAULT IN THE TWELVE (12) MONTHS PRIOR TO THE CLAIM. CLOUDVAULT SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF DATA, LOSS OF PROFITS, OR BUSINESS INTERRUPTION, REGARDLESS OF THE THEORY OF LIABILITY.
+
+8. DISPUTE RESOLUTION
+
+Any dispute arising from these Terms shall be resolved by binding arbitration administered by the American Arbitration Association in San Francisco, California. You agree to waive your right to participate in a class action lawsuit or class-wide arbitration. The arbitrator's decision is final and binding. You agree that any dispute must be brought within one (1) year after the cause of action arises, or be permanently barred.
+
+9. CHANGES TO TERMS
+
+CloudVault may modify these Terms at any time. Continued use of the service after modifications constitutes acceptance of the updated Terms. If you do not agree with the changes, your sole remedy is to delete your account.
+
+CloudVault Inc.
+San Francisco, CA
+"""
+},
+
+'employment': {
+    'filename': 'TechForward Employment Agreement (Sample)',
+    'text': """TECHFORWARD SOLUTIONS LLC
+EMPLOYMENT AGREEMENT
+
+This Employment Agreement ("Agreement") is entered into between TechForward Solutions LLC ("Company") and the undersigned employee ("Employee"), effective upon the Employee's start date.
+
+1. POSITION AND DUTIES
+
+Employee is hired as Senior Software Engineer, reporting to the VP of Engineering. Employee agrees to devote full professional time and effort to the Company. Employee shall not engage in any outside employment, consulting, or business activity without prior written approval from the Company, whether or not such activity competes with the Company.
+
+2. COMPENSATION
+
+Base salary: $145,000 per year, paid bi-weekly. Salary reviews occur annually at the Company's discretion; the Company is under no obligation to increase compensation. Bonus: Employee may be eligible for an annual performance bonus of up to 15% of base salary, at the sole discretion of management. Bonus criteria and targets may change at any time. No bonus is earned or payable if Employee is not actively employed on the bonus payment date.
+
+3. AT-WILL EMPLOYMENT
+
+Employment is at-will. Either party may terminate the employment relationship at any time, for any reason or no reason, with or without cause or notice. No provision of this Agreement, any Company policy, handbook, or statement by any Company representative shall be construed to alter the at-will nature of employment. The at-will nature of employment cannot be modified except by a written agreement signed by the CEO.
+
+4. INTELLECTUAL PROPERTY ASSIGNMENT
+
+Employee assigns to the Company all rights, title, and interest in any invention, discovery, design, code, algorithm, process, technique, improvement, or work of authorship ("Work Product") conceived, developed, or reduced to practice during employment, whether or not during working hours, whether or not using Company resources, and whether or not related to the Company's current or anticipated business. Employee agrees to execute any documents necessary to perfect the Company's ownership. This assignment includes all patents, copyrights, trade secrets, and other intellectual property rights worldwide. Employee waives all moral rights in the Work Product.
+
+5. NON-COMPETE AND NON-SOLICITATION
+
+For a period of 18 months following termination of employment for any reason, Employee shall not: (a) engage in, be employed by, consult for, or have any ownership interest in any business that competes with the Company's products or services, anywhere in North America; (b) solicit, recruit, or hire any employee, contractor, or consultant of the Company; (c) solicit or service any customer or prospective customer with whom Employee had contact during the last 24 months of employment. The Company may extend the non-compete period by an additional 12 months by providing written notice before the original period expires.
+
+6. CONFIDENTIALITY
+
+Employee shall not, during or after employment, disclose any Confidential Information. "Confidential Information" includes all non-public information about the Company's business, including but not limited to: code, algorithms, data, product plans, financial information, customer lists, pricing, marketing strategies, personnel information, vendor relationships, and any information designated as confidential. This obligation survives termination of employment indefinitely. Employee shall not retain copies of any Confidential Information upon termination.
+
+7. MANDATORY ARBITRATION
+
+Any dispute arising from this Agreement or the employment relationship shall be resolved by final and binding arbitration in accordance with the rules of JAMS, in the Company's principal office location. Employee waives the right to a jury trial and to participate in any class or collective action. The arbitrator may not award punitive or exemplary damages. Each party bears its own attorney's fees and costs. This arbitration clause survives termination of employment.
+
+8. SEVERANCE
+
+If the Company terminates Employee's employment without Cause, Employee will receive 2 weeks of base salary as severance, contingent upon execution of a full release of all claims against the Company. "Cause" includes: unsatisfactory performance as determined by the Company, violation of any Company policy, any conduct the Company deems detrimental to its interests, or any other reason the Company considers sufficient.
+
+TechForward Solutions LLC
+[Authorized Representative]
+
+Employee Signature: _______________
+Date: _______________
+"""
+},
+
+'loan': {
+    'filename': 'QuickCash Personal Loan Agreement (Sample)',
+    'text': """QUICKCASH FINANCIAL SERVICES
+PERSONAL LOAN AGREEMENT
+
+Loan No. QC-2026-08834
+Borrower: [Borrower Name]
+Date: February 1, 2026
+
+1. LOAN TERMS
+
+Principal Amount: $15,000. Annual Percentage Rate (APR): 24.99% fixed. Term: 48 months. Monthly Payment: $494.17, due on the 15th of each month. Total amount payable over the life of the loan: $23,720.16 (principal + $8,720.16 in interest).
+
+2. LATE PAYMENT
+
+If any payment is not received within 5 days of the due date, a late fee of $39 or 5% of the payment amount (whichever is greater) shall be assessed. If payment is more than 30 days late, the interest rate on the remaining balance shall increase to 29.99% APR for the remainder of the loan term. This rate increase is permanent and cannot be reversed by bringing the account current. A second late payment within any 12-month period triggers an additional rate increase to 34.99% APR.
+
+3. PREPAYMENT
+
+Borrower may prepay the loan in full or in part at any time. However, if prepayment occurs within the first 24 months, a prepayment penalty of 3% of the remaining principal balance shall apply. Partial prepayments are applied first to accrued interest and fees, then to principal. Partial prepayment does not reduce the monthly payment amount; it reduces the number of remaining payments.
+
+4. DEFAULT AND ACCELERATION
+
+The loan is in default if: (a) any payment is more than 60 days past due; (b) Borrower files for bankruptcy; (c) Borrower provides false information on the application; (d) Borrower's credit score drops below 580 at any point during the loan term; (e) Borrower's employment status changes and Borrower fails to notify QuickCash within 15 days. Upon default, the entire remaining principal balance, plus all accrued interest and fees, becomes immediately due and payable. QuickCash may report the default to all credit bureaus and may assign the debt to a collection agency, with collection costs added to the balance owed.
+
+5. SECURITY INTEREST
+
+As security for this loan, Borrower grants QuickCash a security interest in all personal property currently owned or hereafter acquired by Borrower, including but not limited to: bank accounts, investment accounts, vehicles, electronics, furniture, and other tangible personal property. Upon default, QuickCash may take possession of secured property without prior notice and sell it to satisfy the outstanding balance.
+
+6. MANDATORY ARBITRATION AND DISPUTE RESOLUTION
+
+Any dispute arising from this Agreement shall be resolved through binding arbitration administered by the National Arbitration Forum in QuickCash's home jurisdiction (Wilmington, Delaware). Borrower waives the right to a jury trial and waives the right to participate in any class action. The arbitrator's fees shall be borne by the losing party. Borrower agrees that QuickCash may pursue collection through any court of competent jurisdiction notwithstanding this arbitration clause.
+
+7. COMMUNICATIONS CONSENT
+
+Borrower consents to receiving communications from QuickCash and its agents by any means, including telephone calls, text messages, and emails, at any number or address provided, including auto-dialed or pre-recorded calls. This consent applies to any phone number associated with Borrower's account, including numbers added in the future. Borrower may not revoke this consent while any balance remains outstanding.
+
+8. GOVERNING LAW AND AMENDMENTS
+
+This Agreement is governed by the laws of Delaware. QuickCash may amend the terms of this Agreement, including interest rates and fees, with 15 days' written notice. Continued acceptance of the loan after notice constitutes agreement to the amended terms. If any provision is found unenforceable, all remaining provisions remain in full effect.
+
+QuickCash Financial Services
+Wilmington, DE
+[Authorized Signature]
+"""
+},
+
+'gym': {
+    'filename': 'IronClad Fitness Membership Agreement (Sample)',
+    'text': """IRONCLAD FITNESS CENTERS
+MEMBERSHIP AGREEMENT
+
+Member: [Member Name]
+Location: IronClad Fitness — Downtown, 500 Main Street
+Membership Type: Premium All-Access
+Start Date: February 1, 2026
+
+1. MEMBERSHIP TERM AND RENEWAL
+
+Initial term: 12 months. Monthly dues: $79.99, plus an annual enhancement fee of $49.99 charged each January. Membership automatically renews for successive 12-month terms unless cancelled. To cancel, Member must provide written notice by certified mail, received at IronClad's corporate office at least 45 days before the end of the current term. Cancellation requests submitted by email, phone, or in-person are not valid. Early termination fee: remaining months' dues multiplied by 75%, due immediately upon early cancellation.
+
+2. SERVICES AND FACILITY ACCESS
+
+Member has access to all IronClad locations during staffed hours. IronClad reserves the right to modify hours, close locations, discontinue equipment, programs, or amenities at any time without notice and without reduction in dues. Certain classes, training programs, and amenities (sauna, pool, recovery rooms) may require additional fees. IronClad may designate any program or amenity as "premium" at any time.
+
+3. HEALTH AND SAFETY
+
+Member represents that they are physically fit and have no medical condition that would prevent safe exercise. Member assumes all risk of injury, illness, or death arising from use of IronClad's facilities, equipment, classes, or programs, including risks arising from the negligence of IronClad, its employees, or other members. Member agrees to consult a physician before beginning any exercise program but acknowledges that IronClad has no duty to verify Member's fitness or medical status.
+
+4. WAIVER OF LIABILITY AND INDEMNIFICATION
+
+Member waives all claims against IronClad, its owners, officers, employees, agents, and contractors for any injury, loss, damage, or death, including claims arising from IronClad's negligence, defective equipment, inadequate supervision, or failure to maintain safe conditions. Member agrees to indemnify and hold harmless IronClad from any claims by Member or Member's family, heirs, or estate. This waiver extends to injuries caused by other members or third parties on IronClad premises.
+
+5. PERSONAL TRAINING AND ADDITIONAL SERVICES
+
+Personal training packages are non-refundable. Unused sessions expire 90 days after purchase. Sessions must be cancelled at least 24 hours in advance; late cancellations are charged as completed sessions. Personal training rates may increase with 30 days' notice. IronClad reserves the right to assign any available trainer; Member may not select or refuse a specific trainer.
+
+6. BILLING AND COLLECTIONS
+
+Dues are charged to the payment method on file on the 1st of each month. If payment fails, IronClad will attempt to charge the payment method for 30 days. After 30 days of failed payment, the full remaining balance for the membership term becomes immediately due. Accounts more than 60 days past due may be referred to a collection agency. Member agrees to pay all collection costs, including agency fees up to 35% of the balance and reasonable attorney's fees.
+
+7. GUEST AND FAMILY POLICY
+
+Members may bring guests for a $20 per-visit fee. Guests must sign a liability waiver. Member is responsible for their guest's conduct and any damage caused by their guest. Family add-on memberships are available but are subject to separate terms and may not be cancelled independently of the primary membership.
+
+8. PHOTO AND MEDIA RELEASE
+
+By entering any IronClad facility, Member consents to being photographed, filmed, or recorded. IronClad may use Member's image, likeness, and voice in marketing, advertising, social media, and promotional materials without compensation, attribution, or prior notice. This consent is irrevocable and survives termination of membership.
+
+9. DISPUTE RESOLUTION
+
+Any dispute arising from this Agreement or membership shall be resolved by binding arbitration in the county of IronClad's corporate headquarters. Member waives the right to a jury trial and class action participation. The prevailing party is entitled to reasonable attorney's fees. Claims must be brought within 6 months of the event giving rise to the dispute.
+
+IronClad Fitness Centers
+[General Manager Signature]
+"""
+},
+
+'medical': {
+    'filename': 'Lakewood Medical Center Consent Form (Sample)',
+    'text': """LAKEWOOD MEDICAL CENTER
+PATIENT CONSENT AND AGREEMENT FORM
+
+Patient: [Patient Name]
+Date of Service: _______________
+Provider: Lakewood Medical Center and affiliated practitioners
+
+1. CONSENT TO TREATMENT
+
+I consent to examinations, diagnostic procedures, treatments, and medical care by the physicians, nurses, and staff at Lakewood Medical Center and any affiliated or consulting practitioners, including telemedicine providers. I understand that medicine is not an exact science and that no guarantees have been made regarding the outcome of any treatment or procedure. I authorize my care team to perform such procedures as are necessary or advisable in their professional judgment, including procedures not specifically described to me in advance.
+
+2. ACKNOWLEDGMENT OF RISKS
+
+I acknowledge that all medical treatment carries inherent risks, including but not limited to: adverse reactions to medications, infection, bleeding, nerve damage, organ damage, disability, disfigurement, and death. I acknowledge that I have been given the opportunity to ask questions about proposed treatments and their alternatives. By signing this form, I confirm that my questions have been answered to my satisfaction, whether or not I actually asked any questions.
+
+3. FINANCIAL RESPONSIBILITY
+
+I agree to be personally responsible for all charges not covered by insurance. I understand that Lakewood Medical Center's providers may or may not participate in my insurance network, and that services rendered by out-of-network providers, including anesthesiologists, radiologists, pathologists, and consulting specialists, will be billed separately at the provider's standard rates. I agree to pay any balance remaining after insurance, including co-pays, deductibles, and denied claims, within 30 days of billing. Accounts not paid within 60 days are subject to a 1.5% monthly finance charge and may be referred to collections.
+
+4. AUTHORIZATION FOR RELEASE OF INFORMATION
+
+I authorize Lakewood Medical Center to release my medical records and health information to: my insurance company, any referring physician, any physician or facility involved in my care, government agencies as required by law, and any other party as Lakewood deems necessary for treatment, payment, or healthcare operations. I understand that once information is disclosed, it may no longer be protected by federal privacy regulations.
+
+5. ADVANCE DIRECTIVE AND REPRESENTATIVE
+
+If I become unable to make medical decisions, I authorize Lakewood Medical Center to make treatment decisions consistent with accepted medical practice until my designated healthcare representative is contacted. If no representative is designated or reachable, Lakewood's medical team will make decisions in their professional judgment.
+
+6. PHOTOGRAPHY AND RECORDING
+
+I consent to photography, video, or audio recording before, during, and after procedures for medical records, education, research, or quality improvement purposes. I understand these records may be used in medical publications or presentations with reasonable efforts to de-identify my information, but that complete de-identification cannot be guaranteed.
+
+7. WAIVER OF LIABILITY
+
+I release Lakewood Medical Center, its physicians, nurses, staff, and affiliates from any and all liability for outcomes resulting from treatment provided in good faith, including outcomes resulting from provider error, equipment malfunction, or miscommunication between providers. I understand that this waiver does not apply to claims of gross negligence or willful misconduct, but that the determination of what constitutes "gross negligence" versus "ordinary negligence" shall be made through binding arbitration rather than a jury trial.
+
+8. DISPUTE RESOLUTION
+
+Any dispute, claim, or controversy arising from treatment at Lakewood Medical Center, including claims of medical malpractice, shall first be submitted to a mandatory mediation process. If mediation fails, disputes shall be resolved by binding arbitration conducted by a panel selected by the American Health Lawyers Association. I waive the right to a jury trial. Any claim must be filed within one (1) year of the date of treatment, regardless of when the injury was discovered. I agree that any arbitration award shall not exceed the cost of the medical services provided.
+
+9. RESEARCH AND DATA USE
+
+I consent to the use of my de-identified health data, biological specimens, and treatment outcomes for medical research, quality improvement, and data analytics purposes. Data may be shared with research partners, pharmaceutical companies, and technology companies developing health-related products. I understand I will not receive compensation for any commercial applications derived from my data.
+
+Lakewood Medical Center
+[Witness Signature]
+
+Patient Signature: _______________
+Date: _______________
+"""
+},
+
+'hoa': {
+    'filename': 'Crestview HOA Rules & Covenants (Sample)',
+    'text': """CRESTVIEW ESTATES HOMEOWNERS ASSOCIATION
+DECLARATION OF COVENANTS, CONDITIONS, AND RESTRICTIONS
+
+Recorded: Crestview Estates, 1200 Summit Drive
+Effective for all property owners within Crestview Estates subdivision
+
+1. ASSESSMENT AND DUES
+
+Monthly HOA assessment: $385 per lot. The Board of Directors may increase assessments by up to 10% annually without homeowner approval. Special assessments for capital improvements, repairs, or legal expenses may be levied at any time by majority Board vote. Assessments are due on the 1st of each month. A late fee of $50 applies after the 10th, plus 1.5% monthly interest on the outstanding balance. Assessments unpaid for 90 days constitute a lien on the property, and the Association may initiate foreclosure proceedings to collect, with all legal fees added to the homeowner's balance.
+
+2. ARCHITECTURAL CONTROL
+
+No exterior modification, including paint color, landscaping, fencing, signage, satellite dishes, solar panels, decorations, or structural changes, may be made without prior written approval from the Architectural Review Committee ("ARC"). Applications must be submitted at least 60 days before the planned modification. The ARC has sole discretion to approve, deny, or impose conditions on any application. If the ARC does not respond within 60 days, the application is deemed denied. Approved modifications must be completed within 90 days or the approval expires. Unauthorized modifications must be removed at the homeowner's expense within 14 days of written notice, or the Association may remove them and charge the cost to the homeowner.
+
+3. MAINTENANCE AND APPEARANCE
+
+Homeowners must maintain their property in a condition consistent with community standards as determined by the Board. Lawns must be mowed to a maximum height of 4 inches. Dead plants must be replaced within 14 days. Vehicles must be parked in garages or driveways; street parking is prohibited between 10 PM and 6 AM. No commercial vehicles, boats, RVs, trailers, or inoperable vehicles may be visible from any street or neighboring property. Trash containers must be stored out of sight except on collection day. Holiday decorations may be displayed no earlier than 30 days before and must be removed within 14 days after the holiday.
+
+4. FINES AND ENFORCEMENT
+
+Violations of any covenant, rule, or standard shall be subject to fines of $100 for the first offense, $250 for the second offense within 12 months, and $500 per day for each subsequent day the violation continues. The Board may impose fines without a hearing if the violation is observable from common areas or public spaces. Homeowners may request a hearing before the Board within 10 days of receiving a fine notice; failure to request a hearing constitutes acceptance of the fine. The Board serves as both the prosecuting and adjudicating body for violation hearings.
+
+5. COMMON AREAS AND AMENITIES
+
+The Association maintains common areas including the pool, clubhouse, playground, and walking trails. The Board may restrict access to amenities for homeowners with outstanding assessments or fines. The Association is not liable for injuries occurring in common areas, including injuries resulting from inadequate maintenance, defective equipment, or lack of supervision. Use of the pool is at the homeowner's own risk. Guest access requires registration; homeowners are responsible for guests' conduct and any damage caused.
+
+6. LEASING AND RENTAL RESTRICTIONS
+
+Homeowners may lease their property with Board approval. Minimum lease term: 12 months. The Board may deny lease approval if the homeowner has any outstanding assessments, fines, or violations, or for any other reason at the Board's sole discretion. No more than 15% of units in the community may be leased at any time; applications beyond this cap are waitlisted. Tenants must agree to abide by all Association rules, and homeowners are responsible for tenant violations and associated fines.
+
+7. GOVERNANCE AND AMENDMENTS
+
+The Board of Directors consists of 5 members elected by homeowners. The Board may adopt, amend, or repeal rules and regulations without homeowner vote. Amendments to these Covenants require approval by 75% of all lot owners (not just those present at a meeting). The Board may engage legal counsel and charge all legal fees to the Association. The Board and its members shall not be personally liable for actions taken in good faith.
+
+8. DISPUTE RESOLUTION
+
+Any dispute between a homeowner and the Association shall first be submitted to the Association's internal grievance process. If unresolved, disputes shall be settled by binding arbitration in the county where the property is located. The prevailing party shall be entitled to recover attorney's fees and costs. Homeowners waive the right to a jury trial. No homeowner may withhold assessments as a means of protesting any action by the Board.
+
+Crestview Estates Homeowners Association
+Board of Directors
+[President Signature]
+"""
+},
+
+'coupon': {
+    'filename': 'MegaMart Rewards Coupon Book (Sample)',
+    'text': """MEGAMART REWARDS
+EXCLUSIVE MEMBER COUPON BOOK — SPRING 2026
+
+Congratulations! As a valued MegaMart Rewards member, you've received this exclusive coupon book with over $500 in savings!
+
+COUPON 1 — FRESH PRODUCE
+Save 30% on all organic produce! Stock up on fresh fruits and vegetables for the whole family.
+Valid: Feb 1–28, 2026. Minimum purchase: $40 in organic produce in a single transaction. Discount applies to regular-priced items only. Cannot be combined with weekly specials, manager's markdowns, or other coupons. Excludes pre-packaged salads, cut fruit, and items from the prepared foods section. Limit one coupon per household per visit. If total organic produce in transaction is below $40 after removing excluded items, coupon is void.
+
+COUPON 2 — HOUSEHOLD ESSENTIALS
+Buy 2, Get 1 Free on all cleaning products! Spring cleaning has never been so affordable.
+Valid: Feb 1–28, 2026. Free item must be of equal or lesser value to the lowest-priced purchased item. Applies to cleaning products in aisle 7 only. Does not include floor care machines, refill cartridges, cleaning tools, or items over $15. Cannot be combined with manufacturer coupons on the same items. MegaMart reserves the right to limit quantities to 3 per household. Coupon must be presented before checkout is completed; retroactive application is not available.
+
+COUPON 3 — PREMIUM MEAT & SEAFOOD
+$10 Off any purchase of $50 or more from our butcher counter! Premium cuts at everyday prices.
+Valid: Feb 1–14, 2026 only. Applies to butcher-counter items only; does not include pre-packaged meats, frozen seafood, deli meats, or rotisserie items. $50 minimum is calculated before tax and after all other discounts. If a manufacturer coupon is applied to any item in the qualifying purchase, the total is recalculated and may fall below the $50 threshold. MegaMart Rewards points are not earned on the discounted amount.
+
+COUPON 4 — BABY & FAMILY CARE
+20% Off all diapers and baby formula! Because every family deserves savings.
+Valid: Feb 1–28, 2026. Maximum discount: $15. Applies to in-stock items only. If the item is out of stock, rain checks are not issued for coupon promotions. Excludes specialty and hypoallergenic formulas. Limit 2 items per category per transaction. Discount is calculated per item, not per transaction; if purchasing items below $5, per-item discount may be less than expected. Cannot be combined with WIC benefits.
+
+COUPON 5 — ELECTRONICS
+Free Bluetooth Speaker (value $29.99) with any electronics purchase of $100 or more!
+Valid: Feb 1–28, 2026. While supplies last; no rain checks. Free speaker model is MegaMart house brand (MM-BT100) only. Electronics purchase must be in a single transaction and excludes gift cards, phone cards, gaming currency, and accessories under $20. If the qualifying purchase is returned, the retail value of the speaker ($29.99) will be deducted from the refund. If the speaker has been opened, it cannot be returned. MegaMart Rewards members only; membership must be active at time of purchase and redemption.
+
+COUPON 6 — PHARMACY
+Save $25 on any new or transferred prescription! Your health matters to us.
+Valid: Feb 1–28, 2026. New customers only. Applies to prescriptions transferred from non-MegaMart pharmacies. Does not apply to controlled substances (Schedules II-V), prescriptions covered by government insurance programs (Medicare, Medicaid, TRICARE), or prescriptions where a third-party payer covers more than 80% of the cost. By transferring your prescription, you authorize MegaMart Pharmacy to access your prescription history and share it with MegaMart's health and wellness marketing program. Savings applied as MegaMart store credit, not cash.
+
+COUPON 7 — WINE & SPIRITS
+15% Off any 6 bottles of wine! Perfect for entertaining this spring.
+Valid: Feb 1–28, 2026. Must purchase exactly 6 or more bottles in a single transaction. Bottles must be 750ml or larger. Excludes wines already on sale, clearance items, and bottles under $8. Discount applied to the 6 lowest-priced qualifying bottles. Cannot be combined with case discounts. Valid only at locations with a liquor license. ID required; MegaMart reserves the right to refuse sale.
+
+GENERAL TERMS AND CONDITIONS
+
+All coupons are issued to the named MegaMart Rewards member and are non-transferable. MegaMart reserves the right to modify, suspend, or cancel any coupon promotion at any time without notice. Coupons have no cash value and may not be exchanged for cash, gift cards, or store credit. MegaMart reserves the right to void any transaction where coupon fraud is suspected, as determined in MegaMart's sole discretion. By using these coupons, you consent to MegaMart collecting and analyzing your purchase history for targeted marketing purposes. All coupons are single-use unless otherwise stated. Photocopies, digital screenshots, and damaged coupons are not accepted. MegaMart's decision on all coupon-related matters is final.
+
+MegaMart Rewards Program
+[Marketing Director]
+"""
+},
+
+}
+
+# Default sample for backward compatibility
+SAMPLE_DOCUMENT = SAMPLE_DOCUMENTS['lease']['text']
+
+# Load sample thumbnails from static directory
+SAMPLE_THUMBNAILS = {}
+_thumb_dir = os.path.join(os.path.dirname(__file__), 'static')
+for _key in SAMPLE_DOCUMENTS:
+    _path = os.path.join(_thumb_dir, f'thumb_{_key}.jpg')
+    if os.path.exists(_path):
+        with open(_path, 'rb') as _f:
+            SAMPLE_THUMBNAILS[_key] = base64.b64encode(_f.read()).decode()
 
 
 # ---------------------------------------------------------------------------
@@ -512,11 +917,16 @@ def sample():
     role = data.get('role', 'tenant')
     negotiable = data.get('negotiable', True)
     depth = data.get('depth', 'standard')
+    sample_type = data.get('type', 'lease')
+
+    doc = SAMPLE_DOCUMENTS.get(sample_type, SAMPLE_DOCUMENTS['lease'])
+    text = doc['text']
+    filename = doc['filename']
 
     doc_id = str(uuid.uuid4())
     documents[doc_id] = {
-        'text': SAMPLE_DOCUMENT,
-        'filename': 'QuickRent Lease Agreement (Sample)',
+        'text': text,
+        'filename': filename,
         'role': role,
         'negotiable': negotiable,
         'depth': depth,
@@ -524,10 +934,11 @@ def sample():
 
     return jsonify({
         'doc_id': doc_id,
-        'filename': 'QuickRent Lease Agreement (Sample)',
-        'text_length': len(SAMPLE_DOCUMENT),
-        'preview': SAMPLE_DOCUMENT[:300],
-        'full_text': SAMPLE_DOCUMENT[:15000],
+        'filename': filename,
+        'text_length': len(text),
+        'preview': text[:300],
+        'full_text': text[:15000],
+        'thumbnail': SAMPLE_THUMBNAILS.get(sample_type),
     })
 
 
@@ -639,7 +1050,7 @@ For EACH significant clause:
 
 > "[Quote key language from the document]"
 
-[READER]: [2-4 sentences. STAY IN CHARACTER as the reader thinking out loud in FIRST PERSON ("I"). Explain the clause to yourself and shrug it off. CAN mention basic facts (amounts, timeframes) but IMMEDIATELY dismiss them. NEVER mention: "no cap," "no limit," "waive my right," "sole discretion," "unlimited," "cannot dispute." NEVER break character with third-person commentary like "They don't realize..." or "What they miss is..." — the entire text must be the reader's own thoughts. Always first person ("I/my/me"). Examples: "There's a late fee if I'm late — $75 a day. But I'd obviously pay on time, so it's not a real problem. Just incentive to pay by the deadline, which is fair." / "If I make a partial payment, they put it toward fees first, then rent. That's just bookkeeping — as long as I pay the full amount, the order doesn't matter." / "They can enter my place with some notice for inspections. Makes sense — it's their property too."]
+[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt. FORBIDDEN words/patterns: "adds up," "that's $X a month/year," "waive my right," "sole discretion," "no cap," "no limit," "unlimited," "cannot dispute," "signing away," question marks expressing concern. FORBIDDEN tone: worry, suspicion, hesitation, calculating worst cases. The reader is GULLIBLE — they trust the drafter completely. GOOD: "A $75 late fee? I'd just pay on time, so it won't matter." BAD: "$75 a day adds up fast — that's $2,250 a month if I'm even a week late." GOOD: "They handle maintenance, nice." BAD: "But who decides what counts as an emergency?" Always end with certainty, never with a question.]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
 
@@ -683,7 +1094,7 @@ Then include the appropriate action items based on negotiability.
 ## RULES
 - Output each clause AS SOON as you analyze it
 - Every clause gets: quote + [READER] perspective + risk level + score + trick + juxtaposition
-- The [READER] thinks out loud in first person ("I"): mentions basic facts but dismisses them ("$75 a day, but I'd pay on time"). NEVER mentions "no cap/no limit/waive rights/sole discretion" — those stay hidden until the flip
+- The [READER] is GULLIBLE: sees facts, shrugs them off, never does math or questions fairness. The flip reveals what they missed
 - "What you should read" reveals the reader's reality — the gap between words and what they mean
 - Quote exact language from the document
 - Be thorough but fast — cross-clause interactions will be analyzed separately"""
@@ -734,7 +1145,7 @@ For multi-product documents (coupon books, product bundles): specify WHICH produ
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
-[READER]: [2-4 sentences. STAY IN CHARACTER as the reader thinking out loud in FIRST PERSON ("I"). Explain the clause to yourself and shrug it off. CAN mention basic facts (amounts, timeframes) but IMMEDIATELY dismiss them. NEVER mention: "no cap," "no limit," "waive my right," "sole discretion," "unlimited," "cannot dispute." NEVER break character with "They don't realize..." or "What they miss is..." — entire text must be reader's own thoughts. Always first person ("I/my/me"). Examples: "There's a late fee if I'm late — $75 a day. But I'd obviously pay on time, so not a real problem. Just incentive to pay by the deadline, which is fair." / "If I make a partial payment, they put it toward fees first. Just bookkeeping — pay the full amount and the order doesn't matter." / "They can enter my place with some notice for inspections. Makes sense — it's their property too."]
+[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt. FORBIDDEN words/patterns: "adds up," "that's $X a month/year," "waive my right," "sole discretion," "no cap," "no limit," "unlimited," "cannot dispute," "signing away," question marks expressing concern. FORBIDDEN tone: worry, suspicion, hesitation, calculating worst cases. The reader is GULLIBLE — they trust the drafter completely. GOOD: "A $75 late fee? I'd just pay on time, so it won't matter." BAD: "$75 a day adds up fast — that's $2,250 a month if I'm even a week late." GOOD: "They handle maintenance, nice." BAD: "But who decides what counts as an emergency?" Always end with certainty, never with a question.]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
 Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguous" or "two interpretations possible" or "depends on jurisdiction"]
@@ -782,7 +1193,7 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguo
 3. Every clause MUST have: quote, [READER] line, risk level with score and trick, confidence, bottom line, juxtaposition
 4. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
 5. Keep each field to ONE sentence. Cards must be scannable, not essays
-6. The [READER] thinks out loud in first person ("I"): mentions basic facts but dismisses them ("$75 a day, but I'd pay on time"). NEVER mentions "no cap/no limit/waive rights/sole discretion" — those stay hidden for the flip. The reader signs without reading twice
+6. The [READER] is GULLIBLE: sees facts, shrugs them off, never does math or questions fairness. No calculating totals, no "adds up," no concern. The reader signs without reading twice
 7. "What you should read" is the core insight — make it visceral
 8. Do NOT include negotiation advice or action items — those come from deep analysis
 9. Do NOT include cross-clause interactions — analyze each clause independently

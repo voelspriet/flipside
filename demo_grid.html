@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlipSide — What would you flip?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f7f5f0;
+      font-family: 'DM Sans', sans-serif;
+      color: #2c2825;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 24px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .page {
+      max-width: 960px;
+      width: 100%;
+    }
+
+    .page-title {
+      font-size: 42px;
+      font-weight: 700;
+      text-align: center;
+      color: #2c2825;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+    }
+
+    .page-subtitle {
+      text-align: center;
+      font-size: 16px;
+      color: #9a938b;
+      margin-bottom: 40px;
+      font-weight: 400;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .tile {
+      background: #fffefb;
+      border: 1px solid #e8e4dd;
+      border-radius: 12px;
+      padding: 28px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.25s ease;
+      position: relative;
+    }
+
+    .tile:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(44, 40, 37, 0.08),
+                  0 2px 8px rgba(44, 40, 37, 0.04);
+      border-color: #d4cfc7;
+    }
+
+    .tile:hover .tile-icon {
+      transform: scale(1.08);
+    }
+
+    .tile:hover .tile-label {
+      color: #c44b28;
+    }
+
+    .tile-icon {
+      font-size: 52px;
+      line-height: 1;
+      margin-bottom: 14px;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tile-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: #2c2825;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+      transition: color 0.25s ease;
+    }
+
+    .tile-desc {
+      font-size: 13px;
+      font-weight: 400;
+      color: #9a938b;
+      line-height: 1.4;
+    }
+
+    .tagline {
+      text-align: center;
+      font-size: 14px;
+      color: #b0a99f;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+    }
+
+    .tagline strong {
+      font-weight: 600;
+      color: #9a938b;
+    }
+
+    .tagline em {
+      font-style: italic;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .page-title {
+        font-size: 32px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1 class="page-title">What would you flip?</h1>
+    <p class="page-subtitle">Pick a document. See what they don't want you to notice.</p>
+
+    <div class="grid">
+      <div class="tile">
+        <div class="tile-icon">🏠</div>
+        <div class="tile-label">Lease Agreement</div>
+        <div class="tile-desc">Late fees that cascade</div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-icon">🛒</div>
+        <div class="tile-label">Coupon Booklet</div>
+        <div class="tile-desc">Hidden conditions on 'free' offers</div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-icon">🛡️</div>
+        <div class="tile-label">Insurance Policy</div>
+        <div class="tile-desc">Exclusions that eat your coverage</div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-icon">📱</div>
+        <div class="tile-label">Terms of Service</div>
+        <div class="tile-desc">Your data, their profit</div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-icon">💼</div>
+        <div class="tile-label">Employment Contract</div>
+        <div class="tile-desc">Non-competes and at-will traps</div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-icon">🏦</div>
+        <div class="tile-label">Loan Agreement</div>
+        <div class="tile-desc">Penalties designed to stack</div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-icon">🏋️</div>
+        <div class="tile-label">Gym Membership</div>
+        <div class="tile-desc">Cancellation impossible by design</div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-icon">🏥</div>
+        <div class="tile-label">Medical Consent</div>
+        <div class="tile-desc">Liability waivers in health forms</div>
+      </div>
+
+      <div class="tile">
+        <div class="tile-icon">🏘️</div>
+        <div class="tile-label">HOA Rules</div>
+        <div class="tile-desc">Fines that escalate without limit</div>
+      </div>
+    </div>
+
+    <p class="tagline"><strong>FlipSide</strong> — <em>The dark side of small print.</em></p>
+  </div>
+</body>
+</html>
