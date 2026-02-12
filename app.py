@@ -45,11 +45,11 @@ ROLES = {
     'other': 'a party who did NOT draft this document',
 }
 
-# Analysis depth presets — adaptive thinking lets the model decide budget
+# Analysis depth presets — maps to Opus 4.6 effort parameter + token budget
 DEPTH_PRESETS = {
-    'quick':    {'max_tokens': 16000},
-    'standard': {'max_tokens': 32000},
-    'deep':     {'max_tokens': 64000},
+    'quick':    {'max_tokens': 16000, 'effort': 'medium'},
+    'standard': {'max_tokens': 32000, 'effort': 'high'},
+    'deep':     {'max_tokens': 64000, 'effort': 'max'},
 }
 
 TRICK_TAXONOMY = {
@@ -942,14 +942,17 @@ def analyze(doc_id):
         stream = None
         try:
             yield sse('phase', 'thinking')
-            stream = client.messages.create(
-                model=MODEL,
-                max_tokens=preset['max_tokens'],
-                thinking={'type': 'adaptive'},
-                system=[{'type': 'text', 'text': system_prompt, 'cache_control': {'type': 'ephemeral'}}],
-                messages=[{'role': 'user', 'content': user_msg}],
-                stream=True,
-            )
+            create_kwargs = {
+                'model': MODEL,
+                'max_tokens': preset['max_tokens'],
+                'thinking': {'type': 'adaptive'},
+                'system': [{'type': 'text', 'text': system_prompt, 'cache_control': {'type': 'ephemeral'}}],
+                'messages': [{'role': 'user', 'content': user_msg}],
+                'stream': True,
+            }
+            if preset.get('effort'):
+                create_kwargs['effort'] = preset['effort']
+            stream = client.messages.create(**create_kwargs)
             for event in stream:
                 for chunk in process_stream_event(event, state):
                     yield chunk
@@ -965,7 +968,8 @@ def analyze(doc_id):
         timings = {}
 
         def worker(label, system_prompt, max_out,
-                   model=MODEL, use_thinking=True, user_content=None, tools=None):
+                   model=MODEL, use_thinking=True, user_content=None, tools=None,
+                   effort=None):
             stream = None
             t0 = time.time()
             try:
@@ -979,6 +983,8 @@ def analyze(doc_id):
                 }
                 if use_thinking:
                     create_kwargs['thinking'] = {'type': 'adaptive'}
+                if effort:
+                    create_kwargs['effort'] = effort
                 if tools:
                     create_kwargs['tools'] = tools
                 stream = client.messages.create(**create_kwargs)
@@ -1030,7 +1036,8 @@ def analyze(doc_id):
             target=worker,
             args=('deep', build_deep_analysis_prompt(has_images=has_images),
                   deep_max_tokens, MODEL, True),
-            kwargs={'user_content': deep_user_content},
+            kwargs={'user_content': deep_user_content,
+                    'effort': preset.get('effort', 'high')},
             daemon=True,
         )
 
