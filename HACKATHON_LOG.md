@@ -101,7 +101,7 @@ Product named. Tagline chosen: *"FlipSide: the dark side of small print."*
 ### Phase 3: Building the Product
 
 **Entry 18 — First Working Prototype**
-Flask backend + single HTML frontend. Core loop: upload document → Opus 4.6 extended thinking with SSE streaming → phased analysis output. PDF, DOCX, and paste-text extraction. Role selector (tenant, freelancer, policyholder, employee, etc.) and negotiability toggle. Sample homeowner's insurance policy embedded for instant demo.
+Flask backend + single HTML frontend. Core loop: upload document → Opus 4.6 extended thinking with SSE streaming → phased analysis output. PDF, DOCX, and paste-text extraction. Role selector (tenant, freelancer, policyholder, employee, etc.) and negotiability toggle. Sample homeowner's insurance policy embedded for instant demo. Later expanded to 9 sample documents (lease, insurance, ToS, employment, loan, gym, medical, HOA, coupon) — all authored by Claude with clauses engineered to demonstrate each of the 18 trick categories. The samples are the product's demo reel: every trick type is represented across the collection.
 
 **Entry 19 — The Meta-Prompting Framework**
 System prompt redesigned to teach the model *how to think*, not just what to output. "Every clause exists for a reason — if it seems neutral, investigate what it enables." "The boring parts are the dangerous parts." This is the productized version of the two-step meta-prompting discovery from Entry 1 — the system prompt IS the pre-built reasoning framework, every document upload is the "execute" step.

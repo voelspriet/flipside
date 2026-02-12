@@ -24,7 +24,7 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
 
 ### The Three Steps
 
-1. **Upload** — Drag in a PDF, DOCX, or paste text. Or pick from 9 built-in sample documents (lease, insurance, ToS, employment, loan, gym membership, medical consent, HOA rules, coupon booklet) — each with real clauses optimized for shock value.
+1. **Upload** — Drag in a PDF, DOCX, or paste text. Or pick from 9 built-in sample documents (lease, insurance, ToS, employment, loan, gym membership, medical consent, HOA rules, coupon booklet) — all authored by Claude, with clauses engineered to demonstrate each of the 18 trick categories.
 
 2. **Browse flip cards** — Cards appear one at a time within seconds. Each card is a clause:
    - **Front**: A calm green header bar with a reassurance headline ("Your flexible payment timeline") followed by the reader's gullible first-person impression. This is how the drafter WANTS you to feel. Navigation is hidden until the user flips their first card — forcing the core mechanic.
