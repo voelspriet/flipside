@@ -243,3 +243,49 @@
 3. Third attempt (root cause fix): `doRenderResults()` returns early when `flipCardsBuilt && !isCompareMode`. Deep analysis content stays in `responseContent` string, never touches the DOM until `revealDeepAnalysis()` is explicitly called.
 
 **Key insight**: CSS visibility is a presentation concern, not a data concern. To truly hide content during streaming, prevent the render function from writing to the DOM at all — not just from showing it.
+
+---
+
+## Decision: 10 Opus 4.6 Capabilities in One Sprint
+
+**Date**: 2026-02-12
+**Context**: With the core product working (flip cards, deep analysis, split-model architecture), the question was: what Opus 4.6 capabilities does FlipSide NOT use yet? The "Most Creative Opus 4.6 Exploration" prize ($5k) goes to "the unexpected capability or use case nobody thought to try."
+
+**The strategy**: Run a structured capabilities audit (`prompts/opus_capabilities_audit.md`) evaluating 10 untapped Opus 4.6 capabilities. Rank by (Demo Impact × Feasibility). Implement all of them in a single session using parallel planning agents.
+
+**What happened**:
+
+10 capabilities evaluated by parallel agents. All 10 implemented:
+
+1. **Vision / multimodal** — PDF pages rendered as PNG images, sent to Opus deep analysis. Detects fine print, buried placement, visual hierarchy tricks that text extraction misses.
+2. **Tool use** — `assess_risk` and `flag_interaction` tool schemas. Forces structured data (risk level, confidence %, trick type) alongside prose.
+3. **Multi-turn follow-up** — `/ask/<doc_id>` endpoint. Users ask questions after analysis. Opus traces through all clauses with adaptive thinking.
+4. **Confidence signaling** — HIGH/MEDIUM/LOW badges per flip card with hover-reveal reasoning.
+5. **Self-correction** — Quality Check section where Opus reviews its own analysis for false positives and blind spots.
+6. **Benchmark comparison** — Fair Standard Comparison against industry norms.
+7. **Visible thinking** — Reasoning panel as collapsible status line, "Show the full report" button.
+8. **Methodology disclosure** — "How Opus 4.6 Analyzed This" section in every report.
+9. **Prompt caching** — `cache_control: {type: 'ephemeral'}` on system prompts. ~90% cost reduction.
+10. **Document retention** — Documents kept after analysis for follow-up questions.
+
+**Why this works**:
+
+- Parallel planning agents designed complex features (vision, tool use, follow-up) while simpler ones (caching, confidence, benchmark) were implemented directly
+- Each capability is VISIBLE in the product — no behind-the-scenes-only optimizations
+- The combination is the differentiator: no other hackathon project will use vision + tool use + follow-up + confidence + self-correction in a single product
+- Vision is the "I didn't know Opus could do that" moment — detecting that a liability waiver is in 6pt font when the coverage section uses 11pt
+
+**Key insight**: Individual capabilities are impressive. 10 capabilities working together in one product — each visible and user-facing — is the kind of creative exploration that makes judges say "I didn't know Opus 4.6 could do all of that."
+
+---
+
+## Decision: Prefix-Aware Deployment
+
+**Date**: 2026-02-12
+**Context**: Deployed FlipSide behind a reverse proxy at `/flipside/`. All 5 JavaScript fetch/EventSource calls used absolute paths (`/sample`, `/upload`, `/compare`, `/analyze/`, `/ask/`), causing 404 errors.
+
+**The strategy**: Inject `BASE_URL` from Flask's `request.script_root` via Jinja2 template, prepend to all API paths.
+
+**What happened**: One-line addition (`var BASE_URL = {{ request.script_root | tojson }};`) and 5 string concatenations. Works with any prefix or no prefix (returns empty string when running locally).
+
+**Key insight**: Always use server-injected base URLs in single-page apps. Hardcoded absolute paths break the moment you deploy behind any reverse proxy, subdirectory, or load balancer.

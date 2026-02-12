@@ -189,18 +189,56 @@ Created `test_ux_flow.py` — a Python script that simulates a user session via 
 
 ---
 
+### Phase 6: 10 Opus 4.6 Capabilities Sprint
+
+**Entry 41 — Opus Capabilities Audit**
+Ran a structured audit (`prompts/opus_capabilities_audit.md`) identifying 10 Opus 4.6 capabilities FlipSide didn't use yet. Ranked by (Demo Impact × Feasibility). 10 parallel evaluation agents assessed each capability against the codebase. All 10 were implemented in a single session.
+
+**Entry 42 — Vision / Multimodal PDF Analysis**
+PDF pages are now rendered as PNG images (pdfplumber, 150 DPI, max 10 pages) and sent alongside extracted text to Opus 4.6's deep analysis. The prompt instructs Opus to detect visual formatting tricks: fine print, buried placement, table structures that obscure comparisons, visual hierarchy manipulation. Images are only sent to the Opus deep thread, not Haiku (cost optimization).
+
+**Entry 43 — Tool Use (Structured Risk Assessment)**
+Two tool schemas defined: `assess_risk` (clause-level: risk level, confidence, score, trick type, mechanism) and `flag_interaction` (cross-clause: clauses involved, interaction type, severity, explanation). Opus calls these tools during deep analysis, producing structured data alongside its prose output. Frontend handles `tool_start` and `tool_result` SSE events. This forces precision — when Opus commits to a tool call, it must provide exact values, not hedged prose.
+
+**Entry 44 — Multi-Turn Follow-Up Questions**
+New `/ask/<doc_id>` endpoint. After analysis, users see "Ask about this document" with a text input. Questions are sent as POST with SSE streaming response. Opus receives the full document text plus the question, using adaptive thinking and prompt caching. Documents are retained after analysis (changed from `pop()` to marking as analyzed). UX: immediate input clearing, "Thinking..." button state, streaming answer display.
+
+**Entry 45 — Confidence Signaling**
+Each flip card now shows a confidence badge: HIGH (green), MEDIUM (amber), LOW (red). Hover reveals the reasoning (e.g., "language is unambiguous" or "two interpretations possible"). Added to `build_card_scan_prompt()` output format and parsed via regex in `extractSingleClause()`. This increases trust — transparent uncertainty is more impressive than false confidence.
+
+**Entry 46 — Self-Correction (Quality Check)**
+Added "Quality Check" section to deep analysis prompt. Opus reviews its own analysis for: false positives (clauses flagged that are actually standard), blind spots (risks it may have missed), consistency (whether confidence levels match the evidence), and adjusted confidence. This catches the "false positive on fair documents" problem without requiring a second API call.
+
+**Entry 47 — Benchmark Comparison (Fair Standard)**
+Added "Fair Standard Comparison" section to deep analysis. Opus compares the worst clauses against what a fair, balanced version of the same document type would contain. Uses its knowledge of industry practices and legal norms. Output format: "This document says / A fair version would say / Why the gap matters."
+
+**Entry 48 — Visible Thinking**
+Changed thinking panel from hidden/collapsed to a visible status line during Opus reasoning. Shows "Opus 4.6: Deep reasoning..." with a pulsing indicator. On completion: "Opus 4.6: Reasoning complete" with "Show the full report" button that calls `revealDeepAnalysis()`. The thinking tokens contain Opus's actual reasoning — visible on demand, not forced.
+
+**Entry 49 — Methodology Disclosure**
+Added "How Opus 4.6 Analyzed This Document" section to deep analysis prompt. Opus explains which analysis techniques it used, why extended thinking was necessary for this document, and what the adaptive thinking budget was spent on. Makes the AI methodology transparent to the user.
+
+**Entry 50 — Prompt Caching**
+Both API call sites (single-stream and parallel worker) now use `cache_control: {type: 'ephemeral'}` on system prompt content blocks. FlipSide's system prompts are ~2000 tokens — caching reduces cost by ~90% on cache hits and reduces latency for repeated analyses. Invisible to users but critical for production viability.
+
+**Entry 51 — Reverse Proxy Path Fix**
+Deployed to a server behind a URL prefix (`/flipside/`). All 5 JavaScript fetch/EventSource calls used absolute paths (`/sample`, `/upload`, `/compare`, `/analyze/`, `/ask/`) causing 404s. Fixed with `BASE_URL = {{ request.script_root | tojson }}` injected by Flask's Jinja2 template engine, prepended to all API paths.
+
+---
+
 ### Current State
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 990 | Backend: Flask, SSE, parallel Haiku+Opus, 5 prompts (`build_card_scan_prompt`, `build_deep_analysis_prompt`, `build_quick_scan_prompt`, `build_compare_prompt`, `build_system_prompt`) |
-| `templates/index.html` | 2,821 | Card-first frontend: incremental flip cards, on-demand deep analysis |
+| `app.py` | 1,230 | Backend: Flask, SSE, parallel Haiku+Opus, vision, tool use, follow-up, prompt caching, 7 prompts |
+| `templates/index.html` | 3,139 | Card-first frontend: flip cards, confidence badges, follow-up UI, tool handlers, prefix-aware paths |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
+| `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 40 entries, complete process timeline |
-| `README.md` | Product description + meta-prompting discovery |
+| `HACKATHON_LOG.md` | This file | 51 entries, complete process timeline |
+| `README.md` | Product description + 10 Opus capabilities + meta-prompting discovery |
 
 ---
 
@@ -249,21 +287,36 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (990 lines) | Flask backend: 5 prompt modes, Haiku+Opus parallel, SSE streaming |
-| `templates/index.html` (2,821 lines) | Card-first frontend: incremental flip cards, on-demand deep analysis |
+| `app.py` (1,230 lines) | Flask backend: 7 prompts, Haiku+Opus parallel, vision, tool use, follow-up, prompt caching, SSE streaming |
+| `templates/index.html` (3,139 lines) | Card-first frontend: flip cards, confidence badges, follow-up UI, tool handlers, prefix-aware paths |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
+| `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| [Meta-Prompting_Explained.pdf](https://github.com/voelspriet/flipside/blob/main/Meta-Prompting_Explained.pdf) | Case study document for presentations |
-| This file | 40 entries, complete process timeline |
+| This file | 51 entries, complete process timeline |
+
+## 10 Opus 4.6 Capabilities Used
+
+| # | Capability | Visible in product |
+|---|-----------|-------------------|
+| 1 | Extended thinking (adaptive) | Reasoning panel, cross-clause analysis |
+| 2 | Perspective adoption | Drafter's attorney voice on flip card backs |
+| 3 | Vision / multimodal | PDF page images → visual formatting tricks detected |
+| 4 | Tool use | `assess_risk` + `flag_interaction` structured tool calls |
+| 5 | Multi-turn follow-up | "Ask about this document" after analysis |
+| 6 | Confidence signaling | HIGH/MEDIUM/LOW badges on each flip card |
+| 7 | Self-correction | Quality Check section reviews its own analysis |
+| 8 | Benchmark comparison | Fair Standard Comparison against industry norms |
+| 9 | Split-model parallel | Haiku 4.5 (fast cards) + Opus 4.6 (deep analysis) |
+| 10 | Prompt caching | System prompts cached for 90% cost reduction |
 
 ## What Remains
 
 - Demo video
 - 100-200 word summary
-- Final testing and polish
+- Testing with document types beyond leases (insurance, ToS, employment)
 
 **Deadline: February 16, 3:00 PM EST**
 

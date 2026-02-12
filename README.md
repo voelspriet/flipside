@@ -29,13 +29,23 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
 2. **Browse flip cards** — Cards appear one at a time within seconds. Each card is a clause:
    - **Front**: What you'd think reading this ("seems fine, standard clause")
    - **Back**: What the drafter intended ("this lets us charge you for repairs we should cover")
+   - **Confidence badge**: HIGH / MEDIUM / LOW — how certain Opus is about each finding
    - Color-coded: **Green** (standard) · **Yellow** (notable) · **Red** (strategically asymmetric)
 
 3. **Read the Full Verdict** — After browsing cards, Opus 4.6's deep analysis reveals:
    - Cross-clause interactions (risks invisible when reading clause by clause)
    - A villain voice per finding ("The math does the work — once they're two days late, the waterfall makes it impossible to get current")
    - **→ YOUR MOVE**: one concrete action per finding
-   - Overall Risk Score with context-aware severity labels
+   - **Fair Standard Comparison**: how the worst clauses compare to industry norms
+   - **Who Drafted This**: a profile of the drafter and what it signals
+   - **Quality Check**: Opus reviews its own analysis for false positives and blind spots
+   - **How Opus 4.6 Analyzed This**: methodology disclosure — what techniques were used
+
+4. **Ask follow-up questions** — After the verdict, ask anything about the document:
+   - "What happens if I'm 3 months late on rent?"
+   - "Which clauses can I actually negotiate?"
+   - "Explain clause 4 like I'm 16"
+   - Opus 4.6 traces the answer through all relevant clauses with extended thinking
 
 ---
 
@@ -53,7 +63,24 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
 
 ---
 
-## Why Opus 4.6 Extended Thinking
+## 10 Opus 4.6 Capabilities in One Product
+
+FlipSide uses more Opus 4.6 capabilities than any single feature would require. Each capability is **visible in the product** — not a behind-the-scenes optimization.
+
+| # | Capability | What the user sees |
+|---|-----------|-------------------|
+| 1 | **Extended thinking (adaptive)** | Opus reasons across all clauses to find compound risks. Visible as a collapsible reasoning panel |
+| 2 | **Perspective adoption** | System prompt teaches Opus to think as the drafter's attorney |
+| 3 | **Vision / multimodal** | PDF pages sent as images — Opus detects fine print, buried placement, visual hierarchy tricks |
+| 4 | **Tool use** | `assess_risk` and `flag_interaction` tools structure findings during deep analysis |
+| 5 | **Multi-turn follow-up** | After analysis, users ask questions — Opus traces answers through all clauses |
+| 6 | **Confidence signaling** | Each flip card shows HIGH/MEDIUM/LOW confidence with hover-reveal reasoning |
+| 7 | **Self-correction** | Quality Check section — Opus reviews its own analysis for false positives and blind spots |
+| 8 | **Benchmark comparison** | Fair Standard Comparison — worst clauses measured against industry norms |
+| 9 | **Split-model parallel processing** | Haiku 4.5 for fast cards, Opus 4.6 for deep analysis, both running simultaneously |
+| 10 | **Prompt caching** | System prompts cached server-side for 90% cost reduction on repeated analyses |
+
+### Why Opus 4.6 Specifically
 
 FlipSide cannot work with a lesser model. Here's why:
 
@@ -62,6 +89,10 @@ FlipSide cannot work with a lesser model. Here's why:
 2. **Cross-clause interaction detection.** Insurance exclusions, penalty cascades, and indemnification asymmetries only become visible when the model reasons across multiple clauses simultaneously. Clause 2(c) and Clause 2(e) together deny water claims — neither clause does this alone.
 
 3. **The reasoning IS the product.** The user watches the extended thinking stream in real time. The visible chain of reasoning — "I am now thinking like the insurer's underwriting counsel..." — is not a debug feature. It is the interface. It is what makes the analysis trustworthy and educational.
+
+4. **Vision catches what text extraction misses.** Fine print literally in smaller font, liability waivers buried on page 7 of 8, tables that obscure fee comparisons — these are invisible to text-only analysis.
+
+5. **Tool use structures the reasoning.** When Opus calls `assess_risk` or `flag_interaction`, it commits to a structured assessment — risk level, confidence score, trick category, mechanism. This forces precision that free-text analysis often lacks.
 
 ---
 
@@ -108,15 +139,17 @@ The underlying principle is the same: **don't take yourself as the measurement o
                 │                       │
                 ▼                       ▼
         ┌──────────────┐      ┌─────────────────┐
-        │   HAIKU 4.5  │      │   OPUS 4.6      │
-        │              │      │                 │
-        │  Card scan   │      │  Deep analysis  │
-        │  No thinking │      │  Ext. thinking  │
-        │  8K tokens   │      │  48K+ tokens    │
-        │              │      │                 │
-        │  ~5s: first  │      │  ~80-100s total │
-        │  flip card   │      │                 │
-        └──────┬───────┘      └────────┬────────┘
+        │   HAIKU 4.5  │      │   OPUS 4.6               │
+        │              │      │                          │
+        │  Card scan   │      │  Deep analysis           │
+        │  No thinking │      │  Ext. thinking           │
+        │  8K tokens   │      │  48K+ tokens             │
+        │  Confidence  │      │  + Vision (PDF images)   │
+        │  badges      │      │  + Tool use (assess_risk,│
+        │              │      │    flag_interaction)      │
+        │  ~5s: first  │      │  ~40-100s total          │
+        │  flip card   │      │                          │
+        └──────┬───────┘      └────────┬─────────────────┘
                │                       │
                ▼                       ▼
         Cards stream in          Buffered until
@@ -125,10 +158,9 @@ The underlying principle is the same: **don't take yourself as the measurement o
                ▼                       ▼
         ┌──────────────────────────────────────┐
         │           FLIP CARDS                  │
-        │                                      │
         │  Front: "What you'd think"           │
         │  Back:  "What they intended"          │
-        │                                      │
+        │  Confidence: HIGH/MEDIUM/LOW          │
         │  User browses ← →                    │
         │                                      │
         │         "Full Verdict →"             │
@@ -138,14 +170,22 @@ The underlying principle is the same: **don't take yourself as the measurement o
         │  Cross-clause interactions            │
         │  Villain voice per finding            │
         │  → YOUR MOVE action per section       │
+        │  Fair Standard Comparison             │
         │  Who Drafted This (drafter profile)   │
+        │  Quality Check (self-correction)      │
+        │  How Opus 4.6 Analyzed This           │
         │  Overall Risk + Power Imbalance       │
+        │               │                      │
+        │               ▼                      │
+        │         FOLLOW-UP                    │
+        │  "What happens if I'm late?"         │
+        │  Opus traces through all clauses     │
         └──────────────────────────────────────┘
 ```
 
 Two models run in parallel: **Haiku 4.5** scans clauses fast (first card in ~5 seconds), while **Opus 4.6** with extended thinking reasons across all clauses simultaneously to find compound risks invisible when reading clause by clause. The user browses flip cards while Opus thinks in the background.
 
-**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking), single-file HTML/CSS/JS frontend. No external APIs beyond Anthropic. No database required.
+**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend. No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
 
 ---
 
@@ -166,7 +206,7 @@ Clauses turn red as risks are identified. The audience — every one of whom has
 - Not a legal advice tool (it analyzes documents, it does not give legal recommendations)
 - Not a contract generator (it reads existing documents, it does not create new ones)
 - Not a diff tool (it reveals strategic intent, not textual differences)
-- Not a chatbot (it performs one analysis per document — no conversation needed)
+- Not a chatbot (it performs one analysis per document — though you can ask follow-up questions after)
 
 ---
 

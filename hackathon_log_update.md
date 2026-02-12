@@ -295,15 +295,61 @@ This applies the meta-prompting pattern (Decision 4) to architecture: instead of
 - **1 architecture rewrite prompt** written (flip-card-rewrite-prompt.md)
 - **50 boundary-finding prompts** designed for Phase 2 (#71 evolved into core feature)
 
+---
+
+### Phase 8: 10 Opus 4.6 Capabilities Sprint
+
+**Entry 36 — Opus Capabilities Audit & Implementation**
+
+Ran a structured audit of 10 untapped Opus 4.6 capabilities. All 10 evaluated by parallel agents, ranked by (Demo Impact × Feasibility), and implemented in a single session:
+
+1. **Vision / multimodal** — PDF pages as images to deep analysis, detects visual formatting tricks
+2. **Tool use** — `assess_risk` + `flag_interaction` structured tool schemas
+3. **Multi-turn follow-up** — `/ask/<doc_id>` endpoint with SSE streaming
+4. **Confidence signaling** — HIGH/MEDIUM/LOW badges on flip cards with hover reasons
+5. **Self-correction** — Quality Check section reviews own analysis
+6. **Benchmark comparison** — Fair Standard Comparison against industry norms
+7. **Visible thinking** — Collapsed reasoning panel, "Show the full report" button
+8. **Methodology disclosure** — "How Opus 4.6 Analyzed This Document" section
+9. **Prompt caching** — `cache_control: {type: 'ephemeral'}` on system prompts
+10. **Document retention** — Documents kept for follow-up questions
+
+**Entry 37 — Reverse Proxy Deployment Fix**
+
+Deployed to server behind `/flipside/` prefix. All JavaScript fetch/EventSource calls used absolute paths → 404. Fixed with `BASE_URL = {{ request.script_root | tojson }}` prepended to all 5 API paths.
+
+---
+
+## What Exists Now
+
+| Artifact | Lines/Size | Purpose |
+|----------|-----------|---------|
+| `app.py` | 1,230 lines | Flask backend, 7 prompts, vision, tool use, follow-up, caching, SSE |
+| `templates/index.html` | 3,139 lines | Full frontend — flip cards, confidence, follow-up, prefix-aware |
+| `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility |
+| `hackaton.md` | 200 lines | 100 prompts: 48 executed (Phase 1) + 50 pending (Phase 2) |
+| `strategy.md` | ~246 lines | 7 strategy decisions documented |
+| `decision_monitor.py` | ~230 lines | Jury-facing decision timeline generator |
+| `HACKATHON_LOG.md` | ~300 lines | Original timeline (Phases 0–6) |
+| `docs/` | 18 files | Methodology and decision documents |
+| This file | — | Bridge between phases |
+
+## What Changed Since Last Update
+
+- **+248 lines** in `app.py` (vision, tool use, follow-up, caching, prompts)
+- **+318 lines** in `templates/index.html` (confidence, follow-up, tools, prefix fix)
+- **10 Opus 4.6 capabilities** implemented and visible in product
+- **Deployed to server** with reverse proxy support
+- **Phase 2 probes partially addressed**: #59 (follow-up), #60 (self-correction), #67 (confidence), #68 (jurisdiction via benchmark), #69 (vision/OCR)
+
 ## What Does Not Exist Yet
 
-- Flip card architecture rewrite (prompt ready, not yet executed)
 - Demo video
 - 100–200 word summary
-- Push to GitHub
+- Testing with diverse document types
 
 **Deadline: February 16, 3:00 PM EST**
 
 ---
 
-<sub>This document bridges HACKATHON_LOG.md (pre-build) and the current state. Updated February 11, 2026.</sub>
+<sub>This document bridges HACKATHON_LOG.md (pre-build) and the current state. Updated February 12, 2026.</sub>
