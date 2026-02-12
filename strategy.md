@@ -418,3 +418,52 @@
 - T+500ms: skeleton hidden, first real card shown
 
 **Key insight**: In streaming UIs, animations should be anchored to data events (first token, first clause, metadata detected), not wall-clock time. The model IS the clock — when it produces the first clause, that's when the transition happens. This makes the UX resilient to variable response times.
+
+---
+
+## Decision: The Comparison Lives in Memory, Not on Screen
+
+**Date**: 2026-02-12
+**Context**: After building the green reassurance front and red reveal back, the next iteration added a "Front vs. Back" contrast block on the card back — a side-by-side split showing the calm green version next to the alarming red version. Built with flex layout, fly-in animation, and a "Show details" toggle. Looked impressive.
+
+**The failure**: External review (verbatim, translated from Dutch): *"The split screen compares rather than reveals. When you show them side by side, you're asking the reader to weigh two options — like a product comparison. The shock of the flip is that the calm version DISAPPEARS and the alarming version REPLACES it. The user's memory of 'everything seemed fine' IS the green card. You don't need to show it again."*
+
+**The strategy**: Remove the contrast block entirely. The card back shows only the reveal: risk header → hero figure → example → bottom line. No reference to the front. The user's short-term memory of the reassuring green card IS the contrast — recreating it on screen diminishes the effect.
+
+**What was removed**: ~140 lines of CSS (`.back-contrast`, `.contrast-front-card`, `.contrast-reveal`, fly-in animation) + ~30 lines of JS (contrast HTML construction, `punchSource` tracking, details toggle).
+
+**What was added instead**: Sidebar dims to 35% opacity when a card flips (`.layout-flipped` class), spotlighting the card. Card front fades out during the 3D rotation (`opacity: 0` transition on `.flip-card-front`). The green header with ✓ badge is the last thing you see before the red header replaces it.
+
+**Why this works**:
+
+- The flip IS the product — the 180° rotation physically replaces one perspective with another. A split-screen removes the rotation and turns it into a comparison table.
+- Short-term memory retains the reassurance for 15-30 seconds. The user doesn't need a reminder — they just read it.
+- The sidebar dimming creates a theatrical spotlight effect: everything else recedes, only the reveal matters.
+- Removing code is always better than adding code when the removed code fights the core mechanic.
+
+**When to use this pattern**:
+
+- When a UI element duplicates what the user's memory already holds
+- When "showing more" actually reduces emotional impact
+- When external feedback says "this compares, not reveals" — trust the fresh eyes
+
+**Key insight**: The most powerful contrast is the one the user constructs in their own mind. Showing both sides simultaneously turns a revelation into a spreadsheet. Let the flip do the work.
+
+---
+
+## Decision: Three-Tier Fuzzy Matching for Clause Markers
+
+**Date**: 2026-02-12
+**Context**: The sidebar document preview shows numbered markers (①②③) at each clause's position in the text. These markers frequently failed to appear because the model's quoted text (especially when using vision on PDF images) didn't exactly match pdfplumber's text extraction — different whitespace, smart quotes, em-dashes, missing text from callout boxes.
+
+**The failure**: Exact substring matching (`text.indexOf(quote.substring(0, 60))`) worked only when pdfplumber's output perfectly matched the model's quote. For real-world PDFs, this happened less than half the time.
+
+**The strategy**: Three-tier matching with fallback:
+
+1. **Tier 1 — Exact match**: Try the original 60-char substring. Fast, precise when it works.
+2. **Tier 2 — Normalized match**: Collapse whitespace, normalize smart quotes (`""''` → `"`), normalize dashes (`–—` → `-`), lowercase both strings. Build a position map (`posMap[]`) that translates normalized indices back to original text positions so highlights land correctly.
+3. **Tier 3 — Word anchor**: Extract the first 4 significant words (>3 chars) from the quote, join with `\s+` regex, search the normalized text. Most resilient to whitespace/formatting differences.
+
+**Supporting fix**: Increased `full_text` limit from 5,000 to 15,000 characters — enough for ~20 pages of legal text. Later-page clauses were unfindable because their text was truncated. Also added `— Page N —` markers between pages, rendered as styled dividers in the sidebar.
+
+**Key insight**: When matching LLM output against extracted text, exact matching is the exception, not the rule. Build the fuzzy matching from day one — the cost is low (one extra pass over the text) and the benefit is fundamental (clause markers ARE the navigation).

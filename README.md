@@ -27,11 +27,12 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
 1. **Upload** — Drag in a PDF, DOCX, or paste text.
 
 2. **Browse flip cards** — Cards appear one at a time within seconds. Each card is a clause:
-   - **Front**: What you'd think reading this — a warm reassurance headline ("Your flexible payment timeline") followed by the reader's naive impression. This is how the drafter WANTS you to feel.
-   - **Back**: What the drafter intended ("this lets us charge you for repairs we should cover") — villain voice, risk analysis, concrete action
+   - **Front**: A calm green header bar with a reassurance headline ("Your flexible payment timeline ✓") followed by the reader's naive impression in first person. This is how the drafter WANTS you to feel. The green framing lulls you.
+   - **Back**: What the drafter intended — a red/yellow risk header with villain voice, the key figure in large bold type ("$4,100 in penalties"), a concrete example scenario, and bottom-line action. The sidebar dims to 35% opacity to spotlight the reveal; the green front fades out during the 3D flip.
    - **Confidence badge**: HIGH / MEDIUM / LOW — how certain Opus is about each finding
    - Color-coded: **Green** (standard) · **Yellow** (notable) · **Red** (strategically asymmetric)
    - **Bilingual**: Non-English documents include collapsible English translations per card
+   - **Document preview**: Sidebar shows the full document text with page dividers and numbered clause markers (①②③) that highlight when you navigate cards. Fuzzy matching ensures markers appear even when PDF text extraction differs from model quotes.
 
 3. **Read the Full Verdict** — After browsing cards, Opus 4.6's deep analysis reveals:
    - Cross-clause interactions (risks invisible when reading clause by clause)
@@ -164,8 +165,9 @@ The underlying principle is the same: **don't take yourself as the measurement o
                ▼                       ▼
         ┌──────────────────────────────────────┐
         │           FLIP CARDS                  │
-        │  Front: "What you'd think"           │
-        │  Back:  "What they intended"          │
+        │  Front: Green ✓ "Everything's fine"  │
+        │  Back:  Red ✗ "What they intended"   │
+        │  Sidebar dims → card spotlighted     │
         │  Confidence: HIGH/MEDIUM/LOW          │
         │  User browses ← →                    │
         │                                      │
@@ -191,7 +193,7 @@ The underlying principle is the same: **don't take yourself as the measurement o
 
 Two models run in parallel: **Haiku 4.5** scans clauses fast (first card in ~5 seconds), while **Opus 4.6** with extended thinking reasons across all clauses simultaneously to find compound risks invisible when reading clause by clause. The user browses flip cards while Opus thinks in the background.
 
-**Tech stack:** Python/Flask (1,371 lines), Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend (3,521 lines). No external APIs beyond Anthropic. No database required. Bilingual analysis for non-English documents. Deployable behind a reverse proxy with URL prefix.
+**Tech stack:** Python/Flask (1,387 lines), Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend (4,207 lines). No external APIs beyond Anthropic. No database required. Bilingual analysis for non-English documents. Deployable behind a reverse proxy with URL prefix.
 
 ---
 
@@ -266,7 +268,7 @@ This project documents not just the product, but the entire decision-making proc
 | [Live Demonstration](docs/LIVE_DEMONSTRATION.md) | "Think Like a Document" demonstrated on the AI itself |
 | [Prewash Prompt Collection](docs/PREWASH_PROMPT_COLLECTION.md) | 7 real before/after prompt examples |
 | [Three AI Failures](docs/ANCHORING_FAILURE.md) | Confirmation bias, framing bias, vocabulary bias — all caught by the human |
-| [Strategy Decisions](strategy.md) | 10 strategy decisions with rationale (debugging, meta-prompting, architecture, "Think Like a Document" UX) |
+| [Strategy Decisions](strategy.md) | 14 strategy decisions with rationale (debugging, meta-prompting, architecture, contrast pivot, fuzzy matching, "Think Like a Document" UX) |
 | [All docs](docs/) | 18+ methodology and decision documents |
 
 ## Builder
