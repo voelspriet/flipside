@@ -315,7 +315,6 @@ If I were the attorney who designed this document, my strategic approach was:
 
 **Power Imbalance Index: [0-100]/100** — How much the document favors the drafter over the signer
 
-**Risk Distribution**: [X] Green · [Y] Yellow · [Z] Red
 
 ### Top 3 Concerns
 1. **[Title]** — [one sentence]
@@ -732,7 +731,6 @@ This section answers: "Is this document UNUSUALLY aggressive, or is this just ho
 
 **Power Imbalance Index: [0-100]/100** — How little you can do about it.
 
-**Risk Distribution**: [X] Green · [Y] Yellow · [Z] Red
 
 SEVERITY TIERS — choose the label that fits the ACTUAL stakes, not just the number:
 - 0-30: "Low risk — standard terms" (typical boilerplate, no red flags)

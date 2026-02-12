@@ -499,13 +499,7 @@
             transition: width 1s ease;
         }
         .score-bar-value { width: 24px; text-align: right; font-weight: 600; font-size: 0.75rem; }
-        .risk-distribution {
-            display: flex; gap: 0.8rem; margin-top: 0.6rem; font-size: 0.78rem;
-        }
-        .risk-count { display: flex; align-items: center; gap: 0.25rem; }
-        .dot-green { color: var(--green); }
-        .dot-yellow { color: var(--yellow); }
-        .dot-red { color: var(--red); }
+        .risk-distribution { display: none; }
         .summary-concerns {
             list-style: none; margin-top: 0.8rem; padding: 0;
             font-size: 0.82rem; color: var(--text-body);
@@ -515,26 +509,8 @@
         }
         .summary-concerns li:last-child { border-bottom: none; }
 
-        /* ── Filter chips ────────────────────────────── */
-        .filter-chips {
-            display: flex; gap: 0.5rem; margin-bottom: 1rem;
-            position: sticky; top: 44px; z-index: 50;
-            background: var(--bg-cream); padding: 0.6rem 0;
-        }
-        .filter-chip {
-            padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.76rem;
-            font-weight: 600; font-family: inherit; cursor: pointer;
-            border: 1px solid var(--border); background: var(--bg-card);
-            color: var(--text-secondary); transition: all var(--transition);
-        }
-        .filter-chip:hover { border-color: var(--text-muted); }
-        .filter-chip.active { color: white; }
-        .filter-chip.chip-red { border-color: var(--red-border); color: var(--red-text); }
-        .filter-chip.chip-red.active { background: var(--red); color: white; border-color: var(--red); }
-        .filter-chip.chip-yellow { border-color: var(--yellow-border); color: var(--yellow-text); }
-        .filter-chip.chip-yellow.active { background: var(--yellow); color: white; border-color: var(--yellow); }
-        .filter-chip.chip-green { border-color: var(--green-border); color: var(--green-text); }
-        .filter-chip.chip-green.active { background: var(--green); color: white; border-color: var(--green); }
+        /* ── Filter chips (removed) ──────────────────── */
+        .filter-chips { display: none; }
 
         /* ── Clause cards ────────────────────────────── */
         .clause-card, .cross-clause-card, .playbook-card, .assessment-card {
@@ -1980,7 +1956,6 @@
                     if (isCompareMode) {
                         renderResultsFinal();
                         buildSummaryCard();
-                        buildFilterChips();
                     }
                     // Update card nav to show "View assessment →"
                     if (flipCardsBuilt) updateCardNavigation();
@@ -2151,7 +2126,6 @@
                 .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
             var html = marked.parse(safeMd);
             html = styleRiskBadges(html);
-            html = styleRiskDistribution(html);
             html = styleWhyClauses(html);
             html = styleReaderBlocks(html);
             html = styleDrafterBlocks(html);
@@ -2192,19 +2166,7 @@
         return html;
     }
 
-    // Style risk distribution line: "0 Green · 2 Yellow · 8 Red"
-    function styleRiskDistribution(html) {
-        return html.replace(
-            /(\d+)\s*Green\s*[·•\u00B7\u2022&](?:middot;|#xB7;|nbsp;)?\s*(\d+)\s*Yellow\s*[·•\u00B7\u2022&](?:middot;|#xB7;|nbsp;)?\s*(\d+)\s*Red/gi,
-            function(_, g, y, r) {
-                return '<span class="risk-distribution">' +
-                    '<span class="risk-count"><span class="dot-green">&#9679;</span> ' + g + ' Green</span>' +
-                    '<span class="risk-count"><span class="dot-yellow">&#9679;</span> ' + y + ' Yellow</span>' +
-                    '<span class="risk-count"><span class="dot-red">&#9679;</span> ' + r + ' Red</span>' +
-                    '</span>';
-            }
-        );
-    }
+    // styleRiskDistribution removed — risk distribution dots no longer shown
 
     function buildBadgeHtml(level, label, trick) {
         var h = '<span class="risk-badge risk-' + level + '">' + label + '</span>';
@@ -2540,7 +2502,6 @@
         // Render content now (was deferred during streaming)
         renderDeepAnalysisContent();
         buildSummaryCard();
-        buildFilterChips();
 
         // Collapse card viewport
         $('cardViewport').classList.add('hidden');
@@ -2645,7 +2606,6 @@
             .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
         var html = marked.parse(safeMd);
         html = styleRiskBadges(html);
-        html = styleRiskDistribution(html);
         html = styleWhyClauses(html);
         html = styleReaderBlocks(html);
         html = styleDrafterBlocks(html);
@@ -2942,11 +2902,7 @@
         if (piiScore !== null) h += '<span>Power = how little you can do about it</span>';
         h += '</div>';
 
-        h += '<div class="risk-distribution">';
-        if (greenCount) h += '<span class="risk-count"><span class="dot-green">&#9679;</span> ' + greenCount + ' Green</span>';
-        if (yellowCount) h += '<span class="risk-count"><span class="dot-yellow">&#9679;</span> ' + yellowCount + ' Yellow</span>';
-        if (redCount) h += '<span class="risk-count"><span class="dot-red">&#9679;</span> ' + redCount + ' Red</span>';
-        h += '</div>';
+        // Risk distribution dots removed
 
         if (concerns.length) {
             h += '<ul class="summary-concerns">';
