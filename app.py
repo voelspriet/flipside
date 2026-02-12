@@ -15,6 +15,7 @@ import json
 import time
 import threading
 import queue as queue_module
+import base64
 from io import BytesIO
 
 from flask import Flask, request, jsonify, render_template, Response
@@ -80,6 +81,39 @@ PHASE_MARKERS = [
     ('Overall Assessment', 'summary'),
 ]
 
+DEEP_ANALYSIS_TOOLS = [
+    {
+        "name": "assess_risk",
+        "description": "Record a structured risk assessment for a clause. Call once per clause analyzed.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "clause_ref": {"type": "string", "description": "Section reference, e.g. '§1 Rent and Late Fees'"},
+                "risk_level": {"type": "string", "enum": ["green", "yellow", "red"]},
+                "confidence": {"type": "number", "minimum": 0, "maximum": 100},
+                "score": {"type": "integer", "minimum": 0, "maximum": 100},
+                "trick_type": {"type": "string", "description": "One of the 18 trick categories"},
+                "mechanism": {"type": "string", "description": "How this clause creates risk — one sentence"},
+            },
+            "required": ["clause_ref", "risk_level", "confidence", "score", "trick_type", "mechanism"],
+        },
+    },
+    {
+        "name": "flag_interaction",
+        "description": "Flag a cross-clause interaction creating compound risk invisible when reading individually.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "clauses": {"type": "array", "items": {"type": "string"}, "description": "Section references involved"},
+                "interaction_type": {"type": "string", "description": "Name for this interaction pattern"},
+                "severity": {"type": "string", "enum": ["moderate", "serious", "critical"]},
+                "explanation": {"type": "string", "description": "How these clauses compound — 1-2 sentences"},
+            },
+            "required": ["clauses", "interaction_type", "severity", "explanation"],
+        },
+    },
+]
+
 # ---------------------------------------------------------------------------
 # Sample document
 # ---------------------------------------------------------------------------
@@ -116,15 +150,29 @@ QuickRent Property Management
 # Text extraction
 # ---------------------------------------------------------------------------
 
+MAX_VISION_PAGES = 10
+VISION_DPI = 150
+
+
 def extract_pdf(file_storage):
     import pdfplumber
+    pdf_bytes = file_storage.read()
     text_parts = []
-    with pdfplumber.open(BytesIO(file_storage.read())) as pdf:
-        for page in pdf.pages:
+    page_images = []
+    with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
+        for i, page in enumerate(pdf.pages):
             page_text = page.extract_text()
             if page_text:
                 text_parts.append(page_text)
-    return '\n\n'.join(text_parts)
+            if i < MAX_VISION_PAGES:
+                try:
+                    img = page.to_image(resolution=VISION_DPI)
+                    buf = BytesIO()
+                    img.original.save(buf, format='PNG')
+                    page_images.append(base64.b64encode(buf.getvalue()).decode())
+                except Exception:
+                    pass
+    return '\n\n'.join(text_parts), page_images
 
 
 def extract_docx(file_storage):
@@ -313,6 +361,7 @@ def upload():
     try:
         text = ''
         filename = ''
+        page_images = []
 
         if 'file' in request.files and request.files['file'].filename:
             file = request.files['file']
@@ -320,7 +369,7 @@ def upload():
             ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
 
             if ext == 'pdf':
-                text = extract_pdf(file)
+                text, page_images = extract_pdf(file)
             elif ext == 'docx':
                 text = extract_docx(file)
             elif ext in ('txt', 'text', 'md'):
@@ -348,6 +397,7 @@ def upload():
             'role': role,
             'negotiable': negotiable,
             'depth': depth,
+            'page_images': page_images,
         }
 
         return jsonify({
@@ -561,6 +611,7 @@ Then for EACH significant clause, output exactly this format:
 [READER]: [One sentence. What a reasonable person would think when first reading this clause. Trusting, slightly optimistic tone. Second person. Examples: "Seems fair — five days is plenty of time to pay." / "Standard maintenance rules. Of course I'd report problems quickly." / "Makes sense they'd need to enter for emergencies."]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
+Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguous" or "two interpretations possible" or "depends on jurisdiction"]
 
 **Bottom line:** [One sentence visible before flipping. GREEN: confirm it's fair. YELLOW/RED: name the specific risk in plain language. Be concrete, not vague.]
 
@@ -598,20 +649,35 @@ Then for EACH significant clause, output exactly this format:
 ## RULES
 1. Output each clause immediately — do NOT wait to analyze all clauses before outputting
 2. Every clause MUST end with --- on its own line
-3. Every clause MUST have: quote, [READER] line, risk level with score and trick, bottom line, juxtaposition
+3. Every clause MUST have: quote, [READER] line, risk level with score and trick, confidence, bottom line, juxtaposition
 4. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
 5. Keep each field to ONE sentence. Cards must be scannable, not essays
 6. The [READER] voice should feel like the reader's own inner monologue — natural, not robotic
 7. "What you should read" is the core insight — make it visceral
 8. Do NOT include negotiation advice or action items — those come from deep analysis
 9. Do NOT include cross-clause interactions — analyze each clause independently
-10. The Document Profile must appear BEFORE the first clause, followed by ---"""
+10. Confidence: HIGH = language is clear, single reasonable interpretation; MEDIUM = some ambiguity or unusual phrasing; LOW = clause could reasonably be read multiple ways or meaning depends on context
+11. The Document Profile must appear BEFORE the first clause, followed by ---"""
 
 
-def build_deep_analysis_prompt():
-    """Deep cross-clause analysis with DRAFTER perspective, playbook, and assessment."""
-    return """You are a senior attorney who has read this entire document. Perform the DEEP analysis: cross-clause interactions, the drafter's strategic playbook, and overall risk assessment. This requires reasoning across ALL clauses simultaneously — finding what is invisible when reading clause by clause.
+def build_deep_analysis_prompt(has_images=False):
+    """Deep cross-clause analysis with VILLAIN voice, per-section actions, and assessment."""
+    visual_block = ""
+    if has_images:
+        visual_block = """
 
+## VISUAL FORMATTING ANALYSIS
+
+Page images are included alongside the document text. Examine them for visual tricks that extracted text cannot capture:
+- **Fine print**: Text in noticeably smaller font — especially clauses with high financial impact
+- **Buried placement**: Critical terms on late pages, at page bottom, or in footnotes
+- **Table structures**: Tables that obscure comparisons or hide fees in dense grids
+- **Visual hierarchy manipulation**: Important limitations in light gray, disclaimers in condensed type
+
+If you detect visual formatting tricks, include them as cross-clause interactions with the best-fitting trick category. Reference the page number."""
+
+    return f"""You are a senior attorney who has read this entire document. Perform the DEEP analysis: cross-clause interactions and overall risk assessment. This requires reasoning across ALL clauses simultaneously — finding what is invisible when reading clause by clause.
+{visual_block}
 ## LANGUAGE RULE
 Respond in the SAME LANGUAGE as the document.
 
@@ -629,39 +695,53 @@ For each interaction:
 
 **Read together, you'd realize:** What they ACTUALLY do when combined — the hidden compound risk. One sentence, visceral.
 
-**Clauses Involved**: [list specific sections]
+**Clauses involved:** [list specific sections — e.g., §1, §2, §4. List them here ONCE and keep them OUT of the prose below.]
 
-**How They Interact**: [2-3 sentences. The mechanism — be very specific about HOW the clauses feed into each other.]
+**How they interact:** [2-3 sentences. The mechanism — be specific about HOW the clauses feed into each other. Write in plain English. Do NOT embed §-references in the flowing text — the clause list above handles that.]
 
 [RED/YELLOW] · Trick: [TRICK_CATEGORY]
 
-**If the drafter could speak freely:** [2-3 sentences reconstructing what the person who designed this clause combination was likely trying to achieve. Speak as if the drafter is explaining the strategy to a colleague. Professional, strategic, calm — not villainous. Use "we" language. Example: "The 24-hour reporting requirement pairs nicely with the damage liability clause. If a tenant misses the window — and most will for minor issues — they've assumed financial responsibility. We've converted a reporting rule into a revenue mechanism."]
+**If the drafter could speak as a villain:** [MAX 2-3 sentences. Keep ONLY the sharpest line that reveals the mechanism. A good villain reveals, doesn't lecture. Example: "The math does the work. Once they're two days late, the waterfall makes it impossible to get current — and we've already waived their right to challenge it."]
+
+→ YOUR MOVE: [One concrete action the reader should take about THIS specific interaction. One sentence. Example: "Demand a flat late fee cap (e.g., 5% of monthly rent) and require payments apply to rent principal first."]
 
 ---
 
 Find at least 3 cross-clause interactions. These are your most valuable findings.
 
-## The Drafter's Playbook
+## Who Drafted This
 
-Reveal the strategic architecture as if you were the attorney who designed it:
+[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, aggressive deposit deductions, and form-letter communication. The structure is designed for a landlord who wants to manage by policy, not relationship."]
 
-If I were the attorney who designed this document, my strategic approach was:
+## Fair Standard Comparison
 
-1. **[Strategy name]**: [what this achieves for the drafting party]
-2. **[Strategy name]**: [what this achieves]
-3. **[Strategy name]**: [what this achieves]
-4. **[Strategy name]**: [what this achieves]
-5. **[Strategy name]**: [what this achieves]
+Compare the WORST clauses in this document against what a fair, balanced version of the same document type would contain. Use your knowledge of standard industry practices and legal norms.
 
-**Bottom Line**: [One sentence — the insight the reader needs most]
+For each comparison (2-3 max):
+
+### [Clause/Area]
+**This document says:** [what the clause actually states — one sentence]
+**A fair version would say:** [what a balanced, industry-standard clause would look like — one sentence]
+**The gap:** [why the difference matters to the reader — one sentence]
+
+This section answers: "Is this document UNUSUALLY aggressive, or is this just how these documents work?" Ground your comparison in real-world norms for this document type.
 
 ## Overall Assessment
 
-**Overall Risk Score: [0-100]/100** — How much this document can hurt you.
+**Overall Risk Score: [0-100]/100** — [CONTEXT-AWARE severity label — see tiers below]
 
 **Power Imbalance Index: [0-100]/100** — How little you can do about it.
 
 **Risk Distribution**: [X] Green · [Y] Yellow · [Z] Red
+
+SEVERITY TIERS — choose the label that fits the ACTUAL stakes, not just the number:
+- 0-30: "Low risk — standard terms" (typical boilerplate, no red flags)
+- 31-55: "Moderate risk — review flagged clauses" (some problematic terms, fixable)
+- 56-75: "High risk — negotiate before signing" (significant imbalance, pushback needed)
+- 76-90: "Serious risk — seek professional legal review" (document designed to exploit)
+- 91-100: "Do not sign — [reason]" (unconscionable, illegal, or rights-destroying)
+
+CRITICAL: If the document touches fundamental rights (constitutional protections, whistleblower rights, parliamentary immunity, medical consent, employment non-competes that restrict livelihood), ELEVATE the severity language regardless of score. A score of 74 on a lease = "negotiate." A score of 74 on an NDA that undermines constitutional protections = "seek legal counsel — constitutional concerns." Match the stakes, not just the math.
 
 ### Top 3 Concerns
 1. **[Title]** — [one sentence]
@@ -669,9 +749,30 @@ If I were the attorney who designed this document, my strategic approach was:
 3. **[Title]** — [one sentence]
 
 ### Recommended Actions
+[Consolidated checklist — the user has already seen per-section actions above. Summarize the 3-5 most important moves. NEVER end mid-sentence — if you're running out of space, write fewer items rather than truncating.]
 - [Specific, actionable item]
 - [Specific, actionable item]
 - [Specific, actionable item]
+
+## How Opus 4.6 Analyzed This Document
+
+[2-4 sentences. Describe which reasoning methods YOU actually used for THIS specific document. Be concrete and specific to what you found — not generic. Examples of methods to mention when applicable:
+- **Perspective adoption**: "I read this as the drafter's attorney to reconstruct strategic intent behind [specific clause pattern]."
+- **Cross-clause reasoning**: "I traced how [clause X] feeds into [clause Y] by holding the full document in context simultaneously."
+- **Extended thinking**: "I used [N] reasoning steps to work through the [specific interaction] — this required sustained multi-step inference that shorter models would miss."
+- **Pattern recognition against legal corpus**: "I recognized the [specific pattern] as a known tactic in [document type] contracts."
+- **Multilingual analysis**: "I detected the document language as [X] and analyzed jurisdiction-specific implications."
+Only mention methods you ACTUALLY used. This section is short — 2-4 sentences, not a list of every capability.]
+
+## Quality Check
+
+Re-read your own analysis above with fresh eyes. Check for these failure modes:
+
+- **Possible False Positives**: Any findings where the language is actually standard for this document type but you flagged it as YELLOW or RED? If so, name them and explain. If none: "None identified — all flags appear warranted."
+- **Possible Blind Spots**: Any risks you glossed over, treated as boilerplate, or failed to connect? Look for missing protections, undefined terms, and untraced cross-references. If none: "None identified — analysis appears thorough."
+- **Consistency Check**: Did similar language get different scores? If so, flag it. If not: "Scoring appears consistent."
+
+**Adjusted Confidence: [HIGH/MEDIUM/LOW]** — After self-review, how confident are you in the overall analysis?
 
 ## TRICK CATEGORIES:
 - Silent Waiver — Quietly surrenders your legal rights
@@ -694,15 +795,23 @@ If I were the attorney who designed this document, my strategic approach was:
 - Ghost Standard — References external docs not included
 
 ## RULES
-- Focus exclusively on cross-clause interactions, playbook, and assessment
+- Focus exclusively on cross-clause interactions, drafter profile, and assessment
 - Do NOT re-analyze individual clauses — that has been done separately
-- Every cross-clause interaction MUST include an "If the drafter could speak freely" section — the drafter's voice explaining the strategic architecture
-- The drafter's voice should sound like a professional in a meeting, not a villain. Use "we" language.
-- LEAD each interaction with "Read separately / Read together" — that's the hook. The drafter's voice is supporting evidence, placed AFTER.
+- Every cross-clause interaction MUST include a villain voice block — short and sharp, MAX 2-3 sentences
+- The villain voice is deliberately adversarial and exaggerated — the user expects this framing
+- Every cross-clause interaction MUST end with "→ YOUR MOVE:" — one concrete action
+- LEAD each interaction with "Read separately / Read together" — that's the hook
+- Keep §-references in "Clauses involved:" only — do NOT embed them in flowing prose
+- The "Who Drafted This" section replaces the old Playbook — profile the drafter type, don't repeat findings
 - Cross-clause interactions are your HIGHEST VALUE finding — reason deeply
-- The Playbook must reveal strategic architecture, not just list problems
 - Use your full extended thinking budget to reason across the entire document
-- Be thorough — connect clauses that the reader would never connect on their own"""
+- Be thorough — connect clauses that the reader would never connect on their own
+- COMPLETION IS MANDATORY: The Overall Assessment section (especially Recommended Actions) is the user's takeaway. NEVER truncate it. If you need to economize, shorten cross-clause descriptions — never cut the assessment
+- The severity label MUST match the real-world stakes of the document, not just the numerical score
+- The Quality Check is your credibility section — be genuinely self-critical, brief (2-4 bullet points). Users trust analyses that acknowledge uncertainty more than false certainty
+
+## STRUCTURED DATA TOOLS
+You have two tools: `assess_risk` and `flag_interaction`. Call them AS YOU analyze — right after each clause or interaction in your prose. These capture structured data for the interactive dashboard. Your markdown output remains the primary analysis; tool calls add machine-readable metadata alongside it."""
 
 
 @app.route('/compare', methods=['POST'])
@@ -718,7 +827,7 @@ def compare():
                 fname = file.filename
                 ext = fname.rsplit('.', 1)[-1].lower() if '.' in fname else ''
                 if ext == 'pdf':
-                    text = extract_pdf(file)
+                    text, _ = extract_pdf(file)
                 elif ext == 'docx':
                     text = extract_docx(file)
                 elif ext in ('txt', 'text', 'md'):
@@ -775,8 +884,14 @@ def analyze(doc_id):
         """Process a streaming event. Returns list of SSE chunks."""
         chunks = []
         if event.type == 'content_block_start':
-            state['current_block'] = event.content_block.type
-            chunks.append(sse(f'{state["current_block"]}_start'))
+            block = event.content_block
+            state['current_block'] = block.type
+            if block.type == 'tool_use':
+                state['current_tool_name'] = block.name
+                state['current_tool_input_json'] = ''
+                chunks.append(sse('tool_start', json.dumps({'name': block.name})))
+            else:
+                chunks.append(sse(f'{block.type}_start'))
         elif event.type == 'content_block_delta':
             if event.delta.type == 'thinking_delta':
                 chunks.append(sse('thinking', event.delta.thinking))
@@ -791,10 +906,22 @@ def analyze(doc_id):
                         state['detected_phases'].add(phase_name)
                         chunks.append(sse('phase', phase_name))
                 chunks.append(sse('text', text))
+            elif event.delta.type == 'input_json_delta':
+                state['current_tool_input_json'] += event.delta.partial_json
         elif event.type == 'content_block_stop':
-            if state['current_block']:
+            if state['current_block'] == 'tool_use':
+                tool_name = state.get('current_tool_name', '')
+                try:
+                    tool_input = json.loads(state['current_tool_input_json'])
+                except json.JSONDecodeError:
+                    tool_input = {}
+                state['tool_results'].append({'name': tool_name, 'data': tool_input})
+                chunks.append(sse('tool_result', json.dumps({'name': tool_name, 'data': tool_input})))
+                state['current_tool_name'] = None
+                state['current_tool_input_json'] = ''
+            elif state['current_block']:
                 chunks.append(sse(f'{state["current_block"]}_done'))
-                state['current_block'] = None
+            state['current_block'] = None
         return chunks
 
     def run_single_stream(client, user_msg, system_prompt, preset):
@@ -803,6 +930,9 @@ def analyze(doc_id):
             'current_block': None,
             'phase_buffer': '',
             'detected_phases': set(),
+            'current_tool_name': None,
+            'current_tool_input_json': '',
+            'tool_results': [],
         }
         stream = None
         try:
@@ -811,7 +941,7 @@ def analyze(doc_id):
                 model=MODEL,
                 max_tokens=preset['max_tokens'],
                 thinking={'type': 'adaptive'},
-                system=system_prompt,
+                system=[{'type': 'text', 'text': system_prompt, 'cache_control': {'type': 'ephemeral'}}],
                 messages=[{'role': 'user', 'content': user_msg}],
                 stream=True,
             )
@@ -830,19 +960,22 @@ def analyze(doc_id):
         timings = {}
 
         def worker(label, system_prompt, max_out,
-                   model=MODEL, use_thinking=True):
+                   model=MODEL, use_thinking=True, user_content=None, tools=None):
             stream = None
             t0 = time.time()
             try:
+                msg_content = user_content if user_content is not None else user_msg
                 create_kwargs = {
                     'model': model,
                     'max_tokens': max_out,
-                    'system': system_prompt,
-                    'messages': [{'role': 'user', 'content': user_msg}],
+                    'system': [{'type': 'text', 'text': system_prompt, 'cache_control': {'type': 'ephemeral'}}],
+                    'messages': [{'role': 'user', 'content': msg_content}],
                     'stream': True,
                 }
                 if use_thinking:
                     create_kwargs['thinking'] = {'type': 'adaptive'}
+                if tools:
+                    create_kwargs['tools'] = tools
                 stream = client.messages.create(**create_kwargs)
                 for event in stream:
                     q.put((label, event))
@@ -864,10 +997,30 @@ def analyze(doc_id):
             daemon=True,
         )
         # Opus for deep cross-clause analysis (extended thinking)
+        # Deep analysis needs higher token budget: adaptive thinking eats
+        # into max_tokens, and the structured output (villain voice, YOUR MOVE,
+        # cross-clause interactions, drafter profile, assessment) is heavy.
+        # Floor of 48000 ensures Opus can think ~20K + output ~28K.
+        deep_max_tokens = max(preset['max_tokens'], 48000)
+
+        # Build vision content for deep analysis if page images exist
+        page_images = doc.get('page_images', [])
+        deep_user_content = None
+        if page_images:
+            deep_user_content = [{'type': 'text', 'text': user_msg}]
+            for i, img_b64 in enumerate(page_images):
+                deep_user_content.append({'type': 'text', 'text': f'[Page {i + 1} visual layout:]'})
+                deep_user_content.append({
+                    'type': 'image',
+                    'source': {'type': 'base64', 'media_type': 'image/png', 'data': img_b64},
+                })
+
+        has_images = bool(page_images)
         t_deep = threading.Thread(
             target=worker,
-            args=('deep', build_deep_analysis_prompt(),
-                  preset['max_tokens'], MODEL, True),
+            args=('deep', build_deep_analysis_prompt(has_images=has_images),
+                  deep_max_tokens, MODEL, True),
+            kwargs={'user_content': deep_user_content, 'tools': DEEP_ANALYSIS_TOOLS},
             daemon=True,
         )
 
@@ -879,6 +1032,9 @@ def analyze(doc_id):
             'current_block': None,
             'phase_buffer': '',
             'detected_phases': set(),
+            'current_tool_name': None,
+            'current_tool_input_json': '',
+            'tool_results': [],
         }
         quick_done = False
         deep_done = False
@@ -962,7 +1118,91 @@ def analyze(doc_id):
         except Exception as e:
             yield sse('error', str(e))
         finally:
-            documents.pop(doc_id, None)
+            # Keep document for follow-up questions
+            if doc_id in documents:
+                documents[doc_id]['analyzed'] = True
+
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive',
+        },
+    )
+
+
+def build_followup_prompt():
+    """Short system prompt for follow-up questions about an analyzed document."""
+    return """You are a senior attorney who has just finished analyzing a document. The user has a follow-up question about it.
+
+## LANGUAGE RULE
+Respond in the SAME LANGUAGE as the document.
+
+## RULES
+- Answer the specific question asked — do not repeat the full analysis
+- Reference specific clauses, sections, or language from the document when relevant
+- If the question asks about something not in the document, say so clearly
+- Be direct, concrete, and practical — write for a non-lawyer audience
+- If the question involves legal risk, reference the relevant trick category and risk level
+- Keep your answer focused — typically 2-5 paragraphs unless the question demands more"""
+
+
+@app.route('/ask/<doc_id>', methods=['POST'])
+def ask(doc_id):
+    if doc_id not in documents:
+        return jsonify({'error': 'Document not found. Please re-upload.'}), 404
+
+    doc = documents[doc_id]
+    data = request.get_json(silent=True) or {}
+    question = data.get('question', '').strip()
+
+    if not question:
+        return jsonify({'error': 'No question provided.'}), 400
+
+    def sse(event_type, content=''):
+        payload = json.dumps({'type': event_type, 'content': content})
+        return f"data: {payload}\n\n"
+
+    def generate():
+        try:
+            client = anthropic.Anthropic()
+            user_msg = (
+                "Here is the document:\n\n"
+                "---BEGIN DOCUMENT---\n\n"
+                f"{doc['text']}\n\n"
+                "---END DOCUMENT---\n\n"
+                f"Question: {question}"
+            )
+            yield sse('phase', 'thinking')
+            stream = client.messages.create(
+                model=MODEL,
+                max_tokens=16000,
+                thinking={'type': 'adaptive'},
+                system=[{
+                    'type': 'text',
+                    'text': build_followup_prompt(),
+                    'cache_control': {'type': 'ephemeral'},
+                }],
+                messages=[{'role': 'user', 'content': user_msg}],
+                stream=True,
+            )
+            try:
+                for event in stream:
+                    if event.type == 'content_block_delta':
+                        if event.delta.type == 'thinking_delta':
+                            yield sse('thinking', event.delta.thinking)
+                        elif event.delta.type == 'text_delta':
+                            yield sse('text', event.delta.text)
+                    elif event.type == 'message_stop':
+                        yield sse('done')
+            finally:
+                stream.close()
+        except anthropic.APIError as e:
+            yield sse('error', f'API error: {e.message}')
+        except Exception as e:
+            yield sse('error', str(e))
 
     return Response(
         generate(),

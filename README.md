@@ -24,17 +24,18 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
 
 ### The Three Steps
 
-1. **Upload** — Drag in a PDF, DOCX, or paste text. Select your role (tenant, freelancer, policyholder, employee, app user, borrower, patient). Toggle: "Can you negotiate this document?" (Yes/No).
+1. **Upload** — Drag in a PDF, DOCX, or paste text.
 
-2. **Watch the reasoning** — Opus 4.6 extended thinking streams in real time. You see the AI adopt the drafter's perspective clause by clause. The reasoning is visible — not hidden behind a loading spinner.
+2. **Browse flip cards** — Cards appear one at a time within seconds. Each card is a clause:
+   - **Front**: What you'd think reading this ("seems fine, standard clause")
+   - **Back**: What the drafter intended ("this lets us charge you for repairs we should cover")
+   - Color-coded: **Green** (standard) · **Yellow** (notable) · **Red** (strategically asymmetric)
 
-3. **Read the findings** — Each clause is flagged:
-   - **Green**: Standard boilerplate, no strategic concern
-   - **Yellow**: Notable — creates expectations or shifts default assumptions
-   - **Red**: Significantly asymmetric — strategically favors the drafter at your expense
-
-   For negotiable documents: suggested revisions.
-   For non-negotiable documents (ToS, insurance): "What this means for you" + "What to watch for."
+3. **Read the Full Verdict** — After browsing cards, Opus 4.6's deep analysis reveals:
+   - Cross-clause interactions (risks invisible when reading clause by clause)
+   - A villain voice per finding ("The math does the work — once they're two days late, the waterfall makes it impossible to get current")
+   - **→ YOUR MOVE**: one concrete action per finding
+   - Overall Risk Score with context-aware severity labels
 
 ---
 
@@ -98,27 +99,53 @@ The underlying principle is the same: **don't take yourself as the measurement o
 ## Architecture
 
 ```
-User uploads document
-        │
-        ▼
-  Flask backend extracts text (PDF/DOCX/paste)
-        │
-        ▼
-  Opus 4.6 API call with extended thinking
-  System prompt: "You are the attorney who drafted this document.
-  Analyze each clause from the drafter's strategic perspective.
-  Explain what each clause accomplishes for the drafting party."
-        │
-        ▼
-  SSE streaming → real-time reasoning displayed to user
-        │
-        ▼
-  Structured output: clause-by-clause analysis
-  with risk flags (green/yellow/red)
-  and action options (revise or understand)
+                    User uploads document
+                            │
+                            ▼
+                Flask extracts text (PDF/DOCX/paste)
+                            │
+                ┌───────────┴───────────┐
+                │                       │
+                ▼                       ▼
+        ┌──────────────┐      ┌─────────────────┐
+        │   HAIKU 4.5  │      │   OPUS 4.6      │
+        │              │      │                 │
+        │  Card scan   │      │  Deep analysis  │
+        │  No thinking │      │  Ext. thinking  │
+        │  8K tokens   │      │  48K+ tokens    │
+        │              │      │                 │
+        │  ~5s: first  │      │  ~80-100s total │
+        │  flip card   │      │                 │
+        └──────┬───────┘      └────────┬────────┘
+               │                       │
+               ▼                       ▼
+        Cards stream in          Buffered until
+        one at a time            user requests it
+               │                       │
+               ▼                       ▼
+        ┌──────────────────────────────────────┐
+        │           FLIP CARDS                  │
+        │                                      │
+        │  Front: "What you'd think"           │
+        │  Back:  "What they intended"          │
+        │                                      │
+        │  User browses ← →                    │
+        │                                      │
+        │         "Full Verdict →"             │
+        │               │                      │
+        │               ▼                      │
+        │         DEEP ANALYSIS                │
+        │  Cross-clause interactions            │
+        │  Villain voice per finding            │
+        │  → YOUR MOVE action per section       │
+        │  Who Drafted This (drafter profile)   │
+        │  Overall Risk + Power Imbalance       │
+        └──────────────────────────────────────┘
 ```
 
-**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Opus 4.6 with extended thinking), HTML/CSS frontend. No external APIs beyond Anthropic. No database required.
+Two models run in parallel: **Haiku 4.5** scans clauses fast (first card in ~5 seconds), while **Opus 4.6** with extended thinking reasons across all clauses simultaneously to find compound risks invisible when reading clause by clause. The user browses flip cards while Opus thinks in the background.
+
+**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking), single-file HTML/CSS/JS frontend. No external APIs beyond Anthropic. No database required.
 
 ---
 

@@ -776,6 +776,22 @@
             border: 1px solid var(--border); border-radius: var(--radius-sm);
             font-size: 0.7rem; font-weight: 500; color: var(--text-secondary);
         }
+        .confidence-badge {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            padding: 0.15rem 0.5rem; border-radius: var(--radius-sm);
+            font-size: 0.62rem; font-weight: 600; letter-spacing: 0.03em;
+            text-transform: uppercase; cursor: default;
+        }
+        .confidence-high { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+        .confidence-medium { background: var(--yellow-bg); color: var(--yellow-text); border: 1px solid var(--yellow-border); }
+        .confidence-low { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-border); font-style: italic; }
+        .confidence-reason {
+            font-weight: 400; font-style: italic; font-size: 0.58rem;
+            text-transform: none; letter-spacing: 0; max-width: 0;
+            overflow: hidden; white-space: nowrap;
+            transition: max-width 0.3s var(--ease-out-expo), padding-left 0.3s ease;
+        }
+        .confidence-badge:hover .confidence-reason { max-width: 220px; padding-left: 0.3rem; }
 
         .back-body { padding: 1.5rem 2rem 0; }
 
@@ -812,6 +828,21 @@
         .drafter-voice-label-green { color: var(--green-text); }
         .drafter-voice-text {
             font-size: 0.9rem; line-height: 1.65; color: var(--text-body); font-style: italic;
+        }
+
+        /* ── Your Move action block ── */
+        .your-move {
+            padding: 0.8rem 1.1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;
+            background: linear-gradient(135deg, rgba(45, 138, 78, 0.05), rgba(45, 138, 78, 0.10));
+            border-left: 3px solid var(--green);
+            font-size: 0.88rem; line-height: 1.6; color: var(--text-primary);
+            font-weight: 500;
+        }
+        .your-move-label {
+            display: block; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--green-text); margin-bottom: 0.3rem;
         }
 
         /* Green verdict — no hidden intent */
@@ -1017,6 +1048,37 @@
             50% { opacity: 1; }
         }
 
+        /* ── Follow-up question UI ── */
+        .followup-section { margin-top: 2.5rem; }
+        .followup-input-row { display: flex; gap: 0.5rem; align-items: flex-start; }
+        .followup-input {
+            flex: 1; padding: 0.7rem 1rem;
+            font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+            color: var(--text-primary); background: var(--bg-surface);
+            border: 1px solid var(--border); border-radius: var(--radius-md);
+            outline: none; resize: none; min-height: 44px; max-height: 120px;
+            transition: border-color var(--transition);
+        }
+        .followup-input:focus { border-color: var(--accent); }
+        .followup-input::placeholder { color: var(--text-dim); }
+        .followup-send {
+            padding: 0.7rem 1.2rem; font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem; font-weight: 600; color: white;
+            background: var(--text-primary); border: none;
+            border-radius: var(--radius-md); cursor: pointer;
+            transition: all var(--transition); white-space: nowrap;
+        }
+        .followup-send:hover:not(:disabled) { background: var(--accent); }
+        .followup-send:disabled { opacity: 0.35; cursor: not-allowed; }
+        .followup-answer {
+            margin-top: 1.5rem; padding: 1.2rem 1.5rem;
+            background: var(--bg-surface); border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+        }
+        .followup-q { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.75rem; }
+        .followup-a { font-size: 0.9rem; color: var(--text-body); line-height: 1.65; }
+        .followup-a p { margin-bottom: 0.6rem; }
+
         /* Reduced motion */
         @media (prefers-reduced-motion: reduce) {
             .flip-card.woosh-in { animation: none; }
@@ -1216,6 +1278,15 @@
                 <div id="summaryContainer"></div>
                 <div id="filterChips" class="filter-chips hidden"></div>
                 <div id="deepAnalysisContent"></div>
+                <div class="followup-section hidden" id="followupSection">
+                    <hr class="editorial-divider">
+                    <div class="section-label" style="margin-bottom:1rem">Ask about this document</div>
+                    <div class="followup-input-row">
+                        <textarea class="followup-input" id="followupInput" placeholder="What happens if I'm 3 days late on rent?" rows="1"></textarea>
+                        <button class="followup-send" id="followupSend">Ask</button>
+                    </div>
+                    <div id="followupAnswers"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1296,6 +1367,7 @@
     var renderTimeout = null;
     var thinkingPhaseCount = 0;
     var quickDone = false;
+    var opusReasoningDone = false;
     var analysisStartTime = 0;
     var elapsedInterval = null;
     var statusRotateInterval = null;
@@ -1303,7 +1375,9 @@
     var isDoneRendering = false;
     var animatedCardTitles = new Set();
     var activeFilters = new Set(); // 'red', 'yellow', 'green'
+    var toolResults = [];
     var documentFullText = '';
+    var currentDocId = '';
     var userHasScrolled = false;
     var lastAutoScrollY = 0;
     var flipCardsBuilt = false;
@@ -1354,6 +1428,10 @@
     var resultsContent = $('resultsContent');
     var flipCardContainer = $('flipCardContainer');
     var deepAnalysisEl = $('deepAnalysisContent');
+    var followupSection = $('followupSection');
+    var followupInput = $('followupInput');
+    var followupSend = $('followupSend');
+    var followupAnswers = $('followupAnswers');
 
     // Configure marked
     marked.setOptions({ breaks: true, gfm: true });
@@ -1683,6 +1761,7 @@
         responseContent = '';
         thinkingPhaseCount = 0;
         quickDone = false;
+        opusReasoningDone = false;
         isDoneRendering = false;
         animatedCardTitles = new Set();
         activeFilters = new Set();
@@ -1693,6 +1772,7 @@
         cardViewTransitioned = false;
         userHasScrolled = false;
         lastAutoScrollY = 0;
+        currentDocId = docId;
 
         // Reset UI
         thinkingText.innerHTML = '';
@@ -1707,6 +1787,10 @@
         summaryContainer.innerHTML = '';
         filterChips.innerHTML = '';
         filterChips.classList.add('hidden');
+        followupSection.classList.add('hidden');
+        followupAnswers.innerHTML = '';
+        followupInput.value = '';
+        toolResults = [];
         $('deepAnalysisSection').classList.add('hidden');
         metadataLine.classList.add('hidden');
         metadataLine.innerHTML = '';
@@ -1770,9 +1854,11 @@
                     thinkingPanel.classList.remove('hidden');
 
                     if (quickDone) {
-                        // Opus deep analysis — HIDE panel entirely, don't interrupt card browsing
-                        thinkingPanel.classList.add('hidden');
-                        thinkingText.innerHTML += '<span class="phase-sep">Opus 4.6 Reasoning</span>';
+                        // Opus deep analysis — collapsed status bar, user can expand to watch reasoning
+                        thinkingPanel.classList.add('collapsed');
+                        thinkingToggle.textContent = 'Show reasoning';
+                        thinkingLabel.innerHTML = '<span class="phase-icon">&#9679;</span> Opus 4.6: Deep reasoning...';
+                        thinkingText.innerHTML += '<span class="phase-sep">Opus 4.6 Extended Thinking</span>';
                         startStatusRotation('deep');
                     } else {
                         // Quick scan (Haiku) — collapsed status line
@@ -1791,8 +1877,11 @@
                 case 'thinking_done':
                     removeCursor();
                     if (quickDone) {
-                        // Keep hidden — verdict will show reasoning when user is ready
-                        thinkingPanel.classList.add('hidden');
+                        // Opus done thinking — collapse but keep visible, user can view full report
+                        opusReasoningDone = true;
+                        thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Opus 4.6: Reasoning complete';
+                        thinkingPanel.classList.add('collapsed');
+                        thinkingToggle.textContent = 'Show the full report';
                     } else {
                         thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Quick Scan complete';
                         thinkingPanel.classList.add('collapsed');
@@ -1815,6 +1904,20 @@
 
                 case 'text_done':
                     renderResultsFinal();
+                    break;
+
+                case 'tool_start':
+                    // Opus is calling a structured tool
+                    var toolInfo = {};
+                    try { toolInfo = JSON.parse(msg.content); } catch(e) {}
+                    if (toolInfo.name === 'flag_interaction') statusText.textContent = 'Flagging cross-clause interaction...';
+                    break;
+
+                case 'tool_result':
+                    // Structured data from Opus tool call
+                    var toolData = {};
+                    try { toolData = JSON.parse(msg.content); } catch(e) {}
+                    toolResults.push(toolData);
                     break;
 
                 case 'quick_done':
@@ -1865,6 +1968,9 @@
                     }
                     // Update card nav to show "View assessment →"
                     if (flipCardsBuilt) updateCardNavigation();
+
+                    // Show follow-up input for non-compare mode
+                    if (!isCompareMode) followupSection.classList.remove('hidden');
 
                     if (eventSource) { eventSource.close(); eventSource = null; }
                     break;
@@ -2141,18 +2247,32 @@
 
     // ── Drafter voice styling ───────────────────────────────
     function styleDrafterBlocks(html) {
-        // New format: **If the drafter could speak freely:** text
+        // Villain format: **If the drafter could speak as a villain:** text
+        html = html.replace(
+            /<p><strong>If the drafter could speak as a villain:<\/strong>\s*([\s\S]*?)<\/p>/gi,
+            function(_, text) {
+                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter could speak as a villain</span>' + text.trim() + '</div>';
+            }
+        );
+        // Fallback: old "speak freely" format
         html = html.replace(
             /<p><strong>If the drafter could speak freely:<\/strong>\s*([\s\S]*?)<\/p>/gi,
             function(_, text) {
-                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter could speak freely</span>' + text.trim() + '</div>';
+                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter could speak as a villain</span>' + text.trim() + '</div>';
             }
         );
         // Legacy format: FLIPSIDE_DRAFTER: text (pre-processed from [DRAFTER]:)
         html = html.replace(
             /<p>FLIPSIDE_DRAFTER:\s*([\s\S]*?)<\/p>/gi,
             function(_, text) {
-                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter could speak freely</span>' + text.trim() + '</div>';
+                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter could speak as a villain</span>' + text.trim() + '</div>';
+            }
+        );
+        // Style "→ YOUR MOVE:" action lines
+        html = html.replace(
+            /<p>→ YOUR MOVE:\s*([\s\S]*?)<\/p>/gi,
+            function(_, text) {
+                return '<div class="your-move"><span class="your-move-label">→ Your move</span>' + text.trim() + '</div>';
             }
         );
         return html;
@@ -2247,6 +2367,10 @@
         var score = parseInt(riskMatch[2]);
         var trick = riskMatch[3] ? riskMatch[3].trim() : '';
 
+        var confidenceMatch = segment.match(/Confidence:\s*(HIGH|MEDIUM|LOW)\s*[\u2014\-\u2013\u2015]\s*(.+)/i);
+        var confidence = confidenceMatch ? confidenceMatch[1].toLowerCase() : '';
+        var confidenceReason = confidenceMatch ? confidenceMatch[2].trim() : '';
+
         var bottomLineMatch = segment.match(/\*\*Bottom line:\*\*\s*([\s\S]*?)(?=\n\n|\*\*What the small print says:)/i);
         var bottomLine = bottomLineMatch ? bottomLineMatch[1].trim() : '';
 
@@ -2258,6 +2382,7 @@
         return {
             title: title, section: sectionRef, quote: quote, reader: reader,
             risk: risk, score: score, trick: trick,
+            confidence: confidence, confidenceReason: confidenceReason,
             bottomLine: bottomLine, smallPrint: smallPrint, shouldRead: shouldRead
         };
     }
@@ -2306,6 +2431,15 @@
 
         // Verdict link removed — full verdict shown after all cards via navigation
 
+        // ── Confidence badge ──
+        var confidenceBadgeHtml = '';
+        if (clause.confidence) {
+            confidenceBadgeHtml = '<span class="confidence-badge confidence-' + clause.confidence + '" title="' + escapeHtml(clause.confidenceReason) + '">' +
+                clause.confidence.toUpperCase() +
+                (clause.confidenceReason ? '<span class="confidence-reason">' + escapeHtml(clause.confidenceReason) + '</span>' : '') +
+                '</span>';
+        }
+
         // ── Back wrapper ──
         var backHtml = '<div class="flip-card-back"><div class="back-content">' +
             '<div class="risk-header risk-header-' + risk + '">' +
@@ -2313,6 +2447,7 @@
             '<div class="risk-badge-group">' +
             '<span class="risk-badge risk-badge-' + risk + '">' + risk.toUpperCase() + '</span>' +
             (clause.trick ? '<span class="trick-label" title="' + escapeHtml(trickDesc) + '">' + escapeHtml(clause.trick) + '</span>' : '') +
+            confidenceBadgeHtml +
             '</div></div>' +
             '<div class="back-body">' + backBodyHtml + '</div>' +
             '<button class="flip-back-trigger"><span class="flip-back-arrow">&larr;</span><span>Flip back</span></button>' +
@@ -2635,7 +2770,10 @@
             if (prev.tagName === 'H2') {
                 var text = prev.textContent.toLowerCase();
                 if (text.indexOf('cross-clause') >= 0) return 'cross';
-                if (text.indexOf('playbook') >= 0) return 'playbook';
+                if (text.indexOf('playbook') >= 0 || text.indexOf('who drafted') >= 0) return 'playbook';
+                if (text.indexOf('fair standard') >= 0 || text.indexOf('benchmark') >= 0) return 'cross';
+                if (text.indexOf('how opus') >= 0 || text.indexOf('analyzed this') >= 0) return 'playbook';
+                if (text.indexOf('quality check') >= 0 || text.indexOf('calibration') >= 0) return 'assessment';
                 if (text.indexOf('assessment') >= 0) return 'assessment';
                 return 'clause';
             }
@@ -2746,7 +2884,12 @@
         }
 
         var scoreColor = score > 65 ? 'var(--red)' : score > 35 ? 'var(--yellow)' : 'var(--green)';
-        var scoreLabel = score > 80 ? 'Do not sign without legal review' : score > 65 ? 'High Risk — negotiate these terms' : score > 40 ? 'Unfavorable but common' : 'Standard terms';
+        // Extract context-aware severity label from model output (after the score)
+        // Format: "Overall Risk Score: 74/100 — Serious risk — seek professional legal review"
+        var severityMatch = text.match(/Overall Risk Score[:\s]*\d+\/100[^—\-\n]*(?:—|[-–])\s*([^\n]+)/i);
+        var scoreLabel = severityMatch ? severityMatch[1].trim().replace(/\*+/g, '') : (
+            score > 80 ? 'Do not sign without legal review' : score > 65 ? 'High risk — negotiate these terms' : score > 40 ? 'Moderate risk — review flagged clauses' : 'Low risk — standard terms'
+        );
         var piiColor = piiScore > 65 ? 'var(--red)' : piiScore > 35 ? 'var(--yellow)' : 'var(--green)';
         var circumference = 2 * Math.PI * 42;
         var offset = circumference * (1 - score / 100);
@@ -2801,7 +2944,7 @@
             thinkingToggle.textContent = 'Collapse';
         } else {
             thinkingPanel.classList.add('collapsed');
-            thinkingToggle.textContent = 'Show reasoning';
+            thinkingToggle.textContent = opusReasoningDone ? 'Show the full report' : 'Show reasoning';
         }
     });
 
@@ -2898,6 +3041,92 @@
             $('darkModeBtn').innerHTML = '&#9788;';
         }
     } catch(e) {}
+
+    // ── Follow-up questions ──────────────────────────────────
+    function sendFollowup() {
+        var question = followupInput.value.trim();
+        if (!question || !currentDocId) return;
+
+        // Immediate visual feedback
+        followupInput.value = '';
+        followupInput.style.height = 'auto';
+        followupSend.disabled = true;
+        followupSend.textContent = 'Thinking...';
+        followupInput.disabled = true;
+        followupInput.placeholder = 'Opus 4.6 is thinking...';
+
+        var answerDiv = document.createElement('div');
+        answerDiv.className = 'followup-answer';
+        answerDiv.innerHTML = '<div class="followup-q">' + escapeHtml(question) + '</div>' +
+            '<div class="followup-a" style="color:var(--text-muted)">' +
+            '<span class="pulsing-dots" style="display:inline-flex;vertical-align:middle;margin-right:0.4rem"><span></span><span></span><span></span></span>' +
+            'Opus 4.6 is reasoning about your question...</div>';
+        followupAnswers.appendChild(answerDiv);
+        var answerContent = answerDiv.querySelector('.followup-a');
+
+        setTimeout(function() { answerDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+
+        var responseText = '';
+        fetch('/ask/' + currentDocId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: question }),
+        }).then(function(response) {
+            if (!response.ok) return response.json().then(function(err) { throw new Error(err.error || 'Request failed'); });
+            var reader = response.body.getReader();
+            var decoder = new TextDecoder();
+            var buffer = '';
+            var thinkingDone = false;
+
+            function processChunk(result) {
+                if (result.done) { resetFollowupUI(); return; }
+                buffer += decoder.decode(result.value, { stream: true });
+                var lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i].trim();
+                    if (!line.startsWith('data: ')) continue;
+                    var msg;
+                    try { msg = JSON.parse(line.substring(6)); } catch(e) { continue; }
+                    if (msg.type === 'text') {
+                        if (!thinkingDone) { thinkingDone = true; answerContent.innerHTML = ''; }
+                        responseText += msg.content;
+                        answerContent.innerHTML = marked.parse(responseText);
+                    } else if (msg.type === 'done') {
+                        if (responseText) answerContent.innerHTML = marked.parse(responseText);
+                        resetFollowupUI();
+                        return;
+                    } else if (msg.type === 'error') {
+                        answerContent.innerHTML = '<span style="color:var(--red)">' + escapeHtml(msg.content) + '</span>';
+                        resetFollowupUI();
+                        return;
+                    }
+                }
+                return reader.read().then(processChunk);
+            }
+            return reader.read().then(processChunk);
+        }).catch(function(err) {
+            answerContent.innerHTML = '<span style="color:var(--red)">' + escapeHtml(err.message) + '</span>';
+            resetFollowupUI();
+        });
+    }
+
+    function resetFollowupUI() {
+        followupSend.disabled = false;
+        followupSend.textContent = 'Ask';
+        followupInput.disabled = false;
+        followupInput.placeholder = 'Ask another question...';
+        followupInput.focus();
+    }
+
+    followupSend.addEventListener('click', sendFollowup);
+    followupInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFollowup(); }
+    });
+    followupInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
 
 })();
 </script>
