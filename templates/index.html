@@ -1252,6 +1252,7 @@
                     Quick Scan: Reasoning...
                 </div>
                 <button class="thinking-toggle" id="thinkingToggle">Show reasoning</button>
+                <button class="thinking-toggle hidden" id="reportToggle" style="margin-left:0.5rem">Show the full report</button>
             </div>
             <div class="thinking-text" id="thinkingText"></div>
         </div>
@@ -1765,6 +1766,7 @@
         thinkingPhaseCount = 0;
         quickDone = false;
         opusReasoningDone = false;
+        $('reportToggle').classList.add('hidden');
         isDoneRendering = false;
         animatedCardTitles = new Set();
         activeFilters = new Set();
@@ -1880,11 +1882,12 @@
                 case 'thinking_done':
                     removeCursor();
                     if (quickDone) {
-                        // Opus done thinking — collapse but keep visible, user can view full report
+                        // Opus done thinking — show both buttons
                         opusReasoningDone = true;
                         thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Opus 4.6: Reasoning complete';
                         thinkingPanel.classList.add('collapsed');
-                        thinkingToggle.textContent = 'Show the full report';
+                        thinkingToggle.textContent = 'Show reasoning';
+                        $('reportToggle').classList.remove('hidden');
                     } else {
                         thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Quick Scan complete';
                         thinkingPanel.classList.add('collapsed');
@@ -2525,7 +2528,7 @@
         $('cardViewport').classList.add('hidden');
         // Collapse thinking panel
         thinkingPanel.classList.add('collapsed');
-        thinkingToggle.textContent = opusReasoningDone ? 'Show the full report' : 'Show reasoning';
+        thinkingToggle.textContent = 'Show reasoning';
 
         var section = $('deepAnalysisSection');
         section.classList.remove('hidden');
@@ -2939,21 +2942,23 @@
         summaryContainer.innerHTML = h;
     }
 
-    // ── Thinking toggle ───────────────────────────────────────
-    $('thinkingHeader').addEventListener('click', function() {
-        if (opusReasoningDone) {
-            // "Show the full report" → reveal the deep analysis, not the thinking text
-            revealDeepAnalysis();
-            return;
-        }
+    // ── Thinking toggle (show/hide raw reasoning) ──────────────
+    $('thinkingToggle').addEventListener('click', function(e) {
+        e.stopPropagation();
         var isCollapsed = thinkingPanel.classList.contains('collapsed');
         if (isCollapsed) {
             thinkingPanel.classList.remove('collapsed');
-            thinkingToggle.textContent = 'Collapse';
+            thinkingToggle.textContent = 'Hide reasoning';
         } else {
             thinkingPanel.classList.add('collapsed');
             thinkingToggle.textContent = 'Show reasoning';
         }
+    });
+
+    // ── Report button (show full verdict) ────────────────────
+    $('reportToggle').addEventListener('click', function(e) {
+        e.stopPropagation();
+        revealDeepAnalysis();
     });
 
     // ── Back to cards button (from verdict view) ──────────────
