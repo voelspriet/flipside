@@ -2143,6 +2143,7 @@
             <button class="header-btn hidden" id="copyAllBtn">Copy all</button>
             <button class="header-btn hidden" id="emailLawyerBtn">Email to Lawyer</button>
             <button class="header-btn hidden" id="exportBtn">Save Report</button>
+            <button class="header-btn hidden" id="exportLangBtn" title="Download report in document language"></button>
             <button class="header-btn" id="darkModeBtn" title="Toggle dark mode">&#9790;</button>
             <button class="header-btn" id="backBtn">Back</button>
         </div>
@@ -2916,6 +2917,8 @@
         cardViewTransitioned = false;
         clauseHighlightData = [];
         documentNotApplicable = '';
+        detectedDocLanguage = '';
+        $('exportLangBtn').classList.add('hidden');
         userHasScrolled = false;
         lastAutoScrollY = 0;
         currentDocId = docId;
@@ -3192,6 +3195,12 @@
                     $('copyAllBtn').classList.remove('hidden');
                     $('exportBtn').classList.remove('hidden');
                     $('emailLawyerBtn').classList.remove('hidden');
+                    // Show "Download in [language]" button if document is not in English
+                    if (detectedDocLanguage && detectedDocLanguage.toLowerCase() !== 'english') {
+                        var langBtn = $('exportLangBtn');
+                        langBtn.textContent = 'Report in ' + detectedDocLanguage;
+                        langBtn.classList.remove('hidden');
+                    }
 
                     if (isCompareMode) {
                         renderResultsFinal();
@@ -3282,6 +3291,7 @@
 
     // ── Metadata extraction from streamed text ────────────────
     var documentNotApplicable = ''; // Set when Haiku determines doc has no terms to analyze
+    var detectedDocLanguage = ''; // Detected from document text (e.g. "Dutch", "German")
 
     function extractMetadata() {
         var patterns = [
@@ -3289,12 +3299,18 @@
             { re: /\*\*Drafted By\*\*[:\s]*([^\n*]+)/i, label: 'Drafted By' },
             { re: /\*\*Your Role\*\*[:\s]*([^\n*]+)/i, label: 'Your Role' },
             { re: /\*\*Jurisdiction\*\*[:\s]*([^\n*]+)/i, label: 'Jurisdiction' },
+            { re: /\*\*Language\*\*[:\s]*([^\n*]+)/i, label: 'Language' },
         ];
         var parts = [];
         patterns.forEach(function(p) {
             var m = responseContent.match(p.re);
             if (m) {
                 var val = m[1].trim();
+                // Capture language but don't show as pill (used for download button)
+                if (p.label === 'Language') {
+                    detectedDocLanguage = val;
+                    return;
+                }
                 parts.push(
                     '<span class="meta-pill">' +
                     '<span class="meta-pill-label">' + escapeHtml(p.label) + '</span> ' +
@@ -3713,18 +3729,7 @@
             if (exampleMatch) exampleNarrative = exampleMatch[1].trim();
         }
 
-        var enFigureMatch = segment.match(/\[EN-FIGURE\]\s*:\s*(.+)/i);
-        var enExampleNarrativeMatch = segment.match(/\[EN-EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\[EN-READER\]|\n\n###|\n\n##|\n\n---|$)/i);
-        var enReaderMatch = segment.match(/\[EN-READER\]\s*:\s*([\s\S]*?)(?=\n\n|\n(?:GREEN|YELLOW|RED)|\n---|\n###|$)/i);
-        var enSmallPrintMatch = segment.match(/\*{1,2}\[EN\]\s*What the small print says:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What you should read|\n\n###|\n\n##|$)/i);
-        var enShouldReadMatch = segment.match(/\*{1,2}\[EN\]\s*What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What does this mean|\n\n###|\n\n##|\n\n---|\[EN-READER\]|\[EN-FIGURE\]|$)/i);
-        var enSmallPrint = enSmallPrintMatch ? enSmallPrintMatch[1].trim() : '';
-        var enShouldRead = enShouldReadMatch ? enShouldReadMatch[1].trim() : '';
-        var enFigure = enFigureMatch ? enFigureMatch[1].trim() : '';
-        var enExampleNarrative = enExampleNarrativeMatch ? enExampleNarrativeMatch[1].trim() : '';
-        var enReader = enReaderMatch ? enReaderMatch[1].trim() : '';
-
-        // Track whether back data has been filled (by Opus)
+        // Track whether back data has been filled
         var hasBack = !!(reveal || score > 0 || bottomLine || figure);
 
         return {
@@ -3733,9 +3738,7 @@
             risk: risk, score: score, trick: trick, hasBack: hasBack,
             confidence: confidence, confidenceReason: confidenceReason,
             bottomLine: bottomLine, smallPrint: smallPrint, shouldRead: shouldRead,
-            figure: figure, exampleNarrative: exampleNarrative,
-            enSmallPrint: enSmallPrint, enShouldRead: enShouldRead,
-            enFigure: enFigure, enExampleNarrative: enExampleNarrative, enReader: enReader
+            figure: figure, exampleNarrative: exampleNarrative
         };
     }
 
@@ -3757,7 +3760,6 @@
             '<div class="reader-voice">' +
             '<span class="reader-voice-label">I\u2019d think</span>' +
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
-            (clause.enReader && clause.enReader !== clause.reader ? '<div class="reader-voice-en">' + escapeHtml(clause.enReader) + '</div>' : '') +
             '</div>' +
             '</div>' +
             (clause.teaser ? '<div class="card-teaser">' + escapeHtml(clause.teaser) + '</div>' : '') +
@@ -3833,9 +3835,6 @@
         if (clause.shouldRead) cardEl.setAttribute('data-should-read', clause.shouldRead);
         if (clause.figure) cardEl.setAttribute('data-figure', clause.figure);
         if (clause.exampleNarrative) cardEl.setAttribute('data-example', clause.exampleNarrative);
-        if (clause.enShouldRead) cardEl.setAttribute('data-en-should-read', clause.enShouldRead);
-        if (clause.enFigure) cardEl.setAttribute('data-en-figure', clause.enFigure);
-        if (clause.enExampleNarrative) cardEl.setAttribute('data-en-example', clause.enExampleNarrative);
         cardEl.innerHTML = '<div class="flip-card-inner">' + frontHtml + backHtml + '</div>';
         flipCardContainer.appendChild(cardEl);
 
@@ -4471,31 +4470,6 @@
         html = styleDrafterBlocks(html);
         html = styleSplitClauses(html);
         deepAnalysisEl.innerHTML = html;
-
-        // Wrap English Summary in collapsible details (bilingual reports)
-        var enSummaryH2 = null;
-        deepAnalysisEl.querySelectorAll('h2').forEach(function(h2) {
-            if (h2.textContent.trim().toLowerCase().indexOf('english summary') >= 0) enSummaryH2 = h2;
-        });
-        if (enSummaryH2) {
-            var details = document.createElement('details');
-            details.className = 'en-report-summary';
-            var summary = document.createElement('summary');
-            summary.className = 'en-report-toggle';
-            summary.textContent = 'Show full report in English';
-            details.appendChild(summary);
-            var wrapper = document.createElement('div');
-            wrapper.className = 'en-report-content';
-            // Collect all siblings from enSummaryH2 onward
-            var sibling = enSummaryH2.nextElementSibling;
-            while (sibling) {
-                var next = sibling.nextElementSibling;
-                wrapper.appendChild(sibling);
-                sibling = next;
-            }
-            enSummaryH2.replaceWith(details);
-            details.appendChild(wrapper);
-        }
 
         wrapClauseSections(deepAnalysisEl);
 
@@ -5217,6 +5191,107 @@
             'Powered by Claude Opus 4.6 extended thinking.';
 
         window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    });
+
+    // ── Download report in document language ────────────────────
+    $('exportLangBtn').addEventListener('click', function() {
+        var btn = this;
+        if (btn.classList.contains('generating')) return;
+        btn.classList.add('generating');
+        var origText = btn.textContent;
+        btn.textContent = 'Translating...';
+
+        // Build the full English report text
+        var reportParts = [];
+        // Summary from cards
+        var clauses = extractClausesFromResponse();
+        clauses.forEach(function(c) {
+            reportParts.push('### ' + c.title + (c.section ? ' (' + c.section + ')' : ''));
+            if (c.reveal) reportParts.push(c.reveal);
+            if (c.bottomLine) reportParts.push('**Bottom line:** ' + c.bottomLine);
+            if (c.shouldRead) reportParts.push('**What you should read:** ' + c.shouldRead);
+            if (c.figure) reportParts.push('**Figure:** ' + c.figure);
+            reportParts.push('');
+        });
+        // Opus verdict sections
+        var deepText = assembleDeepText();
+        if (deepText) reportParts.push(deepText);
+
+        var fullReport = reportParts.join('\n');
+
+        var prompt = 'Translate this ENTIRE analysis report into ' + detectedDocLanguage + '. ' +
+            'Keep all formatting (markdown headers, bold, bullet points). ' +
+            'Keep quoted document text in the original ' + detectedDocLanguage + ' — do NOT back-translate quotes. ' +
+            'Translate all analysis, explanations, labels, and headings into ' + detectedDocLanguage + '.\n\n' +
+            '---\n\n' + fullReport;
+
+        var url = BASE_URL + '/ask/' + currentDocId;
+        var translatedText = '';
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: prompt })
+        }).then(function(resp) {
+            if (!resp.ok) throw new Error('Translation request failed');
+            var reader = resp.body.getReader();
+            var decoder = new TextDecoder();
+            var buffer = '';
+
+            function readChunk() {
+                return reader.read().then(function(result) {
+                    if (result.done) {
+                        // Download as HTML
+                        var docName = 'FlipSide Analysis';
+                        var meta = metadataLine.textContent;
+                        if (meta) docName = meta.split('Type:')[1] ? meta.split('Type:')[1].split('Drafted')[0].trim() : docName;
+
+                        var exportHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+                            '<title>' + escapeHtml(docName) + ' — FlipSide (' + detectedDocLanguage + ')</title>' +
+                            '<style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1rem;color:#1a1a18;line-height:1.6}' +
+                            'h1{font-size:1.5rem;border-bottom:2px solid #c44b28;padding-bottom:0.5rem}' +
+                            'h2{margin-top:2rem;color:#3d3b36}h3{margin-top:1.5rem}' +
+                            'blockquote{border-left:3px solid #c44b28;padding:0.5rem 1rem;margin:0.5rem 0;background:#faf8f4;font-style:italic}' +
+                            'hr{border:none;border-top:1px solid #e2ddd4;margin:1.5rem 0}' +
+                            '.footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e2ddd4;font-size:0.8rem;color:#9c9789}' +
+                            '</style></head><body>' +
+                            '<h1>' + escapeHtml(docName) + '</h1>' +
+                            safeMd2Html(translatedText) +
+                            '<div class="footer">Generated by FlipSide — The dark side of small print.<br>Powered by Claude Opus 4.6.</div>' +
+                            '</body></html>';
+                        var blob = new Blob([exportHtml], { type: 'text/html' });
+                        var blobUrl = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = docName.replace(/[^a-z0-9]/gi, '_') + '_' + detectedDocLanguage + '_FlipSide.html';
+                        a.click();
+                        URL.revokeObjectURL(blobUrl);
+                        btn.classList.remove('generating');
+                        btn.textContent = origText;
+                        return;
+                    }
+                    buffer += decoder.decode(result.value, { stream: true });
+                    var lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    lines.forEach(function(line) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                var evt = JSON.parse(line.substring(6));
+                                if (evt.type === 'text' || evt.type === 'answer_text') {
+                                    translatedText += evt.content;
+                                }
+                            } catch(e) {}
+                        }
+                    });
+                    return readChunk();
+                });
+            }
+            return readChunk();
+        }).catch(function(err) {
+            btn.classList.remove('generating');
+            btn.textContent = origText;
+            console.error('Translation failed:', err);
+        });
     });
 
     // ── Dark mode ─────────────────────────────────────────────

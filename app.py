@@ -830,7 +830,7 @@ def build_system_prompt():
     return """You are a senior attorney who has drafted documents exactly like this one for 20 years. You are now switching sides: reviewing this document from the drafter's strategic perspective.
 
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document. If the document is in Dutch, write your entire analysis in Dutch. If in German, German. If in French, French. If in English, English. Always match the document's language exactly — including all section headers, labels, and explanations.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English. All analysis, headers, labels, and explanations must be in English.
 
 ## AUTO-DETECTION
 Before analyzing, determine from the document itself:
@@ -1101,7 +1101,7 @@ def build_compare_prompt():
     return """You are a senior attorney with 20 years of experience comparing contracts, offers, and agreements. You analyze two documents side-by-side from the perspective of someone choosing between them.
 
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the documents. Match the documents' language exactly.
+ALWAYS respond in ENGLISH regardless of the documents' language. Keep quotes from the documents in their original language with English translations in parentheses.
 
 ## REQUIRED OUTPUT FORMAT
 
@@ -1167,14 +1167,7 @@ def build_quick_scan_prompt():
     return """You are a senior attorney who drafted documents like this for 20 years. Analyze each clause individually from the drafter's strategic perspective.
 
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document.
-
-## BILINGUAL RULE
-If the document is NOT in English, add English translations for each clause:
-**[EN] What the small print says:** [English translation]
-**[EN] What you should read:** [English translation]
-[EN-READER]: [English translation of the READER line]
-Skip these for English documents.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English. All analysis, headers, labels, and explanations must be in English.
 
 ## AUTO-DETECTION
 Determine from the document:
@@ -1262,16 +1255,7 @@ def build_card_scan_prompt():
 Output a MAXIMUM of 12 individual RED/YELLOW cards. Pick the 10-12 clauses with the highest impact on the reader. Combine ALL remaining fair/benign clauses into a single GREEN summary card. Total output: 10-12 cards + 1 green summary = 11-13 cards maximum. If you find more than 12 concerning clauses, pick the worst 12 and note any omitted ones in the green summary.
 
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document. If the document is in Dutch, respond entirely in Dutch. If German, German. Match the document's language for ALL output including headers and labels.
-
-## BILINGUAL RULE
-If the document is NOT in English, add these extra fields per clause:
-[EN-READER]: [English translation of the READER line]
-[EN-FIGURE]: [English translation of the FIGURE line]
-[EN-EXAMPLE]: [English translation of the EXAMPLE line]
-**[EN] What the small print says:** [English translation]
-**[EN] What you should read:** [English translation]
-Only add these for non-English documents. For English documents, skip them.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English. All analysis, card fields, headers, labels, REASSURANCE, READER, TEASER, REVEAL, bottom line, small print, should read, FIGURE, EXAMPLE must be in English.
 
 ## OUTPUT FORMAT
 
@@ -1282,6 +1266,7 @@ Output the Document Profile first, then each clause separated by --- on its own 
 - **Drafted By**: [who drafted it]
 - **Your Role**: [the non-drafting party's role]
 - **Jurisdiction**: [jurisdiction if identifiable, otherwise "Not specified"]
+- **Language**: [language of the document, e.g. "English", "Dutch", "German", "French"]
 - **Sections**: [number of major sections]
 
 ---
@@ -1400,15 +1385,7 @@ If you detect visual formatting tricks, include them as cross-clause interaction
     return f"""You are a senior attorney who has read this entire document. Perform the DEEP analysis: cross-clause interactions and overall risk assessment. This requires reasoning across ALL clauses simultaneously — finding what is invisible when reading clause by clause.
 {visual_block}
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document.
-
-## BILINGUAL RULE
-If the document is NOT in English, add an English summary at the very end of your output:
-
-## English Summary
-
-### Cross-Clause Interactions (EN)
-[For each interaction: 2-3 sentence English summary of the compound risk and recommended action]
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ### Overall Assessment (EN)
 **Overall Risk Score: [same score]/100** — [English severity label]
@@ -1582,16 +1559,7 @@ Page images are included. Look for visual tricks: fine print, buried placement, 
     return f"""You are a senior attorney. Find clause COMBINATIONS that create compound risks invisible when reading linearly. This is your ONLY job — cross-clause interactions.
 {visual_block}
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document.
-
-## BILINGUAL RULE
-If the document is NOT in English, add at the end:
-
-## English Summary
-### Cross-Clause Interactions (EN)
-[For each interaction: 2-3 sentence English summary of the compound risk and recommended action]
-
-Only for non-English documents.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ## OUTPUT FORMAT
 
@@ -1659,18 +1627,7 @@ def build_asymmetry_prompt(has_images=False):
     return f"""You are a senior attorney. Measure the power imbalance in this document and compare its worst clauses against industry norms. This is your ONLY job.
 {visual_block}
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document.
-
-## BILINGUAL RULE
-If the document is NOT in English, add at the end:
-
-## English Summary
-### Power Asymmetry (EN)
-[Power ratio and one-sentence summary in English]
-### Fair Standard (EN)
-[For each comparison: one-sentence English summary of the gap]
-
-Only for non-English documents.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ## OUTPUT FORMAT
 
@@ -1709,18 +1666,7 @@ def build_archaeology_prompt(has_images=False):
     return f"""You are a senior attorney. Analyze this document's construction: which parts are boilerplate vs custom-drafted, and profile the type of entity that created it. This is your ONLY job.
 {visual_block}
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document.
-
-## BILINGUAL RULE
-If the document is NOT in English, add at the end:
-
-## English Summary
-### Document Archaeology (EN)
-[Summary of boilerplate vs custom findings in English]
-### Drafter Profile (EN)
-[2-3 sentence English summary of drafter type and behavior signals]
-
-Only for non-English documents.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ## OUTPUT FORMAT
 
@@ -1748,21 +1694,7 @@ def build_overall_prompt(has_images=False):
     return f"""You are a senior attorney. Provide the OVERALL VERDICT: risk score, top concerns, recommended actions, methodology disclosure, and quality self-check. This is your ONLY job — a companion analysis covers cross-clause interactions separately.
 {visual_block}
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document.
-
-## BILINGUAL RULE
-If the document is NOT in English, add at the end:
-
-## English Summary
-### Overall Assessment (EN)
-**Overall Risk Score: [same score]/100** — [English severity label]
-**Top Concerns:**
-1. [English one-liner]
-2. [English one-liner]
-3. [English one-liner]
-**Key Actions:**
-- [English action item]
-- [English action item]
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 - [English action item]
 
 Only for non-English documents.
@@ -2222,7 +2154,7 @@ def build_followup_prompt():
     return """You are a senior attorney who has just finished analyzing a document. The user has a follow-up question about it.
 
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses.
 
 ## RULES
 - Answer the specific question asked — do not repeat the full analysis
@@ -2304,7 +2236,7 @@ def build_counter_draft_prompt():
     return """You are a senior attorney hired by the READER to redraft unfair contract clauses. You have analyzed the document and identified problematic terms. Now generate fair, balanced alternatives.
 
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document. If the document is not in English, add an [EN] translation after each redrafted clause.
+ALWAYS respond in ENGLISH. When showing the original clause text, keep it in the document's language with an English translation. Redrafted clauses should be in English.
 
 ## OUTPUT FORMAT
 
@@ -2347,7 +2279,7 @@ def build_timeline_prompt():
     return """You are a senior attorney. Given a document, narrate a realistic worst-case scenario using the document's ACTUAL terms, figures, and deadlines.
 
 ## LANGUAGE RULE
-Respond in the SAME LANGUAGE as the document. If the document is not in English, add an English summary at the end.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting specific terms from the document, keep them in the original language with English translations in parentheses.
 
 ## OUTPUT FORMAT
 
