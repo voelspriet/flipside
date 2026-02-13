@@ -22,7 +22,7 @@ You upload any document someone else wrote for you to sign, accept, or agree to.
 
 **One input. One perspective flip. One output.**
 
-### Try It Instantly — 13 Built-In Samples
+### Try It Instantly — 14 Built-In Samples
 
 No document handy? Pick a life moment:
 
@@ -41,6 +41,7 @@ No document handy? Pick a life moment:
 | <img src="static/tile_pet.jpg" width="20"> **Furry Friend** | Shelter adoption contract | A return clause lets the shelter reclaim the animal at any time if they judge your care "inadequate" — no appeal |
 | <img src="static/tile_timeshare.jpg" width="20"> **Dream Getaway** | Timeshare vacation package | The "cooling off" period is shorter than payment processing time, making the exit window structurally impossible to use |
 | <img src="static/thumb_sweepstakes.jpg" width="20"> **Trip of a Lifetime** | Sweepstakes official rules (real Coca-Cola) | Accepting the prize grants perpetual, worldwide rights to your name, likeness, and story — with no compensation |
+| <img src="static/tile_hackathon.jpg" width="20"> **The Hackathon** | Event waiver we all signed (real) | You grant a perpetual, irrevocable license to all your Materials — code, ideas, feedback — with no confidentiality obligation |
 
 Plus: **paste text directly**, **compare two documents** side by side, or upload your own PDF, DOCX, or TXT.
 
@@ -94,6 +95,7 @@ FlipSide works on any document someone else wrote for you to sign, accept, or ag
 | **Pet owner** | Adoption contract | The shelter can reclaim the animal at any time — no appeal |
 | **Vacationer** | Timeshare package | The exit window is shorter than payment processing time |
 | **Winner** | Sweepstakes rules | Accepting the prize grants perpetual rights to your name and likeness |
+| **Hackathon participant** | Event waiver | All your Materials — code, ideas, feedback — licensed perpetually with no confidentiality |
 
 ---
 
@@ -214,7 +216,7 @@ The underlying principle is the same: **don't take yourself as the measurement o
 
 **Key architectural insight:** We originally put Opus 4.6 on the card backs — assuming the flip needed the most powerful model. After 3 hours of DOM rendering failures, we discovered Haiku was already doing a great job on cards. Opus's real value is in the work Haiku *can't* do: cross-clause reasoning, power analysis, archaeological deduction, and self-correction. Each model now has a stage that showcases what it does best. See [strategy.md](strategy.md) for the full decision story.
 
-**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend, DOMPurify for XSS protection. 13 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
+**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend, DOMPurify for XSS protection. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
 
 ---
 

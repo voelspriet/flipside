@@ -28,7 +28,7 @@
 
 ### SCENE 2 — The Upload (0:25–0:45)
 
-**Screen**: FlipSide upload screen with the 13 sample tiles visible.
+**Screen**: FlipSide upload screen with the 14 sample tiles visible.
 
 **Narration**:
 > "FlipSide works on anything someone else wrote for you to sign. A lease. An insurance policy. A gym membership. Even sweepstakes rules.
@@ -106,7 +106,7 @@
 
 ### SCENE 7 — The Close (2:40–3:00)
 
-**Screen**: Return to the upload screen. Show the 13 sample tiles.
+**Screen**: Return to the upload screen. Show the 14 sample tiles.
 
 **Narration**:
 > "I built this because I believe everyone deserves to see the other side of what they sign. Not just people who can afford a lawyer. Everyone.
