@@ -369,6 +369,61 @@ All 5 threads completed successfully (5,073 SSE events). Detailed findings:
 
 **Why this matters:** Frisian is a genuine low-resource language — not just "non-English" but rare enough that training data is sparse. The test proves that Opus 4.6 can (1) correctly identify obscure languages, (2) translate accurately inline, (3) apply the correct legal jurisdiction based on language context, and (4) detect all trick types with the same precision as English documents. This is capability #12 (long-context retrieval) and #2 (perspective adoption) working on genuinely novel input.
 
+**Entry 75 — Phase 2 Probe: Compare Mode Precision Test (Near-Identical Documents)**
+Boundary test: uploaded two nearly identical 6-clause service agreements where only Clause 4 (Liability) was changed. Document A: "$500 cap + client waives all consequential damages." Document B: "liability capped at total fees paid" (no waiver). All other clauses word-for-word identical. The question: does compare mode detect ONLY the real difference, or does it hallucinate phantom findings?
+
+**Result: The real difference was detected with surgical precision. Minor noise in "Hidden Differences" section — but by design, not by error.**
+
+Compare mode uses a single Opus 4.6 stream (no Haiku, no parallel threads) with the full `build_compare_prompt()` — a structured 4-section report format (Overview, Side-by-Side Analysis, Hidden Differences, Recommendation). This is purely LLM-based semantic comparison — no `difflib`, no text diff, no character-level matching anywhere in the codebase.
+
+*What Opus found correctly:*
+- **Section 1 (Overview):** Immediately identified "these two documents are identical in every respect except for the liability clause (Section 4)" as the single most important difference
+- **Section 2 (Side-by-Side):** Rated 5 of 7 comparable areas as 🟢 GREEN (neutral — identical language). The liability cap and consequential damages waiver both received 🔴 RED ratings with correct quantitative analysis: "$500 vs $60,000 = 120× difference in protection"
+- **Section 4 (Recommendation):** Correctly declared Document B as the better deal, with specific negotiation advice for both scenarios
+
+*What Opus added beyond the diff:*
+- **Section 3 (Hidden Differences):** Flagged three YELLOW items missing from BOTH documents — dispute resolution, indemnification, and insurance requirements. These aren't false positives — they're genuine gaps that a senior attorney would note. The prompt instructs "absences reveal intent," so flagging shared omissions is by design.
+- **Consequential damages waiver** treated as a separate finding from the liability cap, even though both are in the same clause. This is correct — they're two independent legal mechanisms (cap on direct damages vs. waiver of indirect damages).
+
+*Architectural observation:*
+Compare mode follows a fundamentally different rendering path from normal analysis. No sidebar (document preview hidden), no flip cards (incremental clause extraction bypassed), no verdict column (4 Opus sections suppressed), no follow-up questions. The response streams as markdown and renders directly via `safeMd2Html()` with the same risk badge styling (`styleRiskBadges()`) used elsewhere. This is `run_single_stream()` — one API call, not `run_parallel()`.
+
+**The trade-off is deliberate:** A text diff would mechanically guarantee "only the changed words" but would miss semantic implications. The LLM comparison trades mechanical precision for legal understanding — it can explain WHY the change matters ("120× less protection"), not just WHAT changed. For a product about revealing hidden risks, semantic comparison is the right architecture. The cost: the model will always try to fill all 4 report sections, which means shared gaps get flagged even when the user only asked about differences.
+
+**Entry 76 — Phase 2 Probe #53: Context Window Boundary Test (100+ Page Documents)**
+Systematic test of Opus 4.6 cross-clause reasoning quality at increasing document scale. Generated synthetic contracts with 4 deliberately planted cross-clause traps (innocent "A" clause near the start + dangerous "B" clause near the end). Each trap tests a different exploit pattern:
+- Trap 1: Service credits look fair (§A) → sole remedy waiver guts them (§B)
+- Trap 2: CPI adjustment + payment waterfall (§A) → uncapped $75/day late fees + acceleration (§B)
+- Trap 3: Narrow IP license (§A) → perpetual derivative works grab (§B)
+- Trap 4: Data export right (§A) → 7-year retention + ML training exclusion (§B)
+
+**Two test rounds** — short clauses (testing clause count), then verbose clauses (testing token count):
+
+*Round 1: Short clauses (distance test)*
+| Clauses | Chars | Tokens | Max distance | Traps caught |
+|---------|-------|--------|-------------|-------------|
+| 25 | 8,475 | ~2K | 19 | **4/4** |
+| 50 | 13,890 | ~3K | 40 | **4/4** |
+| 100 | 25,240 | ~6K | 90 | **4/4** |
+| 150 | 36,161 | ~9K | 140 | **4/4** |
+| 200 | 47,007 | ~12K | 194 | **4/4** |
+
+*Round 2: Verbose clauses (context window test)*
+| Clauses | Chars | Est. tokens | Pages | Max distance | Traps caught | Time |
+|---------|-------|------------|-------|-------------|-------------|------|
+| 50 | 104K | ~26K | 34 | 44 | **4/4** | 135s |
+| 100 | 217K | ~54K | 72 | 94 | **4/4** | 156s |
+| 200 | 442K | ~110K | 147 | 194 | **4/4** | 171s |
+| 300 | 667K | ~167K | 222 | 294 | **4/4** | 94s |
+
+**Result: 36 out of 36 traps caught across 9 documents. Zero misses.**
+
+At 222 pages (~167K tokens), Opus 4.6 caught a cross-clause interaction between §3 and §297 — separated by 294 clauses and ~660K characters of filler. It referenced both section numbers by name and explained the compound risk mechanism.
+
+**The Haiku bottleneck:** Haiku card scan found only 10-14 clauses per document regardless of size (output token ceiling at ~32K tokens). On a 222-page document, Haiku analyzed ~5% of clauses. This is an engineering constraint (output token budget), not a model quality limitation — Haiku correctly READ the full document but ran out of space to write cards for all clauses.
+
+**Conclusion:** We could not find the failure point for Opus 4.6 cross-clause reasoning within the 200K context window. At ~167K tokens (the largest document that fits with system prompt), reasoning quality was indistinguishable from a 25-clause document. The practical bottleneck for long documents is not Opus's reasoning but Haiku's output token budget — addressable by increasing `quick_max` or implementing chunked card generation.
+
 ---
 
 ### Current State
@@ -382,7 +437,7 @@ All 5 threads completed successfully (5,073 SSE events). Detailed findings:
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 74 entries, complete process timeline |
+| `HACKATHON_LOG.md` | This file | 76 entries, complete process timeline |
 | `README.md` | Product description + 14 Opus capabilities + meta-prompting discovery |
 
 ---
@@ -440,7 +495,7 @@ The first four are the same error at different scales: **the AI uses itself as t
 | `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| This file | 74 entries, complete process timeline |
+| This file | 76 entries, complete process timeline |
 
 ## 14 Opus 4.6 Capabilities Used
 

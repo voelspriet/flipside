@@ -106,7 +106,7 @@ FlipSide uses more Opus 4.6 capabilities than any single feature would require �
 | # | Opus 4.6 Feature | What the user sees |
 | --- | --- | --- |
 | 1 | **Adaptive thinking** | 4 parallel Opus threads each decide their own reasoning depth — more on complex interactions, less on boilerplate |
-| 2 | **Long-context retrieval** | Cross-clause interaction detection across the full document. Clause 2(c) and Clause 2(e) together deny water claims — neither is dangerous alone |
+| 2 | **Long-context retrieval** | Cross-clause interaction detection across the full document. Tested to 222 pages (~167K tokens): 36/36 planted traps caught, including §3↔§297 (distance 294 clauses). No degradation found |
 | 3 | **Low over-refusals** | Villain voice — adversarial role-play where Opus adopts the drafter's perspective. Previous models would self-censor. Opus 4.6 fully commits |
 | 4 | **Effort controls** | Architecture maps depth selector to Opus 4.6's `effort` parameter. Currently using `max_tokens` as depth knob pending SDK support |
 | 5 | **Context compaction** | Follow-up questions send full document + analysis as context. Compaction enables extended Q&A without hitting the context window |
@@ -286,7 +286,7 @@ This project documents not just the product, but the entire decision-making proc
 
 | Document | What It Covers |
 | --- | --- |
-| [Hackathon Log](HACKATHON_LOG.md) | 74 entries, complete process timeline |
+| [Hackathon Log](HACKATHON_LOG.md) | 76 entries, complete process timeline |
 | [Strategy Decisions](strategy.md) | 22 strategy decisions with rationale — including a midpoint self-evaluation |
 | [The Prewash Method](docs/PREWASH_METHOD.md) | How to clean bias from AI prompts before execution |
 | [Live Demonstration](docs/LIVE_DEMONSTRATION.md) | "Think Like a Document" demonstrated on the AI itself |
