@@ -566,7 +566,17 @@
         .verdict-summary strong { color: var(--accent); font-weight: 600; }
         .verdict-summary .verdict-summary-score {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem; font-weight: 700;
+            font-size: 0.82rem; font-weight: 700;
+        }
+        .verdict-summary-rights {
+            margin-top: 0.35rem; font-size: 0.68rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary); line-height: 1.4;
+        }
+        .verdict-summary-ratio {
+            margin-top: 0.2rem; font-size: 0.7rem;
+            font-weight: 600; color: var(--text);
+            font-style: italic;
         }
         .verdict-body {
             flex: 1; overflow-y: auto; overflow-x: hidden;
@@ -4508,33 +4518,63 @@
         var el = $('verdictSummary');
         if (!el || el.classList.contains('visible')) return;
         var overall = opusSections.overall.text || '';
-        var parts = [];
-        // Extract overall risk score
+        var asymmetry = opusSections.asymmetry.text || '';
+        var html = '';
+
+        // Line 1: Risk score + PII + first substantive sentence
         var scoreMatch = overall.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
+        var piiMatch = overall.match(/Power Imbalance Index[:\s]*(\d+)\/100/i);
+        var scoreParts = [];
         if (scoreMatch) {
             var s = parseInt(scoreMatch[1]);
-            var color = s > 65 ? 'var(--red-text)' : s > 35 ? 'var(--yellow-text)' : 'var(--green-text)';
-            parts.push('<span class="verdict-summary-score" style="color:' + color + '">' + s + '/100</span>');
+            var sc = s > 65 ? 'var(--red-text)' : s > 35 ? 'var(--yellow-text)' : 'var(--green-text)';
+            scoreParts.push('<span class="verdict-summary-score" style="color:' + sc + '">' + s + '/100</span>');
         }
-        // Extract first substantive sentence from overall assessment (skip headings/blanks)
+        if (piiMatch) {
+            var p = parseInt(piiMatch[1]);
+            var pc = p > 65 ? 'var(--red-text)' : p > 35 ? 'var(--yellow-text)' : 'var(--green-text)';
+            scoreParts.push('Power Imbalance: <span class="verdict-summary-score" style="color:' + pc + '">' + p + '/100</span>');
+        }
+        if (scoreParts.length) html += '<div>' + scoreParts.join(' · ') + '</div>';
+
+        // First substantive sentence from overall
         var lines = overall.split('\n');
         var firstLine = '';
         for (var i = 0; i < lines.length; i++) {
             var l = lines[i].trim();
             if (!l || l.startsWith('#') || l.startsWith('---') || /^Overall Risk/i.test(l) || /^Power Imbalance/i.test(l) || /^\*\*Overall/i.test(l) || /^\d+\/100/.test(l)) continue;
-            // Strip markdown bold/italic
             firstLine = l.replace(/\*\*/g, '').replace(/\*/g, '');
             break;
         }
         if (firstLine) {
-            // Truncate to ~120 chars at word boundary
-            if (firstLine.length > 120) {
-                firstLine = firstLine.substring(0, 120).replace(/\s+\S*$/, '') + '…';
-            }
-            parts.push(firstLine);
+            if (firstLine.length > 150) firstLine = firstLine.substring(0, 148).replace(/\s+\S*$/, '') + '…';
+            html += '<div style="margin-top:0.3rem;font-size:0.72rem;color:var(--text-secondary)">' + escapeHtml(firstLine) + '</div>';
         }
-        if (parts.length === 0) return;
-        el.innerHTML = parts.join(' — ');
+
+        // Line 2: Rights/obligations from asymmetry section
+        var rightsMatch = asymmetry.match(/Your rights[:\s]*\*?\*?(\d+)/i);
+        var yourObMatch = asymmetry.match(/Your obligations[:\s]*\*?\*?(\d+)/i);
+        var theirRMatch = asymmetry.match(/Their rights[:\s]*\*?\*?(\d+)/i);
+        var theirObMatch = asymmetry.match(/Their obligations[:\s]*\*?\*?(\d+)/i);
+        if (rightsMatch || theirRMatch) {
+            var counts = [];
+            if (rightsMatch) counts.push('Your rights: ' + rightsMatch[1]);
+            if (theirRMatch) counts.push('Their rights: ' + theirRMatch[1]);
+            if (yourObMatch) counts.push('Your obligations: ' + yourObMatch[1]);
+            if (theirObMatch) counts.push('Their obligations: ' + theirObMatch[1]);
+            html += '<div class="verdict-summary-rights">' + counts.join(' · ') + '</div>';
+        }
+
+        // Line 3: Power Ratio from asymmetry
+        var ratioMatch = asymmetry.match(/Power Ratio[:\s]*([^\n]+)/i);
+        if (ratioMatch) {
+            var ratio = ratioMatch[1].replace(/\*\*/g, '').replace(/\*/g, '').trim();
+            if (ratio.length > 100) ratio = ratio.substring(0, 98).replace(/\s+\S*$/, '') + '…';
+            html += '<div class="verdict-summary-ratio">' + escapeHtml(ratio) + '</div>';
+        }
+
+        if (!html) return;
+        el.innerHTML = html;
         el.classList.add('visible');
     }
     function resetVerdictCol() {
