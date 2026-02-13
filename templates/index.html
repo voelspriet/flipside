@@ -1954,6 +1954,11 @@
             transition: background 0.15s;
         }
         .playbook-row:hover { background: var(--bg-warm); }
+        .playbook-row-green {
+            margin-top: 0.4rem; padding-top: 0.4rem;
+            border-top: 1px solid var(--border); opacity: 0.7;
+            cursor: default;
+        }
         .playbook-trick-name {
             font-size: 0.7rem;
             min-width: 120px;
@@ -5025,8 +5030,9 @@
         var trickCounts = {};
         var totalClauses = 0;
         var classifiedCount = 0;
+        var greenCount = 0;
         clauses.forEach(function(c) {
-            if (c.riskLevel === 'green') return; // skip green summary
+            if (c.riskLevel === 'green') { greenCount++; return; }
             totalClauses++;
             if (c.trick && c.trick.toLowerCase() !== 'none') {
                 trickCounts[c.trick] = (trickCounts[c.trick] || 0) + 1;
@@ -5061,6 +5067,16 @@
             h += '<span class="playbook-count">' + count + '\u00d7</span>';
             h += '</div>';
         });
+        // Green clauses row at the bottom — shows what's fair
+        if (greenCount > 0) {
+            h += '<div class="playbook-row playbook-row-green" title="Clauses that are straightforward and fair as written">';
+            h += '<span class="playbook-trick-name">\u2705 Fair Clauses</span>';
+            var greenPct = Math.round((greenCount / maxCount) * 100);
+            h += '<div class="playbook-bar-track"><div class="playbook-bar-fill" style="width:' + Math.min(greenPct, 100) + '%;background:var(--green)"></div></div>';
+            h += '<span class="playbook-count">' + greenCount + '\u00d7</span>';
+            h += '</div>';
+        }
+
         h += '</div></div>';
 
         summaryContainer.insertAdjacentHTML('beforeend', h);
@@ -5085,8 +5101,9 @@
         if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
         $('deepAnalysisSection').classList.add('hidden');
         $('cardViewport').classList.remove('hidden');
-        // Re-show verdict column
-        if (isDoneRendering || deepTextComplete) verdictCol.classList.add('visible');
+        // Re-show verdict column if there's any Opus content
+        var hasAnyOpus = Object.keys(opusSections).some(function(k) { return opusSections[k].text.length > 0; });
+        if (hasAnyOpus || isDoneRendering || deepTextComplete) verdictCol.classList.add('visible');
         setTimeout(function() {
             $('cardViewport').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
