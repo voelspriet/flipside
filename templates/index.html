@@ -5579,6 +5579,8 @@
 
         h += '</div></div>';
 
+        // Remove existing playbook before inserting (prevents duplicates on re-render)
+        summaryContainer.querySelectorAll('.playbook-card').forEach(function(el) { el.remove(); });
         summaryContainer.insertAdjacentHTML('beforeend', h);
 
         // Click handler: playbook row → activate trick filter
