@@ -1053,6 +1053,38 @@
         .doc-clause-marker-green { background: var(--green); }
         .doc-clause-marker-yellow { background: var(--yellow); }
         .doc-clause-marker-red { background: var(--red); }
+        .doc-highlight.whoosh-flash {
+            animation: highlightFlash 0.6s ease-out;
+        }
+        @keyframes highlightFlash {
+            0% { background: rgba(196, 75, 40, 0.4); box-shadow: 0 0 12px rgba(196, 75, 40, 0.3); }
+            100% { box-shadow: none; }
+        }
+        .clause-whoosh-ghost {
+            position: fixed; z-index: 9999; pointer-events: none;
+            display: flex; align-items: center; gap: 6px;
+            padding: 4px 10px 4px 6px;
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            color: #fff; white-space: nowrap;
+            max-width: 280px; overflow: hidden;
+            will-change: transform, opacity;
+        }
+        .clause-whoosh-ghost .ghost-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: rgba(255,255,255,0.3); font-size: 0.55rem;
+            flex-shrink: 0;
+        }
+        .clause-whoosh-ghost .ghost-text {
+            overflow: hidden; text-overflow: ellipsis;
+            font-weight: 500; opacity: 0.9;
+        }
+        .clause-whoosh-ghost-green { background: var(--green); }
+        .clause-whoosh-ghost-yellow { background: var(--yellow); color: #1a1a1a; }
+        .clause-whoosh-ghost-yellow .ghost-num { background: rgba(0,0,0,0.15); }
+        .clause-whoosh-ghost-red { background: var(--accent); }
         .editorial-loading-indicator {
             display: flex; align-items: center; gap: 0.75rem;
             margin: 0 1.5rem; padding: 1rem 0 1.2rem;
@@ -1429,6 +1461,12 @@
             border-left: 3px solid var(--border); font-size: 0.84rem;
             line-height: 1.65; color: var(--text-secondary); font-style: italic;
         }
+        .back-quote-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--text-dim); margin-bottom: 0.3rem;
+        }
         .find-in-doc {
             display: inline-block;
             font-family: 'JetBrains Mono', monospace;
@@ -1533,8 +1571,11 @@
 
         /* Flip trigger — quiet invitation */
         @keyframes flipHint {
-            0%, 100% { opacity: 0.85; }
-            50% { opacity: 1; }
+            0%, 100% { transform: translateY(0); }
+            20% { transform: translateY(-4px); }
+            40% { transform: translateY(0); }
+            60% { transform: translateY(-2px); }
+            80% { transform: translateY(0); }
         }
         .flip-trigger {
             display: flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -1549,7 +1590,27 @@
             background: var(--accent-light);
         }
         .flip-trigger.hint-pulse {
-            animation: flipHint 2s ease-in-out 3;
+            animation: flipHint 1.8s ease-in-out infinite;
+            background: rgba(196, 75, 40, 0.06);
+            border-top-color: var(--accent);
+            position: relative;
+        }
+        .flip-hint-tooltip {
+            position: absolute; bottom: calc(100% + 8px); left: 50%;
+            transform: translateX(-50%); white-space: nowrap;
+            background: var(--text-primary); color: var(--bg-main);
+            font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
+            font-weight: 600; padding: 0.35rem 0.75rem;
+            border-radius: 100px; pointer-events: none;
+            opacity: 0; animation: tooltipFadeIn 0.4s ease 1.5s forwards;
+        }
+        .flip-hint-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent; border-top-color: var(--text-primary);
+        }
+        @keyframes tooltipFadeIn {
+            to { opacity: 1; }
         }
         .flip-trigger-arrow {
             display: inline-block; font-size: 0.85rem;
@@ -3253,7 +3314,7 @@
         { label: 'LONG-CONTEXT', text: 'Tracing cross-clause interactions across full document' },
         { label: 'PERSPECTIVE SHIFT', text: 'Adopting drafter\u2019s viewpoint to find hidden intent' },
         { label: 'SELF-REVIEW', text: 'Checking own findings for false positives' },
-        { label: 'VILLAIN VOICE', text: 'Low over-refusal \u2014 Opus sustains adversarial framing' },
+        { label: 'BAD INTENTIONS', text: 'Low over-refusal \u2014 Opus sustains adversarial framing' },
         { label: 'POWER ASYMMETRY', text: 'Counting rights and obligations per party' },
         { label: 'ARCHAEOLOGY', text: 'Separating boilerplate from custom-drafted clauses' },
     ];
@@ -3381,6 +3442,13 @@
                     document.querySelectorAll('.flip-trigger.hint-pulse').forEach(function(el) {
                         el.classList.remove('hint-pulse');
                     });
+                    document.querySelectorAll('.flip-hint-tooltip').forEach(function(el) {
+                        el.remove();
+                    });
+                    // Show verdict column now that user has discovered the flip
+                    if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable) {
+                        showVerdictCol();
+                    }
                 }
             }
             return;
@@ -3475,6 +3543,10 @@
                         if (!hasFlippedOnce) {
                             hasFlippedOnce = true;
                             updateCardNavigation();
+                            // Show verdict column on keyboard flip too
+                            if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable) {
+                                showVerdictCol();
+                            }
                         }
                     } else {
                         if (kbLayout) kbLayout.classList.remove('layout-flipped');
@@ -3971,6 +4043,9 @@
         metadataLine.innerHTML = '';
         statusPill.classList.remove('done');
         statusText.textContent = 'Starting analysis...';
+        // Hide model badge during analysis to reduce visual noise
+        var modelBadge = document.querySelector('.model-badge');
+        if (modelBadge) modelBadge.classList.add('hidden');
         resultsArea.classList.add('hidden');
         $('cardViewport').classList.add('hidden');
         $('cardNavigation').classList.add('hidden');
@@ -4179,6 +4254,9 @@
                     stopEditorialStatusRotation();
                     if (thinkingCharCount > 0) showCapStats();
                     $('deepStatus').classList.add('hidden');
+                    // Re-show model badge now that analysis is complete
+                    var doneBadge = document.querySelector('.model-badge');
+                    if (doneBadge) doneBadge.classList.remove('hidden');
 
                     var doneData = {};
                     try { doneData = JSON.parse(msg.content); } catch(e) {}
@@ -4534,25 +4612,25 @@
 
     // ── Drafter voice styling ───────────────────────────────
     function styleDrafterBlocks(html) {
-        // Villain format: **If the drafter could speak as a villain:** text
+        // Primary format: **If the drafter would have bad intentions:** text
         html = html.replace(
-            /<p><strong>If the drafter could speak as a villain:<\/strong>\s*([\s\S]*?)<\/p>/gi,
+            /<p><strong>If the drafter (?:would have bad intentions|could speak as a villain):<\/strong>\s*([\s\S]*?)<\/p>/gi,
             function(_, text) {
-                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter could speak as a villain</span>' + text.trim() + '</div>';
+                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter would have bad intentions</span>' + text.trim() + '</div>';
             }
         );
         // Fallback: old "speak freely" format
         html = html.replace(
             /<p><strong>If the drafter could speak freely:<\/strong>\s*([\s\S]*?)<\/p>/gi,
             function(_, text) {
-                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter could speak as a villain</span>' + text.trim() + '</div>';
+                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter would have bad intentions</span>' + text.trim() + '</div>';
             }
         );
         // Legacy format: FLIPSIDE_DRAFTER: text (pre-processed from [DRAFTER]:)
         html = html.replace(
             /<p>FLIPSIDE_DRAFTER:\s*([\s\S]*?)<\/p>/gi,
             function(_, text) {
-                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter could speak as a villain</span>' + text.trim() + '</div>';
+                return '<div class="drafter-voice"><span class="drafter-voice-label">If the drafter would have bad intentions</span>' + text.trim() + '</div>';
             }
         );
         // Style "→ YOUR MOVE:" action lines
@@ -4767,7 +4845,7 @@
             '<div class="front-content">' +
             (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
             '<div class="reader-voice">' +
-            '<span class="reader-voice-label">I\u2019d think</span>' +
+            '<span class="reader-voice-label">At first glance</span>' +
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
             '</div>' +
             '</div>' +
@@ -4775,8 +4853,16 @@
             '<button class="flip-trigger"><span>Now flip it</span><span class="flip-trigger-spin">\u27F3</span></button>' +
             '</div>';
 
-        // ── Back body: full reveal — figure, example, bottom line ──
+        // ── Back body: full reveal — quote, figure, example, bottom line ──
         var backBodyHtml = '';
+
+        // Source quote at top of card back for credibility
+        if (clause.quote) {
+            backBodyHtml += '<div class="back-quote-label">From the document</div>' +
+                '<div class="clause-quote">' + escapeHtml(clause.quote) + '</div>' +
+                '<span class="find-in-doc" data-card-index="' + index + '">Find in document \u2192</span>';
+        }
+
         var isGreenSummary = clause.title === 'Fair Clauses Summary' || (risk === 'green' && clause.title && clause.title.indexOf('Fair Clauses') >= 0);
         var backHtml;
 
@@ -5055,7 +5141,13 @@
             showCardAtIndex(0);
             // Pulse the first flip trigger to draw attention
             var firstTrigger = viewport.querySelector('.flip-trigger');
-            if (firstTrigger) firstTrigger.classList.add('hint-pulse');
+            if (firstTrigger) {
+                firstTrigger.classList.add('hint-pulse');
+                var tooltip = document.createElement('span');
+                tooltip.className = 'flip-hint-tooltip';
+                tooltip.textContent = 'Tap to see what they\u2019re not telling you';
+                firstTrigger.appendChild(tooltip);
+            }
         }, 500);
     }
 
@@ -5080,7 +5172,7 @@
             _verdictRenderTimer = setTimeout(function() {
                 _verdictRenderTimer = null;
                 // Show verdict column as soon as we get first text
-                if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable) {
+                if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable && hasFlippedOnce) {
                     showVerdictCol();
                 }
                 var bodyEl = $('opusBody_' + source);
@@ -5496,6 +5588,51 @@
         );
     }
 
+    // ── Clause whoosh: animate ghost pill from sidebar highlight → card ──
+    function whooshClauseToCard(cardIndex, cardEl) {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var previewEl = $('editorialLoadingText');
+        if (!previewEl) return;
+        var highlight = previewEl.querySelector('.doc-highlight[data-card-index="' + cardIndex + '"]');
+        if (!highlight) return;
+
+        // Flash the sidebar highlight
+        highlight.classList.remove('whoosh-flash');
+        void highlight.offsetWidth;
+        highlight.classList.add('whoosh-flash');
+
+        var risk = (cardEl.getAttribute('data-risk-level') || 'green');
+        var marker = highlight.querySelector('.doc-clause-marker');
+        var sourceRect = (marker || highlight).getBoundingClientRect();
+
+        // Target: the section-ref area at top of card, or the card title
+        var landing = cardEl.querySelector('.clause-section-ref') || cardEl.querySelector('.clause-title');
+        if (!landing) return;
+        var targetRect = landing.getBoundingClientRect();
+
+        // Build ghost pill
+        var ghost = document.createElement('span');
+        ghost.className = 'clause-whoosh-ghost clause-whoosh-ghost-' + risk;
+        var num = cardIndex + 1;
+        var snippet = (cardEl.getAttribute('data-clause-title') || '').substring(0, 30);
+        ghost.innerHTML = '<span class="ghost-num">' + num + '</span><span class="ghost-text">' + escapeHtml(snippet) + '</span>';
+        document.body.appendChild(ghost);
+
+        // Position at source
+        ghost.style.left = sourceRect.left + 'px';
+        ghost.style.top = sourceRect.top + 'px';
+
+        // Animate to target
+        var dx = targetRect.left - sourceRect.left;
+        var dy = targetRect.top - sourceRect.top;
+        ghost.animate([
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: 'translate(' + (dx * 0.5) + 'px, ' + (dy * 0.3) + 'px) scale(1.15)', opacity: 1, offset: 0.4 },
+            { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0.85)', opacity: 0 }
+        ], { duration: 550, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' })
+        .onfinish = function() { ghost.remove(); };
+    }
+
     function showCardAtIndex(index) {
         var cards = flipCardContainer.querySelectorAll('.flip-card');
         if (index < 0 || index >= cards.length) return;
@@ -5504,12 +5641,14 @@
         // Restore side columns when navigating (un-flips the card)
         var layout = flipCardContainer.closest('.analysis-layout');
         if (layout) layout.classList.remove('layout-flipped');
+        var isFirstAppearance = false;
         for (var i = 0; i < cards.length; i++) {
             if (i === index) {
                 cards[i].classList.remove('hidden');
                 cards[i].classList.remove('flipped'); // un-flip on navigate
                 if (!cards[i].classList.contains('woosh-done')) {
                     cards[i].classList.add('woosh-in', 'woosh-done');
+                    isFirstAppearance = true;
                 }
             } else {
                 cards[i].classList.add('hidden');
@@ -5526,6 +5665,12 @@
 
         // Scroll document preview to matching clause
         scrollPreviewToCard(index);
+
+        // Whoosh ghost from sidebar to card on first appearance
+        if (isFirstAppearance && window.innerWidth > 900) {
+            // Small delay so card is visible and positioned before we read rects
+            setTimeout(function() { whooshClauseToCard(index, visibleCard); }, 120);
+        }
 
         // Update chapter title — persistent editorial voice
         updateChapterTitle(index, cards.length, visibleCard);

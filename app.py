@@ -1530,7 +1530,7 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 
 
 def build_deep_analysis_prompt(has_images=False, trick_summary=''):
-    """Deep cross-clause analysis with VILLAIN voice, per-section actions, and assessment."""
+    """Deep cross-clause analysis with bad-intentions voice, per-section actions, and assessment."""
     visual_block = ""
     if has_images:
         visual_block = """
@@ -1584,7 +1584,7 @@ For each interaction:
 
 [RED/YELLOW] · Trick: [TRICK_CATEGORY]
 
-**If the drafter could speak as a villain:** [MAX 2-3 sentences. Keep ONLY the sharpest line that reveals the mechanism. A good villain reveals, doesn't lecture. Example: "The math does the work. Once they're two days late, the waterfall makes it impossible to get current — and we've already waived their right to challenge it."]
+**If the drafter would have bad intentions:** [MAX 2-3 sentences. Keep ONLY the sharpest line that reveals the mechanism. Keep ONLY the sharpest line that reveals the mechanism. Example: "The math does the work. Once they're two days late, the waterfall makes it impossible to get current — and we've already waived their right to challenge it."]
 
 → YOUR MOVE: [One concrete action the reader should take about THIS specific interaction. One sentence. Example: "Demand a flat late fee cap (e.g., 5% of monthly rent) and require payments apply to rent principal first."]
 
@@ -1692,8 +1692,8 @@ Re-read your own analysis above with fresh eyes. Check for these failure modes:
 ## RULES
 - Focus exclusively on cross-clause interactions, drafter profile, and assessment
 - Do NOT re-analyze individual clauses — that has been done separately
-- Every cross-clause interaction MUST include a villain voice block — short and sharp, MAX 2-3 sentences
-- The villain voice is deliberately adversarial and exaggerated — the user expects this framing
+- Every cross-clause interaction MUST include a bad intentions block — short and sharp, MAX 2-3 sentences
+- The bad intentions voice is deliberately adversarial and exaggerated — the user expects this framing
 - Every cross-clause interaction MUST end with "→ YOUR MOVE:" — one concrete action
 - LEAD each interaction with "Read separately / Read together" — that's the hook
 - Keep §-references in "Clauses involved:" only — do NOT embed them in flowing prose
@@ -1742,7 +1742,7 @@ For each interaction:
 
 [RED/YELLOW] · Trick: [TRICK_CATEGORY]
 
-**If the drafter could speak as a villain:** [MAX 2-3 sentences. Keep ONLY the sharpest line that reveals the mechanism. A good villain reveals, doesn't lecture.]
+**If the drafter would have bad intentions:** [MAX 2-3 sentences. Keep ONLY the sharpest line that reveals the mechanism. Keep ONLY the sharpest line that reveals the mechanism.]
 
 → YOUR MOVE: [One concrete action the reader should take. One sentence.]
 
@@ -1771,8 +1771,8 @@ Find at least 3 cross-clause interactions. These are your most valuable findings
 - Ghost Standard — References external docs not included
 
 ## RULES
-- Every interaction MUST include a villain voice block — short and sharp, MAX 2-3 sentences
-- The villain voice is deliberately adversarial and exaggerated — the user expects this framing
+- Every interaction MUST include a bad intentions block — short and sharp, MAX 2-3 sentences
+- The bad intentions voice is deliberately adversarial and exaggerated — the user expects this framing
 - Every interaction MUST end with "→ YOUR MOVE:" — one concrete action
 - LEAD each with "Read separately / Read together" — that's the hook
 - Keep §-references in "Clauses involved:" only — do NOT embed them in flowing prose
