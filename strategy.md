@@ -814,11 +814,11 @@ The instinct was: put the best model on the most visible feature (card backs). T
 | Working product | Done |
 | README with architecture + capabilities | Done |
 | 100-200 word summary | Done (173 words) |
-| HACKATHON_LOG (process evidence) | Done (68 entries) |
+| HACKATHON_LOG (process evidence) | Done (71 entries) |
 | Strategy decisions (iteration evidence) | Done (22 decisions) |
 | Third-party license attribution | Done |
-| 12 sample documents | Done |
-| Demo video (3 min) | **NOT STARTED** |
+| 14 sample documents | Done |
+| Demo video (3 min) | Script ready (DEMO_SCRIPT.md) |
 
 ### The Lesson
 

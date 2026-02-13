@@ -305,20 +305,29 @@ While users wait for the Opus expert report, the verdict column now shows a live
 **Entry 68 — Verdict Panel Readability Pass**
 Reviewed all verdict column elements for readability in the ~300px sidebar. Fixes: trick name font 0.65→0.76rem, count font 0.55→0.65rem with bold weight, icons 14→16px in verdict pills (12px in compact contexts like chips/footnotes, 14px in playbook), tooltip positioning changed from center-aligned (clipped at edges) to left-aligned with arrow at 1rem. "Expert report complete" status text now hides when done (redundant with "Your verdict is ready" header). Context-aware icon sizing via CSS cascade.
 
+**Entry 69 — Clean Export + Not-Applicable Gating**
+Save Report rewritten: builds clean HTML from card `data-*` attributes and DOM queries instead of dumping raw `innerHTML` (which included broken SVG score rings and 3D flip transforms). Loading time estimates added ("about a minute" / "about 30 seconds"). Verdict column now hides for non-applicable documents. Spinning ⟳ flip icon on all cards.
+
+**Entry 70 — Hackathon Event Waiver as 14th Sample**
+Added the real "Built with Opus 4.6" hackathon event waiver as a sample document. Claude sparkle icon tile. Meta-recursive: FlipSide analyzes the document that governs its own creation. Generated thumbnails. Demo script created (DEMO_SCRIPT.md, 3-minute 7-scene narrative).
+
+**Entry 71 — Verdict Summary + Home Button + Layout Fixes**
+Persistent verdict summary appears when all 4 Opus sections complete: risk score + first sentence from overall assessment. Stays visible as user navigates cards. Home button replaces "Back" text with house icon. "Paste text" / "Compare" links moved under drop zone. Score label moved below ring (was clipped inside SVG). "Read full verdict" button flips on Y-axis when ready. Card flip ⟳ stops spinning after flip.
+
 ---
 
 ### Current State
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 2,514 | Backend: Flask, SSE, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, 8 prompts, dynamic token budget, suitability gate |
-| `templates/index.html` | 5,918 | Card-first frontend: instant flip cards, focused verdict reading mode, live tricks panel, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
+| `app.py` | 2,615 | Backend: Flask, SSE, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, 8 prompts, dynamic token budget, suitability gate, 14 sample docs |
+| `templates/index.html` | 6,103 | Card-first frontend: instant flip cards, focused verdict reading mode, live tricks panel, verdict summary, clean export, home button, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 68 entries, complete process timeline |
+| `HACKATHON_LOG.md` | This file | 71 entries, complete process timeline |
 | `README.md` | Product description + 14 Opus capabilities + meta-prompting discovery |
 
 ---
@@ -368,15 +377,15 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (2,452 lines) | Flask backend: 8 prompts, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate |
-| `templates/index.html` (5,529 lines) | Card-first frontend: instant flip cards, collapsible verdict column, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
+| `app.py` (2,615 lines) | Flask backend: 8 prompts, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
+| `templates/index.html` (6,103 lines) | Card-first frontend: instant flip cards, verdict summary, clean export, home button, live tricks panel, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
 | `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| This file | 66 entries, complete process timeline |
+| This file | 71 entries, complete process timeline |
 
 ## 14 Opus 4.6 Capabilities Used
 
@@ -399,10 +408,12 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 ## What Remains
 
-- Demo video (3 minutes, scripted narrative)
+- Demo video (3 minutes, scripted narrative) — script ready (DEMO_SCRIPT.md)
 - ~~100-200 word summary~~ Done (173 words)
 - ~~Update README.md to match current state~~ Done
-- ~~Reduce perceived Opus wait time~~ Addressed: invitation text, 2-min countdown, live tricks panel, focused reading mode
+- ~~Reduce perceived Opus wait time~~ Addressed: invitation text, 2-min countdown, live tricks panel, verdict summary, focused reading mode
+- ~~Save Report broken (SVG dump)~~ Fixed: clean HTML export from structured data
+- ~~Non-applicable docs show verdict~~ Fixed: verdict column hides
 
 **Deadline: February 16, 3:00 PM EST**
 
