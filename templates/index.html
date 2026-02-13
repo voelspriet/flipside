@@ -1047,6 +1047,11 @@
             font-size: 9px; fill: var(--text-secondary); font-weight: 500;
             font-family: 'DM Sans', sans-serif;
         }
+        .score-ring-label {
+            display: block; text-align: center; font-size: 0.68rem;
+            color: var(--text-secondary); margin-top: 0.15rem;
+            line-height: 1.2; max-width: 120px;
+        }
         .summary-meta { flex: 1; min-width: 0; }
         .summary-title {
             font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem;
@@ -5320,8 +5325,8 @@
         var scoreLabel = severityMatch ? severityMatch[1].trim().replace(/\*+/g, '') : (
             score > 80 ? 'seek legal review' : score > 65 ? 'high risk' : score > 40 ? 'moderate risk' : 'low risk'
         );
-        // Truncate to fit inside the circle
-        if (scoreLabel.length > 20) scoreLabel = scoreLabel.substring(0, 18) + '\u2026';
+        // Truncate label for display below circle
+        if (scoreLabel.length > 40) scoreLabel = scoreLabel.substring(0, 38) + '\u2026';
         var piiColor = piiScore > 65 ? 'var(--red)' : piiScore > 35 ? 'var(--yellow)' : 'var(--green)';
         var circumference = 2 * Math.PI * 42;
         var offset = circumference * (1 - score / 100);
@@ -5330,9 +5335,8 @@
         h += '<div class="score-ring-container"><svg class="score-ring" viewBox="0 0 100 100">';
         h += '<circle class="ring-bg" cx="50" cy="50" r="42"/>';
         h += '<circle class="ring-fill" cx="50" cy="50" r="42" stroke="' + scoreColor + '" stroke-dasharray="' + circumference.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/>';
-        h += '<text class="score-value" x="50" y="47" text-anchor="middle" dy="0.35em">' + score + '</text>';
-        h += '<text class="score-label" x="50" y="64" text-anchor="middle">' + scoreLabel + '</text>';
-        h += '</svg></div>';
+        h += '<text class="score-value" x="50" y="50" text-anchor="middle" dy="0.35em">' + score + '</text>';
+        h += '</svg><span class="score-ring-label">' + escapeHtml(scoreLabel) + '</span></div>';
 
         h += '<div class="summary-meta"><div class="summary-title">Document Risk Assessment</div>';
         h += '<div class="score-bars">';
