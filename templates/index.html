@@ -4107,6 +4107,32 @@
     function markOpusSectionDone(source) {
         var sectionEl = $('opusSection_' + source);
         if (!sectionEl) return;
+        // Gate: "overall" waits for the other 3 to finish first —
+        // it's a summary and shouldn't appear done before its parts.
+        if (source === 'overall') {
+            var partsReady = opusSections.interactions.done
+                          && opusSections.asymmetry.done
+                          && opusSections.archaeology.done;
+            if (!partsReady) {
+                // Data is accumulated; we'll reveal when the last part finishes
+                return;
+            }
+        }
+        // When a non-overall section finishes, check if overall is waiting
+        if (source !== 'overall' && opusSections.overall.done) {
+            var allPartsNow = opusSections.interactions.done
+                           && opusSections.asymmetry.done
+                           && opusSections.archaeology.done;
+            if (allPartsNow) {
+                // Release the held-back overall section
+                _revealOpusSection('overall');
+            }
+        }
+        _revealOpusSection(source);
+    }
+    function _revealOpusSection(source) {
+        var sectionEl = $('opusSection_' + source);
+        if (!sectionEl) return;
         var dot = sectionEl.querySelector('.opus-dot');
         if (dot) { dot.classList.remove('pulsing'); dot.classList.add('done'); }
         // Auto-expand this section
