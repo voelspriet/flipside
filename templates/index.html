@@ -168,10 +168,149 @@
            ══════════════════════════════════════════════════════ */
         #upload-screen {
             min-height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-            padding: 2rem;
+            display: flex;
+            padding: 0;
+        }
+        .upload-nav {
+            width: 200px; flex-shrink: 0;
+            padding: 2.5rem 1.2rem 2rem 1.5rem;
+            position: sticky; top: 0; height: 100vh; overflow-y: auto;
+            border-right: 1px solid var(--border-light);
+            display: flex; flex-direction: column; gap: 0.15rem;
+        }
+        .upload-nav-brand {
+            font-size: 1.1rem; font-weight: 800; letter-spacing: -0.04em;
+            color: var(--text-primary); margin-bottom: 1.5rem; cursor: default;
+        }
+        .upload-nav-label {
+            font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--text-dim);
+            margin-top: 1rem; margin-bottom: 0.3rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .upload-nav a {
+            font-size: 0.78rem; color: var(--text-secondary); text-decoration: none;
+            padding: 0.25rem 0.5rem; border-radius: var(--radius-sm);
+            transition: all 0.2s ease; display: block; line-height: 1.35;
+        }
+        .upload-nav a:hover { color: var(--accent); background: var(--accent-light); }
+        .upload-nav a.active { color: var(--accent); font-weight: 600; background: var(--accent-light); }
+        .upload-nav a.nav-fair-clause {
+            margin-top: 0.5rem; padding-top: 0.5rem;
+            border-top: 1px solid var(--border-light);
+            font-weight: 600; color: var(--text-primary);
+        }
+        .upload-nav a.nav-fair-clause:hover { color: var(--accent); }
+        .upload-main {
+            flex: 1;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 2rem;
+            min-height: 100vh;
+        }
+        .upload-main.has-faq {
+            justify-content: flex-start; padding-top: 3rem;
         }
         .upload-container { max-width: 560px; width: 100%; }
+
+        /* ── FAQ Sections ─────────────────────────── */
+        .faq-wrapper {
+            max-width: 560px; width: 100%; margin-top: 3rem;
+            padding-bottom: 4rem;
+        }
+        .faq-wrapper.hidden { display: none; }
+        .faq-title {
+            font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em;
+            color: var(--text-primary); margin-bottom: 0.3rem;
+        }
+        .faq-subtitle {
+            font-size: 0.88rem; color: var(--text-secondary);
+            margin-bottom: 2rem; font-style: italic;
+        }
+        .faq-section {
+            margin-bottom: 2rem;
+            scroll-margin-top: 2rem;
+        }
+        .faq-section h3 {
+            font-size: 1rem; font-weight: 700; color: var(--text-primary);
+            margin-bottom: 0.5rem; letter-spacing: -0.01em;
+        }
+        .faq-section p, .faq-section li {
+            font-size: 0.85rem; color: var(--text-body); line-height: 1.7;
+            margin-bottom: 0.6rem;
+        }
+        .faq-section ul {
+            padding-left: 1.2rem; margin-bottom: 0.8rem;
+        }
+        .faq-section li { margin-bottom: 0.3rem; }
+        .faq-section strong { color: var(--text-primary); }
+        .faq-section code {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+            background: var(--bg-warm); padding: 0.1rem 0.35rem;
+            border-radius: 3px; color: var(--accent);
+        }
+        .faq-divider {
+            border: none; border-top: 1px solid var(--border-light);
+            margin: 2rem 0;
+        }
+
+        /* ── Fair Clause ──────────────────────────── */
+        .fair-clause-card {
+            background: var(--bg-card); border: 2px solid var(--green-border);
+            border-radius: var(--radius); padding: 1.8rem;
+            box-shadow: var(--shadow-md);
+            scroll-margin-top: 2rem;
+        }
+        .fair-clause-card h3 {
+            font-size: 1.15rem; font-weight: 800; color: var(--green-text);
+            margin-bottom: 0.2rem;
+        }
+        .fair-clause-badge {
+            display: inline-block; font-size: 0.65rem; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--green-bg); color: var(--green-text);
+            border: 1px solid var(--green-border);
+            padding: 0.15rem 0.5rem; border-radius: 100px;
+            margin-bottom: 1rem; letter-spacing: 0.02em;
+        }
+        .fair-clause-intro {
+            font-size: 0.85rem; color: var(--text-secondary);
+            font-style: italic; margin-bottom: 1.2rem; line-height: 1.6;
+        }
+        .fair-clause-section {
+            margin-bottom: 1rem;
+        }
+        .fair-clause-section h4 {
+            font-size: 0.82rem; font-weight: 700; color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        .fair-clause-section p {
+            font-size: 0.82rem; color: var(--text-body); line-height: 1.65;
+            margin: 0;
+        }
+        .fair-clause-reasoning {
+            margin-top: 0.3rem; font-size: 0.72rem; color: var(--green-text);
+            font-style: italic; line-height: 1.5;
+            padding-left: 0.8rem; border-left: 2px solid var(--green-border);
+        }
+        .fair-clause-score {
+            margin-top: 1.5rem; padding-top: 1rem;
+            border-top: 1px solid var(--green-border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem; color: var(--green-text);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .fair-clause-score-ring {
+            width: 32px; height: 32px;
+        }
+        .fair-clause-footer {
+            margin-top: 1rem; font-size: 0.7rem;
+            color: var(--text-dim); font-style: italic; line-height: 1.5;
+        }
+
+        @media (max-width: 800px) {
+            .upload-nav { display: none; }
+            .upload-main { padding: 2rem 1rem; }
+        }
 
         .brand { text-align: center; margin-bottom: 2.5rem; }
         .brand h1 {
@@ -2213,6 +2352,21 @@
      SCREEN 1: UPLOAD
      ═══════════════════════════════════════════════════════ -->
 <section id="upload-screen">
+    <nav class="upload-nav" id="uploadNav">
+        <div class="upload-nav-brand">FlipSide</div>
+        <div class="upload-nav-label">Get started</div>
+        <a href="#" data-nav="top">Upload a document</a>
+        <div class="upload-nav-label">FAQ</div>
+        <a href="#faq-what" data-nav="faq">What is FlipSide?</a>
+        <a href="#faq-how" data-nav="faq">How does it work?</a>
+        <a href="#faq-privacy" data-nav="faq">Your data &amp; privacy</a>
+        <a href="#faq-claude" data-nav="faq">What Claude keeps</a>
+        <a href="#faq-free" data-nav="faq">Why is it free?</a>
+        <a href="#faq-legal" data-nav="faq">Is this legal advice?</a>
+        <a href="#faq-who" data-nav="faq">Who built this?</a>
+        <a href="#faq-fair-clause" data-nav="faq" class="nav-fair-clause">The Fair Clause</a>
+    </nav>
+    <div class="upload-main" id="uploadMain">
     <div class="upload-container">
         <div class="brand fade-up">
             <h1>FlipSide</h1>
@@ -2318,6 +2472,164 @@
             AI analysis — not legal advice. Always consult an attorney for important decisions.
         </div>
     </div>
+
+    <!-- ── FAQ Sections ─────────────────────────────────── -->
+    <div class="faq-wrapper hidden" id="faqWrapper">
+        <h2 class="faq-title">Frequently Asked Questions</h2>
+        <p class="faq-subtitle">Everything you need to know before uploading a document.</p>
+
+        <div class="faq-section" id="faq-what">
+            <h3>What is FlipSide?</h3>
+            <p>FlipSide shows you what the other side intended when they wrote your document. Upload any contract, agreement, or policy you didn't draft — a lease, insurance policy, gym membership, Terms of Service — and FlipSide reads it from <strong>the drafter's perspective</strong>, not yours.</p>
+            <p>Each clause gets a flip card. The front shows what a trusting reader sees: the reassuring headline, the comforting language. Flip it, and the back reveals what an expert catches: the trick, the risk score, the figure that matters, and what you should actually read.</p>
+            <p>It's based on a peer-reviewed methodology called <strong>"Think Like a Document"</strong> — instead of reading from your perspective, read from the perspective of the party who wrote it. FlipSide applies that principle at scale using AI.</p>
+        </div>
+
+        <hr class="faq-divider">
+
+        <div class="faq-section" id="faq-how">
+            <h3>How does it work?</h3>
+            <p>FlipSide runs <strong>five AI threads in parallel</strong> the moment you upload:</p>
+            <ul>
+                <li><strong>Thread 1 — Card Scan</strong> (Claude Haiku 4.5): Reads every clause and generates flip cards with front and back in ~12 seconds. This is what appears first.</li>
+                <li><strong>Thread 2 — Cross-Clause Interactions</strong> (Claude Opus 4.6): Finds risks you can't see reading one clause at a time — where clauses combine to create compound effects.</li>
+                <li><strong>Thread 3 — Power Asymmetry</strong> (Claude Opus 4.6): Counts who holds the rights, who carries the obligations, and calculates the power ratio.</li>
+                <li><strong>Thread 4 — Document Archaeology</strong> (Claude Opus 4.6): Identifies which clauses are standard boilerplate and which were custom-drafted for strategic advantage.</li>
+                <li><strong>Thread 5 — Overall Assessment</strong> (Claude Opus 4.6): Synthesizes everything into a verdict, profiles the drafter, and reviews its own analysis for blind spots.</li>
+            </ul>
+            <p>Cards appear fast. The expert verdict builds in the background. You can start flipping cards while Opus is still thinking.</p>
+        </div>
+
+        <hr class="faq-divider">
+
+        <div class="faq-section" id="faq-privacy">
+            <h3>Your data &amp; privacy</h3>
+            <p><strong>FlipSide stores nothing.</strong> Your document is not saved anywhere — not to disk, not to a database, not to a temporary file. It exists only in your browser session's memory and is gone when you close the tab or analyze a new document.</p>
+            <ul>
+                <li><strong>No disk writes.</strong> The server has no file system storage, no database, no logging of document content.</li>
+                <li><strong>No external services.</strong> Your document is never sent to any third party. The only external call is to the Anthropic API (Claude) for analysis.</li>
+                <li><strong>No analytics or tracking.</strong> No cookies, no user accounts, no telemetry. FlipSide doesn't know who you are.</li>
+                <li><strong>Memory only.</strong> Documents exist in server memory during your active session and are released when the session ends. Nothing survives a server restart.</li>
+            </ul>
+            <p>The 14 sample documents on this page are embedded directly in the application code — they are not fetched from any external source.</p>
+        </div>
+
+        <hr class="faq-divider">
+
+        <div class="faq-section" id="faq-claude">
+            <h3>What does Claude keep?</h3>
+            <p>When you upload a document, it is sent to the <strong>Anthropic API</strong> for analysis by Claude Haiku 4.5 (fast card scan) and Claude Opus 4.6 (expert verdict). Here is what Anthropic does and does not do with your data:</p>
+            <ul>
+                <li><strong>Not used for training.</strong> Anthropic does not use API inputs to train its models. Your document will not become part of Claude's training data.</li>
+                <li><strong>Safety monitoring.</strong> Anthropic may retain API inputs for up to 30 days for trust and safety purposes (detecting abuse, complying with legal obligations). After that, it is deleted.</li>
+                <li><strong>No sharing.</strong> Anthropic does not share your API data with third parties except as required by law.</li>
+                <li><strong>Prompt caching.</strong> FlipSide uses Anthropic's prompt caching feature, which caches the <em>system instructions</em> (not your document) for performance. This reduces cost and latency but does not affect your document's privacy.</li>
+            </ul>
+            <p>In short: Anthropic processes your document to generate the analysis, may retain it briefly for safety, and then deletes it. FlipSide itself keeps nothing at all.</p>
+            <p style="font-size:0.78rem;color:var(--text-muted)">For full details, see <a href="https://www.anthropic.com/policies/privacy" target="_blank" rel="noopener" style="color:var(--accent)">Anthropic's Privacy Policy</a> and <a href="https://www.anthropic.com/policies/usage" target="_blank" rel="noopener" style="color:var(--accent)">Usage Policy</a>.</p>
+        </div>
+
+        <hr class="faq-divider">
+
+        <div class="faq-section" id="faq-free">
+            <h3>Why is it free?</h3>
+            <p>FlipSide was built during the <strong>Built with Claude Hackathon</strong> (February 2026) to prove a point: legal document analysis shouldn't be locked behind $300–500/hour attorney fees. Everyone signs contracts. Not everyone can afford to understand them.</p>
+            <p>The entire codebase is <strong>open source under the MIT License</strong> — free for anyone to use, modify, and distribute. There are no paid tiers, no premium features, no subscriptions, and no plans to add any.</p>
+            <p>The only operational cost is the Anthropic API, which processes each document. During the hackathon, there are no cost constraints. The vision: making document literacy accessible to everyone, not just people who can afford a lawyer.</p>
+        </div>
+
+        <hr class="faq-divider">
+
+        <div class="faq-section" id="faq-legal">
+            <h3>Is this legal advice?</h3>
+            <p><strong>No.</strong> FlipSide is an analysis tool, not a law firm. It helps you understand what a document says and what the drafter may have intended — but it is not a substitute for professional legal advice.</p>
+            <ul>
+                <li>FlipSide does not provide legal opinions or recommendations.</li>
+                <li>FlipSide is not your attorney and no attorney-client relationship is created.</li>
+                <li>For important decisions — signing a lease, accepting employment terms, buying insurance — always consult a qualified attorney.</li>
+            </ul>
+            <p>Think of FlipSide as a flashlight: it shows you what's there. What you do with that knowledge is up to you and your lawyer.</p>
+        </div>
+
+        <hr class="faq-divider">
+
+        <div class="faq-section" id="faq-who">
+            <h3>Who built this?</h3>
+            <p><strong>Henk van Ess</strong> — an internationally recognized OSINT (Open Source Intelligence) expert, journalist trainer, and tool builder based in the Netherlands. Assessor for the International Fact-Checking Network (IFCN) and European Fact-Checking Standards Network (EFCSN). Early Bellingcat contributor. Author of a CHI 2026 peer-reviewed paper on the "Think Like a Document" methodology.</p>
+            <p><strong>He does not write code.</strong> Every line of FlipSide — 2,615 lines of Python backend and 6,145 lines of frontend — was built through conversation with Claude Opus 4.6 in one weekend. The prompts were the product. The AI was the builder.</p>
+            <p>Previous open-source tools: <a href="https://imagewhisperer.online" target="_blank" rel="noopener" style="color:var(--accent)">ImageWhisperer</a>, SearchWhisperer, AI Whisperer.</p>
+        </div>
+
+        <hr class="faq-divider">
+
+        <!-- ── The Fair Clause ── -->
+        <div class="faq-section" id="faq-fair-clause">
+            <div class="fair-clause-card">
+                <h3>The FlipSide Fair Clause</h3>
+                <span class="fair-clause-badge">SCORE 0/100 &middot; NO TRICKS DETECTED &middot; WRITTEN BY OPUS 4.6</span>
+                <p class="fair-clause-intro">We asked Claude Opus 4.6 with extended thinking: "Write the fairest possible service agreement clause. Every provision must be symmetrical — what applies to the customer must equally apply to the company. Show your reasoning for each section." This is what it wrote.</p>
+
+                <div class="fair-clause-section">
+                    <h4>1. What we promise each other.</h4>
+                    <p>We will provide the service as described at the time you signed up. If we need to change what's included, we will notify you 30 days in advance, and you may cancel without penalty if you disagree. You agree to use the service in good faith and pay the agreed amount on time. If your payment fails, we will notify you and give you 14 days to resolve it. No late fees. No penalties. No collection agencies.</p>
+                    <div class="fair-clause-reasoning">Opus reasoning: Most service agreements give the provider unlimited discretion to change terms while locking the customer into the original price. Symmetry means both parties get the same notice period and the same exit rights when terms change.</div>
+                </div>
+
+                <div class="fair-clause-section">
+                    <h4>2. Either of us can leave.</h4>
+                    <p>You may cancel at any time. We may cancel with 30 days' written notice. If you have paid in advance, you will receive a prorated refund for the unused period. No cancellation fees. No early termination penalties. No "retention department" calls.</p>
+                    <div class="fair-clause-reasoning">Opus reasoning: The most common trick in consumer contracts is asymmetric exit — the company can terminate immediately "for any reason" while the customer faces penalties, lockout periods, or forfeiture of prepaid amounts. Fair means equal exits.</div>
+                </div>
+
+                <div class="fair-clause-section">
+                    <h4>3. If something goes wrong.</h4>
+                    <p>If the service fails, we will work to restore it within 48 hours and credit you for the downtime. If we cause you measurable financial harm through negligence, our liability is capped at 12 months of fees you have paid — and the same cap applies to your liability to us. Neither party is liable for circumstances beyond their control.</p>
+                    <div class="fair-clause-reasoning">Opus reasoning: Typical agreements cap the company's liability at "fees paid in the last month" while leaving the customer's liability unlimited. A fair cap is symmetrical and substantial enough to be meaningful — 12 months, not 1.</div>
+                </div>
+
+                <div class="fair-clause-section">
+                    <h4>4. Disagreements.</h4>
+                    <p>We will first attempt to resolve any dispute through direct conversation. If that fails, we will use mediation with a mutually agreed mediator, splitting the cost equally. If mediation fails, either party may pursue resolution in the courts of their own jurisdiction. No forced arbitration. No class action waivers. No "prevailing party pays attorneys' fees" clauses that discourage small claims.</p>
+                    <div class="fair-clause-reasoning">Opus reasoning: Forced arbitration with a company-selected arbitrator in a company-chosen jurisdiction is the single most powerful trick in consumer contracts. It eliminates your practical ability to dispute anything. Fair means you choose your own forum.</div>
+                </div>
+
+                <div class="fair-clause-section">
+                    <h4>5. Your content stays yours.</h4>
+                    <p>Anything you create, upload, or store using the service belongs to you. We may use it only to provide you the service. We will not sell it, license it, or use it for training, advertising, or any purpose beyond delivering what you asked for. When you leave, you may export your data at any time, and we will delete our copies within 30 days.</p>
+                    <div class="fair-clause-reasoning">Opus reasoning: "Content Grab" is the second most common trick — buried in ToS, you grant a "worldwide, irrevocable, perpetual license" to everything you upload. Fair means your data is yours, period. The company is a custodian, not an owner.</div>
+                </div>
+
+                <div class="fair-clause-section">
+                    <h4>6. Changes to this agreement.</h4>
+                    <p>We may update these terms. For minor clarifications, we will post the update and notify you. For material changes — anything affecting price, service scope, your rights, or dispute resolution — we will notify you 30 days in advance and require your explicit consent. If you do not consent, you may leave with a full refund of any prepaid amounts. We will never interpret continued use as acceptance of material changes.</p>
+                    <div class="fair-clause-reasoning">Opus reasoning: "Continued use constitutes acceptance" is how companies unilaterally rewrite the deal after you've signed. Fair means material changes require your actual agreement — not your silence.</div>
+                </div>
+
+                <div class="fair-clause-section">
+                    <h4>7. Plain language guarantee.</h4>
+                    <p>This agreement is written in plain language because we believe you should understand what you're agreeing to. If any provision is ambiguous, it will be interpreted in favor of the party who did not draft it — which, in this case, is you.</p>
+                    <div class="fair-clause-reasoning">Opus reasoning: The legal doctrine of contra proferentem (interpret against the drafter) exists precisely because the drafter chose the words. Making this explicit signals good faith and removes the incentive to write deliberately vague provisions.</div>
+                </div>
+
+                <div class="fair-clause-score">
+                    <svg class="fair-clause-score-ring" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--green-border)" stroke-width="2"/>
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-dasharray="100, 100" stroke-dashoffset="100" stroke-linecap="round" transform="rotate(-90 18 18)"/>
+                        <text x="18" y="19.5" text-anchor="middle" font-size="9" font-weight="700" font-family="JetBrains Mono, monospace" fill="var(--green-text)">0</text>
+                    </svg>
+                    FlipSide Risk Score: 0/100 &middot; Power Ratio: 1:1 &middot; Tricks detected: none
+                </div>
+                <div class="fair-clause-footer">
+                    This clause was generated by Claude Opus 4.6 with extended thinking (adaptive mode). It is not legal advice — it is what a fair agreement looks like when both sides can see. Use it as a benchmark: the further a real contract deviates from these principles, the more questions you should ask.
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- end faq-wrapper -->
+
+    </div>
+    <!-- end upload-main -->
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
@@ -6096,6 +6408,61 @@
             counterDraftBtn.textContent = 'Counter-draft generated';
         }
     });
+
+    // ── FAQ Navigation ─────────────────────────────────────
+    var uploadNav = $('uploadNav');
+    var uploadMain = $('uploadMain');
+    var faqWrapper = $('faqWrapper');
+    if (uploadNav) {
+        uploadNav.addEventListener('click', function(e) {
+            var link = e.target.closest('a');
+            if (!link) return;
+            e.preventDefault();
+            var href = link.getAttribute('href');
+            if (href === '#' && link.dataset.nav === 'top') {
+                // Scroll to top / hide FAQ
+                faqWrapper.classList.add('hidden');
+                uploadMain.classList.remove('has-faq');
+                uploadNav.querySelectorAll('a').forEach(function(a) { a.classList.remove('active'); });
+                link.classList.add('active');
+                uploadMain.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            // Show FAQ and scroll to section
+            faqWrapper.classList.remove('hidden');
+            uploadMain.classList.add('has-faq');
+            uploadNav.querySelectorAll('a').forEach(function(a) { a.classList.remove('active'); });
+            link.classList.add('active');
+            var target = document.querySelector(href);
+            if (target) {
+                setTimeout(function() {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
+            }
+        });
+
+        // Highlight active nav link on scroll
+        var faqSections = document.querySelectorAll('.faq-section[id]');
+        var navLinks = uploadNav.querySelectorAll('a[href^="#faq-"]');
+        if (faqSections.length && navLinks.length) {
+            var scrollContainer = uploadMain;
+            var onScroll = function() {
+                if (faqWrapper.classList.contains('hidden')) return;
+                var scrollTop = scrollContainer.scrollTop || window.scrollY;
+                var current = '';
+                faqSections.forEach(function(section) {
+                    var rect = section.getBoundingClientRect();
+                    if (rect.top < 200) current = section.id;
+                });
+                if (current) {
+                    navLinks.forEach(function(a) {
+                        a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+                    });
+                }
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+        }
+    }
 
 })();
 </script>
