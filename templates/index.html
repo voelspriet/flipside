@@ -453,7 +453,7 @@
             flex-shrink: 0;
         }
         .meta-pill .meta-pill-value {
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            white-space: normal; word-break: break-word;
         }
 
         /* ── Content column (center) ──────────────── */
@@ -539,7 +539,7 @@
         }
         .verdict-body {
             flex: 1; overflow-y: auto; overflow-x: hidden;
-            padding: 0.75rem; min-height: 0;
+            padding: 0.4rem 0.75rem 0.75rem; min-height: 0;
         }
         /* Standby state: waiting for deep analysis */
         .verdict-col.standby .verdict-body {
@@ -734,7 +734,8 @@
             display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
             background: var(--text-primary); color: #fff;
             font-family: 'DM Sans', sans-serif; font-size: 0.75rem; line-height: 1.4;
-            padding: 0.4rem 0.7rem; border-radius: 6px; white-space: nowrap;
+            padding: 0.4rem 0.7rem; border-radius: 6px;
+            white-space: normal; width: max-content; max-width: 220px;
             pointer-events: none; z-index: 100;
         }
         .verdict-trick-tooltip::after {
@@ -1403,6 +1404,15 @@
         }
         .flip-trigger:hover .flip-trigger-arrow {
             transform: translateX(4px);
+        }
+        .flip-trigger-spin {
+            display: inline-block; font-size: 1.1rem; margin-left: 0.3rem;
+            animation: spinHint 2.5s ease-in-out infinite;
+            vertical-align: -1px;
+        }
+        @keyframes spinHint {
+            0%, 70%, 100% { transform: rotate(0deg); }
+            80% { transform: rotate(360deg); }
         }
 
         /* Card watermark — giant clause number */
@@ -3962,7 +3972,7 @@
             '</div>' +
             '</div>' +
             (clause.teaser ? '<div class="card-teaser">' + escapeHtml(clause.teaser) + '</div>' : '') +
-            '<button class="flip-trigger"><span>Now flip it</span><span class="flip-trigger-arrow">&rarr;</span></button>' +
+            '<button class="flip-trigger">' + (index === 0 ? '<span>Now flip it</span><span class="flip-trigger-spin">\u27F3</span>' : '<span>Now flip it</span><span class="flip-trigger-arrow">&rarr;</span>') + '</button>' +
             '</div>';
 
         // ── Back body: full reveal — figure, example, bottom line ──
