@@ -199,3 +199,28 @@ Categories: Reasoning Depth, Adversarial Input, Multilingual, Scale, Meta-Cognit
 | 99 | Test with 10 concurrent users uploading different documents simultaneously — find the server-side concurrency limit | pending | Performance |
 | 100 | Feed Opus its own analysis output as a new document — does it recursively find problems with its own reasoning? (meta-analysis) | pending | Meta-Cognition |
 
+---
+
+### Phase 2 Scorecard
+
+| Status | Count | Probes |
+|--------|-------|--------|
+| **PASSED** (rigorous test with documented results) | 6 | #51 (Frisian), #52 (Orwellian titles), #53 (222-page scale), #54 (empty doc), #55 (near-identical compare), #57 (dense legalese) |
+| **Done** (feature built) | 1 | #67 (confidence badges) |
+| **Addressed** (covered by existing feature) | 3 | #60 (fair doc → Quality Check), #68 (unenforceable → Fair Standard), #69 (scanned PDF → vision) |
+| **Evolved** (became core product feature) | 2 | #59 (why score → follow-up), #71 (drafter perspective → flip card) |
+| **Partially addressed** | 5 | #58 (Unicode), #62 (trilingual), #72 (RTL), #82 (keyboard nav), #94 (code-switching) |
+| **Pending** | 33 | Remaining probes |
+| **Total** | **50** | **12 completed (24%), 5 partial, 33 pending** |
+
+### Key Findings from Completed Probes
+
+1. **Opus 4.6 does not hallucinate on low-resource languages** (#51): West Frisian lease analyzed with same quality as English — correct language ID, inline translation, Dutch BW legal citations, all 6 tricks caught.
+
+2. **Cross-clause reasoning holds at 222 pages** (#53): 36/36 planted traps caught across 9 documents up to ~167K tokens. §3↔§297 (distance 294) detected with both section references. No degradation found within the 200K context window. Bottleneck is Haiku output tokens, not Opus reasoning.
+
+3. **Orwellian titles don't fool the model** (#52): All 8 clause title/content mismatches caught. Haiku renamed every clause to expose the contradiction. Archaeology thread identified the titling convention as a unified deceptive strategy.
+
+4. **Dense legalese gets simplified correctly** (#57): 153-word single sentences compressed 79% in REVEAL, 59% in plain language column, with concrete dollar figures. Gullible reader voice deliberately misunderstood the math.
+
+5. **Practical bottleneck is Haiku output budget** (#53): On long documents, Haiku analyzes all clauses but can only write cards for ~10-14 before hitting the 32K output token ceiling. Fix: chunked card generation or higher budget.
