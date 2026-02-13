@@ -1373,7 +1373,8 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 11. The Document Profile must appear BEFORE the first clause, followed by ---
 12. The section reference in parentheses MUST provide document context
 13. If the document has NO terms or obligations (e.g. a recipe, novel, news article), output ONLY the Document Profile with **Not Applicable**: [1-sentence explanation]. Do NOT output any clauses.
-14. GREEN clauses: Score 0-30, Trick: None. YELLOW/RED: name the specific risk with numbers and deadlines"""
+14. GREEN clauses: Score 0-30, Trick: None. YELLOW/RED clauses MUST have a trick from the 18 categories above — NEVER leave it blank or write "N/A"
+15. The risk line format is MANDATORY for every clause: [LEVEL] · Score: [N]/100 · Trick: [CATEGORY] — all three parts, always"""
 
 
 

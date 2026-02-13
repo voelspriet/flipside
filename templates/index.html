@@ -3677,6 +3677,14 @@
         var risk = riskMatch[1].toLowerCase();
         var score = riskMatch[2] ? parseInt(riskMatch[2]) : 0;
         var trick = riskMatch[3] ? riskMatch[3].trim() : '';
+        // Fallback: try standalone Trick: line if combined regex missed it
+        if (!trick || trick.toLowerCase() === 'none') {
+            var trickFallback = segment.match(/Trick:\s*([^\n]+)/i);
+            if (trickFallback) {
+                var fb = trickFallback[1].trim();
+                if (fb && fb.toLowerCase() !== 'none') trick = fb;
+            }
+        }
 
         var confidenceMatch = segment.match(/Confidence:\s*(HIGH|MEDIUM|LOW)\s*[\u2014\-\u2013\u2015]\s*(.+)/i);
         var confidence = confidenceMatch ? confidenceMatch[1].toLowerCase() : '';
@@ -5015,9 +5023,14 @@
     function buildPlaybookCard() {
         var clauses = extractClausesFromResponse();
         var trickCounts = {};
+        var totalClauses = 0;
+        var classifiedCount = 0;
         clauses.forEach(function(c) {
-            if (c.trick) {
+            if (c.riskLevel === 'green') return; // skip green summary
+            totalClauses++;
+            if (c.trick && c.trick.toLowerCase() !== 'none') {
                 trickCounts[c.trick] = (trickCounts[c.trick] || 0) + 1;
+                classifiedCount++;
             }
         });
 
@@ -5033,7 +5046,7 @@
         var h = '<div class="playbook-card">';
         h += '<div class="playbook-header">';
         h += '<span class="playbook-title">The Drafter\'s Playbook</span>';
-        h += '<span class="playbook-subtitle">' + uniqueCount + ' of 18 trick types found</span>';
+        h += '<span class="playbook-subtitle">' + classifiedCount + ' of ' + totalClauses + ' clauses categorized \u00B7 ' + uniqueCount + ' trick types</span>';
         h += '</div>';
 
         h += '<div class="playbook-bars">';
