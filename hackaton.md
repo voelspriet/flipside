@@ -148,7 +148,7 @@ Categories: Reasoning Depth, Adversarial Input, Multilingual, Scale, Meta-Cognit
 
 | # | Prompt | Status | Category |
 |---|--------|--------|----------|
-| 51 | Upload a document in a language Opus has never seen in training (e.g., Frisian, Luxembourgish) — does the analysis degrade gracefully or hallucinate? | pending | Multilingual |
+| 51 | Upload a document in a language Opus has never seen in training (e.g., Frisian, Luxembourgish) — does the analysis degrade gracefully or hallucinate? | **PASSED — Frisian lease, 6 tricks caught, Dutch law cited, zero hallucination. See Entry 74.** | Multilingual |
 | 52 | Feed a deliberately misleading document where clause titles contradict their content (e.g., "Consumer Protection" clause that waives all rights) — does the model catch the mismatch? | pending | Adversarial |
 | 53 | Upload a 100-page document and measure where analysis quality drops — find the context window boundary for clause-by-clause accuracy | pending | Scale |
 | 54 | Submit an empty document (0 clauses) — does the UI handle the zero-state gracefully without errors? | pending | UX Edge Cases |

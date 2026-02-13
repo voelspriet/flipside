@@ -320,6 +320,55 @@ Header rearranged: action buttons (Copy, Email, Export, Dark mode, Home) moved l
 **Entry 73 — FAQ + The FlipSide Fair Clause**
 Left sidebar navigation added to upload screen with 8-section FAQ: What is FlipSide, How it works (5-thread architecture), Your data & privacy (nothing stored), What Claude keeps (Anthropic API policy — not used for training, 30-day safety retention, no sharing), Why is it free (MIT, hackathon origin, $300/hr attorney access), Is this legal advice (no), Who built this (Henk van Ess, non-coder). The centerpiece: The FlipSide Fair Clause — a 7-provision model service agreement written by Opus 4.6 with extended thinking. Each section shows the reasoning and names the trick it avoids (Content Grab, Forced Arena, Cascade Clause, asymmetric exit). Score 0/100, power ratio 1:1, no tricks detected. The clause teaches users the trick vocabulary before they upload, making flip card reveals more meaningful.
 
+**Entry 74 — Phase 2 Probe #51: Low-Resource Language Test (Frisian)**
+Boundary test: uploaded a 6-clause residential lease written entirely in West Frisian (Frysk, ~500,000 speakers) — one of the lowest-resource European languages. The contract was deliberately loaded with every trick from the 18-type taxonomy: uncapped daily late fees, tenant bears all structural repairs, asymmetric termination (14 days vs 6 months), Moving Target rent changes with 7-day notice, forced arbitration in landlord's jurisdiction, and class action waiver.
+
+**Result: No degradation. No hallucination. Analysis quality indistinguishable from English documents.**
+
+All 5 threads completed successfully (5,073 SSE events). Detailed findings:
+
+*Language handling:*
+- Both Haiku and all 4 Opus threads correctly identified the language as "Frisian (West Frisian)" / "Frysk"
+- Every Frisian quote accurately translated inline: "sûnder maksimum" → "without maximum", "it dak" → "the roof", "De Eigener hat gjin ferplichting" → "The Owner has no obligation"
+- Zero language confusion or misidentification across 16,294 chars of Haiku output and 21,952 chars of Opus output
+
+*Trick detection — all 6 caught:*
+| Clause | Trick | Score |
+|--------|-------|-------|
+| Uncapped late fees (§1) | Penalty Disguise | 92/100 |
+| Tenant bears all repairs (§2) | Reverse Shield | 88/100 |
+| Asymmetric termination (§3) | Escape Hatch | 86/100 |
+| Rent changes, 7-day notice (§5) | Moving Target | detected in interactions |
+| Landlord-chosen arbitration (§6) | Forced Arena | detected in clauses |
+| Continued use = acceptance (§5) | Cascade Clause | detected in interactions |
+
+*Cross-clause compound analysis:*
+- "The Infinite Debt Spiral": rent increase + uncapped penalties + payment waterfall = mathematically inescapable debt vortex. Opus traced the exact mechanism: landlord raises rent on Monday → tenant's old payment is now "partial" → partial payments go to penalties first → rent balance stays unpaid → generates fresh penalties daily at €65/day → no mathematical ceiling
+- "The Maintenance Hostage Lock": can't leave for 6 months + must pay for structural repairs + no rent offset → locked into paying for landlord's property improvements
+
+*Jurisdiction-aware legal context:*
+- Opus correctly identified Dutch law as the governing framework for a Frisian-language document
+- Cited specific Burgerlijk Wetboek articles: Art. 7:206 BW (landlord maintenance duty), Art. 7:271–274 BW (exhaustive termination grounds requiring court order)
+- Identified the Huurcommissie (rent commission) framework for regulated rent increases
+- Called multiple clauses "almost certainly void under mandatory Dutch law"
+- Fair Standard Comparison cited real Dutch legal standards for each provision
+
+*Document archaeology:*
+- Correctly classified the preamble as boilerplate ("skeleton designed to be unsigned or signed under pressure")
+- Identified §1 (rent) and §2 (maintenance) as custom-drafted with specific explanations: the payment waterfall was "an engineered compounding mechanism" and the maintenance clause was "deliberately stripped of any qualification"
+
+*Power asymmetry:*
+- Your rights: 2 · Their rights: 11 · Your obligations: 12 · Their obligations: 2
+- Power Ratio: 11:2 — "The Owner holds virtually unchecked unilateral control"
+- Sole discretion (them): 4×
+
+*Overall assessment:*
+- Risk Score: 88/100 — "Serious risk — seek professional legal review"
+- Power Imbalance Index: 95/100
+- Opus thinking log shows it translated and analyzed each clause methodically, identified Dutch BW as the applicable legal framework, and noted that several clauses would be void as a matter of mandatory tenant-protection law
+
+**Why this matters:** Frisian is a genuine low-resource language — not just "non-English" but rare enough that training data is sparse. The test proves that Opus 4.6 can (1) correctly identify obscure languages, (2) translate accurately inline, (3) apply the correct legal jurisdiction based on language context, and (4) detect all trick types with the same precision as English documents. This is capability #12 (long-context retrieval) and #2 (perspective adoption) working on genuinely novel input.
+
 ---
 
 ### Current State
@@ -333,7 +382,7 @@ Left sidebar navigation added to upload screen with 8-section FAQ: What is FlipS
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 73 entries, complete process timeline |
+| `HACKATHON_LOG.md` | This file | 74 entries, complete process timeline |
 | `README.md` | Product description + 14 Opus capabilities + meta-prompting discovery |
 
 ---
@@ -391,7 +440,7 @@ The first four are the same error at different scales: **the AI uses itself as t
 | `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| This file | 73 entries, complete process timeline |
+| This file | 74 entries, complete process timeline |
 
 ## 14 Opus 4.6 Capabilities Used
 

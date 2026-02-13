@@ -118,7 +118,7 @@ FlipSide uses more Opus 4.6 capabilities than any single feature would require �
 | 11 | **Prompt caching** | System prompts cached server-side for 90% cost reduction on repeated analyses |
 | 12 | **Counterfactual generation** | Fair Standard Comparison + Counter-draft: worst clauses measured against norms, then rewritten with fair alternatives |
 | 13 | **Stylistic deduction** | Document Archaeology — boilerplate vs. custom clauses, drafter profile from writing patterns |
-| 14 | **English-only + download in language** | All output in English for universal access. Download full report translated to the document's original language |
+| 14 | **English-only + download in language** | All output in English for universal access. Download full report translated to the document's original language. Tested on West Frisian (~500K speakers) — correctly identified language, translated inline, cited Dutch BW articles, caught all 6 tricks with zero hallucination |
 
 ### Why Opus 4.6 Specifically
 
@@ -286,7 +286,7 @@ This project documents not just the product, but the entire decision-making proc
 
 | Document | What It Covers |
 | --- | --- |
-| [Hackathon Log](HACKATHON_LOG.md) | 73 entries, complete process timeline |
+| [Hackathon Log](HACKATHON_LOG.md) | 74 entries, complete process timeline |
 | [Strategy Decisions](strategy.md) | 22 strategy decisions with rationale — including a midpoint self-evaluation |
 | [The Prewash Method](docs/PREWASH_METHOD.md) | How to clean bias from AI prompts before execution |
 | [Live Demonstration](docs/LIVE_DEMONSTRATION.md) | "Think Like a Document" demonstrated on the AI itself |
