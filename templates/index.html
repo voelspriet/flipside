@@ -365,6 +365,11 @@
             font-size: 0.76rem; cursor: pointer; transition: all var(--transition);
             white-space: nowrap;
         }
+        .header-btn.home-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0.3rem; border-radius: 50%; min-width: unset;
+        }
+        .header-btn.home-btn svg { display: block; }
         .header-btn:hover {
             border-color: var(--text-secondary); color: var(--text-primary);
             background: var(--bg-warm);
@@ -2264,6 +2269,11 @@
             <button class="analyze-btn hidden" id="analyzeBtn" disabled>Show me the dark side of small print</button>
             <div id="uploadError" class="upload-error hidden"></div>
 
+            <div class="upload-links">
+                <a id="pasteToggle">Paste text instead</a>
+                <a id="compareToggle">Compare two documents</a>
+            </div>
+
         </div>
 
         <div class="demo-grid-section fade-up fade-up-d1" id="demoGridSection">
@@ -2286,12 +2296,7 @@
             </div>
         </div>
 
-        <div class="upload-links fade-up fade-up-d2">
-            <a id="pasteToggle">Paste text instead</a>
-            <a id="compareToggle">Compare two documents</a>
-        </div>
-
-        <div class="disclaimer fade-up fade-up-d3">
+        <div class="disclaimer fade-up fade-up-d2">
             AI analysis — not legal advice. Always consult an attorney for important decisions.
         </div>
     </div>
@@ -2318,7 +2323,7 @@
             <button class="header-btn hidden" id="exportBtn">Save Report</button>
             <button class="header-btn hidden" id="exportLangBtn" title="Download report in document language"></button>
             <button class="header-btn" id="darkModeBtn" title="Toggle dark mode">&#9790;</button>
-            <button class="header-btn" id="backBtn">Back</button>
+            <button class="header-btn home-btn" id="backBtn" title="Back to home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
         </div>
     </header>
 
