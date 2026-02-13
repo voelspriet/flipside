@@ -543,16 +543,18 @@
             background: var(--accent); color: #fff;
         }
         .verdict-expand-btn.ready {
-            animation: verdictPulse 2s ease-in-out infinite;
+            animation: verdictFlip 3s ease-in-out infinite;
+            background: var(--accent); color: #fff; border-color: var(--accent);
         }
         .verdict-expand-btn.ready:hover { animation: none; }
-        @keyframes verdictPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(196,75,40,0.3); }
-            50% { box-shadow: 0 0 0 4px rgba(196,75,40,0); }
+        @keyframes verdictFlip {
+            0%, 100% { transform: perspective(200px) rotateY(0deg); }
+            45% { transform: perspective(200px) rotateY(180deg); }
+            55% { transform: perspective(200px) rotateY(180deg); }
+            100% { transform: perspective(200px) rotateY(360deg); }
         }
         .verdict-expand-spin {
             display: inline-block; margin-left: 0.25rem;
-            animation: spinHint 2.5s ease-in-out infinite;
         }
         .verdict-summary {
             display: none; padding: 0.5rem 0.6rem; margin: 0.4rem 0;
@@ -1444,6 +1446,7 @@
             animation: spinHint 2.5s ease-in-out infinite;
             vertical-align: -1px;
         }
+        .flipped .flip-trigger-spin { animation: none; }
         @keyframes spinHint {
             0%, 70%, 100% { transform: rotate(0deg); }
             80% { transform: rotate(360deg); }
