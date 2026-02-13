@@ -509,6 +509,11 @@
             padding: 0.3rem; border-radius: 50%; min-width: unset;
         }
         .header-btn.home-btn svg { display: block; }
+        /* Overflow menu button: hidden on desktop, shown at ≤ 900px via mobile block */
+        .header-overflow-btn { display: none; }
+        .header-overflow-menu { display: none; }
+        /* Dot nav: hidden on desktop, shown at ≤ 900px via mobile block */
+        .card-nav-dots { display: none; }
         .header-btn:hover {
             border-color: var(--text-secondary); color: var(--text-primary);
             background: var(--bg-warm);
@@ -960,9 +965,7 @@
             opacity: 1;
         }
 
-        @media (max-width: 900px) {
-            .verdict-col { display: none !important; }
-        }
+        /* verdict-col mobile handling moved to unified mobile block below */
 
         /* ── Document thumbnail (upper-left of profile) */
         .doc-thumbnail {
@@ -2157,7 +2160,315 @@
 
         /* Tablet: sidebar stacks above content (handled at 900px above) */
 
+        /* ── Mobile: ≤ 900px unified block ──────────────── */
+        @media (max-width: 900px) {
+            /* Phase 1: 2D slide-up flip (replaces broken 3D rotateY on mobile Safari) */
+            .flip-card { perspective: none; }
+            .flip-card-inner {
+                transform-style: flat;
+                transition: none;
+            }
+            .flip-card-front,
+            .flip-card-back {
+                backface-visibility: visible;
+                -webkit-backface-visibility: visible;
+                transform: none;
+            }
+            .flip-card-front {
+                position: relative;
+                transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+            }
+            .flip-card.flipped .flip-card-front {
+                transform: translateY(-30px);
+                opacity: 0;
+                position: absolute;
+                top: 0; left: 0; width: 100%;
+                pointer-events: none;
+                visibility: hidden;
+            }
+            .flip-card-back {
+                position: relative;
+                opacity: 0;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease 0.1s;
+            }
+            .flip-card.flipped .flip-card-back {
+                position: relative;
+                opacity: 1;
+                max-height: 3000px;
+                overflow: visible;
+            }
+            .flip-card.flipped .flip-card-inner {
+                transform: none;
+            }
+            /* Larger tap target for flip trigger on mobile */
+            .flip-trigger {
+                min-height: 48px;
+                padding: 1rem 1.25rem;
+            }
+            /* Replace spin hint with upward bounce on mobile */
+            .flip-trigger-spin {
+                animation: mobileFlipHint 2s ease-in-out infinite;
+            }
+            @keyframes mobileFlipHint {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-3px); }
+            }
+            /* Flip-back trigger: same tap target */
+            .flip-back-trigger {
+                min-height: 48px;
+            }
+            /* Don't dim sidebar on mobile when flipped — it's above content */
+            .layout-flipped .analysis-sidebar {
+                opacity: 1;
+            }
+
+            /* Phase 2: Bottom sheet for verdict */
+            .verdict-col {
+                position: fixed !important;
+                bottom: 0; left: 0; right: 0;
+                width: 100% !important;
+                max-height: 90vh;
+                z-index: 200;
+                border-radius: 16px 16px 0 0 !important;
+                border-bottom: none !important;
+                box-shadow: 0 -4px 24px rgba(0,0,0,0.12) !important;
+                transform: translateY(calc(100% - 52px));
+                transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) !important;
+                margin-left: 0 !important;
+                overflow: hidden;
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .verdict-col.visible {
+                width: 100% !important;
+                margin-left: 0 !important;
+                display: flex !important;
+                opacity: 1;
+            }
+            .verdict-col.sheet-half {
+                transform: translateY(60%);
+            }
+            .verdict-col.sheet-full {
+                transform: translateY(10%);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            /* Drag handle */
+            .verdict-header::before {
+                content: '';
+                position: absolute;
+                top: 8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 36px;
+                height: 4px;
+                border-radius: 2px;
+                background: var(--text-dim);
+            }
+            .verdict-header {
+                position: relative;
+                padding-top: 1.2rem;
+                cursor: grab;
+            }
+            .verdict-body {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            body.sheet-open {
+                overflow: hidden;
+            }
+            /* Add padding to content so bottom sheet peek doesn't cover cards */
+            .content-col {
+                padding-bottom: 64px !important;
+            }
+
+            /* Phase 3: Dot indicator for card navigation */
+            .card-nav-btn { display: none; }
+            .card-nav-counter { display: none; }
+            .card-nav-dots {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+                padding: 0.75rem 0;
+            }
+            .card-nav-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 4px;
+                background: var(--border);
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            .card-nav-dot.active {
+                width: 20px;
+                background: var(--text-muted);
+            }
+            .card-nav-dot.risk-red { background: var(--red); }
+            .card-nav-dot.risk-yellow { background: var(--yellow); }
+            .card-nav-dot.risk-green { background: var(--green); }
+            .card-nav-dot.risk-red.active { background: var(--red); }
+            .card-nav-dot.risk-yellow.active { background: var(--yellow); }
+            .card-nav-dot.risk-green.active { background: var(--green); }
+            .card-navigation {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            /* Phase 4: Compact sidebar strip */
+            .analysis-sidebar {
+                position: sticky !important;
+                top: 50px;
+                z-index: 50;
+                border-bottom: 1px solid var(--border);
+                background: var(--bg-cream);
+                padding: 0;
+                overflow: hidden !important;
+            }
+            .sidebar-profile {
+                flex-direction: row !important;
+                align-items: center;
+                gap: 0.6rem;
+                padding: 0.5rem 0.75rem;
+                cursor: pointer;
+                min-height: 48px;
+            }
+            .doc-thumbnail {
+                width: 32px !important;
+                height: 32px !important;
+                flex-shrink: 0;
+                border-radius: 4px !important;
+            }
+            .doc-thumbnail img {
+                width: 32px !important;
+                height: 32px !important;
+            }
+            .metadata-line {
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                flex-wrap: nowrap !important;
+            }
+            .meta-pill {
+                white-space: nowrap;
+            }
+            .editorial-loading {
+                max-height: 0;
+                overflow: hidden !important;
+                transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            .analysis-sidebar.expanded .editorial-loading {
+                max-height: 50vh;
+                overflow-y: auto !important;
+                border-top: 1px solid var(--border) !important;
+            }
+            /* Chevron indicator for expand/collapse */
+            .sidebar-profile::after {
+                content: '\25BE';
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                transition: transform 0.3s ease;
+                flex-shrink: 0;
+            }
+            .analysis-sidebar.expanded .sidebar-profile::after {
+                transform: rotate(180deg);
+            }
+
+            /* Phase 5: Compact header */
+            .analysis-header {
+                padding: 0.4rem 0.75rem;
+                padding-top: calc(0.4rem + env(safe-area-inset-top));
+            }
+            #copyAllBtn, #emailLawyerBtn, #exportBtn, #exportLangBtn,
+            .model-badge, .capability-ticker {
+                display: none !important;
+            }
+            .header-overflow-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: none;
+                border: 1px solid var(--border);
+                color: var(--text-secondary);
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 1.1rem;
+                line-height: 1;
+                padding: 0;
+            }
+            .header-overflow-btn:hover {
+                background: var(--bg-warm);
+                border-color: var(--text-secondary);
+            }
+            .header-overflow-menu {
+                position: absolute;
+                top: 100%;
+                right: 0.75rem;
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                box-shadow: var(--shadow-lg);
+                z-index: 110;
+                min-width: 160px;
+                padding: 0.25rem 0;
+            }
+            .header-overflow-menu.hidden { display: none; }
+            .header-overflow-menu button {
+                display: block;
+                width: 100%;
+                text-align: left;
+                padding: 0.5rem 0.85rem;
+                font-family: inherit;
+                font-size: 0.78rem;
+                color: var(--text-secondary);
+                background: none;
+                border: none;
+                cursor: pointer;
+            }
+            .header-overflow-menu button:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+            .header-overflow-menu button.hidden { display: none; }
+        }
+
+        /* Bottom sheet dark mode audit */
+        .dark-mode .verdict-col.sheet-half,
+        .dark-mode .verdict-col.sheet-full {
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.4) !important;
+        }
+        .dark-mode .verdict-header::before {
+            background: var(--text-muted);
+        }
+        .dark-mode .header-overflow-menu {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .dark-mode .card-nav-dot {
+            background: var(--border);
+        }
+        .dark-mode .card-nav-dot.active {
+            background: var(--text-muted);
+        }
+
+        /* Mobile reduced motion */
+        @media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+            .flip-card-front { transition: none !important; }
+            .flip-card-back { transition: none !important; }
+            .flip-card.flipped .flip-card-front { transform: none; display: none; }
+            .flip-card.flipped .flip-card-back { max-height: none; opacity: 1; }
+            .verdict-col { transition: none !important; }
+        }
+
         @media (max-width: 600px) {
+            /* Sample docs: 2 columns on small screens */
+            .demo-grid { grid-template-columns: repeat(2, 1fr); }
             /* Skeleton card */
             .skeleton-pulses { padding: 1.5rem 1.25rem 0; }
             .skeleton-message { font-size: 0.78rem; }
@@ -2654,6 +2965,13 @@
                 <span class="elapsed-time" id="elapsedTime"></span>
             </div>
             <span class="model-badge">Opus 4.6 + Haiku 4.5</span>
+            <button class="header-overflow-btn" id="headerOverflowBtn" title="More actions">&#8943;</button>
+            <div class="header-overflow-menu hidden" id="headerOverflowMenu">
+                <button data-action="copy" class="hidden">Copy all</button>
+                <button data-action="email" class="hidden">Email to Lawyer</button>
+                <button data-action="export" class="hidden">Save Report</button>
+                <button data-action="exportLang" class="hidden"></button>
+            </div>
         </div>
     </header>
 
@@ -2705,6 +3023,7 @@
                 </div>
             </div>
             <div id="flipCardContainer"></div>
+            <div class="card-nav-dots" id="cardNavDots"></div>
             <div class="chapter-title" id="chapterTitle">
                 <span class="chapter-title-counter" id="chapterCounter"></span>
                 <span class="chapter-title-text" id="chapterText"></span>
@@ -3207,6 +3526,162 @@
                 break;
         }
     });
+
+    // ── Mobile: Bottom sheet for verdict (Phase 2) ──────────────
+    (function() {
+        var vc = $('verdictCol');
+        if (!vc) return;
+        var sheetState = 'peek'; // peek | half | full
+        var startY = 0, startTime = 0, currentY = 0, isDragging = false;
+
+        function setSheetState(state) {
+            sheetState = state;
+            vc.classList.remove('sheet-half', 'sheet-full');
+            if (state === 'half') vc.classList.add('sheet-half');
+            else if (state === 'full') vc.classList.add('sheet-full');
+            if (state === 'full') {
+                document.body.classList.add('sheet-open');
+            } else {
+                document.body.classList.remove('sheet-open');
+            }
+        }
+        // Make setSheetState available globally for showVerdictCol
+        window._setSheetState = setSheetState;
+        window._getSheetState = function() { return sheetState; };
+
+        var header = vc.querySelector('.verdict-header');
+        if (header) {
+            header.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+                startTime = Date.now();
+                isDragging = true;
+                vc.style.transition = 'none';
+            }, {passive: true});
+
+            header.addEventListener('touchmove', function(e) {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                var dy = currentY - startY;
+                // Apply drag transform as offset from current state
+                var baseTranslate;
+                if (sheetState === 'peek') baseTranslate = 'calc(100% - 52px)';
+                else if (sheetState === 'half') baseTranslate = '60%';
+                else baseTranslate = '10%';
+                // Use a simple pixel offset from current position
+                if (dy !== 0) {
+                    vc.style.transform = 'translateY(calc(' + baseTranslate + ' + ' + dy + 'px))';
+                }
+            }, {passive: true});
+
+            header.addEventListener('touchend', function() {
+                if (!isDragging) return;
+                isDragging = false;
+                vc.style.transition = '';
+                vc.style.transform = '';
+                var dy = currentY - startY;
+                var threshold = 80;
+                if (dy < -threshold) {
+                    // Swipe up → advance state
+                    if (sheetState === 'peek') setSheetState('half');
+                    else if (sheetState === 'half') setSheetState('full');
+                } else if (dy > threshold) {
+                    // Swipe down → regress state
+                    if (sheetState === 'full') setSheetState('half');
+                    else if (sheetState === 'half') setSheetState('peek');
+                }
+            }, {passive: true});
+
+            // Tap header → toggle peek/half
+            header.addEventListener('click', function() {
+                if (sheetState === 'peek') setSheetState('half');
+                else setSheetState('peek');
+            });
+        }
+    })();
+
+    // ── Mobile: Swipe card navigation (Phase 3) ──────────────
+    (function() {
+        var viewport = $('cardViewport');
+        if (!viewport) return;
+        var swipeStartX = 0, swipeStartY = 0, swipeStartTime = 0;
+
+        viewport.addEventListener('touchstart', function(e) {
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+            swipeStartTime = Date.now();
+        }, {passive: true});
+
+        viewport.addEventListener('touchend', function(e) {
+            if (window.innerWidth > 900) return;
+            if (!hasFlippedOnce) return;
+            var dx = e.changedTouches[0].clientX - swipeStartX;
+            var dy = e.changedTouches[0].clientY - swipeStartY;
+            var dt = Date.now() - swipeStartTime;
+            // Must be horizontal swipe: >50px, <80px vertical drift, <400ms
+            if (Math.abs(dx) > 50 && Math.abs(dy) < 80 && dt < 400) {
+                var cards = flipCardContainer.querySelectorAll('.flip-card');
+                if (dx < 0 && currentCardIndex < cards.length - 1) {
+                    showCardAtIndex(currentCardIndex + 1);
+                } else if (dx > 0 && currentCardIndex > 0) {
+                    showCardAtIndex(currentCardIndex - 1);
+                }
+            }
+        }, {passive: true});
+    })();
+
+    // ── Mobile: Sidebar expand/collapse (Phase 4) ─────────────
+    (function() {
+        var sidebar = $('analysisSidebar');
+        var profile = $('sidebarProfile');
+        if (!sidebar || !profile) return;
+        profile.addEventListener('click', function() {
+            if (window.innerWidth > 900) return;
+            sidebar.classList.toggle('expanded');
+        });
+    })();
+
+    // ── Mobile: Header overflow menu (Phase 5) ────────────────
+    (function() {
+        var btn = $('headerOverflowBtn');
+        var menu = $('headerOverflowMenu');
+        if (!btn || !menu) return;
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+        });
+        document.addEventListener('click', function() {
+            menu.classList.add('hidden');
+        });
+        // Wire overflow menu buttons to their real counterparts
+        menu.querySelectorAll('button').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var action = item.getAttribute('data-action');
+                var target;
+                if (action === 'copy') target = $('copyAllBtn');
+                else if (action === 'email') target = $('emailLawyerBtn');
+                else if (action === 'export') target = $('exportBtn');
+                else if (action === 'exportLang') target = $('exportLangBtn');
+                if (target) target.click();
+                menu.classList.add('hidden');
+            });
+        });
+    })();
+
+    // ── Sync overflow menu items with real header buttons ────
+    function syncOverflowMenu() {
+        var menu = $('headerOverflowMenu');
+        if (!menu) return;
+        var map = {copy: 'copyAllBtn', email: 'emailLawyerBtn', export: 'exportBtn', exportLang: 'exportLangBtn'};
+        menu.querySelectorAll('button').forEach(function(item) {
+            var real = $(map[item.getAttribute('data-action')]);
+            if (real && !real.classList.contains('hidden')) {
+                item.classList.remove('hidden');
+                if (item.getAttribute('data-action') === 'exportLang') {
+                    item.textContent = real.textContent;
+                }
+            }
+        });
+    }
 
     // ── Helpers ───────────────────────────────────────────────
     function formatSize(bytes) {
@@ -3762,6 +4237,7 @@
                     $('copyAllBtn').classList.remove('hidden');
                     $('exportBtn').classList.remove('hidden');
                     $('emailLawyerBtn').classList.remove('hidden');
+                    syncOverflowMenu();
                     // Show "Download in [language]" button if document is not in English
                     if (detectedDocLanguage && detectedDocLanguage.toLowerCase() !== 'english') {
                         var langBtn = $('exportLangBtn');
@@ -4703,9 +5179,17 @@
     function showVerdictCol() {
         verdictCol.classList.add('visible');
         verdictCol.classList.add('writing');
+        // On mobile, auto-show bottom sheet in peek state
+        if (window.innerWidth <= 900 && window._setSheetState) {
+            window._setSheetState('peek');
+        }
     }
     function hideVerdictCol() {
         verdictCol.classList.remove('visible');
+        // On mobile, close bottom sheet
+        if (window.innerWidth <= 900) {
+            document.body.classList.remove('sheet-open');
+        }
     }
     function renderOpusSection(source) {
         if (!_verdictRenderTimer) {
@@ -5238,6 +5722,41 @@
             nextLabel.textContent = 'Next clause \u2192';
             nextBtn.disabled = false;
             nextBtn.removeAttribute('data-action');
+        }
+
+        // Mobile dot indicator
+        updateCardDots(cards, total);
+    }
+
+    function updateCardDots(cards, total) {
+        var dotsEl = $('cardNavDots');
+        if (!dotsEl) return;
+        if (window.innerWidth > 900) { dotsEl.innerHTML = ''; return; }
+        // Rebuild dots if count changed
+        if (dotsEl.children.length !== total) {
+            dotsEl.innerHTML = '';
+            for (var d = 0; d < total; d++) {
+                var dot = document.createElement('span');
+                dot.className = 'card-nav-dot';
+                dot.setAttribute('data-index', d);
+                dot.addEventListener('click', (function(idx) {
+                    return function() { showCardAtIndex(idx); };
+                })(d));
+                dotsEl.appendChild(dot);
+            }
+        }
+        // Update active + risk colors
+        for (var d = 0; d < dotsEl.children.length; d++) {
+            var dot = dotsEl.children[d];
+            dot.classList.remove('active', 'risk-red', 'risk-yellow', 'risk-green');
+            if (d === currentCardIndex) dot.classList.add('active');
+            // Color by risk level if card has been flipped
+            if (cards[d]) {
+                var risk = cards[d].getAttribute('data-risk-level');
+                if (risk && cards[d].classList.contains('woosh-done')) {
+                    dot.classList.add('risk-' + risk);
+                }
+            }
         }
     }
 
