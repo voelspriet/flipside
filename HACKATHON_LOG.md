@@ -290,21 +290,36 @@ Reversed the bilingual approach. All prompts now output in English regardless of
 **Entry 63 — "Message the Company" Feature**
 After the deep analysis summary, a button appears: "Draft a message to [Company Name]" (drafter name from metadata). Opus 4.6 generates a professional, firm-but-polite complaint letter citing the specific high-risk clauses found. Uses the existing `/ask` endpoint — zero new backend code. Streams the response live, then offers "Copy to clipboard" and "Open in email" action buttons. This is the follow-through feature: analysis → understanding → action.
 
+**Entry 64 — Midpoint Self-Evaluation**
+Halftime assessment against judging criteria. Scores: Demo 7/10, Opus 4.6 Use 8/10, Impact 8/10, Depth & Execution 9/10 (composite 7.9/10). Biggest strength: the flip card as product metaphor + 14 visible Opus capabilities + documentation depth. Biggest gap: no demo video (30% of score), outdated README, and Opus wait time in live demo. Priority for second half: 60% presentation (video, README, summary) and 40% product polish. Full evaluation with prompt and answer in `strategy.md`.
+
+**Entry 65 — Verdict Column: Focused Reading Mode**
+Replaced the old toggle-collapse behavior with a proper UX flow. Pulsing (gold) sections are now visually locked (dimmed, not clickable) — users can't trigger GUI glitches by clicking half-rendered content. When a section turns green (done), clicking it opens a focused reading panel with ←→ navigation between completed sections only. The "Read full verdict" button shows "N of 4 ready" as a progress counter and only becomes active when all 4 Opus threads complete. If the user is reading a single section when the last thread finishes, the nav counter updates to "Full report ready →" with an inline link. The invitation text ("look over the expert's shoulder") fills the wait time before the first section completes.
+
+**Entry 66 — README Overhaul + Submission Summary**
+README fully rewritten: 5-thread architecture diagram (was 3-thread), 14 capabilities (was 13), English-only output (was bilingual), message-the-company + counter-draft added, seven-stage pipeline table, third-party license attribution. 173-word submission summary added as the first paragraph after the tagline. HACKATHON_LOG inconsistencies fixed: line counts, capability #14, entry counts.
+
+**Entry 67 — Live "Tricks Detected" Panel in Verdict Column**
+While users wait for the Opus expert report, the verdict column now shows a live "Tricks detected" panel that populates incrementally as Haiku finds each clause. Trick categories (from the 18-type taxonomy) appear as hoverable pills sorted by frequency (top 10), with SVG line icons matching the demo tile stroke style and tooltip descriptions on hover. The pill shows a ×N count when a trick appears more than once. Replaced emoji `TRICK_MAP` with `TRICK_ICONS` containing 18 SVG line icons — used consistently across verdict pills, card back footnotes, badge labels, filter chips, and the Drafter's Playbook visualization. Accumulator resets on each new analysis.
+
+**Entry 68 — Verdict Panel Readability Pass**
+Reviewed all verdict column elements for readability in the ~300px sidebar. Fixes: trick name font 0.65→0.76rem, count font 0.55→0.65rem with bold weight, icons 14→16px in verdict pills (12px in compact contexts like chips/footnotes, 14px in playbook), tooltip positioning changed from center-aligned (clipped at edges) to left-aligned with arrow at 1rem. "Expert report complete" status text now hides when done (redundant with "Your verdict is ready" header). Context-aware icon sizing via CSS cascade.
+
 ---
 
 ### Current State
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 2,519 | Backend: Flask, SSE, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, 8 prompts, dynamic token budget, suitability gate |
-| `templates/index.html` | 5,400+ | Card-first frontend: instant flip cards, collapsible verdict column, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
+| `app.py` | 2,514 | Backend: Flask, SSE, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, 8 prompts, dynamic token budget, suitability gate |
+| `templates/index.html` | 5,918 | Card-first frontend: instant flip cards, focused verdict reading mode, live tricks panel, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 63 entries, complete process timeline |
-| `README.md` | Product description + 13 Opus capabilities + meta-prompting discovery |
+| `HACKATHON_LOG.md` | This file | 68 entries, complete process timeline |
+| `README.md` | Product description + 14 Opus capabilities + meta-prompting discovery |
 
 ---
 
@@ -353,15 +368,15 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (2,519 lines) | Flask backend: 8 prompts, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate |
-| `templates/index.html` (5,233 lines) | Card-first frontend: instant flip cards, collapsible verdict column, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
+| `app.py` (2,452 lines) | Flask backend: 8 prompts, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate |
+| `templates/index.html` (5,529 lines) | Card-first frontend: instant flip cards, collapsible verdict column, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
 | `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| This file | 61 entries, complete process timeline |
+| This file | 66 entries, complete process timeline |
 
 ## 14 Opus 4.6 Capabilities Used
 
@@ -380,13 +395,14 @@ The first four are the same error at different scales: **the AI uses itself as t
 | 11 | Prompt caching | System prompts cached for 90% cost reduction |
 | 12 | Long-context retrieval | Cross-clause interaction detection across full documents (no truncation) |
 | 13 | Low over-refusals | Villain voice sustains adversarial role-play without self-censoring |
-| 14 | Multilingual + bilingual | Analyzes in document's language, EN translations on cards |
+| 14 | English-only + download in language | All output in English (universal access); download full report translated to document's original language |
 
 ## What Remains
 
-- Demo video
-- 100-200 word summary
-- Testing with document types beyond leases (insurance, ToS, employment)
+- Demo video (3 minutes, scripted narrative)
+- ~~100-200 word summary~~ Done (173 words)
+- ~~Update README.md to match current state~~ Done
+- ~~Reduce perceived Opus wait time~~ Addressed: invitation text, 2-min countdown, live tricks panel, focused reading mode
 
 **Deadline: February 16, 3:00 PM EST**
 

@@ -285,7 +285,7 @@
             text-transform: uppercase;
         }
         .demo-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
         }
         .demo-tile {
             background: var(--bg-surface); border: 1px solid var(--border);
@@ -422,15 +422,16 @@
             width: 240px; opacity: 1; overflow: visible; margin-right: 1.5rem;
         }
 
-        /* ── Sidebar profile row: thumbnail + pills ─── */
+        /* ── Sidebar profile: thumbnail banner + pills ─── */
         .sidebar-profile {
             display: flex;
-            gap: 0.6rem;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 0;
         }
         .metadata-line {
-            flex: 1; min-width: 0;
-            display: flex; flex-direction: column; gap: 0.2rem;
+            min-width: 0;
+            display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem;
+            padding: 0.5rem 0 0;
             opacity: 0; transform: translateY(8px);
             transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
         }
@@ -438,10 +439,11 @@
             opacity: 1; transform: translateY(0);
         }
         .meta-pill {
-            display: flex; align-items: baseline; gap: 0.3rem;
-            padding: 0.15rem 0;
+            display: inline-flex; align-items: baseline; gap: 0.25rem;
+            padding: 0;
             font-size: 0.65rem; line-height: 1.35;
             color: var(--text-body);
+            max-width: 100%;
         }
         .meta-pill .meta-pill-label {
             font-family: 'JetBrains Mono', monospace;
@@ -449,6 +451,9 @@
             text-transform: uppercase; letter-spacing: 0.08em;
             color: var(--text-muted); white-space: nowrap;
             flex-shrink: 0;
+        }
+        .meta-pill .meta-pill-value {
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
 
         /* ── Content column (center) ──────────────── */
@@ -580,6 +585,16 @@
             text-transform: uppercase; letter-spacing: 0.05em;
         }
         .verdict-status.hidden { display: none; }
+        .verdict-invitation {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem; color: var(--text-secondary);
+            line-height: 1.5; padding: 0.6rem 0 0.8rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0.6rem;
+            transition: opacity 0.6s ease-out;
+        }
+        .verdict-invitation.hidden { display: none; }
+        .verdict-invitation.fading { opacity: 0; }
         .verdict-time-pill {
             display: inline-block;
             background: var(--bg-warm); border: 1px solid var(--border);
@@ -594,8 +609,14 @@
             display: flex; align-items: center; gap: 0.4rem;
             padding: 0.45rem 0; cursor: pointer;
             user-select: none;
+            transition: opacity 0.3s ease;
         }
         .opus-section-header:hover { opacity: 0.8; }
+        /* Locked state: pulsing sections not clickable */
+        .opus-section.locked .opus-section-header {
+            cursor: default; opacity: 0.45;
+            pointer-events: none;
+        }
         .opus-dot {
             width: 7px; height: 7px; border-radius: 50%;
             flex-shrink: 0; background: #bbb;
@@ -623,6 +644,116 @@
         }
         .opus-section-body.collapsed {
             max-height: 0; padding: 0;
+        }
+        /* ── Focused reading mode ─────────────────────────────── */
+        .verdict-focused-panel { display: none; }
+        .verdict-focused-panel.active {
+            display: flex; flex-direction: column; height: 100%;
+        }
+        .verdict-focused-nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.4rem 0; border-bottom: 1px solid var(--border);
+            margin-bottom: 0.5rem; flex-shrink: 0;
+        }
+        .verdict-focused-nav-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; color: var(--accent);
+            background: none; border: none; cursor: pointer;
+            padding: 0.2rem 0.3rem;
+            transition: opacity 0.2s ease;
+        }
+        .verdict-focused-nav-btn:hover { opacity: 0.7; }
+        .verdict-focused-nav-btn:disabled { opacity: 0.25; cursor: default; }
+        .verdict-focused-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.52rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.05em;
+            text-align: center; flex: 1;
+        }
+        .verdict-focused-counter .ready-link {
+            color: var(--accent); cursor: pointer;
+            text-decoration: none; font-weight: 600;
+        }
+        .verdict-focused-counter .ready-link:hover { text-decoration: underline; }
+        .verdict-focused-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            padding: 0.3rem 0; flex-shrink: 0;
+        }
+        .verdict-focused-content {
+            flex: 1; overflow-y: auto;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem; line-height: 1.55;
+            color: var(--text-body);
+        }
+        .verdict-focused-content h2 { font-size: 0.88rem; margin: 1rem 0 0.4rem; font-weight: 700; }
+        .verdict-focused-content h3 { font-size: 0.82rem; margin: 0.75rem 0 0.3rem; font-weight: 600; }
+        .verdict-focused-content p { margin: 0.3rem 0; }
+        .verdict-focused-content ul, .verdict-focused-content ol { padding-left: 1.2rem; margin: 0.3rem 0; }
+        .verdict-focused-content li { margin: 0.15rem 0; }
+        .verdict-focused-content blockquote {
+            border-left: 2px solid var(--border); margin: 0.4rem 0;
+            padding: 0.2rem 0.6rem; color: var(--text-secondary); font-size: 0.75rem;
+        }
+        /* ── Live tricks detected panel ─────────────────────── */
+        .verdict-tricks { padding: 0.6rem 0 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 0.3rem; }
+        .verdict-tricks.hidden { display: none; }
+        .verdict-tricks-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-muted); margin-bottom: 0.5rem;
+        }
+        .verdict-tricks-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .verdict-trick-item {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-warm); border: 1px solid var(--border);
+            border-radius: 100px; cursor: default;
+            transition: border-color 0.2s ease, background 0.2s ease;
+            position: relative;
+        }
+        .verdict-trick-item:hover { border-color: var(--accent); background: #fff; }
+        .verdict-trick-icon {
+            width: 16px; height: 16px; color: var(--text-muted);
+            flex-shrink: 0; display: inline-flex; vertical-align: -2px;
+        }
+        .verdict-trick-icon svg { width: 100%; height: 100%; }
+        .verdict-trick-item:hover .verdict-trick-icon { color: var(--accent); }
+        .verdict-trick-name {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.76rem; font-weight: 500; color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .verdict-trick-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; color: var(--text-muted); font-weight: 600;
+        }
+        .verdict-trick-tooltip {
+            display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
+            background: var(--text-primary); color: #fff;
+            font-family: 'DM Sans', sans-serif; font-size: 0.75rem; line-height: 1.4;
+            padding: 0.4rem 0.7rem; border-radius: 6px; white-space: nowrap;
+            pointer-events: none; z-index: 100;
+        }
+        .verdict-trick-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 1rem;
+            border: 5px solid transparent;
+            border-top-color: var(--text-primary);
+        }
+        .verdict-trick-item:hover .verdict-trick-tooltip { display: block; }
+        /* Smaller icons in compact contexts */
+        .trick-label .verdict-trick-icon,
+        .trick-footnote .verdict-trick-icon,
+        .filter-chip .verdict-trick-icon { width: 12px; height: 12px; vertical-align: -1px; }
+        .playbook-trick-name .verdict-trick-icon { width: 14px; height: 14px; vertical-align: -2px; }
+
+        /* Hide section list when focused panel is active */
+        .verdict-body.in-focus .opus-section,
+        .verdict-body.in-focus .verdict-status,
+        .verdict-body.in-focus .verdict-invitation,
+        .verdict-body.in-focus .verdict-tricks { display: none;
         }
         .opus-section-body:not(.collapsed) {
             max-height: 2000px;
@@ -655,8 +786,7 @@
 
         /* ── Document thumbnail (upper-left of profile) */
         .doc-thumbnail {
-            width: 72px; height: 96px;
-            flex-shrink: 0;
+            width: 100%; height: 80px;
             border-radius: var(--radius-sm);
             overflow: hidden;
             border: 1px solid var(--border);
@@ -664,10 +794,10 @@
             line-height: 0;
         }
         .doc-thumbnail img {
-            width: 100%; height: 100%;
+            width: 100%; height: 80px;
             display: block;
-            object-fit: contain;
-            object-position: top left;
+            object-fit: cover;
+            object-position: top center;
             background: #fff;
             opacity: 0.85;
             transition: opacity 0.3s;
@@ -1292,20 +1422,20 @@
             text-align: center; line-height: 1.4;
         }
 
-        /* Chapter title — persistent editorial voice above cards */
+        /* Chapter title — editorial voice below cards (anchors the card) */
         .chapter-title {
             text-align: center; padding: 0 1rem;
             max-height: 0; opacity: 0; overflow: hidden;
             transition: opacity 0.5s var(--ease-out-expo), max-height 0.4s var(--ease-out-expo), padding 0.4s ease;
         }
-        .chapter-title.visible { opacity: 1; max-height: 4rem; padding: 0.75rem 1rem 1.2rem; }
+        .chapter-title.visible { opacity: 1; max-height: 4rem; padding: 1rem 1rem 0.5rem; }
         .chapter-title-text {
             font-family: 'DM Sans', sans-serif; font-size: 1.15rem;
             font-weight: 500; font-style: italic;
             color: var(--text-secondary); line-height: 1.3;
         }
         .chapter-title-counter {
-            display: block; font-family: 'JetBrains Mono', monospace;
+            display: none; font-family: 'JetBrains Mono', monospace;
             font-size: 0.62rem; font-weight: 600; font-style: normal;
             text-transform: uppercase; letter-spacing: 0.18em;
             color: var(--text-dim); margin-bottom: 0.3rem;
@@ -2117,6 +2247,7 @@
                 <div class="demo-tile" data-sample="wedding"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4V2"/><path d="M17 4V2"/><path d="M5 4h14a2 2 0 0 1 2 2v4a7 7 0 0 1-14 0V6a2 2 0 0 1 2-2z"/></svg></div><div class="demo-tile-label">Celebration!</div><div class="demo-tile-desc">Event venue rental agreement</div></div>
                 <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"/><path d="M12 11l9-9"/><path d="M17 6l4-4"/><path d="M18.5 7.5L22 7l-3-3"/></svg></div><div class="demo-tile-label">My New Place</div><div class="demo-tile-desc">12-month residential lease</div></div>
                 <div class="demo-tile" data-sample="pet"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="4.5" cy="9" r="2"/><circle cx="17.5" cy="9" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M12 18c-2.5 2-6 2-6-.5C6 15 9 14 12 17c3-3 6-2 6 .5 0 2.5-3.5 2.5-6 .5z"/></svg></div><div class="demo-tile-label">Furry Friend</div><div class="demo-tile-desc">Shelter adoption contract</div></div>
+                <div class="demo-tile" data-sample="timeshare"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="demo-tile-label">Dream Getaway</div><div class="demo-tile-desc">Timeshare vacation package</div></div>
             </div>
         </div>
 
@@ -2181,10 +2312,15 @@
 
         <!-- Card viewport: one card at a time -->
         <div class="card-viewport hidden" id="cardViewport">
-            <div class="chapter-title" id="chapterTitle">
-                <span class="chapter-title-counter" id="chapterCounter"></span>
-                <span class="chapter-title-text" id="chapterText"></span>
-            </div>
+            <nav class="card-navigation hidden" id="cardNavigation">
+                <button class="card-nav-btn card-nav-prev" disabled>
+                    <span>&larr;</span> <span>Previous</span>
+                </button>
+                <span class="card-nav-counter">Clause <strong>1</strong> of <strong>1</strong></span>
+                <button class="card-nav-btn card-nav-next">
+                    <span class="card-nav-next-label">Next clause &rarr;</span>
+                </button>
+            </nav>
             <!-- Skeleton card: shown while waiting for first clause -->
             <div class="skeleton-card hidden" id="skeletonCard">
                 <div class="skeleton-btn">
@@ -2199,15 +2335,10 @@
                 </div>
             </div>
             <div id="flipCardContainer"></div>
-            <nav class="card-navigation hidden" id="cardNavigation">
-                <button class="card-nav-btn card-nav-prev" disabled>
-                    <span>&larr;</span> <span>Previous</span>
-                </button>
-                <span class="card-nav-counter">Clause <strong>1</strong> of <strong>1</strong></span>
-                <button class="card-nav-btn card-nav-next">
-                    <span class="card-nav-next-label">Next clause &rarr;</span>
-                </button>
-            </nav>
+            <div class="chapter-title" id="chapterTitle">
+                <span class="chapter-title-counter" id="chapterCounter"></span>
+                <span class="chapter-title-text" id="chapterText"></span>
+            </div>
             <div class="deep-status hidden" id="deepStatus">
                 <span class="pulsing-dots"><span></span><span></span><span></span></span>
                 <span id="deepStatusText">Opus 4.6 is building your Full Verdict...</span>
@@ -2250,37 +2381,53 @@
         <div class="verdict-header">
             <span class="verdict-dot"></span>
             <span class="verdict-title" id="verdictTitle">Expert report</span>
-            <button class="verdict-expand-btn" id="verdictExpandBtn">Read full verdict &rarr;</button>
+            <button class="verdict-expand-btn" id="verdictExpandBtn" style="opacity:0.4;pointer-events:none;">0 of 4 ready</button>
         </div>
         <div class="verdict-body" id="verdictBody">
-            <div class="verdict-status" id="verdictStatus">Our expert is reading the small print <span class="verdict-time-pill">~2 min</span></div>
-            <div class="opus-section" id="opusSection_interactions" data-source="interactions">
+            <div class="verdict-invitation" id="verdictInvitation">You're invited to look over our expert's shoulder while they check claims one by one. Flip the card to find the dark side of the small print.</div>
+            <div class="verdict-status" id="verdictStatus">Our expert is reading the small print <span class="verdict-time-pill" id="verdictCountdown">2:00</span></div>
+            <div class="verdict-tricks hidden" id="verdictTricks">
+                <div class="verdict-tricks-title">Tricks detected</div>
+                <div class="verdict-tricks-list" id="verdictTricksList"></div>
+            </div>
+            <div class="opus-section locked" id="opusSection_interactions" data-source="interactions">
                 <div class="opus-section-header" data-toggle="interactions">
                     <span class="opus-dot pulsing"></span>
                     <span class="opus-section-title">Cross-Clause Interactions</span>
                 </div>
                 <div class="opus-section-body collapsed" id="opusBody_interactions"></div>
             </div>
-            <div class="opus-section" id="opusSection_asymmetry" data-source="asymmetry">
+            <div class="opus-section locked" id="opusSection_asymmetry" data-source="asymmetry">
                 <div class="opus-section-header" data-toggle="asymmetry">
                     <span class="opus-dot pulsing"></span>
                     <span class="opus-section-title">Power Asymmetry &amp; Fair Standard</span>
                 </div>
                 <div class="opus-section-body collapsed" id="opusBody_asymmetry"></div>
             </div>
-            <div class="opus-section" id="opusSection_archaeology" data-source="archaeology">
+            <div class="opus-section locked" id="opusSection_archaeology" data-source="archaeology">
                 <div class="opus-section-header" data-toggle="archaeology">
                     <span class="opus-dot pulsing"></span>
                     <span class="opus-section-title">Document Archaeology &amp; Drafter</span>
                 </div>
                 <div class="opus-section-body collapsed" id="opusBody_archaeology"></div>
             </div>
-            <div class="opus-section" id="opusSection_overall" data-source="overall">
+            <div class="opus-section locked" id="opusSection_overall" data-source="overall">
                 <div class="opus-section-header" data-toggle="overall">
                     <span class="opus-dot pulsing"></span>
                     <span class="opus-section-title">Overall Assessment</span>
                 </div>
                 <div class="opus-section-body collapsed" id="opusBody_overall"></div>
+            </div>
+            <!-- Focused reading panel (replaces section list when user clicks a completed section) -->
+            <div class="verdict-focused-panel" id="verdictFocusedPanel">
+                <div class="verdict-focused-nav">
+                    <button class="verdict-focused-nav-btn" id="focusedClose" title="Back to overview">&larr; Back</button>
+                    <span class="verdict-focused-counter" id="focusedCounter"></span>
+                    <button class="verdict-focused-nav-btn" id="focusedPrev">&uarr;</button>
+                    <button class="verdict-focused-nav-btn" id="focusedNext">&darr;</button>
+                </div>
+                <div class="verdict-focused-title" id="focusedTitle"></div>
+                <div class="verdict-focused-content" id="focusedContent"></div>
             </div>
         </div>
     </aside>
@@ -2297,17 +2444,29 @@
     'use strict';
 
     // ── Constants ──────────────────────────────────────────────
-    var TRICK_MAP = {
-        'Silent Waiver': '\uD83E\uDD10', 'Burden Shift': '\u2696\uFE0F',
-        'Time Trap': '\u23F0', 'Escape Hatch': '\uD83D\uDEAA',
-        'Moving Target': '\uD83C\uDFAF', 'Forced Arena': '\uD83C\uDFDB\uFE0F',
-        'Phantom Protection': '\uD83D\uDC7B', 'Cascade Clause': '\uD83D\uDCA5',
-        'Sole Discretion': '\uD83D\uDC51', 'Liability Cap': '\uD83D\uDEE1\uFE0F',
-        'Reverse Shield': '\uD83D\uDCB8', 'Auto-Lock': '\uD83D\uDD12',
-        'Content Grab': '\uD83D\uDD8A\uFE0F', 'Data Drain': '\uD83D\uDC41\uFE0F',
-        'Penalty Disguise': '\uD83C\uDFAD', 'Gag Clause': '\uD83D\uDD07',
-        'Scope Creep': '\uD83D\uDD78\uFE0F', 'Ghost Standard': '\uD83D\uDCC4'
+    var TRICK_ICONS = {
+        'Silent Waiver': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>',
+        'Burden Shift': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8l7-5 7 5"/><path d="M5 16h14"/></svg>',
+        'Time Trap': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+        'Escape Hatch': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+        'Moving Target': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+        'Forced Arena': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18V11"/><path d="M10 18V11"/><path d="M14 18V11"/><path d="M18 18V11"/><path d="M4 7h16l-8-5z"/></svg>',
+        'Phantom Protection': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" stroke-dasharray="2 2"/></svg>',
+        'Cascade Clause': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M8 10h8"/><path d="M6 14l6-4 6 4"/><path d="M4 18l8-4 8 4"/><path d="M2 22l10-4 10 4"/></svg>',
+        'Sole Discretion': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L9 9H2l6 4.5L5.5 21 12 16.5 18.5 21 16 13.5 22 9h-7z"/></svg>',
+        'Liability Cap': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8 12h8"/></svg>',
+        'Reverse Shield': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+        'Auto-Lock': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+        'Content Grab': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>',
+        'Data Drain': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+        'Penalty Disguise': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8c-2.2 0-4 1.3-4 3 0 2.5 4 3.5 4 6"/><circle cx="12" cy="20" r="0.5" fill="currentColor"/><circle cx="12" cy="12" r="10"/></svg>',
+        'Gag Clause': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M8 15h8"/><circle cx="12" cy="12" r="10"/></svg>',
+        'Scope Creep': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2a10 10 0 0 1 7.07 2.93"/><path d="M12 2a10 10 0 0 0-7.07 2.93"/><path d="M2 12a10 10 0 0 1 2.93-7.07"/><path d="M22 12a10 10 0 0 0-2.93-7.07"/></svg>',
+        'Ghost Standard': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h.01"/><path d="M12 15h.01"/><path d="M15 15h.01"/></svg>'
     };
+    // Backward compat — emoji fallback
+    var TRICK_MAP = {};
+    Object.keys(TRICK_ICONS).forEach(function(k) { TRICK_MAP[k] = ''; });
 
     var TRICK_DESCRIPTIONS = {
         'Silent Waiver': 'Quietly surrenders your legal rights',
@@ -2389,6 +2548,7 @@
     var cardViewTransitioned = false; // Whether we've transitioned from loading to cards
     var editorialStatusInterval = null;
     var editorialStatusIdx = 0;
+    var _detectedTricks = {};  // Live trick accumulator: { trickName: count }
 
     // ── Elements ──────────────────────────────────────────────
     var $ = function(id) { return document.getElementById(id); };
@@ -2498,6 +2658,33 @@
     var verdictExpandBtn = $('verdictExpandBtn');
     var _verdictRenderTimer = null;
     var _verdictAutoScroll = true;
+    var _verdictCountdownInterval = null;
+    var _verdictCountdownSec = 120;
+
+    function startVerdictCountdown() {
+        stopVerdictCountdown();
+        _verdictCountdownSec = 120;
+        var el = $('verdictCountdown');
+        if (el) el.textContent = '2:00';
+        _verdictCountdownInterval = setInterval(function() {
+            _verdictCountdownSec--;
+            if (_verdictCountdownSec <= 0) {
+                stopVerdictCountdown();
+                if (el) el.textContent = 'almost done';
+                return;
+            }
+            var m = Math.floor(_verdictCountdownSec / 60);
+            var s = _verdictCountdownSec % 60;
+            if (el) el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+        }, 1000);
+    }
+
+    function stopVerdictCountdown() {
+        if (_verdictCountdownInterval) {
+            clearInterval(_verdictCountdownInterval);
+            _verdictCountdownInterval = null;
+        }
+    }
     // 4 Opus section accumulators
     var opusSections = {
         interactions: { text: '', done: false },
@@ -3167,16 +3354,18 @@
                     var allOpusDone = Object.keys(opusSections).every(function(k) { return opusSections[k].done; });
                     if (allOpusDone) {
                         deepTextComplete = true;
+                        stopVerdictCountdown();
                         var verdictStatusEl = $('verdictStatus');
-                        if (verdictStatusEl) verdictStatusEl.textContent = 'Expert report complete';
+                        if (verdictStatusEl) verdictStatusEl.classList.add('hidden');
                         verdictTitle.textContent = 'Your verdict is ready';
-                        verdictExpandBtn.textContent = 'Read full verdict \u2192';
+                        updateVerdictButton();
                         if (flipCardsBuilt) updateCardNavigation();
                     }
                     break;
 
                 case 'done':
                     isDoneRendering = true;
+                    stopVerdictCountdown();
                     statusPill.classList.add('done');
                     if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
                     stopStatusRotation();
@@ -3227,7 +3416,7 @@
                         });
                         deepTextComplete = true;
                         verdictTitle.textContent = 'Your verdict is ready';
-                        verdictExpandBtn.textContent = 'Read full verdict \u2192';
+                        updateVerdictButton();
                     }
 
                     if (!isCompareMode) followupSection.classList.remove('hidden');
@@ -3321,7 +3510,7 @@
                 parts.push(
                     '<span class="meta-pill">' +
                     '<span class="meta-pill-label">' + escapeHtml(p.label) + '</span> ' +
-                    escapeHtml(val) +
+                    '<span class="meta-pill-value">' + escapeHtml(val) + '</span>' +
                     '</span>'
                 );
             }
@@ -3477,7 +3666,8 @@
         var h = '<span class="risk-badge risk-' + level + '">' + label + '</span>';
         if (trick) {
             var desc = TRICK_DESCRIPTIONS[trick] || '';
-            h += '<span class="trick-label" title="' + escapeHtml(desc) + '">' + escapeHtml(trick) + '</span>';
+            var icon = TRICK_ICONS[trick] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[trick] + '</span> ' : '';
+            h += '<span class="trick-label" title="' + escapeHtml(desc) + '">' + icon + escapeHtml(trick) + '</span>';
         }
         return h;
     }
@@ -3585,6 +3775,7 @@
             }
             if (clause) {
                 buildSingleFlipCard(clause, flipCardContainer.querySelectorAll('.flip-card').length);
+                trackTrick(clause.trick);
                 if (!cardViewTransitioned) {
                     transitionToCardView();
                 } else {
@@ -3613,6 +3804,7 @@
             var clause = extractSingleClause(segments[i]);
             if (clause) {
                 buildSingleFlipCard(clause, flipCardContainer.querySelectorAll('.flip-card').length);
+                trackTrick(clause.trick);
                 if (!cardViewTransitioned) {
                     transitionToCardView();
                 }
@@ -3823,7 +4015,7 @@
             '</div>' +
             '<div class="back-body">' + backBodyHtml + '</div>' +
             '<div class="back-footer">' +
-            (clause.trick ? '<span class="trick-footnote" title="' + escapeHtml(trickDesc) + '">' + escapeHtml(clause.trick) + '</span>' : '') +
+            (clause.trick ? '<span class="trick-footnote" title="' + escapeHtml(trickDesc) + '">' + (TRICK_ICONS[clause.trick] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[clause.trick] + '</span> ' : '') + escapeHtml(clause.trick) + '</span>' : '') +
             '<button class="flip-back-trigger"><span class="flip-back-arrow">&larr;</span><span>Flip back</span></button>' +
             '</div>' +
             '</div></div>';
@@ -4165,6 +4357,22 @@
                     cur.className = 'verdict-cursor';
                     bodyEl.appendChild(cur);
                 }
+                // If user is viewing this section in focused mode, update live
+                if (_focusedSource === source) {
+                    var contentEl = $('focusedContent');
+                    if (contentEl) {
+                        var fHtml = safeMd2Html(text);
+                        fHtml = styleRiskBadges(fHtml);
+                        fHtml = styleReaderBlocks(fHtml);
+                        fHtml = styleDrafterBlocks(fHtml);
+                        contentEl.innerHTML = fHtml;
+                        if (!opusSections[source].done) {
+                            var fc = document.createElement('span');
+                            fc.className = 'verdict-cursor';
+                            contentEl.appendChild(fc);
+                        }
+                    }
+                }
             }, 200);
         }
     }
@@ -4197,13 +4405,172 @@
     function _revealOpusSection(source) {
         var sectionEl = $('opusSection_' + source);
         if (!sectionEl) return;
+        // Unlock section: remove locked, mark dot as done
+        sectionEl.classList.remove('locked');
         var dot = sectionEl.querySelector('.opus-dot');
         if (dot) { dot.classList.remove('pulsing'); dot.classList.add('done'); }
-        // Auto-expand this section
+        // Fade out invitation on first section reveal
+        var invEl = $('verdictInvitation');
+        if (invEl && !invEl.classList.contains('fading')) {
+            invEl.classList.add('fading');
+            setTimeout(function() { invEl.classList.add('hidden'); }, 600);
+        }
+        // Don't auto-expand — user clicks to enter focused mode instead
+        // Just do final render into the hidden body (ready when user clicks)
         var bodyEl = $('opusBody_' + source);
-        if (bodyEl) bodyEl.classList.remove('collapsed');
-        // Final render
-        var text = opusSections[source].text;
+        if (bodyEl) {
+            var text = opusSections[source].text;
+            if (text.trim()) {
+                var html = safeMd2Html(text);
+                html = styleRiskBadges(html);
+                html = styleWhyClauses(html);
+                html = styleReaderBlocks(html);
+                html = styleDrafterBlocks(html);
+                html = styleSplitClauses(html);
+                bodyEl.innerHTML = html;
+            }
+        }
+        // If user is in focused mode, update the counter (new section available)
+        if (_focusedSource) renderFocusedSection();
+        // Update "Read full verdict" button visibility
+        updateVerdictButton();
+    }
+
+    function updateVerdictButton() {
+        var allDone = getCompletedSections().length === 4;
+        if (allDone) {
+            verdictExpandBtn.textContent = 'Read full verdict \u2192';
+            verdictExpandBtn.style.opacity = '1';
+            verdictExpandBtn.style.pointerEvents = 'auto';
+        } else {
+            var count = getCompletedSections().length;
+            verdictExpandBtn.textContent = count + ' of 4 ready';
+            verdictExpandBtn.style.opacity = '0.4';
+            verdictExpandBtn.style.pointerEvents = 'none';
+        }
+    }
+    function resetVerdictCol() {
+        hideVerdictCol();
+        exitFocusedMode();
+        verdictCol.classList.remove('standby', 'thinking', 'writing', 'ready', 'collapsed');
+        verdictTitle.textContent = 'Expert report';
+        verdictExpandBtn.textContent = '0 of 4 ready';
+        verdictExpandBtn.style.opacity = '0.4';
+        verdictExpandBtn.style.pointerEvents = 'none';
+        _verdictAutoScroll = true;
+        if (_verdictRenderTimer) { clearTimeout(_verdictRenderTimer); _verdictRenderTimer = null; }
+        // Reset accumulators and section UI — lock all sections
+        Object.keys(opusSections).forEach(function(k) {
+            opusSections[k] = { text: '', done: false };
+            var bodyEl = $('opusBody_' + k);
+            if (bodyEl) { bodyEl.innerHTML = ''; bodyEl.classList.add('collapsed'); }
+            var sectionEl = $('opusSection_' + k);
+            if (sectionEl) sectionEl.classList.add('locked');
+            var dot = document.querySelector('#opusSection_' + k + ' .opus-dot');
+            if (dot) { dot.classList.remove('done'); dot.classList.add('pulsing'); }
+        });
+        var verdictStatusEl = $('verdictStatus');
+        if (verdictStatusEl) {
+            verdictStatusEl.innerHTML = 'Our expert is reading the small print <span class="verdict-time-pill" id="verdictCountdown">2:00</span>';
+            verdictStatusEl.classList.remove('hidden');
+        }
+        var invEl = $('verdictInvitation');
+        if (invEl) { invEl.classList.remove('hidden', 'fading'); }
+        // Reset live tricks panel
+        _detectedTricks = {};
+        var tricksPanel = $('verdictTricks');
+        if (tricksPanel) tricksPanel.classList.add('hidden');
+        var tricksList = $('verdictTricksList');
+        if (tricksList) tricksList.innerHTML = '';
+        startVerdictCountdown();
+    }
+
+    // ── Live tricks panel ──────────────────────────────────
+    function trackTrick(trick) {
+        if (!trick || trick.toLowerCase() === 'none') return;
+        _detectedTricks[trick] = (_detectedTricks[trick] || 0) + 1;
+        renderVerdictTricks();
+    }
+
+    function renderVerdictTricks() {
+        var panel = $('verdictTricks');
+        var list = $('verdictTricksList');
+        if (!panel || !list) return;
+
+        var sorted = Object.keys(_detectedTricks).sort(function(a, b) {
+            return _detectedTricks[b] - _detectedTricks[a];
+        });
+        if (sorted.length === 0) { panel.classList.add('hidden'); return; }
+
+        // Top 10
+        var top = sorted.slice(0, 10);
+        var html = '';
+        top.forEach(function(trick) {
+            var icon = TRICK_ICONS[trick] || '';
+            var desc = TRICK_DESCRIPTIONS[trick] || '';
+            var count = _detectedTricks[trick];
+            html += '<span class="verdict-trick-item">';
+            if (icon) html += '<span class="verdict-trick-icon">' + icon + '</span>';
+            html += '<span class="verdict-trick-name">' + escapeHtml(trick) + '</span>';
+            if (count > 1) html += '<span class="verdict-trick-count">\u00d7' + count + '</span>';
+            if (desc) html += '<span class="verdict-trick-tooltip">' + escapeHtml(desc) + '</span>';
+            html += '</span>';
+        });
+        list.innerHTML = html;
+        panel.classList.remove('hidden');
+    }
+
+    // ── Focused reading mode state ──────────────────────────
+    var _focusedSource = null; // currently focused section key or null
+    var _sectionOrder = ['interactions', 'asymmetry', 'archaeology', 'overall'];
+    var _sectionLabels = {
+        interactions: 'Cross-Clause Interactions',
+        asymmetry: 'Power Asymmetry & Fair Standard',
+        archaeology: 'Document Archaeology & Drafter',
+        overall: 'Overall Assessment'
+    };
+
+    function getCompletedSections() {
+        return _sectionOrder.filter(function(k) {
+            // For "overall", check if all parts are done too (gating logic)
+            if (k === 'overall') {
+                return opusSections.overall.done
+                    && opusSections.interactions.done
+                    && opusSections.asymmetry.done
+                    && opusSections.archaeology.done;
+            }
+            return opusSections[k].done;
+        });
+    }
+
+    function enterFocusedMode(source) {
+        _focusedSource = source;
+        verdictBody.classList.add('in-focus');
+        var panel = $('verdictFocusedPanel');
+        panel.classList.add('active');
+        renderFocusedSection();
+    }
+
+    function exitFocusedMode() {
+        _focusedSource = null;
+        verdictBody.classList.remove('in-focus');
+        var panel = $('verdictFocusedPanel');
+        panel.classList.remove('active');
+    }
+
+    function renderFocusedSection() {
+        if (!_focusedSource) return;
+        var completed = getCompletedSections();
+        var idx = completed.indexOf(_focusedSource);
+        var total = completed.length;
+        var allDone = total === 4;
+
+        // Title
+        $('focusedTitle').textContent = _sectionLabels[_focusedSource] || _focusedSource;
+
+        // Content
+        var contentEl = $('focusedContent');
+        var text = opusSections[_focusedSource].text;
         if (text.trim()) {
             var html = safeMd2Html(text);
             html = styleRiskBadges(html);
@@ -4211,39 +4578,62 @@
             html = styleReaderBlocks(html);
             html = styleDrafterBlocks(html);
             html = styleSplitClauses(html);
-            bodyEl.innerHTML = html;
+            contentEl.innerHTML = html;
+        } else {
+            contentEl.innerHTML = '<p style="color:var(--text-muted);font-style:italic;">Content loading...</p>';
+        }
+        contentEl.scrollTop = 0;
+
+        // Nav arrows
+        $('focusedPrev').disabled = (idx <= 0);
+        $('focusedNext').disabled = (idx >= total - 1);
+
+        // Counter: "Section 1 · 2 of 4 ready" or "Section 1 · Full report ready →"
+        var counterEl = $('focusedCounter');
+        if (allDone) {
+            counterEl.innerHTML = 'Section ' + (idx + 1) + ' of ' + total + ' · <a class="ready-link" id="focusedReadAll">Full report ready \u2192</a>';
+            var readAllLink = $('focusedReadAll');
+            if (readAllLink) {
+                readAllLink.addEventListener('click', function() {
+                    exitFocusedMode();
+                    revealDeepAnalysis();
+                });
+            }
+        } else {
+            counterEl.textContent = 'Section ' + (idx + 1) + ' \u00b7 ' + total + ' of 4 ready';
         }
     }
-    function resetVerdictCol() {
-        hideVerdictCol();
-        verdictCol.classList.remove('standby', 'thinking', 'writing', 'ready', 'collapsed');
-        verdictTitle.textContent = 'Expert report';
-        verdictExpandBtn.textContent = 'Read full verdict \u2192';
-        _verdictAutoScroll = true;
-        if (_verdictRenderTimer) { clearTimeout(_verdictRenderTimer); _verdictRenderTimer = null; }
-        // Reset accumulators and section UI
-        Object.keys(opusSections).forEach(function(k) {
-            opusSections[k] = { text: '', done: false };
-            var bodyEl = $('opusBody_' + k);
-            if (bodyEl) { bodyEl.innerHTML = ''; bodyEl.classList.add('collapsed'); }
-            var dot = document.querySelector('#opusSection_' + k + ' .opus-dot');
-            if (dot) { dot.classList.remove('done'); dot.classList.add('pulsing'); }
-        });
-        var verdictStatusEl = $('verdictStatus');
-        if (verdictStatusEl) {
-            verdictStatusEl.innerHTML = 'Our expert is reading the small print <span class="verdict-time-pill">~2 min</span>';
-            verdictStatusEl.classList.remove('hidden');
+
+    function navigateFocused(dir) {
+        if (!_focusedSource) return;
+        var completed = getCompletedSections();
+        var idx = completed.indexOf(_focusedSource);
+        var next = idx + dir;
+        if (next >= 0 && next < completed.length) {
+            _focusedSource = completed[next];
+            renderFocusedSection();
         }
     }
-    // Toggle Opus sections on click
+
+    // Click handler: open focused mode on completed sections, block pulsing ones
     verdictBody.addEventListener('click', function(e) {
         var header = e.target.closest('.opus-section-header');
         if (!header) return;
         var source = header.getAttribute('data-toggle');
         if (!source) return;
-        var bodyEl = $('opusBody_' + source);
-        if (bodyEl) bodyEl.classList.toggle('collapsed');
+        // Block click on locked/pulsing sections
+        var sectionEl = $('opusSection_' + source);
+        if (sectionEl && sectionEl.classList.contains('locked')) return;
+        if (!opusSections[source].done) return;
+        // Enter focused reading mode
+        enterFocusedMode(source);
     });
+
+    // Focused panel navigation
+    $('focusedClose').addEventListener('click', function() { exitFocusedMode(); });
+    $('focusedPrev').addEventListener('click', function() { navigateFocused(-1); });
+    $('focusedNext').addEventListener('click', function() { navigateFocused(1); });
+
     // Stop auto-scroll if user scrolls up in verdict column
     verdictBody.addEventListener('scroll', function() {
         var atBottom = verdictBody.scrollHeight - verdictBody.scrollTop - verdictBody.clientHeight < 40;
@@ -4395,8 +4785,7 @@
         var text = $('chapterText');
         if (!ct || !counter || !text) return;
 
-        var num = index + 1;
-        counter.textContent = 'Clause ' + num + ' of ' + (flipCardsBuilt ? total : total + '+');
+        counter.textContent = '';
 
         // Pick phrase: first card gets the hook, last card gets the closer
         var phrase;
@@ -4714,9 +5103,9 @@
             .sort(function(a, b) { return trickCounts[b] - trickCounts[a]; });
 
         sortedTricks.forEach(function(trick) {
-            var emoji = TRICK_MAP[trick] || '';
+            var icon = TRICK_ICONS[trick] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[trick] + '</span> ' : '';
             trickHtml += '<button class="filter-chip chip-trick" data-filter-trick="' +
-                escapeHtml(trick) + '">' + emoji + ' ' + escapeHtml(trick) +
+                escapeHtml(trick) + '">' + icon + escapeHtml(trick) +
                 ' <span class="chip-count">' + trickCounts[trick] + '</span></button>';
         });
 
@@ -5040,10 +5429,10 @@
         sorted.forEach(function(trick) {
             var count = trickCounts[trick];
             var pct = Math.round((count / maxCount) * 100);
-            var emoji = TRICK_MAP[trick] || '';
+            var icon = TRICK_ICONS[trick] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[trick] + '</span> ' : '';
             var desc = TRICK_DESCRIPTIONS[trick] || '';
             h += '<div class="playbook-row" data-trick="' + escapeHtml(trick) + '" title="' + escapeHtml(desc) + '">';
-            h += '<span class="playbook-trick-name">' + emoji + ' ' + escapeHtml(trick) + '</span>';
+            h += '<span class="playbook-trick-name">' + icon + escapeHtml(trick) + '</span>';
             h += '<div class="playbook-bar-track"><div class="playbook-bar-fill" style="width:' + pct + '%"></div></div>';
             h += '<span class="playbook-count">' + count + '\u00d7</span>';
             h += '</div>';
@@ -5074,6 +5463,9 @@
     // ── Verdict column expand button ─────────────────────────
     verdictExpandBtn.addEventListener('click', function(e) {
         e.stopPropagation();
+        // Only open full verdict when all 4 sections are done
+        if (getCompletedSections().length < 4 && !deepTextComplete && !isDoneRendering) return;
+        exitFocusedMode();
         revealDeepAnalysis();
     });
 
@@ -5082,6 +5474,7 @@
         if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
         $('deepAnalysisSection').classList.add('hidden');
         $('cardViewport').classList.remove('hidden');
+        exitFocusedMode();
         // Re-show verdict column if there's any Opus content
         var hasAnyOpus = Object.keys(opusSections).some(function(k) { return opusSections[k].text.length > 0; });
         if (hasAnyOpus || isDoneRendering || deepTextComplete) verdictCol.classList.add('visible');

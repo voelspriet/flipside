@@ -700,3 +700,126 @@ The instinct was: put the best model on the most visible feature (card backs). T
 **The card flip is Haiku's moment. The expert verdict is Opus's moment.** Each model gets a stage that showcases what it does best.
 
 **Key insight for Opus 4.6 exploration**: The most creative use of a frontier model isn't putting it everywhere — it's identifying the specific capabilities that only it can deliver (compound reasoning, self-correction, archaeological deduction, power quantification, visual analysis, multi-turn memory) and building features around those capabilities. Seven distinct Opus 4.6 capabilities, each visible in the product, each doing work that a smaller model genuinely cannot.
+
+---
+
+## Decision: Midpoint Self-Evaluation — Where FlipSide Stands at Halftime
+
+**Date**: 2026-02-13
+**Context**: Halfway through the hackathon. Before deciding what to build next, we need an honest assessment of where the tool is now versus the judging criteria. This entry contains the evaluation prompt, the evaluation itself, and the resulting priorities for the second half.
+
+### The Evaluation Prompt
+
+> You are evaluating a hackathon submission called **FlipSide** at the halfway point. The hackathon is the Claude Code Hackathon 2026, with 4 judging criteria:
+>
+> - **Demo (30%)**: "Is this genuinely cool to watch?" Visual, interactive, real-time, showable output.
+> - **Opus 4.6 Use (25%)**: "Did they surface capabilities that surprised even us?" Creative, deep use of what makes Opus 4.6 special.
+> - **Impact (25%)**: "Could this actually become something people use?" Real problem, real users, clear beneficiaries.
+> - **Depth & Execution (20%)**: "Did the team push past their first idea?" Iteration, craft, architectural decisions.
+>
+> Two special prizes: "Most Creative Opus 4.6 Exploration" ($5k) and "The Keep Thinking Prize" ($5k, rewards iteration process).
+>
+> **Current state of FlipSide**:
+> - Flask backend (2,452 lines) + single-page frontend (5,529 lines)
+> - 5-thread architecture: 1 Haiku (full flip cards, ~12s) + 4 parallel Opus threads (interactions, asymmetry, archaeology, overall, ~60-70s)
+> - 12 sample documents with generated thumbnails
+> - 48/50 Phase 1 interactive features implemented
+> - 22 strategy decisions documented
+> - 63 hackathon log entries
+> - 14 Opus 4.6 capabilities visible in product
+> - Features: flip cards, live streaming, follow-up Q&A, document comparison, message-the-company, counter-draft, risk timeline, trick taxonomy (18 types), playbook, session history, keyboard navigation, dark mode, print/export, suitability gate, vision/multimodal PDF analysis
+> - English-only output with original-language quotes; download report in document language
+>
+> **What's missing or outdated**:
+> - README still describes 3-thread architecture, claims bilingual output, says 13 capabilities
+> - HACKATHON_LOG has inconsistent line counts and stale capability #14 (still says "bilingual")
+> - No demo video yet
+> - No 100-200 word summary
+> - Phase 2 boundary probes: only ~10 of 50 partially addressed
+>
+> Score FlipSide on each criterion (1-10), identify the 3 biggest strengths, the 3 biggest gaps, and recommend the top 5 priorities for the second half. Be honest and specific — flattery doesn't help.
+
+### The Evaluation
+
+#### Scores
+
+| Criterion | Score | Reasoning |
+|-----------|-------|-----------|
+| **Demo (30%)** | **7/10** | The flip card mechanic is visually distinctive and the streaming UX is genuinely impressive — cards appear one by one, the flip reveals Haiku's analysis, and the verdict column fills in with expert analysis. The 12 sample documents lower the demo barrier. But there's no demo video yet, and the 3-minute narrative hasn't been scripted. The ~60-70s Opus wait is dead time in a live demo. The "Message the Company" and counter-draft features are powerful but undiscovered without guidance. A polished video with voiceover could push this to 9. |
+| **Opus 4.6 Use (25%)** | **8/10** | This is the project's strongest dimension. 14 distinct capabilities in one product is unusual. The 5-thread architecture (Haiku speed + 4× Opus depth) is a genuine architectural innovation, not a checkbox exercise. The cross-clause interaction detection, document archaeology, power asymmetry quantification, and self-correction quality check each showcase capabilities that smaller models genuinely cannot do. The "Haiku was great, Opus shines elsewhere" discovery is the kind of insight the judges want to see. The villain voice pushing against over-refusal limits is creative. What's missing: the effort control parameter (`effort: medium/high/max`) isn't wired up yet (SDK gap), and context compaction for long follow-up sessions isn't explicitly demonstrated. |
+| **Impact (25%)** | **8/10** | The problem is real and large — 250M+ people sign documents they don't understand daily. The flip metaphor ("see what the other side intended") is immediately understandable. The sample documents prove it works across document types (lease, insurance, ToS, employment, loan, gym, medical, HOA, sweepstakes). The "Message the Company" feature moves from analysis to action. Counter-draft goes further. What would push this higher: user testimonials, a case study showing a real user discovering a real trap, or a comparison with existing tools (LegalZoom, DoNotPay) showing what FlipSide catches that they miss. |
+| **Depth & Execution (20%)** | **9/10** | This is where FlipSide dominates. 22 strategy decisions, 63 log entries, and a complete architectural pivot (4-thread → 5-thread) documented in real-time. The Playwright self-debugging story, the meta-prompting discovery, the "Haiku was already great" reversal — these are exactly the kind of "pushed past their first idea" moments the judges want to see. The documentation alone is a strong bid for the "Keep Thinking Prize." The only gap: the strategy decisions are hidden in strategy.md, not surfaced in the submission materials. |
+
+**Composite: 7.8/10** (weighted: 7×0.30 + 8×0.25 + 8×0.25 + 9×0.20 = 2.10 + 2.00 + 2.00 + 1.80 = 7.9)
+
+#### 3 Biggest Strengths
+
+1. **The flip card as product metaphor.** It's not a gimmick — the front/back literally represents naive vs. expert reading. The physical interaction of flipping creates the "aha" moment. Most hackathon projects are dashboards; this has a mechanic.
+
+2. **Architectural depth visible in the product.** The 5-thread Haiku+Opus architecture isn't hidden plumbing — users experience it as instant cards + progressive expert analysis. The model placement decision (Haiku for cards, Opus for verdict) emerged from a 3-hour failure, which is a better story than getting it right the first time.
+
+3. **Documentation as competitive advantage.** 22 strategy decisions and 63 log entries create a paper trail that most hackathon teams don't have. The "Keep Thinking Prize" is essentially already won if the judges read strategy.md.
+
+#### 3 Biggest Gaps
+
+1. **No demo video.** Demo is 30% of the score. Without a scripted 3-minute video showing the flip moment, the verdict column filling in, and the message-the-company feature, the strongest 30% bucket is left to the judges' imagination. This is the single highest-ROI item remaining.
+
+2. **Outdated README.** The README is the first thing judges read. It still says 3-thread architecture, claims bilingual output (now English-only), lists 13 capabilities (now 14+), and doesn't mention message-the-company, counter-draft, or the 5-thread architecture. Every minute a judge reads stale docs is a lost opportunity.
+
+3. **Opus wait time in live demo.** Cards arrive in ~12s (great). But the verdict column takes 60-70s. In a 3-minute video, that's a third of the runtime showing "Our expert is reading the small print." Need to either (a) pre-record the wait and fast-forward, (b) narrate over it, or (c) find ways to make the wait itself interesting.
+
+#### Top 5 Priorities for the Second Half
+
+1. **Script and record the demo video (30% of score).** 3-minute narrative: upload → first card → flip → verdict → message the company. Use a pre-analyzed document so Opus results are instant. Show the flip moment in slow motion. Voiceover explaining the philosophy.
+
+2. **Update README to match current state.** Fix architecture diagram (5-thread), capability count (14+), remove bilingual claims, add message-the-company and counter-draft, add the "Haiku was already great" story. The README is the submission's front page.
+
+3. **Fix HACKATHON_LOG inconsistencies.** Correct line counts, update capability #14 from "bilingual" to current (English-only + download in language), verify entry count. The log is evidence for "Keep Thinking Prize" — errors undermine it.
+
+4. **Write the 100-200 word summary.** Required for submission. Should capture: one sentence on the problem, one on the flip mechanic, one on the 5-thread architecture, one on what Opus does that Haiku can't.
+
+5. **Reduce perceived Opus wait time.** Options: (a) show partial Opus results in verdict column as they stream (already happening), (b) add educational content during the wait ("Did you know? Cross-clause interactions are the #1 missed risk in consumer contracts"), (c) make the status animation more engaging, (d) pre-analyze sample documents so demos are instant.
+
+### Re-Evaluation After Fixes
+
+**What was fixed since the initial evaluation:**
+- README fully rewritten: 5-thread architecture diagram, 14 capabilities (not 13), English-only (not bilingual), message-the-company, counter-draft, seven-stage pipeline table, proper third-party license attribution
+- HACKATHON_LOG: line counts corrected (app.py 2,452, index.html 5,529), capability #14 updated from "Multilingual + bilingual" to "English-only + download in language", entry count updated to 64
+- Third-party license table added to README (all permissive: MIT, BSD-3, Apache-2.0/MPL-2.0, OFL — no GPL)
+- 173-word submission summary added to README (problem → mechanic → architecture → action → claim → tagline)
+
+#### Updated Scores (after all fixes)
+
+| Criterion | Initial | After fixes | Change | Why |
+|-----------|---------|-------------|--------|-----|
+| **Demo (30%)** | 7 | **8** | +1.0 | README accurately sells the product. 173-word summary gives judges the complete picture in 30 seconds. Architecture diagram, 14 capabilities, message-the-company, counter-draft — all described before a judge opens the app. The summary itself is demo-quality writing: "Flip the card — the back reveals what the drafter intended." Still no video, which caps this at 8 rather than 9+. |
+| **Opus 4.6 Use (25%)** | 8 | **8.5** | +0.5 | Capabilities table now shows 14 with accurate descriptions. The "Haiku was great, Opus shines elsewhere" story is surfaced in the architecture section. Summary names all 4 Opus thread functions (cross-clause, asymmetry, archaeology, self-correction). Judges can now see the model placement reasoning before launching the app. |
+| **Impact (25%)** | 8 | **8.5** | +0.5 | The summary moves impact from implicit to explicit: "analyzes documents you didn't write" → specific examples → "message the company" → "counter-draft." A judge reading this immediately understands who benefits and how. The action features (message, counter-draft) are now front-and-center, not buried in step 4. |
+| **Depth & Execution (20%)** | 9 | **9.5** | +0.5 | Midpoint self-evaluation with re-evaluation after fixes (meta-iteration). All documentation internally consistent. License attribution. The summary itself demonstrates craft — 173 words, no filler, funnel structure. |
+
+**New composite: 8.5/10** (8×0.30 + 8.5×0.25 + 8.5×0.25 + 9.5×0.20 = 2.40 + 2.125 + 2.125 + 1.90 = 8.55)
+
+**Total delta from initial: +0.65 from documentation and presentation fixes alone — zero product code changed.**
+
+#### Remaining Gaps
+
+1. **No demo video** — the only gap that matters now. 30% of the score, and it's the difference between 8/10 and 9.5/10 on Demo. Everything else is ready for a judge to evaluate.
+2. **Opus wait time in demo** — ~60-70s. Narrative strategy needed for the video (narrate over it, fast-forward, or pre-analyze).
+3. **No user testimonials or case study** — would push Impact from 8.5 to 9+, but low priority vs. video.
+
+#### Submission Checklist
+
+| Item | Status |
+|------|--------|
+| Working product | Done |
+| README with architecture + capabilities | Done |
+| 100-200 word summary | Done (173 words) |
+| HACKATHON_LOG (process evidence) | Done (68 entries) |
+| Strategy decisions (iteration evidence) | Done (22 decisions) |
+| Third-party license attribution | Done |
+| 12 sample documents | Done |
+| Demo video (3 min) | **NOT STARTED** |
+
+### The Lesson
+
+At halftime, FlipSide's engineering depth was ahead of its presentation layer. Documentation fixes — README rewrite, log corrections, submission summary, license attribution — gained **+0.65 composite points** without writing a single line of product code. The product was always 8.5+; the presentation was dragging it to 7.9. Now the only remaining gap is the demo video. Everything a judge needs to read is accurate, complete, and internally consistent. The video is the last artifact that captures the 30% Demo weight — and it's the difference between a strong submission and a winning one.

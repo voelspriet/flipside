@@ -683,6 +683,68 @@ Forever Friends Animal Shelter
 """
 },
 
+'timeshare': {
+    'filename': 'Hilton Grand Vacations — Details of Participation (Real)',
+    'text': """HILTON GRAND VACATIONS
+DETAILS OF PARTICIPATION
+
+ELIGIBILITY
+
+No one is excluded from visiting our properties or purchasing a timeshare. Although anyone can visit our properties or purchase our timeshare products, our special preview vacation packages are only available to persons who meet certain requirements for combined gross annual income, underwriting and credit worthiness, reside in a state where our projects are registered for sale and agree to attend a timeshare sales presentation. Offer valid one per household only.
+
+You are not eligible to participate in this promotion if you:
+
+have an open, incomplete vacation package with Hilton Grand Vacations or one of its affiliates ("HGV") requiring attendance at a sales presentation,
+have attended an HGV sales presentation within the last year,
+are an employee of HGV, Hilton Worldwide or their affiliated companies, or their immediate family members,
+have a credit score as established by the developer or if FICO information is not readily available, otherwise meet the seller's financial risk underwriting requirements (If married or cohabitating, at least one must meet the credit requirements),
+have filed for bankruptcy within the past 7 years, or
+are a group, consisting of more than one household traveling together.
+
+SALES PRESENTATION EXPECTATIONS
+
+This special promotion requires attendance at an approximately two-hour timeshare sales presentation (one-hour sales presentation for current HGV owners) on the benefits of vacation ownership. To participate in this promotion you must present a current government-issued personal identification, such as a driver's license or passport and have a personal major credit card at the time of sales presentation. If married or living together, both parties must attend the sales presentation together.
+
+If eligibility criteria are not met or the sales presentation is not completed, the credit card used to purchase the vacation package will be charged the full retail value of this promotional offer and you will not be eligible to receive any gifts or discounts in connection with this offer. If you do not meet the criteria, but you have received gifts, you will be charged the verifiable retail value for such gifts, plus all applicable taxes, and less any payments by you.
+
+ACCOMMODATION DETAILS
+
+Accommodations as specified in the vacation package offer may include a standard double hotel room at a Hilton portfolio hotel or a studio or suite at a Hilton Grand Vacations resort (valued at $175-$900/night) except in locations where accommodations at another brand hotel or resort may be offered. Certain restrictions may apply, accommodation upgrades, and stays over weekends, during high season and holidays are limited and may include additional fees. Savings and available accommodations may vary. We can accommodate up to four (4) people with your vacation package, with the exception of Las Vegas and New York, which accommodate up to two (2) people.
+
+Vacation package includes accommodations and named presentation incentive rewards or gifts only. Transportation, parking fees, personal expenses, and taxes and other fees are the sole responsibility of the purchaser. Pets are not permitted. Parking and access for recreational vehicles may be restricted. Accommodations are subject to availability.
+
+RESERVATION CHANGE AND CANCELLATION POLICY
+
+Vacation packages are non-refundable and non-transferable. Vacation package expires 12 months from date of purchase unless otherwise stated in the offer received.
+
+A $19.95 charge applies to each reservation change made 7 days or more prior to arrival. Should plans change within 7 days of scheduled arrival, requiring a reservation cancellation, change, or no-show, the equivalent of one (1) night at the currently published retail price ($175-$900) for the applicable resort or hotel at that time will be charged to the credit card used to purchase the vacation package.
+
+PURPOSE OF PROMOTION
+
+THIS MATERIAL IS FOR THE PURPOSE OF SOLICITING TIMESHARE OWNERSHIP INTERESTS. THE COMPLETE OFFERING TERMS ARE IN AN OFFERING PLAN AVAILABLE FROM THE DEVELOPER. Prices range from $9,900 to $853,990 USD, subject to availability. Pricing is dependent on product purchased, without promotions and discounts and subject to change. Eligibility and financing requirements apply. Additional restrictions may apply.
+
+This is neither an offer or solicitation to sell to residents in jurisdictions in which registration requirements have not been fulfilled, and your eligibility and the timeshare plan available for purchase will depend upon the state of the purchaser.
+
+The Developer reserves the right to change this offer prior to purchase without notice. Offer not valid with any other promotional offer. Information gathered through this promotion will be used to solicit timeshare sales.
+
+SALES AND DEVELOPER INFORMATION
+
+Hilton Resorts Corporation is the sales and marketing agent (dba Hilton Grand Vacations) located at 6355 Metrowest Blvd. Orlando, FL 32835.
+
+Hilton Resorts Corporation and its affiliates, subsidiaries, parent and its parent's affiliates and subsidiaries and partners are also the developer/seller of timeshare interests in the US and internationally. Hilton Grand Vacations Club LLC, HVC International Club Inc. and Extraordinary Escapes Corporation are the exchange agents.
+
+Certain travel services are provided by Great Vacation Destinations Inc., a Florida corporation located at 5323 Millenia Lakes Blvd, Suite 400 Orlando, Florida ("GVD"). Florida Seller of Travel Ref. No. ST37755; Washington GVD SOT ID # 602283711 and HRC SOT ID # 602154160; California GVD CST# 2068362-50 and HRC CST#2114968-50. Registration as a seller of travel does not constitute approval by the State of California.
+
+DISPUTE RESOLUTION AND LIABILITY
+
+Any claims arising from this offer shall be limited to the amount paid for the vacation package. Any disputes must be resolved individually and any right to a class action and/or a jury trial is waived.
+
+Hilton Grand Vacations is a registered trademark of Hilton Worldwide Holdings Inc. or its subsidiaries and licensed to Hilton Grand Vacations Inc.
+
+Updated 9/26/25
+"""
+},
+
 }
 
 # Default sample for backward compatibility
