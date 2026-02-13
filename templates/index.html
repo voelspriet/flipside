@@ -4538,13 +4538,13 @@
         }
         if (scoreParts.length) html += '<div>' + scoreParts.join(' · ') + '</div>';
 
-        // First substantive sentence from overall
+        // First substantive sentence from overall (strip markdown before filtering)
         var lines = overall.split('\n');
         var firstLine = '';
         for (var i = 0; i < lines.length; i++) {
-            var l = lines[i].trim();
-            if (!l || l.startsWith('#') || l.startsWith('---') || /^Overall Risk/i.test(l) || /^Power Imbalance/i.test(l) || /^\*\*Overall/i.test(l) || /^\d+\/100/.test(l)) continue;
-            firstLine = l.replace(/\*\*/g, '').replace(/\*/g, '');
+            var l = lines[i].trim().replace(/\*\*/g, '').replace(/\*/g, '');
+            if (!l || l.startsWith('#') || l.startsWith('---') || /^Overall Risk/i.test(l) || /^Power Imbalance/i.test(l) || /^\d+\/100/.test(l) || /^SEVERITY/i.test(l)) continue;
+            firstLine = l;
             break;
         }
         if (firstLine) {
