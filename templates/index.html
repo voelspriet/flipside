@@ -537,6 +537,30 @@
         .verdict-expand-btn:hover {
             background: var(--accent); color: #fff;
         }
+        .verdict-expand-btn.ready {
+            animation: verdictPulse 2s ease-in-out infinite;
+        }
+        .verdict-expand-btn.ready:hover { animation: none; }
+        @keyframes verdictPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(196,75,40,0.3); }
+            50% { box-shadow: 0 0 0 4px rgba(196,75,40,0); }
+        }
+        .verdict-expand-spin {
+            display: inline-block; margin-left: 0.25rem;
+            animation: spinHint 2.5s ease-in-out infinite;
+        }
+        .verdict-summary {
+            display: none; padding: 0.5rem 0.6rem; margin: 0.4rem 0;
+            font-size: 0.76rem; line-height: 1.45; color: var(--text);
+            background: var(--card-bg); border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+        .verdict-summary.visible { display: block; }
+        .verdict-summary strong { color: var(--accent); font-weight: 600; }
+        .verdict-summary .verdict-summary-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; font-weight: 700;
+        }
         .verdict-body {
             flex: 1; overflow-y: auto; overflow-x: hidden;
             padding: 0.4rem 0.75rem 0.75rem; min-height: 0;
@@ -2401,6 +2425,7 @@
                 <div class="verdict-tricks-title">Tricks detected</div>
                 <div class="verdict-tricks-list" id="verdictTricksList"></div>
             </div>
+            <div class="verdict-summary" id="verdictSummary"></div>
             <div class="opus-section locked" id="opusSection_interactions" data-source="interactions">
                 <div class="opus-section-header" data-toggle="interactions">
                     <span class="opus-dot pulsing"></span>
@@ -4452,15 +4477,52 @@
     function updateVerdictButton() {
         var allDone = getCompletedSections().length === 4;
         if (allDone) {
-            verdictExpandBtn.textContent = 'Read full verdict \u2192';
+            verdictExpandBtn.innerHTML = 'Read full verdict <span class="verdict-expand-spin">\u27F3</span>';
+            verdictExpandBtn.classList.add('ready');
             verdictExpandBtn.style.opacity = '1';
             verdictExpandBtn.style.pointerEvents = 'auto';
+            buildVerdictSummary();
         } else {
             var count = getCompletedSections().length;
             verdictExpandBtn.textContent = count + ' of 4 ready';
+            verdictExpandBtn.classList.remove('ready');
             verdictExpandBtn.style.opacity = '0.4';
             verdictExpandBtn.style.pointerEvents = 'none';
         }
+    }
+
+    function buildVerdictSummary() {
+        var el = $('verdictSummary');
+        if (!el || el.classList.contains('visible')) return;
+        var overall = opusSections.overall.text || '';
+        var parts = [];
+        // Extract overall risk score
+        var scoreMatch = overall.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
+        if (scoreMatch) {
+            var s = parseInt(scoreMatch[1]);
+            var color = s > 65 ? 'var(--red-text)' : s > 35 ? 'var(--yellow-text)' : 'var(--green-text)';
+            parts.push('<span class="verdict-summary-score" style="color:' + color + '">' + s + '/100</span>');
+        }
+        // Extract first substantive sentence from overall assessment (skip headings/blanks)
+        var lines = overall.split('\n');
+        var firstLine = '';
+        for (var i = 0; i < lines.length; i++) {
+            var l = lines[i].trim();
+            if (!l || l.startsWith('#') || l.startsWith('---') || /^Overall Risk/i.test(l) || /^Power Imbalance/i.test(l) || /^\*\*Overall/i.test(l) || /^\d+\/100/.test(l)) continue;
+            // Strip markdown bold/italic
+            firstLine = l.replace(/\*\*/g, '').replace(/\*/g, '');
+            break;
+        }
+        if (firstLine) {
+            // Truncate to ~120 chars at word boundary
+            if (firstLine.length > 120) {
+                firstLine = firstLine.substring(0, 120).replace(/\s+\S*$/, '') + '…';
+            }
+            parts.push(firstLine);
+        }
+        if (parts.length === 0) return;
+        el.innerHTML = parts.join(' — ');
+        el.classList.add('visible');
     }
     function resetVerdictCol() {
         hideVerdictCol();
@@ -4468,8 +4530,11 @@
         verdictCol.classList.remove('standby', 'thinking', 'writing', 'ready', 'collapsed');
         verdictTitle.textContent = 'Expert report';
         verdictExpandBtn.textContent = '0 of 4 ready';
+        verdictExpandBtn.classList.remove('ready');
         verdictExpandBtn.style.opacity = '0.4';
         verdictExpandBtn.style.pointerEvents = 'none';
+        var summaryEl = $('verdictSummary');
+        if (summaryEl) { summaryEl.innerHTML = ''; summaryEl.classList.remove('visible'); }
         _verdictAutoScroll = true;
         if (_verdictRenderTimer) { clearTimeout(_verdictRenderTimer); _verdictRenderTimer = null; }
         // Reset accumulators and section UI — lock all sections
