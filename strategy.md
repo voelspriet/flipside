@@ -500,3 +500,203 @@
 **What was already safe**: Flip card content — all clause fields (`title`, `reassurance`, `reader`, `figure`, `bottomLine`, etc.) go through `escapeHtml()` before `innerHTML`. Document preview text uses `escapeHtml(documentFullText)`.
 
 **Key insight**: `escapeHtml()` and `DOMPurify` solve different problems. `escapeHtml()` is for rendering plain text safely (flip cards, document preview). DOMPurify is for rendering *intended* HTML safely (markdown output where you want `<strong>` and `<h2>` to work but not `<script>`). Use both, in the right places.
+
+---
+
+## Decision: The Flip IS the Model Transition — Split-Model Card Architecture
+
+**Date**: 2025-02-13
+**Status**: Architecture decided — implementation next
+
+### The Insight
+
+FlipSide's flip card is a transition from a naive reader to an expert analyst. That maps perfectly to a model split:
+
+| | Card Front | Card Back |
+|---|---|---|
+| **Voice** | Gullible reader | Expert analyst |
+| **Tone** | Trusting, breezy | Adversarial, precise |
+| **Understanding** | Shallow | Deep |
+| **Model** | **Haiku 4.5** | **Opus 4.6** |
+
+Haiku's natural limitation — it doesn't deeply understand legal implications — is a *feature* for the front. We've been fighting to make Haiku dumber (FORBIDDEN word lists, BAD examples). Turns out Haiku is naturally close to the gullible character. It pattern-matches, shrugs, moves on. That IS the reader.
+
+Opus with extended thinking is overkill for "I'd just pay on time, so it won't matter" — but it's perfect for "This $75/day late fee cascades into Section 4's acceleration clause, turning a single missed payment into a $4,100 debt."
+
+**The flip becomes the moment where the AI itself gets smarter.** Not just the content — the actual model behind it changes. That's a product story.
+
+### Architecture: 3 Threads
+
+```
+t=0    Haiku 4.5 ──── card FRONTS ──── 15-25s  → user sees cards instantly
+t=0    Opus 4.6-B ─── deep analysis ────────── 50-70s  → full verdict
+t=20   Opus 4.6-A ─── card BACKS ────────────── +40s = ~60s  → backs fill in
+```
+
+- Haiku and Opus-B (deep analysis/cross-clause) start at t=0 (no dependency)
+- Opus-A (card backs) starts when Haiku finishes — receives Haiku's clause list so matching is guaranteed 1:1
+- Opus-A's 20-30s thinking time overlaps with Haiku's generation → wall time stays ~60s
+
+### The Split: What Each Model Produces
+
+**Haiku (card front — fast, gullible, trusting):**
+- `[REASSURANCE]` — warm positive headline
+- `> "quote"` — exact text from clause
+- `[READER]` — gullible first-person voice (Haiku's sweet spot)
+- `[HONEY]` — honey/sting pair (optional)
+- `[TEASER]` — cryptic tension line
+- Section reference
+- Preliminary risk color (GREEN/YELLOW/RED) — just for front header styling
+
+**Opus (card back — slow, adversarial, precise):**
+- Risk level + precise score + trick classification (with extended thinking)
+- Confidence + reasoning
+- `**Bottom line**` — one sentence expert verdict
+- `**What the small print says**` — neutral restatement
+- `**What you should read**` — the gut punch (Opus does this best)
+- `[FIGURE]` — worst-case number (Opus does the math humans won't)
+- `[EXAMPLE]` — concrete scenario with the document's actual numbers
+
+### Flip UX When Opus Isn't Ready Yet
+
+User flips at 20s. Haiku fronts done. Opus backs still thinking.
+
+**What they see**: Pulsing indicator — "Opus 4.6 is analyzing this clause..." with thinking animation. Then back content fades in when ready. This *enhances* the suspense — the user flips expecting truth, gets "the expert is still examining it." When it appears, it lands harder.
+
+### The Matching Problem (Solved)
+
+Haiku identifies N clauses with section references and quotes. When Haiku finishes, Opus-A receives the same document PLUS Haiku's numbered clause list: "Analyze these specific clauses. For each, produce the expert back-of-card analysis." This guarantees 1:1 matching — no fuzzy alignment needed.
+
+### Quality Jump (Haiku vs Opus on Back-of-Card)
+
+| Field | Haiku (current) | Opus (proposed) |
+|---|---|---|
+| `[FIGURE]` | "$75 late fee" | "$75/day × 30 = $2,250 from one missed rent" |
+| `[EXAMPLE]` | Generic scenario | Step-by-step with the document's actual numbers |
+| Risk score | Pattern-matched | Reasoned with extended thinking |
+| Trick classification | Sometimes wrong | Correct with reasoning trail |
+| Bottom line | Surface-level | Cross-references other clauses |
+
+### Why This Wins
+
+1. **Product-architecture alignment**: The model split IS the product metaphor. Naive → expert = Haiku → Opus = front → back.
+2. **No speed penalty**: Wall time stays ~60s. Cards appear fast (Haiku at 10s). Backs fill in progressively.
+3. **Solves the gullible reader problem**: Haiku naturally doesn't understand legal concepts — exactly what we want for the trusting reader voice.
+4. **Opus quality where it matters**: The back of the card is the reveal, the "aha" moment. That's where precision matters most.
+5. **The flip suspense deepens**: "Opus 4.6 is analyzing..." loading state on the back creates genuine anticipation.
+
+### Cost Decision: Unrestricted
+
+No cost constraints for the hackathon. This simplifies the architecture:
+- Opus-A gets generous tokens per clause (no compression needed)
+- Opus-B stays as a single call (no findings/assessment split — simpler, more coherent)
+- No Haiku fallback needed on card backs — if Opus isn't ready, show the loading state
+
+### The Full Report Gets Better Too
+
+With Opus-A handling per-clause expert analysis on card backs, the Full Verdict (Opus-B) no longer repeats per-clause content. It focuses ONLY on what cards can't show:
+- Cross-clause interactions ("read separately vs read together")
+- Document Archaeology (boilerplate vs custom)
+- Power Asymmetry
+- Who Drafted This (drafter profile)
+- Overall Assessment + risk score
+- How Opus Analyzed This
+
+Result: the report is **shorter, faster, and more focused**. No redundancy with card backs. Each piece of the analysis lives in exactly one place.
+
+---
+
+## Decision: 5-Thread Architecture — Haiku Full Cards + 4x Opus Expert Report
+
+**Date**: 2026-02-13
+**Status**: Implemented
+**Supersedes**: "The Flip IS the Model Transition" (3-thread plan above)
+
+### The Problem
+
+The 4-thread architecture (Haiku fronts + Opus-A backs + Opus-B findings + Opus-C assessment) had a fatal flaw: Opus-A card backs never visually rendered on flip cards despite 3+ hours of debugging. The back HTML was generated correctly, the matching worked, but injecting new content into a `preserve-3d` CSS container after 60-70 seconds consistently failed — replaceWith, innerHTML, cloneNode all produced invisible or corrupt results.
+
+Root cause: DOM mutation inside a 3D-transformed element during or after CSS animation is unreliable across browsers. The back content arrived too late, into a container that had already been painted, transformed, and cached by the compositor.
+
+### The Architectural Pivot
+
+Instead of fighting the DOM, make Haiku do both card sides. The flip becomes instant because both front and back exist from the moment the card is created. Opus moves entirely out of the cards and into a live expert report in the right column.
+
+| # | Thread | Model | SSE Channel | Purpose | Timing |
+|---|--------|-------|-------------|---------|--------|
+| 1 | quick | Haiku 4.5 | `text` | Full flip cards (front + back) | ~12-15s |
+| 2 | interactions | Opus 4.6 | `interactions_text` | Cross-clause compound risks | ~20-40s |
+| 3 | asymmetry | Opus 4.6 | `asymmetry_text` | Power ratio + fair standard | ~15-30s |
+| 4 | archaeology | Opus 4.6 | `archaeology_text` | Boilerplate vs custom + drafter profile | ~15-25s |
+| 5 | overall | Opus 4.6 | `overall_text` | Overall assessment + quality check | ~20-35s |
+
+All 5 threads start at t=0. No dependencies. No buffers. No gating. No back-matching.
+
+### What Changed
+
+**Haiku prompt expanded**: Now produces REVEAL, Score, Trick, Confidence, Bottom line, Figure, Example — all the fields that were previously Opus-A's job. Token budget doubled: `max(16000, min(32000, len(text)//2))`.
+
+**4 focused Opus prompts**: Replaced the monolithic findings + assessment prompts. Each thread has a single focused job. Shorter prompts → faster responses → more parallel throughput.
+
+**Event loop drastically simplified**: `_run_parallel_5thread()` replaced `_run_parallel_4thread()`. No `_process_findings_event()`, no `_process_assessment_event()`, no buffer stitching, no event ordering logic. Each Opus source dispatches `{source}_text` and `{source}_done` independently.
+
+**~300 lines of dead frontend code removed**: Back-matching system (`tryExtractNewBacks`, `finalBacksSweep`, `matchAndUpdateBack`, `applyBackToCard`), thinking panel, related SSE handlers, back data maps.
+
+**New verdict column**: 4 collapsible sections with pulsing dots → auto-expand when each Opus thread completes. Visible from t=0 with "Opus Foursix, our expert, is reading the small print" status.
+
+### Why This Is Better
+
+1. **Cards always work**: Both sides built from Haiku output in a single DOM creation. No late injection, no matching, no skeleton loading state.
+2. **Instant flip**: No "Opus is analyzing..." wait. The back is already there. User can flip any card as soon as it appears (~5s for first card).
+3. **Simpler architecture**: 5 independent streams, no dependencies, no buffers. Half the event loop code.
+4. **Better Opus utilization**: 4 focused threads complete faster than 2 monolithic ones. Each thread's output appears as soon as it's ready.
+5. **Progressive expert insight**: The right column fills in section by section, giving the user expert analysis to read while browsing cards.
+
+### The Tradeoff
+
+Haiku's card backs are less sophisticated than Opus's would have been. Haiku pattern-matches risk scores; Opus reasons about them with extended thinking. But the card back was never meant to be the final word — the deep analysis is. And now the deep analysis actually works, delivered in 4 parallel streams instead of one monolithic block.
+
+### What "Flip IS Model Transition" Means Now
+
+The flip is still a model transition — but the transition is spatial, not temporal. Card column = Haiku (fast, surface-level, both sides). Verdict column = Opus (slow, deep, expert). The user flips cards to explore individual clauses, then reads the verdict column for the expert synthesis. The model transition happens when attention moves from left to right, not when the card rotates.
+
+**Key insight**: When a DOM-level fix takes 3+ hours and still doesn't work, the problem is architectural. Moving Opus out of the cards and into its own column solved both the rendering bug and the UX — the expert analysis now has room to breathe instead of being squeezed onto the back of a playing card.
+
+---
+
+## Decision: Haiku Was Already Great at Cards — Opus 4.6 Shines Elsewhere
+
+**Date**: 2026-02-13
+**Context**: We spent hours trying to get Opus 4.6 onto flip card backs, assuming its extended thinking would produce dramatically better per-clause analysis. When the DOM rendering finally forced us to let Haiku do both card sides, we discovered something surprising: Haiku 4.5 was already doing a great job.
+
+### The Assumption That Was Wrong
+
+We assumed the card back — the big reveal — needed Opus 4.6's extended thinking to be convincing. That Haiku would produce shallow scores, miss tricks, write generic bottom lines. That the "aha" moment required the most powerful model.
+
+**What actually happened**: Haiku correctly identifies risk patterns, classifies tricks from the 18-category taxonomy, writes punchy bottom lines, and produces concrete figures with the document's actual numbers. The gullible reader voice on the front and the direct reveal on the back work as a pair — and Haiku handles both voices naturally. The constrained output format (tagged fields, trick taxonomy, score range) guides Haiku to produce structured, consistent results. When you give a fast model a clear format and a focused task, it performs.
+
+### Where Opus 4.6 Actually Shines
+
+Opus 4.6's extended thinking isn't wasted — it's redirected to the work that genuinely requires deep reasoning. The things Haiku can't do:
+
+1. **Cross-clause compound risks** (`interactions` thread) — "Section 3's liability cap interacts with Section 7's indemnification to create unlimited personal exposure." This requires holding multiple clauses in working memory simultaneously and reasoning about their interaction. Haiku analyzes clauses one at a time; Opus connects them. The villain voice ("YOUR MOVE") lands harder when the compound risk is real.
+
+2. **Power asymmetry analysis** (`asymmetry` thread) — Quantifying how many obligations fall on each party and computing a power ratio. Opus counts, categorizes, and compares: "You have 23 obligations. They have 4. The ratio is 5.75:1." Then it constructs a fair-standard comparison: what would a balanced version of this clause look like? This requires legal reasoning and counterfactual generation that Haiku doesn't attempt.
+
+3. **Document archaeology** (`archaeology` thread) — Distinguishing boilerplate (copied from templates, generic) from custom-drafted clauses (specific to this deal, recently modified). Opus reasons about writing style, specificity, and internal consistency to build a drafter profile: "This was drafted by a large property management company using a template last updated circa 2019, with custom additions to Sections 4 and 11." Haiku would guess; Opus deduces.
+
+4. **Overall assessment with self-correction** (`overall` thread) — The meta-analysis: an overall risk score with reasoning, a methodology disclosure ("How Opus 4.6 Analyzed This"), and a quality check where Opus reviews its own analysis for false positives and blind spots. Self-correction — the model critiquing its own output — is a capability that requires the depth of extended thinking. Haiku doesn't second-guess itself.
+
+5. **Multi-turn follow-up** (`/ask/<doc_id>` endpoint) — After the analysis, users ask questions: "Can I negotiate Section 7?" or "What's the worst realistic scenario?" Opus traces through all clauses with adaptive thinking to give contextual, document-specific answers. The follow-up conversation requires maintaining a mental model of the entire document and all prior analysis.
+
+6. **Vision / multimodal analysis** — When PDF pages are rendered as images, Opus detects visual tricks that text extraction misses: fine print in 6pt font when the coverage section uses 11pt, liability waivers buried in footers, important exclusions placed where the eye naturally skips. Opus sees the document the way the drafter designed it to be seen.
+
+7. **Confidence calibration with reasoning** — Each Opus section includes confidence levels backed by explicit reasoning chains from extended thinking. Not just "HIGH confidence" but the trace of why: which clauses were compared, what precedent was considered, where ambiguity remains.
+
+### The Lesson
+
+The instinct was: put the best model on the most visible feature (card backs). The reality: put each model where its capabilities matter most. Haiku excels at fast, structured, per-clause analysis with a constrained output format. Opus excels at cross-clause reasoning, self-correction, power analysis, and document-level synthesis.
+
+**The card flip is Haiku's moment. The expert verdict is Opus's moment.** Each model gets a stage that showcases what it does best.
+
+**Key insight for Opus 4.6 exploration**: The most creative use of a frontier model isn't putting it everywhere — it's identifying the specific capabilities that only it can deliver (compound reasoning, self-correction, archaeological deduction, power quantification, visual analysis, multi-turn memory) and building features around those capabilities. Seven distinct Opus 4.6 capabilities, each visible in the product, each doing work that a smaller model genuinely cannot.

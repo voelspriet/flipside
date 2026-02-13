@@ -16,6 +16,15 @@
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
         .hidden { display: none !important; }
 
+        /* ── Screen transition: upload exit ── */
+        @keyframes screenFadeOut {
+            to { opacity: 0; transform: translateY(-24px) scale(0.97); }
+        }
+        #upload-screen.exiting {
+            animation: screenFadeOut 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            pointer-events: none;
+        }
+
         :root {
             --bg-cream: #f7f5f0;
             --bg-warm: #f0ede6;
@@ -211,13 +220,13 @@
 
         .file-selected {
             display: flex; align-items: center; justify-content: center;
-            gap: 0.6rem; padding: 0.4rem 0;
+            gap: 0.6rem; padding: 0.4rem 0; max-width: 100%; overflow: hidden;
         }
-        .file-selected .file-name { font-weight: 600; font-size: 0.92rem; color: var(--text-primary); }
-        .file-selected .file-size { font-size: 0.78rem; color: var(--text-muted); }
+        .file-selected .file-name { font-weight: 600; font-size: 0.92rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex-shrink: 1; }
+        .file-selected .file-size { font-size: 0.78rem; color: var(--text-muted); flex-shrink: 0; }
         .file-remove {
             color: var(--text-muted); font-size: 0.78rem; text-decoration: none;
-            margin-left: 0.5rem; cursor: pointer; transition: color var(--transition);
+            margin-left: 0.5rem; cursor: pointer; transition: color var(--transition); flex-shrink: 0;
         }
         .file-remove:hover { color: var(--red); }
 
@@ -295,9 +304,9 @@
         .demo-tile-icon { width: 26px; height: 26px; margin-bottom: 0.5rem; color: var(--text-muted); transition: color 0.25s ease; }
         .demo-tile-icon svg { width: 100%; height: 100%; }
         .demo-tile-label {
-            font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
-            font-weight: 500; color: var(--text-secondary); margin-bottom: 0.15rem;
-            letter-spacing: 0.02em; transition: color 0.25s ease;
+            font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+            font-weight: 600; color: var(--text-primary); margin-bottom: 0.15rem;
+            line-height: 1.2; transition: color 0.25s ease;
         }
         .demo-tile-desc {
             font-size: 0.6rem; color: var(--text-muted); line-height: 1.3;
@@ -360,20 +369,57 @@
             border-color: var(--text-secondary); color: var(--text-primary);
             background: var(--bg-warm);
         }
+        .model-badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+            color: var(--text-muted); letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+        .model-badge::before {
+            content: ''; width: 5px; height: 5px; border-radius: 50%;
+            background: var(--accent); flex-shrink: 0;
+        }
+        /* ── Capability ticker ── */
+        .capability-ticker {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.55rem;
+            color: var(--text-dim); letter-spacing: 0.03em;
+            white-space: nowrap; overflow: hidden;
+            transition: opacity 0.4s ease;
+        }
+        .capability-ticker .cap-label {
+            display: inline-block;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--accent); font-weight: 600; margin-right: 0.3rem;
+        }
+        .capability-ticker.fade-swap {
+            opacity: 0;
+        }
+        .capability-stats {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.55rem;
+            color: var(--text-muted); letter-spacing: 0.03em;
+        }
+        .capability-stats .stat-num {
+            color: var(--accent); font-weight: 600;
+        }
 
         /* ── Analysis three-column layout ────────────── */
         .analysis-layout {
             display: flex;
-            gap: 1.5rem;
             padding: 0 1.5rem;
             align-items: flex-start;
+            justify-content: center;
         }
         .analysis-sidebar {
-            width: 240px;
+            width: 0; opacity: 0; overflow: hidden;
             flex-shrink: 0;
             position: sticky;
             top: 70px;
             padding-top: 0.5rem;
+            margin-right: 0;
+            transition: width 0.65s var(--ease-out-expo), opacity 0.5s ease, margin-right 0.65s var(--ease-out-expo);
+        }
+        .analysis-layout.sidebar-visible .analysis-sidebar {
+            width: 240px; opacity: 1; overflow: visible; margin-right: 1.5rem;
         }
 
         /* ── Sidebar profile row: thumbnail + pills ─── */
@@ -412,142 +458,193 @@
             padding: 0 0 4rem;
         }
 
-        /* ── Insight column (right — "What you should read") */
-        .insight-column {
-            width: 220px;
+        /* ── Verdict column (right side — live report progress) ── */
+        .verdict-col {
+            width: 0; opacity: 0; overflow: hidden;
             flex-shrink: 0;
             position: sticky;
             top: 70px;
-            padding-top: 0.5rem;
-            transition: opacity 0.5s var(--ease-out-expo);
-        }
-        /* Dim side columns when card is flipped — focus on the reveal */
-        .analysis-sidebar, .insight-column {
-            transition: opacity 0.5s var(--ease-out-expo);
-        }
-        .layout-flipped .analysis-sidebar {
-            opacity: 0.35;
-        }
-        .layout-flipped .analysis-sidebar:hover {
-            opacity: 1;
-        }
-        .insight-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.15em;
-            color: var(--text-dim); margin-bottom: 0.75rem;
-        }
-        .insight-card {
+            margin-left: 0;
+            transition: width 0.65s var(--ease-out-expo), opacity 0.5s ease, margin-left 0.65s var(--ease-out-expo);
+            max-height: calc(100vh - 90px);
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border: 1px solid transparent;
             border-radius: var(--radius);
-            overflow: hidden;
+        }
+        .verdict-col.visible {
+            width: 300px; opacity: 1; overflow: hidden;
+            margin-left: 1.5rem;
+            border-color: var(--border);
             box-shadow: var(--shadow-md);
-            transform: translateY(-20px);
-            opacity: 0;
-            transition: transform 0.5s var(--ease-out-expo), opacity 0.4s var(--ease-out-expo);
         }
-        .insight-card.visible {
-            transform: translateY(0);
-            opacity: 1;
+        .verdict-col.collapsed .verdict-body {
+            height: 0; padding: 0; overflow: hidden; flex: 0;
+            transition: height 0.4s var(--ease-out-expo), padding 0.4s var(--ease-out-expo);
         }
-        .insight-card-inner {
-            padding: 1rem 1rem;
-            font-size: 0.82rem; line-height: 1.6;
-            color: var(--text-primary); font-weight: 500;
+        .verdict-col.collapsed .verdict-header {
+            border-bottom: none;
         }
-        .insight-card-red {
-            background: linear-gradient(135deg, rgba(196,75,40,0.06), rgba(196,75,40,0.12));
-            border: 1px solid var(--red-border);
-            border-left: 4px solid var(--red);
+        .verdict-header {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.55rem 0.85rem;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
         }
-        .insight-card-yellow {
-            background: linear-gradient(135deg, rgba(196,155,40,0.06), rgba(196,155,40,0.12));
-            border: 1px solid var(--yellow-border);
-            border-left: 4px solid var(--yellow);
+        .verdict-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+            transition: background 0.4s ease;
         }
-        .insight-card-green {
-            background: linear-gradient(135deg, rgba(45,138,78,0.04), rgba(45,138,78,0.08));
-            border: 1px solid var(--green-border);
-            border-left: 4px solid var(--green);
+        .verdict-col.standby .verdict-dot {
+            background: #bbb;
+            animation: verdictPulse 3s ease-in-out infinite;
         }
-        .insight-card .insight-en {
-            font-size: 0.78rem; color: var(--text-muted);
-            font-style: italic; margin-top: 0.6rem;
-            padding-top: 0.6rem; border-top: 1px dashed var(--border-light);
+        .verdict-col.thinking .verdict-dot {
+            background: #d4a036;
+            animation: verdictPulse 2s ease-in-out infinite;
         }
-        .insight-card .insight-en::before {
-            content: 'EN'; display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.5rem; font-weight: 700; font-style: normal;
-            background: var(--bg-surface); border: 1px solid var(--border);
-            border-radius: 3px; padding: 0.1rem 0.3rem;
-            margin-right: 0.4rem; vertical-align: middle;
+        .verdict-col.writing .verdict-dot {
+            background: #4caf50;
+            animation: verdictPulse 1.5s ease-in-out infinite;
         }
-        .insight-context {
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-light);
+        .verdict-col.ready .verdict-dot {
+            background: #4caf50; animation: none;
         }
-        .insight-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: var(--text-secondary);
-            margin-bottom: 0.4rem;
+        @keyframes verdictPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
         }
-        .insight-quote {
-            font-size: 0.76rem;
-            line-height: 1.55;
-            color: var(--text-muted);
-            font-style: italic;
-        }
-        .insight-find {
-            display: inline-block;
-            margin-top: 0.4rem;
-            font-size: 0.65rem;
-        }
-        .insight-should-read {
-            margin-bottom: 0.5rem;
-        }
-        .insight-example {
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
-            border-top: 1px dashed var(--border-light);
-        }
-        .insight-example-label {
-            display: block;
+        .verdict-title {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.6rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.12em;
-            color: var(--text-dim);
-            margin-bottom: 0.5rem;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); flex: 1;
         }
-        .insight-figure {
-            font-size: 1.35rem;
-            font-weight: 700;
-            line-height: 1.3;
-            margin-bottom: 0.6rem;
-            letter-spacing: -0.01em;
+        .verdict-expand-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; color: var(--accent);
+            background: none; border: 1px solid var(--accent);
+            border-radius: var(--radius-sm);
+            padding: 0.2rem 0.5rem; cursor: pointer;
+            transition: all 0.2s ease; white-space: nowrap;
         }
-        .insight-figure-red { color: var(--red); }
-        .insight-figure-yellow { color: var(--yellow); }
-        .insight-figure-green { color: var(--green); }
-        .insight-narrative {
-            font-size: 0.82rem;
-            line-height: 1.6;
+        .verdict-expand-btn:hover {
+            background: var(--accent); color: #fff;
+        }
+        .verdict-body {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            padding: 0.75rem; min-height: 0;
+        }
+        /* Standby state: waiting for deep analysis */
+        .verdict-col.standby .verdict-body {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; line-height: 1.5;
+            color: #bbb;
+        }
+        /* Thinking state: monospace, muted */
+        .verdict-col.thinking .verdict-body {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem; line-height: 1.6;
+            color: #9a938b; white-space: pre-wrap; word-break: break-word;
+        }
+        /* Writing/ready state: body font, rendered markdown */
+        .verdict-col.writing .verdict-body,
+        .verdict-col.ready .verdict-body {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem; line-height: 1.55;
+            color: var(--text-body);
+        }
+        /* Compact markdown inside verdict column */
+        .verdict-body h2 { font-size: 0.88rem; margin: 1rem 0 0.4rem; font-weight: 700; }
+        .verdict-body h3 { font-size: 0.82rem; margin: 0.75rem 0 0.3rem; font-weight: 600; }
+        .verdict-body p { margin: 0.3rem 0; }
+        .verdict-body ul, .verdict-body ol { padding-left: 1.2rem; margin: 0.3rem 0; }
+        .verdict-body li { margin: 0.15rem 0; }
+        .verdict-body blockquote {
+            border-left: 2px solid var(--border); margin: 0.4rem 0;
+            padding: 0.2rem 0.6rem; color: var(--text-secondary); font-size: 0.75rem;
+        }
+        /* Streaming cursor in verdict */
+        .verdict-cursor {
+            display: inline-block; width: 6px; height: 12px;
+            background: var(--accent); margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink 0.8s step-end infinite;
+        }
+        /* Opus status line */
+        .verdict-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; color: var(--text-muted);
+            padding: 0.4rem 0; margin-bottom: 0.3rem;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .verdict-status.hidden { display: none; }
+        /* Opus collapsible sections */
+        .opus-section { border-bottom: 1px solid var(--border); }
+        .opus-section:last-child { border-bottom: none; }
+        .opus-section-header {
+            display: flex; align-items: center; gap: 0.4rem;
+            padding: 0.45rem 0; cursor: pointer;
+            user-select: none;
+        }
+        .opus-section-header:hover { opacity: 0.8; }
+        .opus-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            flex-shrink: 0; background: #bbb;
+            transition: background 0.4s ease;
+        }
+        .opus-dot.pulsing {
+            background: #d4a036;
+            animation: verdictPulse 2s ease-in-out infinite;
+        }
+        .opus-dot.done {
+            background: #4caf50; animation: none;
+        }
+        .opus-section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.08em;
             color: var(--text-secondary);
         }
-        .insight-figure-en {
-            font-weight: 600;
-            margin-bottom: 0.3rem;
+        .opus-section-body {
+            overflow: hidden;
+            transition: max-height 0.4s var(--ease-out-expo), padding 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.76rem; line-height: 1.5;
+            color: var(--text-body);
         }
-        .insight-num {
-            font-weight: 700;
-            color: var(--text-primary);
+        .opus-section-body.collapsed {
+            max-height: 0; padding: 0;
         }
-        .insight-card-red .insight-num { color: var(--red); }
-        .insight-card-yellow .insight-num { color: var(--yellow); }
-        .insight-card-green .insight-num { color: var(--green); }
+        .opus-section-body:not(.collapsed) {
+            max-height: 2000px;
+            padding: 0 0 0.5rem 0;
+        }
+        .opus-section-body h2 { font-size: 0.82rem; margin: 0.6rem 0 0.3rem; font-weight: 700; }
+        .opus-section-body h3 { font-size: 0.78rem; margin: 0.5rem 0 0.2rem; font-weight: 600; }
+        .opus-section-body p { margin: 0.25rem 0; }
+        .opus-section-body ul, .opus-section-body ol { padding-left: 1.1rem; margin: 0.2rem 0; }
+        .opus-section-body li { margin: 0.1rem 0; }
+        .opus-section-body blockquote {
+            border-left: 2px solid var(--border); margin: 0.3rem 0;
+            padding: 0.15rem 0.5rem; color: var(--text-secondary); font-size: 0.72rem;
+        }
+
+        /* Dim sidebar + verdict when card is flipped — focus on the reveal */
+        .layout-flipped .analysis-sidebar,
+        .layout-flipped .verdict-col {
+            opacity: 0.35;
+            transition: opacity 0.5s var(--ease-out-expo);
+        }
+        .layout-flipped .analysis-sidebar:hover,
+        .layout-flipped .verdict-col:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 900px) {
+            .verdict-col { display: none !important; }
+        }
 
         /* ── Document thumbnail (upper-left of profile) */
         .doc-thumbnail {
@@ -589,13 +686,11 @@
 
         @media (max-width: 1200px) {
             .analysis-sidebar { width: 200px; }
-            .insight-column { width: 190px; }
         }
         @media (max-width: 900px) {
-            .analysis-layout { flex-direction: column; padding: 0 1rem; gap: 1rem; }
-            .analysis-sidebar { width: 100%; position: static; }
-            .insight-column { width: 100%; position: static; order: 2; }
-            .content-col { order: 1; }
+            .analysis-layout { flex-direction: column; padding: 0 1rem; gap: 1rem; justify-content: flex-start; }
+            .analysis-sidebar,
+            .analysis-layout.sidebar-visible .analysis-sidebar { width: 100%; position: static; opacity: 1; overflow: visible; margin-right: 0; }
         }
         .editorial-loading-label {
             font-family: 'JetBrains Mono', monospace;
@@ -672,6 +767,18 @@
         }
         .pulsing-dots span:nth-child(2) { animation-delay: 0.2s; }
         .pulsing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        .verdict-streaming {
+            text-align: center;
+            padding: 2rem 1rem 2.5rem;
+            color: #9a938b;
+        }
+        .verdict-streaming-label {
+            font-size: 0.82rem;
+            margin-top: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.3px;
+        }
         .pulsing-dot {
             display: inline-block; width: 6px; height: 6px;
             border-radius: 50%; background: var(--accent);
@@ -708,7 +815,7 @@
         }
 
         /* ── Card viewport ──────────────────────────── */
-        .card-viewport { margin: 1.5rem 0; }
+        .card-viewport { margin: 0.5rem 0 1.5rem; }
         .card-navigation {
             display: flex; align-items: center; justify-content: center;
             gap: 1.5rem; padding: 1.5rem 0;
@@ -746,52 +853,6 @@
             margin: 1.5rem 0;
         }
 
-        /* ── Thinking panel ──────────────────────────── */
-        .thinking-panel {
-            background: var(--bg-thinking); color: #a8a29e;
-            border-radius: var(--radius); margin: 1rem 0; overflow: hidden;
-            transition: max-height 0.5s ease, opacity 0.3s ease;
-            max-height: 2000px; opacity: 1;
-        }
-        .thinking-panel.collapsed { max-height: 40px; opacity: 0.7; }
-        .thinking-panel.collapsed .thinking-text { display: none; }
-        .thinking-panel.collapsed .thinking-header { border-bottom: none; }
-        .thinking-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0.65rem 1rem; cursor: pointer;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .thinking-label {
-            font-size: 0.78rem; font-weight: 600; color: #d4d0c8;
-            display: flex; align-items: center; gap: 0.5rem;
-        }
-        .thinking-label .phase-icon { font-size: 0.65rem; opacity: 0.6; }
-        .thinking-toggle {
-            font-size: 0.72rem; color: #78736a; background: none; border: none;
-            cursor: pointer; font-family: inherit; padding: 0.2rem 0.5rem;
-            border-radius: var(--radius-sm); transition: color var(--transition);
-        }
-        .thinking-toggle:hover { color: #a8a29e; }
-        .thinking-text {
-            padding: 0.8rem 1rem; font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem; line-height: 1.7; max-height: 400px;
-            overflow-y: auto; white-space: pre-wrap; word-break: break-word;
-        }
-        .thinking-text .kw {
-            color: var(--accent); font-weight: 500;
-            background: rgba(196, 75, 40, 0.12); padding: 0 2px; border-radius: 2px;
-        }
-        .thinking-text .cursor {
-            display: inline-block; width: 7px; height: 14px;
-            background: var(--accent); margin-left: 2px; vertical-align: text-bottom;
-            animation: blink 0.8s step-end infinite;
-        }
-        .thinking-text .phase-sep {
-            display: block; margin: 1rem 0 0.5rem;
-            padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.08);
-            color: #78736a; font-weight: 600; font-size: 0.72rem;
-            text-transform: uppercase; letter-spacing: 0.08em;
-        }
 
         /* ── Results area ────────────────────────────── */
         .results-area { margin-top: 1.5rem; }
@@ -958,6 +1019,15 @@
             perspective: 1200px;
             margin-bottom: 1.5rem;
         }
+        /* Use visibility instead of display:none for 3D cards — prevents WebKit compositing layer loss */
+        .flip-card.hidden {
+            display: block !important;
+            visibility: hidden;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden;
+        }
         .flip-card.woosh-in {
             animation: cardWoosh 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
@@ -1040,13 +1110,13 @@
             border-left: 3px solid var(--green);
         }
         .reader-voice-label {
-            display: block; font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem; font-weight: 500;
-            text-transform: uppercase; letter-spacing: 0.12em;
-            color: var(--green-text); margin-bottom: 0.4rem;
+            display: block; font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            color: var(--green-text); margin-bottom: 0.5rem;
         }
         .reader-voice-text {
-            font-size: 0.92rem; line-height: 1.6; color: var(--text-body); font-style: italic;
+            font-size: 0.95rem; line-height: 1.6; color: var(--text-body);
         }
         .reader-voice-en {
             font-size: 0.78rem; line-height: 1.5; color: var(--text-muted);
@@ -1069,7 +1139,7 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 2rem 2rem 0;
+            padding: 0;
             box-shadow: var(--shadow-md);
             transition: none;
         }
@@ -1114,48 +1184,36 @@
         }
         .skeleton-btn {
             display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-            width: calc(100% + 4rem); margin: 1rem -2rem 0; padding: 0.9rem 2rem;
+            padding: 0.9rem 2rem;
             background: var(--border-light);
-            border-radius: 0 0 var(--radius) var(--radius);
+            border-radius: var(--radius) var(--radius) 0 0;
             font-family: inherit; font-size: 0.85rem;
             font-weight: 600; color: var(--text-muted);
         }
+        .skeleton-pulses {
+            padding: 2rem 2rem 0;
+        }
 
-        /* Flip prompt — one-time message above first card */
-        .flip-prompt {
-            text-align: center;
-            padding: 1.5rem 1rem 1.8rem;
-            margin-bottom: 1rem;
-            opacity: 0;
-            transition: opacity 0.5s var(--ease-out-expo);
-        }
-        .flip-prompt.visible {
-            opacity: 1;
-        }
-        .flip-prompt.fade-out {
-            opacity: 0;
-            transition: opacity 0.6s ease;
-        }
-        .flip-prompt-text {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1.2;
-            color: var(--text-primary);
-        }
 
         /* Flip trigger — quiet invitation */
+        @keyframes flipHint {
+            0%, 100% { opacity: 0.85; }
+            50% { opacity: 1; }
+        }
         .flip-trigger {
             display: flex; align-items: center; justify-content: center; gap: 0.5rem;
             width: 100%; margin: 0; padding: 0.9rem 2rem;
             background: none; border: none; border-top: 1px solid var(--border-light);
-            cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-            font-weight: 500; color: var(--text-dim); letter-spacing: 0.04em;
-            transition: color 0.25s var(--ease-out-expo);
+            cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            font-weight: 600; color: var(--accent); letter-spacing: 0.04em;
+            transition: color 0.25s var(--ease-out-expo), background 0.25s var(--ease-out-expo);
         }
         .flip-trigger:hover {
-            color: var(--text-secondary);
+            color: var(--accent-hover);
+            background: var(--accent-light);
+        }
+        .flip-trigger.hint-pulse {
+            animation: flipHint 2s ease-in-out 3;
         }
         .flip-trigger-arrow {
             display: inline-block; font-size: 0.85rem;
@@ -1163,6 +1221,42 @@
         }
         .flip-trigger:hover .flip-trigger-arrow {
             transform: translateX(4px);
+        }
+
+        /* Card watermark — giant clause number */
+        .card-watermark {
+            position: absolute; top: -0.15rem; right: 1.2rem;
+            font-family: 'DM Sans', sans-serif; font-size: 7rem; font-weight: 800;
+            line-height: 1; color: var(--text-primary); opacity: 0.04;
+            pointer-events: none; z-index: 0; user-select: none;
+        }
+        .flip-card-front { position: relative; overflow: hidden; }
+
+        /* Card teaser — tension line above flip trigger */
+        .card-teaser {
+            padding: 0.5rem 2rem 0;
+            font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+            font-style: italic; color: var(--text-muted);
+            text-align: center; line-height: 1.4;
+        }
+
+        /* Chapter title — persistent editorial voice above cards */
+        .chapter-title {
+            text-align: center; padding: 0 1rem;
+            max-height: 0; opacity: 0; overflow: hidden;
+            transition: opacity 0.5s var(--ease-out-expo), max-height 0.4s var(--ease-out-expo), padding 0.4s ease;
+        }
+        .chapter-title.visible { opacity: 1; max-height: 4rem; padding: 0.75rem 1rem 1.2rem; }
+        .chapter-title-text {
+            font-family: 'DM Sans', sans-serif; font-size: 1.15rem;
+            font-weight: 500; font-style: italic;
+            color: var(--text-secondary); line-height: 1.3;
+        }
+        .chapter-title-counter {
+            display: block; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600; font-style: normal;
+            text-transform: uppercase; letter-spacing: 0.18em;
+            color: var(--text-dim); margin-bottom: 0.3rem;
         }
 
         /* Back content */
@@ -1222,6 +1316,19 @@
         .confidence-badge:hover .confidence-reason { max-width: 220px; padding-left: 0.3rem; }
 
         .back-body { padding: 1.25rem 1.75rem 0.5rem; }
+        .back-footer {
+            display: flex; align-items: center;
+            border-top: 1px solid var(--border-light);
+            position: relative;
+        }
+        .back-footer .flip-back-trigger { border-top: none; flex: 1; }
+        .trick-footnote {
+            position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase;
+            color: var(--text-muted); opacity: 0.55;
+            pointer-events: none;
+        }
 
         /* Drafter's voice — risk-colored */
         .drafter-voice {
@@ -1568,6 +1675,47 @@
             50% { opacity: 1; }
         }
 
+        /* ── How Opus Analyzed This — promoted callout ── */
+        .opus-method-callout {
+            background: var(--bg-thinking); color: #e8e4dc;
+            border-radius: var(--radius-md); padding: 1.2rem 1.5rem;
+            margin-bottom: 1.5rem; position: relative;
+            border-left: 3px solid var(--accent);
+        }
+        .opus-method-callout .callout-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--accent); margin-bottom: 0.6rem; display: flex;
+            align-items: center; gap: 0.4rem;
+        }
+        .opus-method-callout .callout-label::before {
+            content: ''; width: 6px; height: 6px; border-radius: 50%;
+            background: var(--accent);
+        }
+        .opus-method-callout p { font-size: 0.82rem; line-height: 1.55; margin: 0.4rem 0; color: #d4d0c8; }
+        .opus-method-callout ul, .opus-method-callout ol { font-size: 0.82rem; color: #d4d0c8; padding-left: 1.2rem; }
+        .opus-method-callout li { margin: 0.2rem 0; }
+        .opus-method-callout strong { color: #f0ece4; }
+
+        /* ── Counter-draft UI ── */
+        .counter-draft-section { margin-top: 2.5rem; }
+        .counter-draft-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.7rem 1.4rem; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem; font-weight: 500; letter-spacing: 0.03em;
+            color: var(--accent); background: transparent;
+            border: 1.5px solid var(--accent); border-radius: var(--radius-md);
+            cursor: pointer; transition: all 0.25s ease;
+        }
+        .counter-draft-btn:hover { background: var(--accent); color: #fff; }
+        .counter-draft-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .counter-draft-btn:disabled:hover { background: transparent; color: var(--accent); }
+        .counter-draft-content {
+            margin-top: 1.5rem; padding: 1.5rem;
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
         /* ── Follow-up question UI ── */
         .followup-section { margin-top: 2.5rem; }
         .followup-input-row { display: flex; gap: 0.5rem; align-items: flex-start; }
@@ -1634,9 +1782,9 @@
 
         @media (max-width: 600px) {
             /* Skeleton card */
-            .skeleton-card { padding: 1.5rem 1.25rem 0; }
+            .skeleton-pulses { padding: 1.5rem 1.25rem 0; }
             .skeleton-message { font-size: 0.78rem; }
-            .skeleton-btn { width: calc(100% + 2.5rem); margin: 1rem -1.25rem 0; font-size: 0.78rem; }
+            .skeleton-btn { font-size: 0.78rem; }
 
             /* Upload screen */
             .brand h1 { font-size: 2.4rem; }
@@ -1671,6 +1819,9 @@
             .reader-voice { padding: 0.75rem 0.9rem; }
             .reader-voice-text { font-size: 0.84rem; }
             .flip-trigger { padding: 0.75rem 1.25rem; font-size: 0.68rem; }
+            .card-watermark { font-size: 5rem; right: 0.8rem; }
+            .card-teaser { padding: 0.4rem 1.25rem 0; font-size: 0.78rem; }
+            .chapter-title-text { font-size: 1rem; }
 
             /* Card back */
             .risk-header { padding: 1rem 1.25rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
@@ -1707,12 +1858,6 @@
             /* Deep analysis header */
             .deep-analysis-header { padding: 0 0.5rem; }
 
-            /* Insight column on mobile */
-            .insight-column { width: 100%; margin-top: 0.5rem; }
-            .insight-card-inner { padding: 1rem; font-size: 0.84rem; }
-            .insight-title { font-size: 0.7rem; }
-            .insight-quote { font-size: 0.72rem; }
-            .insight-figure { font-size: 1.15rem; }
             .insight-narrative { font-size: 0.78rem; }
             .insight-example-label { font-size: 0.55rem; }
             .insight-label { font-size: 0.55rem; margin-bottom: 0.5rem; }
@@ -1727,6 +1872,96 @@
             .card-nav-btn { padding: 0.4rem 0.6rem; font-size: 0.7rem; }
             .clause-reassurance { font-size: 0.95rem; }
         }
+
+        /* ── Drafter's Playbook ────────────────────────────── */
+        .playbook-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+        .playbook-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.75rem;
+        }
+        .playbook-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+        .playbook-subtitle {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+        .playbook-bars { display: flex; flex-direction: column; gap: 0.35rem; }
+        .playbook-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.15rem 0;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+        .playbook-row:hover { background: var(--bg-warm); }
+        .playbook-trick-name {
+            font-size: 0.7rem;
+            min-width: 120px;
+            white-space: nowrap;
+        }
+        .playbook-bar-track {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .playbook-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: width 0.6s var(--ease-out-expo);
+        }
+        .playbook-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            min-width: 24px;
+            text-align: right;
+        }
+
+        /* ── Trick filter chips ────────────────────────────── */
+        .trick-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+        }
+        .chip-trick {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .chip-trick:hover { border-color: var(--accent); }
+        .chip-trick.active {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: white;
+        }
+        .chip-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -1740,6 +1975,7 @@
             <h1>FlipSide</h1>
             <div class="tagline">The dark side of small print.</div>
             <div class="tagline" style="font-style: normal; font-weight: 400; margin-top: 0.3rem; font-size: 0.88rem; color: var(--text-muted);">What did you agree to?</div>
+            <div style="margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.02em;">We show you what a trusting reader sees &mdash; then flip the card to reveal what an expert catches.</div>
         </div>
 
         <div class="upload-card fade-up fade-up-d1">
@@ -1812,18 +2048,18 @@
         <div class="demo-grid-section fade-up fade-up-d1" id="demoGridSection">
             <div class="demo-grid-title">Or try a sample</div>
             <div class="demo-grid">
-                <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"/><path d="M12 11l9-9"/><path d="M17 6l4-4"/><path d="M18.5 7.5L22 7l-3-3"/></svg></div><div class="demo-tile-label">Lease</div><div class="demo-tile-desc">Late fees that cascade</div></div>
-                <div class="demo-tile" data-sample="coupon"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg></div><div class="demo-tile-label">Coupon Booklet</div><div class="demo-tile-desc">Hidden conditions on offers</div></div>
-                <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="demo-tile-label">Insurance Policy</div><div class="demo-tile-desc">Exclusions eat coverage</div></div>
-                <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div><div class="demo-tile-label">Terms of Service</div><div class="demo-tile-desc">Your data, their profit</div></div>
-                <div class="demo-tile" data-sample="employment"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="demo-tile-label">Employment</div><div class="demo-tile-desc">Non-competes &amp; at-will</div></div>
-                <div class="demo-tile" data-sample="loan"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18V11"/><path d="M10 18V11"/><path d="M14 18V11"/><path d="M18 18V11"/><path d="M4 7h16l-8-5z"/></svg></div><div class="demo-tile-label">Loan Agreement</div><div class="demo-tile-desc">Penalties designed to stack</div></div>
-                <div class="demo-tile" data-sample="gym"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div class="demo-tile-label">Gym Membership</div><div class="demo-tile-desc">Cancellation by design</div></div>
-                <div class="demo-tile" data-sample="medical"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div><div class="demo-tile-label">Medical Consent</div><div class="demo-tile-desc">Liability in health forms</div></div>
-                <div class="demo-tile" data-sample="hoa"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="demo-tile-label">HOA Rules</div><div class="demo-tile-desc">Fines without limit</div></div>
-                <div class="demo-tile" data-sample="wedding"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4V2"/><path d="M17 4V2"/><path d="M5 4h14a2 2 0 0 1 2 2v4a7 7 0 0 1-14 0V6a2 2 0 0 1 2-2z"/></svg></div><div class="demo-tile-label">Wedding Venue</div><div class="demo-tile-desc">Love is blind, contracts aren't</div></div>
-                <div class="demo-tile" data-sample="escape"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg></div><div class="demo-tile-label">Escape Room</div><div class="demo-tile-desc">No escaping this waiver</div></div>
-                <div class="demo-tile" data-sample="pet"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="4.5" cy="9" r="2"/><circle cx="17.5" cy="9" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M12 18c-2.5 2-6 2-6-.5C6 15 9 14 12 17c3-3 6-2 6 .5 0 2.5-3.5 2.5-6 .5z"/></svg></div><div class="demo-tile-label">Pet Adoption</div><div class="demo-tile-desc">Lifetime strings attached</div></div>
+                <div class="demo-tile" data-sample="sweepstakes"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="demo-tile-label">Trip of a Lifetime</div><div class="demo-tile-desc">Sweepstakes official rules</div></div>
+                <div class="demo-tile" data-sample="coupon"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg></div><div class="demo-tile-label">Weekend Savings</div><div class="demo-tile-desc">Local store rewards program</div></div>
+                <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="demo-tile-label">Peace of Mind</div><div class="demo-tile-desc">Homeowner's coverage plan</div></div>
+                <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div><div class="demo-tile-label">Staying Connected</div><div class="demo-tile-desc">Social media platform terms</div></div>
+                <div class="demo-tile" data-sample="employment"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="demo-tile-label">First Day of Work</div><div class="demo-tile-desc">Tech company offer letter</div></div>
+                <div class="demo-tile" data-sample="loan"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18V11"/><path d="M10 18V11"/><path d="M14 18V11"/><path d="M18 18V11"/><path d="M4 7h16l-8-5z"/></svg></div><div class="demo-tile-label">Future Fund</div><div class="demo-tile-desc">Personal auto loan terms</div></div>
+                <div class="demo-tile" data-sample="gym"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div class="demo-tile-label">Morning Workout</div><div class="demo-tile-desc">24-month fitness membership</div></div>
+                <div class="demo-tile" data-sample="medical"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div><div class="demo-tile-label">Check-up Time</div><div class="demo-tile-desc">Outpatient procedure consent</div></div>
+                <div class="demo-tile" data-sample="hoa"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="demo-tile-label">Dream Home</div><div class="demo-tile-desc">Suburban community bylaws</div></div>
+                <div class="demo-tile" data-sample="wedding"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4V2"/><path d="M17 4V2"/><path d="M5 4h14a2 2 0 0 1 2 2v4a7 7 0 0 1-14 0V6a2 2 0 0 1 2-2z"/></svg></div><div class="demo-tile-label">Celebration!</div><div class="demo-tile-desc">Event venue rental agreement</div></div>
+                <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"/><path d="M12 11l9-9"/><path d="M17 6l4-4"/><path d="M18.5 7.5L22 7l-3-3"/></svg></div><div class="demo-tile-label">My New Place</div><div class="demo-tile-desc">12-month residential lease</div></div>
+                <div class="demo-tile" data-sample="pet"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="4.5" cy="9" r="2"/><circle cx="17.5" cy="9" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M12 18c-2.5 2-6 2-6-.5C6 15 9 14 12 17c3-3 6-2 6 .5 0 2.5-3.5 2.5-6 .5z"/></svg></div><div class="demo-tile-label">Furry Friend</div><div class="demo-tile-desc">Shelter adoption contract</div></div>
             </div>
         </div>
 
@@ -1850,10 +2086,13 @@
                 <span id="statusText">Starting analysis...</span>
                 <span class="elapsed-time" id="elapsedTime"></span>
             </div>
+            <span class="model-badge">Opus 4.6 + Haiku 4.5</span>
+            <span class="capability-ticker hidden" id="capabilityTicker"></span>
         </div>
         <div class="header-right">
             <button class="header-btn hidden" id="copyAllBtn">Copy all</button>
-            <button class="header-btn hidden" id="exportBtn">Export</button>
+            <button class="header-btn hidden" id="emailLawyerBtn">Email to Lawyer</button>
+            <button class="header-btn hidden" id="exportBtn">Save Report</button>
             <button class="header-btn" id="darkModeBtn" title="Toggle dark mode">&#9790;</button>
             <button class="header-btn" id="backBtn">Back</button>
         </div>
@@ -1881,33 +2120,24 @@
 
     <!-- Main content: cards + analysis -->
     <div class="content-col">
-        <!-- Thinking panel (starts collapsed as status line) -->
-        <div class="thinking-panel hidden" id="thinkingPanel">
-            <div class="thinking-header" id="thinkingHeader">
-                <div class="thinking-label" id="thinkingLabel">
-                    <span class="phase-icon">&#9679;</span>
-                    Quick Scan: Reasoning...
-                </div>
-                <button class="thinking-toggle" id="thinkingToggle">Show reasoning</button>
-                <button class="thinking-toggle hidden" id="reportToggle" style="margin-left:0.5rem">Show the full report</button>
-            </div>
-            <div class="thinking-text" id="thinkingText"></div>
-        </div>
 
         <!-- Card viewport: one card at a time -->
         <div class="card-viewport hidden" id="cardViewport">
-            <div class="flip-prompt hidden" id="flipPrompt">
-                <span class="flip-prompt-text">Everything looks standard&hellip; until you flip it.</span>
+            <div class="chapter-title" id="chapterTitle">
+                <span class="chapter-title-counter" id="chapterCounter"></span>
+                <span class="chapter-title-text" id="chapterText"></span>
             </div>
             <!-- Skeleton card: shown while waiting for first clause -->
             <div class="skeleton-card hidden" id="skeletonCard">
-                <div class="skeleton-pulse skeleton-reassurance"></div>
-                <div class="skeleton-pulse skeleton-section"></div>
-                <div class="skeleton-pulse skeleton-reader"></div>
-                <div class="skeleton-pulse skeleton-reader-short"></div>
-                <div class="skeleton-message" id="skeletonMessage"></div>
                 <div class="skeleton-btn">
                     <span>Reading for you...</span>
+                </div>
+                <div class="skeleton-pulses">
+                    <div class="skeleton-pulse skeleton-reassurance"></div>
+                    <div class="skeleton-pulse skeleton-section"></div>
+                    <div class="skeleton-pulse skeleton-reader"></div>
+                    <div class="skeleton-pulse skeleton-reader-short"></div>
+                    <div class="skeleton-message" id="skeletonMessage"></div>
                 </div>
             </div>
             <div id="flipCardContainer"></div>
@@ -1934,6 +2164,16 @@
                 <div id="summaryContainer"></div>
                 <div id="filterChips" class="filter-chips hidden"></div>
                 <div id="deepAnalysisContent"></div>
+                <div class="counter-draft-section hidden" id="counterDraftSection">
+                    <hr class="editorial-divider">
+                    <div class="section-label" style="margin-bottom:1rem">Go deeper</div>
+                    <div style="display:flex;gap:0.7rem;flex-wrap:wrap">
+                        <button class="counter-draft-btn" id="timelineBtn">Worst-Case Timeline</button>
+                        <button class="counter-draft-btn" id="counterDraftBtn">Generate Counter-Draft</button>
+                    </div>
+                    <div id="timelineContent"></div>
+                    <div id="counterDraftContent"></div>
+                </div>
                 <div class="followup-section hidden" id="followupSection">
                     <hr class="editorial-divider">
                     <div class="section-label" style="margin-bottom:1rem">Ask about this document</div>
@@ -1947,13 +2187,46 @@
         </div>
     </div>
 
-    <!-- Right column: "What you should read" (animated on flip) -->
-    <aside class="insight-column hidden" id="insightColumn">
-        <div class="insight-label" id="insightLabel">Clause text</div>
-        <div class="insight-card hidden" id="insightCard">
-            <div class="insight-card-inner" id="insightCardInner"></div>
+    <!-- Right column: live Opus expert report -->
+    <aside class="verdict-col" id="verdictCol">
+        <div class="verdict-header">
+            <span class="verdict-dot"></span>
+            <span class="verdict-title" id="verdictTitle">Expert report</span>
+            <button class="verdict-expand-btn" id="verdictExpandBtn">Read full verdict &rarr;</button>
+        </div>
+        <div class="verdict-body" id="verdictBody">
+            <div class="verdict-status" id="verdictStatus">Opus Foursix, our expert, is reading the small print</div>
+            <div class="opus-section" id="opusSection_interactions" data-source="interactions">
+                <div class="opus-section-header" data-toggle="interactions">
+                    <span class="opus-dot pulsing"></span>
+                    <span class="opus-section-title">Cross-Clause Interactions</span>
+                </div>
+                <div class="opus-section-body collapsed" id="opusBody_interactions"></div>
+            </div>
+            <div class="opus-section" id="opusSection_asymmetry" data-source="asymmetry">
+                <div class="opus-section-header" data-toggle="asymmetry">
+                    <span class="opus-dot pulsing"></span>
+                    <span class="opus-section-title">Power Asymmetry &amp; Fair Standard</span>
+                </div>
+                <div class="opus-section-body collapsed" id="opusBody_asymmetry"></div>
+            </div>
+            <div class="opus-section" id="opusSection_archaeology" data-source="archaeology">
+                <div class="opus-section-header" data-toggle="archaeology">
+                    <span class="opus-dot pulsing"></span>
+                    <span class="opus-section-title">Document Archaeology &amp; Drafter</span>
+                </div>
+                <div class="opus-section-body collapsed" id="opusBody_archaeology"></div>
+            </div>
+            <div class="opus-section" id="opusSection_overall" data-source="overall">
+                <div class="opus-section-header" data-toggle="overall">
+                    <span class="opus-dot pulsing"></span>
+                    <span class="opus-section-title">Overall Assessment</span>
+                </div>
+                <div class="opus-section-body collapsed" id="opusBody_overall"></div>
+            </div>
         </div>
     </aside>
+
     </div><!-- /analysis-layout -->
 </section>
 
@@ -2036,15 +2309,15 @@
     var renderTimeout = null;
     var thinkingPhaseCount = 0;
     var quickDone = false;
-    var opusReasoningDone = false;
     var analysisStartTime = 0;
     var elapsedInterval = null;
     var statusRotateInterval = null;
     var currentStatusIdx = 0;
     var isDoneRendering = false;
-    var deepTextComplete = false;  // Set when deep analysis text block finishes (text_done)
+    var deepTextComplete = false;  // Set when all Opus threads complete
     var animatedCardTitles = new Set();
     var activeFilters = new Set(); // 'red', 'yellow', 'green'
+    var activeTrickFilters = new Set(); // trick type names
     var toolResults = [];
     var documentFullText = '';
     var documentThumbnail = null;
@@ -2052,7 +2325,6 @@
     var userHasScrolled = false;
     var lastAutoScrollY = 0;
     var flipCardsBuilt = false;
-    var quickDoneContentLength = 0;
     var parsedClauseCount = 0;   // How many --- segments we've already parsed
     var currentCardIndex = 0;    // Which card is currently shown
     var hasFlippedOnce = false;  // Force first flip before allowing navigation
@@ -2090,20 +2362,92 @@
     var backBtn        = $('backBtn');
     var metadataLine   = $('metadataLine');
     var editorialLoading = $('editorialLoading');
-    var thinkingPanel  = $('thinkingPanel');
-    var thinkingLabel  = $('thinkingLabel');
-    var thinkingText   = $('thinkingText');
-    var thinkingToggle = $('thinkingToggle');
+    var capTicker      = $('capabilityTicker');
+
+    // ── Capability ticker: shows what Opus is doing live ──
+    var capTickerInterval = null;
+    var capTickerIndex = 0;
+    var thinkingCharCount = 0;
+    var outputCharCount = 0;
+    var HAIKU_MESSAGES = [
+        { label: 'QUICK SCAN', text: 'Haiku 4.5 reading every clause for trick patterns' },
+        { label: 'PATTERN MATCH', text: 'Comparing against 18-type trick taxonomy' },
+        { label: 'CLAUSE ISOLATION', text: 'Splitting document into individual obligations' },
+        { label: 'RISK RATING', text: 'Scoring severity per clause on 5-point scale' },
+    ];
+    var OPUS_MESSAGES = [
+        { label: 'ADAPTIVE THINKING', text: 'Opus decides reasoning depth per clause' },
+        { label: 'LONG-CONTEXT', text: 'Tracing cross-clause interactions across full document' },
+        { label: 'PERSPECTIVE SHIFT', text: 'Adopting drafter\u2019s viewpoint to find hidden intent' },
+        { label: 'SELF-REVIEW', text: 'Checking own findings for false positives' },
+        { label: 'VILLAIN VOICE', text: 'Low over-refusal \u2014 Opus sustains adversarial framing' },
+        { label: 'POWER ASYMMETRY', text: 'Counting rights and obligations per party' },
+        { label: 'ARCHAEOLOGY', text: 'Separating boilerplate from custom-drafted clauses' },
+    ];
+    var CAPABILITY_MESSAGES = HAIKU_MESSAGES;
+    function startCapTicker(messages) {
+        if (messages) CAPABILITY_MESSAGES = messages;
+        capTicker.classList.remove('hidden');
+        capTickerIndex = 0;
+        showCapMessage();
+        stopCapTicker();
+        capTickerInterval = setInterval(function() {
+            capTicker.classList.add('fade-swap');
+            setTimeout(function() {
+                capTickerIndex = (capTickerIndex + 1) % CAPABILITY_MESSAGES.length;
+                showCapMessage();
+                capTicker.classList.remove('fade-swap');
+            }, 300);
+        }, 3500);
+    }
+    function showCapMessage() {
+        var m = CAPABILITY_MESSAGES[capTickerIndex];
+        capTicker.innerHTML = '<span class="cap-label">' + m.label + '</span> ' + m.text;
+    }
+    function stopCapTicker() {
+        if (capTickerInterval) { clearInterval(capTickerInterval); capTickerInterval = null; }
+    }
+    function showCapStats() {
+        stopCapTicker();
+        // Approximate tokens (~4 chars per token)
+        var thinkTokens = Math.round(thinkingCharCount / 4);
+        var outTokens = Math.round(outputCharCount / 4);
+        var ratio = outTokens > 0 ? (thinkTokens / outTokens).toFixed(1) : '?';
+        capTicker.classList.remove('fade-swap');
+        capTicker.innerHTML = '<span class="stat-num">~' + thinkTokens.toLocaleString() + '</span> reasoning tokens \u00B7 <span class="stat-num">' + ratio + '\u00d7</span> more thinking than output';
+        capTicker.className = 'capability-stats';
+    }
     var resultsArea    = $('resultsArea');
     var summaryContainer = $('summaryContainer');
     var filterChips    = $('filterChips');
     var resultsContent = $('resultsContent');
     var flipCardContainer = $('flipCardContainer');
     var deepAnalysisEl = $('deepAnalysisContent');
+    var counterDraftSection = $('counterDraftSection');
+    var counterDraftBtn = $('counterDraftBtn');
+    var counterDraftContent = $('counterDraftContent');
+    var timelineBtn = $('timelineBtn');
+    var timelineContent = $('timelineContent');
     var followupSection = $('followupSection');
     var followupInput = $('followupInput');
     var followupSend = $('followupSend');
     var followupAnswers = $('followupAnswers');
+
+    // Verdict column (right side panel)
+    var verdictCol       = $('verdictCol');
+    var verdictTitle     = $('verdictTitle');
+    var verdictBody      = $('verdictBody');
+    var verdictExpandBtn = $('verdictExpandBtn');
+    var _verdictRenderTimer = null;
+    var _verdictAutoScroll = true;
+    // 4 Opus section accumulators
+    var opusSections = {
+        interactions: { text: '', done: false },
+        asymmetry: { text: '', done: false },
+        archaeology: { text: '', done: false },
+        overall: { text: '', done: false }
+    };
+
 
     // Configure marked + DOMPurify for safe LLM output rendering
     marked.setOptions({ breaks: true, gfm: true });
@@ -2117,28 +2461,26 @@
         if (flipTrigger) {
             var card = flipTrigger.closest('.flip-card');
             if (card) {
-                card.classList.add('flipped');
-                // Dim side columns to focus on the reveal
-                var layout = card.closest('.analysis-layout');
-                if (layout) layout.classList.add('layout-flipped');
-                // Animate score bar fill on flip
-                var fill = card.querySelector('.back-score-bar-fill');
-                if (fill && !fill.style.width) {
-                    var w = fill.getAttribute('data-width');
-                    setTimeout(function() { fill.style.width = w + '%'; }, 300);
-                }
-                showInsightForCard(card);
-                // First flip unlocks navigation
+                // Back is already built by Haiku — just flip
+                requestAnimationFrame(function() {
+                    card.classList.add('flipped');
+                    // Dim side columns to focus on the reveal
+                    var layout = card.closest('.analysis-layout');
+                    if (layout) layout.classList.add('layout-flipped');
+                    // Animate score bar fill on flip
+                    var fill = card.querySelector('.back-score-bar-fill');
+                    if (fill && !fill.style.width) {
+                        var w = fill.getAttribute('data-width');
+                        setTimeout(function() { fill.style.width = w + '%'; }, 300);
+                    }
+                });
+                // First flip unlocks navigation (immediate, no need to defer)
                 if (!hasFlippedOnce) {
                     hasFlippedOnce = true;
                     updateCardNavigation();
-                }
-                // Fade out flip prompt on first flip
-                var prompt = $('flipPrompt');
-                if (prompt && prompt.classList.contains('visible')) {
-                    prompt.classList.add('fade-out');
-                    prompt.classList.remove('visible');
-                    setTimeout(function() { prompt.classList.add('hidden'); }, 600);
+                    document.querySelectorAll('.flip-trigger.hint-pulse').forEach(function(el) {
+                        el.classList.remove('hint-pulse');
+                    });
                 }
             }
             return;
@@ -2151,7 +2493,6 @@
                 // Restore side columns
                 var layout = card.closest('.analysis-layout');
                 if (layout) layout.classList.remove('layout-flipped');
-                showInsightContext(card); // revert to context-only
             }
             return;
         }
@@ -2196,24 +2537,6 @@
         }
     });
 
-    // ── Insight column click delegation (find-in-doc) ──
-    var insightCol = $('insightColumn');
-    if (insightCol) {
-        insightCol.addEventListener('click', function(e) {
-            var findLink = e.target.closest('.find-in-doc');
-            if (findLink) {
-                var cardIdx = parseInt(findLink.getAttribute('data-card-index'));
-                if (!isNaN(cardIdx)) {
-                    scrollPreviewToCard(cardIdx);
-                    var previewEl = $('editorialLoadingText');
-                    if (previewEl && window.innerWidth <= 900) {
-                        previewEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-            }
-        });
-    }
-
     // ── Keyboard navigation ──
     document.addEventListener('keydown', function(e) {
         if (analysisScreen.classList.contains('hidden')) return;
@@ -2249,14 +2572,12 @@
                             var w = fill.getAttribute('data-width');
                             setTimeout(function() { fill.style.width = w + '%'; }, 300);
                         }
-                        showInsightForCard(cards[currentCardIndex]);
                         if (!hasFlippedOnce) {
                             hasFlippedOnce = true;
                             updateCardNavigation();
                         }
                     } else {
                         if (kbLayout) kbLayout.classList.remove('layout-flipped');
-                        showInsightContext(cards[currentCardIndex]);
                     }
                 }
                 break;
@@ -2533,14 +2854,12 @@
         responseContent = '';
         thinkingPhaseCount = 0;
         quickDone = false;
-        opusReasoningDone = false;
-        $('reportToggle').classList.add('hidden');
         isDoneRendering = false;
         deepTextComplete = false;
+        _verdictScrolled = false;
         animatedCardTitles = new Set();
         activeFilters = new Set();
         flipCardsBuilt = false;
-        quickDoneContentLength = 0;
         parsedClauseCount = 0;
         currentCardIndex = 0;
         hasFlippedOnce = false;
@@ -2550,14 +2869,22 @@
         userHasScrolled = false;
         lastAutoScrollY = 0;
         currentDocId = docId;
+        thinkingCharCount = 0;
+        outputCharCount = 0;
+        stopCapTicker();
+        capTicker.className = 'capability-ticker hidden';
+        capTicker.innerHTML = '';
+
+        // Verdict column: hidden until verdict is ready — cards are the focus
+        resetVerdictCol();
+
 
         // Reset UI
-        thinkingText.innerHTML = '';
         resultsContent.innerHTML = '';
         flipCardContainer.innerHTML = '';
         $('skeletonCard').classList.add('hidden');
-        var fp = $('flipPrompt');
-        if (fp) { fp.classList.add('hidden'); fp.classList.remove('visible', 'fade-out'); }
+        var ct = $('chapterTitle');
+        if (ct) ct.classList.remove('visible');
         deepAnalysisEl.innerHTML = '';
         // Remove the deep analysis header (sibling) if it exists
         var oldHeader = deepAnalysisEl.previousElementSibling;
@@ -2567,9 +2894,18 @@
         summaryContainer.innerHTML = '';
         filterChips.innerHTML = '';
         filterChips.classList.add('hidden');
+        activeFilters.clear();
+        activeTrickFilters.clear();
         followupSection.classList.add('hidden');
         followupAnswers.innerHTML = '';
         followupInput.value = '';
+        counterDraftSection.classList.add('hidden');
+        counterDraftContent.innerHTML = '';
+        counterDraftBtn.disabled = false;
+        counterDraftBtn.textContent = 'Generate Counter-Draft';
+        timelineContent.innerHTML = '';
+        timelineBtn.disabled = false;
+        timelineBtn.textContent = 'Worst-Case Timeline';
         toolResults = [];
         $('deepAnalysisSection').classList.add('hidden');
         metadataLine.classList.add('hidden');
@@ -2577,16 +2913,14 @@
         metadataLine.innerHTML = '';
         statusPill.classList.remove('done');
         statusText.textContent = 'Starting analysis...';
-        thinkingPanel.classList.add('hidden');
-        thinkingPanel.classList.remove('collapsed');
         resultsArea.classList.add('hidden');
         $('cardViewport').classList.add('hidden');
         $('cardNavigation').classList.add('hidden');
         $('deepStatus').classList.add('hidden');
         $('docPageNav').innerHTML = '';
-        hideInsightColumn();
         $('copyAllBtn').classList.add('hidden');
         $('exportBtn').classList.add('hidden');
+        $('emailLawyerBtn').classList.add('hidden');
         backBtn.classList.remove('hidden');
 
         // Show flip prompt + skeleton card in center while waiting for first clause
@@ -2595,21 +2929,20 @@
         skeleton.classList.remove('hidden');
         $('cardViewport').classList.remove('hidden');
         resultsArea.classList.remove('hidden');
-        // Show flip prompt immediately
-        var fp2 = $('flipPrompt');
-        if (fp2) { fp2.classList.remove('hidden'); requestAnimationFrame(function() { fp2.classList.add('visible'); }); }
         var wordCount = documentFullText ? documentFullText.split(/\s+/).length : 0;
         skeletonMsg.innerHTML = wordCount > 0
-            ? '<strong>' + wordCount.toLocaleString() + ' words</strong> of legal text. FlipSide is reading every one.'
+            ? '<strong>' + wordCount.toLocaleString() + ' words</strong> of text. FlipSide is reading every one.'
             : 'FlipSide is reading your document...';
 
-        // Sidebar: show thumbnail + document preview + metadata area
+        // Sidebar: prepare content (collapsed — expands after screen switch)
         var sidebar = $('analysisSidebar');
         var thumbEl = $('docThumbnail');
         var thumbImg = $('docThumbnailImg');
-        if (documentFullText && !isCompareMode) {
+        var layoutEl = document.querySelector('.analysis-layout');
+        var hasSidebar = documentFullText && !isCompareMode;
+        layoutEl.classList.remove('sidebar-visible');
+        if (hasSidebar) {
             sidebar.classList.remove('hidden');
-            // Thumbnail
             if (documentThumbnail) {
                 thumbImg.src = 'data:image/jpeg;base64,' + documentThumbnail;
                 thumbEl.classList.remove('hidden');
@@ -2631,9 +2964,18 @@
             $('editorialLoading').classList.add('hidden');
         }
 
-        // Switch screens
-        uploadScreen.classList.add('hidden');
-        analysisScreen.classList.remove('hidden');
+        // ── Animated screen transition: fade out upload, then expand ──
+        uploadScreen.classList.add('exiting');
+        setTimeout(function() {
+            uploadScreen.classList.add('hidden');
+            uploadScreen.classList.remove('exiting');
+            analysisScreen.classList.remove('hidden');
+            window.scrollTo({ top: 0 });
+            // Expand sidebar after a beat — content column stays centered first
+            if (hasSidebar) {
+                setTimeout(function() { layoutEl.classList.add('sidebar-visible'); }, 120);
+            }
+        }, 350);
 
         // Start elapsed timer
         analysisStartTime = Date.now();
@@ -2645,7 +2987,6 @@
             elapsedEl.textContent = (min > 0 ? min + 'm ' : '') + sec + 's';
         }, 1000);
 
-        window.scrollTo({ top: 0 });
         connectStream(docId);
     }
 
@@ -2664,47 +3005,22 @@
 
                 case 'thinking_start':
                     thinkingPhaseCount++;
-                    thinkingPanel.classList.remove('hidden');
-
-                    if (quickDone) {
-                        // Opus deep analysis — collapsed status bar, user can expand to watch reasoning
-                        thinkingPanel.classList.add('collapsed');
-                        thinkingToggle.textContent = 'Show reasoning';
-                        thinkingLabel.innerHTML = '<span class="phase-icon">&#9679;</span> Opus 4.6: Deep reasoning...';
-                        thinkingText.innerHTML += '<span class="phase-sep">Opus 4.6 Extended Thinking</span>';
-                        startStatusRotation('deep');
-                    } else {
-                        // Quick scan (Haiku) — collapsed status line
-                        thinkingPanel.classList.add('collapsed');
-                        thinkingToggle.textContent = 'Show reasoning';
-                        thinkingLabel.innerHTML = '<span class="phase-icon">&#9679;</span> Quick Scan: Reasoning...';
+                    if (!quickDone) {
                         startStatusRotation('thinking');
+                        startCapTicker(HAIKU_MESSAGES);
                     }
                     break;
 
                 case 'thinking':
                     thinkingContent += msg.content;
-                    renderThinking();
+                    thinkingCharCount += msg.content.length;
                     break;
 
                 case 'thinking_done':
-                    removeCursor();
-                    if (quickDone) {
-                        // Opus done thinking — text still streaming, don't show report button yet
-                        opusReasoningDone = true;
-                        thinkingLabel.innerHTML = '<span class="phase-icon">&#9679;</span> Opus 4.6: Writing report...';
-                        thinkingPanel.classList.add('collapsed');
-                        thinkingToggle.textContent = 'Show reasoning';
-                    } else {
-                        thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Quick Scan complete';
-                        thinkingPanel.classList.add('collapsed');
-                        thinkingToggle.textContent = 'Show reasoning';
-                    }
                     break;
 
                 case 'text_start':
                     resultsArea.classList.remove('hidden');
-                    // Don't hide editorial loading — card transition handles it
                     break;
 
                 case 'text':
@@ -2712,51 +3028,90 @@
                         resultsArea.classList.remove('hidden');
                     }
                     responseContent += msg.content;
+                    outputCharCount += msg.content.length;
                     renderResults();
                     break;
 
                 case 'text_done':
                     renderResultsFinal();
-                    // If Opus reasoning was done and quick scan was done,
-                    // this text_done is from the deep analysis — report is ready
-                    if (opusReasoningDone && quickDone) {
-                        deepTextComplete = true;
-                        thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Opus 4.6: Reasoning complete';
-                        $('reportToggle').classList.remove('hidden');
-                        // Update card nav in case user is on last card
-                        if (flipCardsBuilt) updateCardNavigation();
-                    }
                     break;
 
                 case 'tool_start':
-                    // Opus is calling a structured tool
-                    var toolInfo = {};
-                    try { toolInfo = JSON.parse(msg.content); } catch(e) {}
-                    if (toolInfo.name === 'flag_interaction') statusText.textContent = 'Flagging cross-clause interaction...';
                     break;
 
                 case 'tool_result':
-                    // Structured data from Opus tool call
                     var toolData = {};
                     try { toolData = JSON.parse(msg.content); } catch(e) {}
                     toolResults.push(toolData);
                     break;
 
+                case 'handoff':
+                    var hoData = {};
+                    try { hoData = JSON.parse(msg.content); } catch(e) {}
+                    if (hoData.not_applicable) {
+                        statusText.textContent = 'Document scanned — no terms to analyze';
+                        statusPill.classList.add('done');
+                        stopStatusRotation();
+                        stopEditorialStatusRotation();
+                        stopCapTicker();
+                        capTicker.classList.add('hidden');
+                    } else {
+                        statusText.textContent = 'Cards ready — Opus expert report building...';
+                        startStatusRotation('deep');
+                        startCapTicker(OPUS_MESSAGES);
+                    }
+                    break;
+
                 case 'quick_done':
                     quickDone = true;
-                    quickDoneContentLength = responseContent.length;
-                    // Parse quick_done timing
                     var qdData = {};
                     try { qdData = JSON.parse(msg.content); } catch(e) {}
                     var qdSec = qdData.seconds ? qdData.seconds.toFixed(1) + 's' : '';
-                    statusText.textContent = 'Cards ready' + (qdSec ? ' (' + qdSec + ')' : '') + ' \u2014 Deep analysis starting...';
+                    statusText.textContent = 'Cards ready' + (qdSec ? ' (' + qdSec + ')' : '') + ' \u2014 Expert report building...';
                     startStatusRotation('deep');
                     stopEditorialStatusRotation();
-                    // Show deep analysis progress indicator
                     $('deepStatus').classList.remove('hidden');
-                    // Final clause sweep — last clause may lack trailing ---
                     if (!isCompareMode) {
                         finalClauseSweep();
+                        buildFilterChips();
+                        buildPlaybookCard();
+                    }
+                    break;
+
+                // ── Opus section text/done events (4 sources) ──
+                case 'interactions_text':
+                case 'asymmetry_text':
+                case 'archaeology_text':
+                case 'overall_text':
+                    var opusSrc = msg.type.replace('_text', '');
+                    opusSections[opusSrc].text += msg.content;
+                    renderOpusSection(opusSrc);
+                    break;
+
+                case 'interactions_thinking':
+                case 'asymmetry_thinking':
+                case 'archaeology_thinking':
+                case 'overall_thinking':
+                    // Discard Opus thinking — we only show text output
+                    thinkingCharCount += msg.content.length;
+                    break;
+
+                case 'interactions_done':
+                case 'asymmetry_done':
+                case 'archaeology_done':
+                case 'overall_done':
+                    var doneSrc = msg.type.replace('_done', '');
+                    opusSections[doneSrc].done = true;
+                    markOpusSectionDone(doneSrc);
+                    // Check if all 4 Opus sections are done
+                    var allOpusDone = Object.keys(opusSections).every(function(k) { return opusSections[k].done; });
+                    if (allOpusDone) {
+                        deepTextComplete = true;
+                        var verdictStatusEl = $('verdictStatus');
+                        if (verdictStatusEl) verdictStatusEl.textContent = 'Expert report complete';
+                        verdictTitle.textContent = 'Your verdict is ready';
+                        verdictExpandBtn.textContent = 'Read full verdict \u2192';
+                        if (flipCardsBuilt) updateCardNavigation();
                     }
                     break;
 
@@ -2766,49 +3121,50 @@
                     if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
                     stopStatusRotation();
                     stopEditorialStatusRotation();
-                    removeCursor();
-                    // Hide deep analysis progress indicator
+                    if (thinkingCharCount > 0) showCapStats();
                     $('deepStatus').classList.add('hidden');
 
-                    // Parse timing data from SSE
                     var doneData = {};
                     try { doneData = JSON.parse(msg.content); } catch(e) {}
                     var quickSec = doneData.quick_seconds ? doneData.quick_seconds.toFixed(1) : null;
                     var deepSec = doneData.deep_seconds ? doneData.deep_seconds.toFixed(1) : null;
                     var timingStr = 'Analysis complete';
                     if (quickSec && deepSec) {
-                        timingStr = 'Complete \u2014 Cards: ' + quickSec + 's \u00B7 Deep: ' + deepSec + 's';
+                        timingStr = 'Complete \u2014 Cards: ' + quickSec + 's \u00B7 Expert: ' + deepSec + 's';
                     }
                     statusText.textContent = timingStr;
 
-                    // Update sidebar status
                     var sidebarStatus = $('editorialLoadingStatus');
                     if (sidebarStatus) sidebarStatus.textContent = 'Analysis complete';
                     var dots = $('editorialLoading') && $('editorialLoading').querySelector('.pulsing-dots');
                     if (dots) dots.style.display = 'none';
 
-                    // Show action buttons
                     $('copyAllBtn').classList.remove('hidden');
                     $('exportBtn').classList.remove('hidden');
+                    $('emailLawyerBtn').classList.remove('hidden');
 
-                    // Final render — for compare mode, render now
-                    // For card mode, deep analysis renders on-demand via revealDeepAnalysis()
                     if (isCompareMode) {
                         renderResultsFinal();
                         buildSummaryCard();
+                        buildPlaybookCard();
                     }
-                    // Update card nav to show "View assessment →"
+
                     if (flipCardsBuilt) updateCardNavigation();
 
-                    // Now that everything is done, show "Show the full report" button
-                    if (opusReasoningDone) {
-                        thinkingLabel.innerHTML = '<span class="phase-icon">&#10003;</span> Opus 4.6: Reasoning complete';
-                        $('reportToggle').classList.remove('hidden');
+                    if (!isCompareMode) {
+                        // Mark all Opus sections done (safety net)
+                        Object.keys(opusSections).forEach(function(k) {
+                            if (!opusSections[k].done) {
+                                opusSections[k].done = true;
+                                markOpusSectionDone(k);
+                            }
+                        });
+                        deepTextComplete = true;
+                        verdictTitle.textContent = 'Your verdict is ready';
+                        verdictExpandBtn.textContent = 'Read full verdict \u2192';
                     }
 
-                    // Show follow-up input for non-compare mode
                     if (!isCompareMode) followupSection.classList.remove('hidden');
-
                     if (eventSource) { eventSource.close(); eventSource = null; }
                     break;
 
@@ -2954,13 +3310,11 @@
     }
 
     function renderThinking() {
-        thinkingText.innerHTML = highlightThinking(thinkingContent) + '<span class="cursor"></span>';
-        thinkingText.scrollTop = thinkingText.scrollHeight;
+        // Thinking panel removed — no-op
     }
 
     function removeCursor() {
-        var cursor = thinkingText.querySelector('.cursor');
-        if (cursor) cursor.remove();
+        // Thinking panel removed — no-op
     }
 
     // ── Results rendering ─────────────────────────────────────
@@ -3154,7 +3508,7 @@
         for (var i = parsedClauseCount; i < segments.length - 1; i++) {
             var clause = extractSingleClause(segments[i]);
             if (!clause && segments[i].trim().length > 50) {
-                console.log('[FlipSide] Failed to parse segment ' + i + ':', segments[i].substring(0, 300));
+                console.log('[FlipSide] Failed to parse segment ' + i + ' (' + segments[i].length + ' chars)');
             }
             if (clause) {
                 buildSingleFlipCard(clause, flipCardContainer.querySelectorAll('.flip-card').length);
@@ -3182,7 +3536,6 @@
     function finalClauseSweep() {
         var segments = responseContent.split(/\n+---\n+/);
         console.log('[FlipSide] finalClauseSweep: ' + segments.length + ' segments, parsedClauseCount=' + parsedClauseCount);
-        console.log('[FlipSide] quickDoneContentLength:', responseContent.length, 'full content preview:', responseContent.substring(0, 500));
         for (var i = parsedClauseCount; i < segments.length; i++) {
             var clause = extractSingleClause(segments[i]);
             if (clause) {
@@ -3195,6 +3548,8 @@
         parsedClauseCount = segments.length;
         flipCardsBuilt = true;
         updateCardNavigation();
+        buildFilterChips();
+        // buildPlaybookCard() called after quick_done — Haiku now provides trick data
 
         // If no cards were found, show an explanation
         var totalCards = flipCardContainer.querySelectorAll('.flip-card').length;
@@ -3207,10 +3562,8 @@
             var typeMatch = responseContent.match(/\*\*Document Type\*\*[:\s]*([^\n*]+)/i);
             var docType = typeMatch ? typeMatch[1].trim() : 'document';
             if (documentNotApplicable) {
-                // Swap flip prompt to a wry acknowledgment
-                var fpText = document.querySelector('.flip-prompt-text');
-                if (fpText) fpText.textContent = 'Not everything is a contract in life.';
-                skMsg.innerHTML = '<strong>Not a match for FlipSide</strong><br>' +
+                skMsg.innerHTML = '<h2 style="margin-bottom:0.8rem">Not everything is a contract in life.</h2>' +
+                    '<strong>Not a match for FlipSide</strong><br>' +
                     escapeHtml(documentNotApplicable) +
                     '<br><br>FlipSide analyzes documents where one party sets terms that bind another — contracts, leases, terms of service, insurance policies, coupons with conditions, and similar.';
             } else {
@@ -3228,11 +3581,14 @@
         }
     }
 
+    // ── Opus card backs: incremental parsing ──────────────────
+
     // ── Parse one clause from a raw markdown segment ─────────
     function extractSingleClause(segment) {
         if (!segment.match(/^### /m)) return null;
 
-        var riskMatch = segment.match(/\[?(GREEN|YELLOW|RED)\]?\s*[·•\u00B7\u2022\-–—|,]\s*Score:\s*(\d+)(?:\/100)?(?:\s*[·•\u00B7\u2022\-–—|,]\s*Trick:\s*([^\n]+))?/i);
+        // Risk flag: front-only has just [GREEN/YELLOW/RED], full has Score + Trick
+        var riskMatch = segment.match(/\[?(GREEN|YELLOW|RED)\]?\s*(?:[·•\u00B7\u2022\-–—|,]\s*Score:\s*(\d+)(?:\/100)?(?:\s*[·•\u00B7\u2022\-–—|,]\s*Trick:\s*([^\n]+))?)?/i);
         if (!riskMatch) return null;
 
         var headerMatch = segment.match(/^### \s*(.+)\s+\(([^)]+)\)\s*$/m);
@@ -3261,11 +3617,20 @@
         var reassuranceMatch = segment.match(/\[REASSURANCE\]\s*:\s*(.+)/i);
         var reassurance = reassuranceMatch ? reassuranceMatch[1].trim().replace(/^["\u201C]|["\u201D]$/g, '') : '';
 
-        var readerMatch = segment.match(/\[READER\]\s*:\s*([\s\S]*?)(?=\n\n|\n(?:GREEN|YELLOW|RED))/i);
+        var honeyMatch = segment.match(/\[HONEY\]\s*:\s*([\s\S]*?)(?=\n\n|\n\[|\n(?:GREEN|YELLOW|RED))/i);
+        var honey = honeyMatch ? honeyMatch[1].trim() : '';
+
+        var teaserMatch = segment.match(/\[TEASER\]\s*:\s*(.+)/i);
+        var teaser = teaserMatch ? teaserMatch[1].trim().replace(/^["\u201C]|["\u201D]$/g, '') : '';
+
+        var revealMatch = segment.match(/\[REVEAL\]\s*:\s*(.+)/i);
+        var reveal = revealMatch ? revealMatch[1].trim().replace(/^["\u201C]|["\u201D]$/g, '') : '';
+
+        var readerMatch = segment.match(/\[READER\]\s*:\s*([\s\S]*?)(?=\n\n|\n\[|\n(?:GREEN|YELLOW|RED))/i);
         var reader = readerMatch ? readerMatch[1].trim() : '';
 
         var risk = riskMatch[1].toLowerCase();
-        var score = parseInt(riskMatch[2]);
+        var score = riskMatch[2] ? parseInt(riskMatch[2]) : 0;
         var trick = riskMatch[3] ? riskMatch[3].trim() : '';
 
         var confidenceMatch = segment.match(/Confidence:\s*(HIGH|MEDIUM|LOW)\s*[\u2014\-\u2013\u2015]\s*(.+)/i);
@@ -3279,36 +3644,35 @@
         var shouldReadMatch = segment.match(/\*{1,2}What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}What does this mean|\n\n###|\n\n##|$)/i);
         var smallPrint = smallPrintMatch ? smallPrintMatch[1].trim() : '';
         var shouldRead = shouldReadMatch ? shouldReadMatch[1].trim() : '';
-        // Fallback: if smallPrint is empty, use the quote (the actual contract text)
         if (!smallPrint && quote) smallPrint = quote;
 
-        // "What does this mean for you" — structured: [FIGURE] + [EXAMPLE]
         var figureMatch = segment.match(/\[FIGURE\]\s*:\s*(.+)/i);
         var figure = figureMatch ? figureMatch[1].trim() : '';
         var exampleNarrativeMatch = segment.match(/\[EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\[READER\]|\n\n###|\n\n##|\n\n---|\*{1,2}\[EN\]|\[EN-FIGURE\]|\[EN-EXAMPLE\]|$)/i);
         var exampleNarrative = exampleNarrativeMatch ? exampleNarrativeMatch[1].trim() : '';
-        // Fallback: if no [FIGURE]/[EXAMPLE] tags, try old free-text format
         if (!figure && !exampleNarrative) {
             var exampleMatch = segment.match(/\*{1,2}What does this mean for you:?\*{0,2}:?\s*([\s\S]*?)(?=\n\[READER\]|\n\n###|\n\n##|\n\n---|\*{1,2}\[EN\]|$)/i);
             if (exampleMatch) exampleNarrative = exampleMatch[1].trim();
         }
 
-        // English translations (for non-English documents)
-        var enSmallPrintMatch = segment.match(/\*{1,2}\[EN\]\s*What the small print says:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What you should read|\n\n###|\n\n##|$)/i);
-        var enShouldReadMatch = segment.match(/\*{1,2}\[EN\]\s*What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What does this mean|\n\n###|\n\n##|\n\n---|\[EN-READER\]|\[EN-FIGURE\]|$)/i);
         var enFigureMatch = segment.match(/\[EN-FIGURE\]\s*:\s*(.+)/i);
         var enExampleNarrativeMatch = segment.match(/\[EN-EXAMPLE\]\s*:\s*([\s\S]*?)(?=\n\[EN-READER\]|\n\n###|\n\n##|\n\n---|$)/i);
         var enReaderMatch = segment.match(/\[EN-READER\]\s*:\s*([\s\S]*?)(?=\n\n|\n(?:GREEN|YELLOW|RED)|\n---|\n###|$)/i);
+        var enSmallPrintMatch = segment.match(/\*{1,2}\[EN\]\s*What the small print says:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What you should read|\n\n###|\n\n##|$)/i);
+        var enShouldReadMatch = segment.match(/\*{1,2}\[EN\]\s*What you should read:?\*{0,2}:?\s*([\s\S]*?)(?=\*{1,2}\[EN\]\s*What does this mean|\n\n###|\n\n##|\n\n---|\[EN-READER\]|\[EN-FIGURE\]|$)/i);
         var enSmallPrint = enSmallPrintMatch ? enSmallPrintMatch[1].trim() : '';
         var enShouldRead = enShouldReadMatch ? enShouldReadMatch[1].trim() : '';
         var enFigure = enFigureMatch ? enFigureMatch[1].trim() : '';
         var enExampleNarrative = enExampleNarrativeMatch ? enExampleNarrativeMatch[1].trim() : '';
         var enReader = enReaderMatch ? enReaderMatch[1].trim() : '';
 
+        // Track whether back data has been filled (by Opus)
+        var hasBack = !!(reveal || score > 0 || bottomLine || figure);
+
         return {
-            title: title, section: sectionRef, reassurance: reassurance,
-            quote: quote, reader: reader,
-            risk: risk, score: score, trick: trick,
+            title: title, section: sectionRef, reassurance: reassurance, honey: honey,
+            teaser: teaser, quote: quote, reader: reader, reveal: reveal,
+            risk: risk, score: score, trick: trick, hasBack: hasBack,
             confidence: confidence, confidenceReason: confidenceReason,
             bottomLine: bottomLine, smallPrint: smallPrint, shouldRead: shouldRead,
             figure: figure, exampleNarrative: exampleNarrative,
@@ -3323,9 +3687,10 @@
         var trickDesc = TRICK_DESCRIPTIONS[clause.trick] || '';
         var borderColor = risk === 'red' ? 'var(--red)' : risk === 'yellow' ? 'var(--yellow)' : 'var(--green-border)';
 
-        // ── Front: reassurance headline, section ref, reader voice ──
-        // Title + quote moved to insight column (shown on flip)
+        // ── Front: watermark number, reassurance headline, section ref, reader voice, teaser ──
+        var displayNum = (index + 1 < 10 ? '0' : '') + (index + 1);
         var frontHtml = '<div class="flip-card-front">' +
+            '<span class="card-watermark">' + displayNum + '</span>' +
             '<div class="risk-header risk-header-green">' +
             (clause.reassurance ? '<h3 class="clause-title" style="color:var(--green-text)">' + escapeHtml(clause.reassurance) + '</h3>' : '') +
             '</div>' +
@@ -3337,13 +3702,23 @@
             (clause.enReader && clause.enReader !== clause.reader ? '<div class="reader-voice-en">' + escapeHtml(clause.enReader) + '</div>' : '') +
             '</div>' +
             '</div>' +
+            (clause.teaser ? '<div class="card-teaser">' + escapeHtml(clause.teaser) + '</div>' : '') +
             '<button class="flip-trigger"><span>Now flip it</span><span class="flip-trigger-arrow">&rarr;</span></button>' +
             '</div>';
 
         // ── Back body: full reveal — figure, example, bottom line ──
         var backBodyHtml = '';
+        var isGreenSummary = clause.title === 'Fair Clauses Summary' || (risk === 'green' && clause.title && clause.title.indexOf('Fair Clauses') >= 0);
+        var backHtml;
 
-        if (clause.figure || clause.exampleNarrative) {
+        // Haiku delivers full card data — back is always ready
+        if (isGreenSummary) {
+            backBodyHtml = '<div class="green-verdict">' +
+                '<div class="green-verdict-title">Confirmed: Fair as written</div>' +
+                '<div class="green-verdict-text">' +
+                escapeHtml(clause.bottomLine || 'These clauses do what they say.') +
+                '</div></div>';
+        } else if (clause.figure || clause.exampleNarrative) {
             backBodyHtml += '<div class="back-meaning-label">What does this mean for you</div>';
             if (clause.figure) {
                 backBodyHtml += '<div class="back-figure back-figure-' + risk + '">' +
@@ -3358,41 +3733,45 @@
             }
         }
 
-        if (clause.bottomLine) {
-            backBodyHtml += '<div class="back-bottom-line">' +
-                escapeHtml(clause.bottomLine) + '</div>';
+        if (!isGreenSummary) {
+            if (clause.honey) {
+                backBodyHtml += '<div class="back-honey" style="margin:0.6rem 0;padding:0.5rem 0.7rem;' +
+                    'background:rgba(196,75,40,0.06);border-left:2px solid var(--accent);' +
+                    'font-size:0.78rem;color:var(--text-secondary);border-radius:0 var(--radius-sm) var(--radius-sm) 0">' +
+                    '<span style="font-weight:600;color:var(--accent);font-family:\'JetBrains Mono\',monospace;font-size:0.68rem;' +
+                    'letter-spacing:0.04em;text-transform:uppercase">Honey trap</span><br>' +
+                    escapeHtml(clause.honey) + '</div>';
+            }
+
+            if (clause.bottomLine) {
+                backBodyHtml += '<div class="back-bottom-line">' +
+                    escapeHtml(clause.bottomLine) + '</div>';
+            }
         }
 
-        // ── Confidence badge ──
-        var confidenceBadgeHtml = '';
-        if (clause.confidence) {
-            confidenceBadgeHtml = '<span class="confidence-badge confidence-' + clause.confidence + '" title="' + escapeHtml(clause.confidenceReason) + '">' +
-                clause.confidence.toUpperCase() +
-                (clause.confidenceReason ? '<span class="confidence-reason">' + escapeHtml(clause.confidenceReason) + '</span>' : '') +
-                '</span>';
-        }
-
-        // ── Back wrapper: risk header → full reveal (no contrast block, no toggle) ──
-        var backHtml = '<div class="flip-card-back"><div class="back-content">' +
+        var backTitle = clause.reveal || clause.title;
+        backHtml = '<div class="flip-card-back"><div class="back-content">' +
             '<div class="risk-header risk-header-' + risk + '">' +
-            '<h3 class="clause-title">' + escapeHtml(clause.title) + '</h3>' +
-            '<div class="risk-badge-group">' +
-            '<span class="risk-badge risk-badge-' + risk + '">' + risk.toUpperCase() + '</span>' +
-            (clause.trick ? '<span class="trick-label" title="' + escapeHtml(trickDesc) + '">' + escapeHtml(clause.trick) + '</span>' : '') +
-            confidenceBadgeHtml +
-            '</div></div>' +
+            '<h3 class="clause-title">' + escapeHtml(backTitle) + '</h3>' +
+            '</div>' +
             '<div class="back-body">' + backBodyHtml + '</div>' +
+            '<div class="back-footer">' +
+            (clause.trick ? '<span class="trick-footnote" title="' + escapeHtml(trickDesc) + '">' + escapeHtml(clause.trick) + '</span>' : '') +
             '<button class="flip-back-trigger"><span class="flip-back-arrow">&larr;</span><span>Flip back</span></button>' +
+            '</div>' +
             '</div></div>';
 
         var cardEl = document.createElement('div');
         cardEl.className = 'flip-card hidden';
         cardEl.setAttribute('data-clause-index', index);
         cardEl.setAttribute('data-risk-level', risk);
+        if (clause.trick) cardEl.setAttribute('data-trick', clause.trick);
+        if (clause.score) cardEl.setAttribute('data-score', clause.score);
         cardEl.setAttribute('data-clause-title', clause.title);
         cardEl.setAttribute('data-section-ref', clause.section || '');
         if (clause.reassurance) cardEl.setAttribute('data-reassurance', clause.reassurance);
         if (clause.quote) cardEl.setAttribute('data-quote', clause.quote);
+        if (clause.honey) cardEl.setAttribute('data-honey', clause.honey);
         if (clause.shouldRead) cardEl.setAttribute('data-should-read', clause.shouldRead);
         if (clause.figure) cardEl.setAttribute('data-figure', clause.figure);
         if (clause.exampleNarrative) cardEl.setAttribute('data-example', clause.exampleNarrative);
@@ -3685,59 +4064,177 @@
             viewport.classList.remove('hidden');
             resultsArea.classList.remove('hidden');
             showCardAtIndex(0);
+            // Pulse the first flip trigger to draw attention
+            var firstTrigger = viewport.querySelector('.flip-trigger');
+            if (firstTrigger) firstTrigger.classList.add('hint-pulse');
         }, 500);
     }
 
-    // ── Reveal full verdict (on demand only) ──────
-    function revealDeepAnalysis() {
-        // Check if deep analysis text has fully streamed
-        var deepDataReady = deepTextComplete || isDoneRendering;
-        if (!deepDataReady) {
-            // Show waiting state in the section
-            var section = $('deepAnalysisSection');
-            section.classList.remove('hidden');
-            deepAnalysisEl.innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:var(--text-muted)">' +
-                '<div style="font-size:1.1rem;margin-bottom:0.5rem">Opus 4.6 is still reasoning</div>' +
-                '<div style="font-size:0.85rem">The full verdict will appear here when ready...</div>' +
-                '<div class="pulsing-dots" style="margin-top:1rem"><span></span><span></span><span></span></div></div>';
-            // Collapse cards
-            $('cardViewport').classList.add('hidden');
-            // Show thinking panel so user can see Opus working
-            thinkingPanel.classList.remove('hidden');
-            thinkingPanel.classList.remove('collapsed');
-            thinkingToggle.textContent = 'Hide reasoning';
-            // Poll for completion
-            var pollInterval = setInterval(function() {
-                var ready = deepTextComplete || isDoneRendering;
-                if (ready) {
-                    clearInterval(pollInterval);
-                    revealDeepAnalysis(); // Call again now that data is ready
+    // ── Verdict column helpers (4-section live report) ─────────────────
+    function showVerdictCol() {
+        verdictCol.classList.add('visible');
+        verdictCol.classList.add('writing');
+    }
+    function hideVerdictCol() {
+        verdictCol.classList.remove('visible');
+    }
+    function renderOpusSection(source) {
+        if (!_verdictRenderTimer) {
+            _verdictRenderTimer = setTimeout(function() {
+                _verdictRenderTimer = null;
+                // Show verdict column as soon as we get first text
+                if (!verdictCol.classList.contains('visible') && !isCompareMode) {
+                    showVerdictCol();
                 }
-            }, 500);
-            setTimeout(function() { clearInterval(pollInterval); }, 180000);
-            // Scroll to section
-            setTimeout(function() {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 50);
+                var bodyEl = $('opusBody_' + source);
+                if (!bodyEl) return;
+                var text = opusSections[source].text;
+                if (!text.trim()) return;
+                var html = safeMd2Html(text);
+                html = styleRiskBadges(html);
+                html = styleReaderBlocks(html);
+                html = styleDrafterBlocks(html);
+                bodyEl.innerHTML = html;
+                // Append cursor while streaming
+                if (!opusSections[source].done) {
+                    var cur = document.createElement('span');
+                    cur.className = 'verdict-cursor';
+                    bodyEl.appendChild(cur);
+                }
+            }, 200);
+        }
+    }
+    function markOpusSectionDone(source) {
+        var sectionEl = $('opusSection_' + source);
+        if (!sectionEl) return;
+        var dot = sectionEl.querySelector('.opus-dot');
+        if (dot) { dot.classList.remove('pulsing'); dot.classList.add('done'); }
+        // Auto-expand this section
+        var bodyEl = $('opusBody_' + source);
+        if (bodyEl) bodyEl.classList.remove('collapsed');
+        // Final render
+        var text = opusSections[source].text;
+        if (text.trim()) {
+            var html = safeMd2Html(text);
+            html = styleRiskBadges(html);
+            html = styleWhyClauses(html);
+            html = styleReaderBlocks(html);
+            html = styleDrafterBlocks(html);
+            html = styleSplitClauses(html);
+            bodyEl.innerHTML = html;
+        }
+    }
+    function resetVerdictCol() {
+        hideVerdictCol();
+        verdictCol.classList.remove('standby', 'thinking', 'writing', 'ready', 'collapsed');
+        verdictTitle.textContent = 'Expert report';
+        verdictExpandBtn.textContent = 'Read full verdict \u2192';
+        _verdictAutoScroll = true;
+        if (_verdictRenderTimer) { clearTimeout(_verdictRenderTimer); _verdictRenderTimer = null; }
+        // Reset accumulators and section UI
+        Object.keys(opusSections).forEach(function(k) {
+            opusSections[k] = { text: '', done: false };
+            var bodyEl = $('opusBody_' + k);
+            if (bodyEl) { bodyEl.innerHTML = ''; bodyEl.classList.add('collapsed'); }
+            var dot = document.querySelector('#opusSection_' + k + ' .opus-dot');
+            if (dot) { dot.classList.remove('done'); dot.classList.add('pulsing'); }
+        });
+        var verdictStatusEl = $('verdictStatus');
+        if (verdictStatusEl) {
+            verdictStatusEl.textContent = 'Opus Foursix, our expert, is reading the small print';
+            verdictStatusEl.classList.remove('hidden');
+        }
+    }
+    // Toggle Opus sections on click
+    verdictBody.addEventListener('click', function(e) {
+        var header = e.target.closest('.opus-section-header');
+        if (!header) return;
+        var source = header.getAttribute('data-toggle');
+        if (!source) return;
+        var bodyEl = $('opusBody_' + source);
+        if (bodyEl) bodyEl.classList.toggle('collapsed');
+    });
+    // Stop auto-scroll if user scrolls up in verdict column
+    verdictBody.addEventListener('scroll', function() {
+        var atBottom = verdictBody.scrollHeight - verdictBody.scrollTop - verdictBody.clientHeight < 40;
+        _verdictAutoScroll = atBottom;
+    });
+
+    // ── Reveal full verdict (progressive — streams as it builds) ──────
+    var _verdictPollTimer = null;
+    var _verdictScrolled = false;
+
+    function assembleDeepText() {
+        // Assemble deep analysis from 4 Opus accumulators
+        var parts = [];
+        if (opusSections.interactions.text.trim()) parts.push(opusSections.interactions.text);
+        if (opusSections.asymmetry.text.trim()) parts.push(opusSections.asymmetry.text);
+        if (opusSections.archaeology.text.trim()) parts.push(opusSections.archaeology.text);
+        if (opusSections.overall.text.trim()) parts.push(opusSections.overall.text);
+        return parts.join('\n\n');
+    }
+
+    function revealDeepAnalysis() {
+        var section = $('deepAnalysisSection');
+        var deepText = assembleDeepText();
+        var hasDeepContent = deepText.trim().length > 0;
+        var isComplete = deepTextComplete || isDoneRendering;
+
+        if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
+
+        section.classList.remove('hidden');
+        $('cardViewport').classList.add('hidden');
+        hideVerdictCol();
+
+        if (isComplete && hasDeepContent) {
+            renderDeepAnalysisContent();
+            buildSummaryCard();
+            buildPlaybookCard();
+            if (!isCompareMode) counterDraftSection.classList.remove('hidden');
+            if (!_verdictScrolled) {
+                _verdictScrolled = true;
+                setTimeout(function() { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+            }
             return;
         }
 
-        // Render content now (was deferred during streaming)
-        renderDeepAnalysisContent();
-        buildSummaryCard();
+        // Add header once
+        if (!deepAnalysisEl.previousElementSibling || !deepAnalysisEl.previousElementSibling.classList.contains('deep-analysis-header')) {
+            var header = document.createElement('div');
+            header.className = 'deep-analysis-header';
+            header.innerHTML = '<span class="section-label">Full Verdict</span>' +
+                '<span class="opus-badge">Opus 4.6 Reasoning</span>';
+            deepAnalysisEl.parentNode.insertBefore(header, deepAnalysisEl);
+        }
 
-        // Collapse card viewport
-        $('cardViewport').classList.add('hidden');
-        // Collapse thinking panel
-        thinkingPanel.classList.add('collapsed');
-        thinkingToggle.textContent = 'Show reasoning';
+        if (hasDeepContent) {
+            var safeMd = deepText
+                .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
+                .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
+                .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
+                .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
+            var html = safeMd2Html(safeMd);
+            html = styleRiskBadges(html);
+            html = styleReaderBlocks(html);
+            html = styleDrafterBlocks(html);
+            deepAnalysisEl.innerHTML = html;
+        } else {
+            deepAnalysisEl.innerHTML = '';
+        }
 
-        var section = $('deepAnalysisSection');
-        section.classList.remove('hidden');
-        // Scroll to it
-        setTimeout(function() {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 50);
+        var indicator = document.createElement('div');
+        indicator.className = 'verdict-streaming';
+        indicator.innerHTML = '<div class="pulsing-dots"><span></span><span></span><span></span></div>' +
+            '<div class="verdict-streaming-label">' +
+            (hasDeepContent ? 'Building your Full Verdict...' : 'Opus 4.6 is reasoning...') + '</div>';
+        deepAnalysisEl.appendChild(indicator);
+
+        if (!_verdictScrolled) {
+            _verdictScrolled = true;
+            setTimeout(function() { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+        }
+
+        _verdictPollTimer = setTimeout(function() { revealDeepAnalysis(); }, 800);
     }
 
     // ── Show one card, hide rest, update nav ─────────────────
@@ -3748,101 +4245,6 @@
             /(\$[\d,]+(?:\.\d{2})?|\d+%|\d+\s*(?:days?|months?|years?|hours?))/gi,
             '<span class="insight-num">$1</span>'
         );
-    }
-
-    // Build neutral clause context (pre-flip): section ref + quote only — no analysis title
-    function buildInsightContextHtml(cardEl) {
-        var section = cardEl.getAttribute('data-section-ref') || '';
-        var reassurance = cardEl.getAttribute('data-reassurance') || '';
-        var quote = cardEl.getAttribute('data-quote') || '';
-        var cardIndex = cardEl.getAttribute('data-clause-index') || '';
-        if (!section && !quote && !reassurance) return '';
-        var html = '<div class="insight-context">';
-        // Show section reference (neutral) — NOT the analysis title
-        if (section) html += '<div class="insight-title">' + escapeHtml(section) + '</div>';
-        if (quote) html += '<div class="insight-quote">' + escapeHtml(quote) + '</div>';
-        if (documentFullText && !isCompareMode && cardIndex) {
-            html += '<a class="find-in-doc insight-find" data-card-index="' + cardIndex + '">Find in document &uarr;</a>';
-        }
-        html += '</div>';
-        return html;
-    }
-
-    // Build full insight context (post-flip): analysis title + quote
-    function buildInsightRevealHtml(cardEl) {
-        var title = cardEl.getAttribute('data-clause-title') || '';
-        var quote = cardEl.getAttribute('data-quote') || '';
-        var cardIndex = cardEl.getAttribute('data-clause-index') || '';
-        if (!title && !quote) return '';
-        var html = '<div class="insight-context">';
-        if (title) html += '<div class="insight-title">' + escapeHtml(title) + '</div>';
-        if (quote) html += '<div class="insight-quote">' + escapeHtml(quote) + '</div>';
-        if (documentFullText && !isCompareMode && cardIndex) {
-            html += '<a class="find-in-doc insight-find" data-card-index="' + cardIndex + '">Find in document &uarr;</a>';
-        }
-        html += '</div>';
-        return html;
-    }
-
-    // Show clause context only (on navigate, before flip)
-    function showInsightContext(cardEl) {
-        var col = $('insightColumn');
-        var card = $('insightCard');
-        var inner = $('insightCardInner');
-        if (!col || !card || !inner) return;
-
-        var html = buildInsightContextHtml(cardEl);
-        if (!html) { hideInsightColumn(); return; }
-
-        inner.innerHTML = html;
-        card.className = 'insight-card';
-        col.classList.remove('hidden');
-        // Neutral label before flip
-        var label = $('insightLabel');
-        if (label) label.textContent = 'Clause text';
-        requestAnimationFrame(function() { card.classList.add('visible'); });
-    }
-
-    // Show full insight (on flip — analysis title + should-read + figure + example)
-    function showInsightForCard(cardEl) {
-        var col = $('insightColumn');
-        var card = $('insightCard');
-        var inner = $('insightCardInner');
-        if (!col || !card || !inner) return;
-
-        var risk = cardEl.getAttribute('data-risk-level') || 'green';
-        var shouldRead = cardEl.getAttribute('data-should-read') || '';
-        var enShouldRead = cardEl.getAttribute('data-en-should-read');
-
-        // Full analysis context (title + quote) — reveals the analysis title
-        var html = buildInsightRevealHtml(cardEl);
-
-        // "What you should read" section
-        if (shouldRead) {
-            html += '<div class="insight-should-read">' + highlightNumbers(shouldRead) + '</div>';
-            if (enShouldRead) {
-                html += '<div class="insight-en">' + highlightNumbers(enShouldRead) + '</div>';
-            }
-        }
-
-        // Figure + Example moved to card back — no duplication here
-
-        if (!html) { hideInsightColumn(); return; }
-        inner.innerHTML = html;
-
-        // Set risk color and reveal label
-        card.className = 'insight-card insight-card-' + risk;
-        col.classList.remove('hidden');
-        var label = $('insightLabel');
-        if (label) label.textContent = 'Your reality check';
-        requestAnimationFrame(function() { card.classList.add('visible'); });
-    }
-
-    function hideInsightColumn() {
-        var col = $('insightColumn');
-        var card = $('insightCard');
-        if (card) card.classList.remove('visible');
-        if (col) col.classList.add('hidden');
     }
 
     function showCardAtIndex(index) {
@@ -3865,9 +4267,6 @@
             }
         }
 
-        // Show clause context in insight column (title + quote only)
-        showInsightContext(cards[index]);
-
         // Animate score bar on visible card
         var visibleCard = cards[index];
         var scoreBarFill = visibleCard.querySelector('.back-score-bar-fill');
@@ -3879,7 +4278,48 @@
         // Scroll document preview to matching clause
         scrollPreviewToCard(index);
 
+        // Update chapter title — persistent editorial voice
+        updateChapterTitle(index, cards.length, visibleCard);
+
         updateCardNavigation();
+    }
+
+    var chapterPhrases = [
+        'Everything looks standard\u2026 until you flip it.',
+        'The fine print gets finer.',
+        'Another clause, another assumption.',
+        'This one reads quickly. That\u2019s the point.',
+        'Standard language. Unusual implications.',
+        'The drafter wrote this one carefully.',
+        'Almost done. The pattern is forming.',
+        'One more look before the verdict.',
+        'What you skip is what they keep.',
+        'Familiar words. Unfamiliar consequences.',
+        'They buried the important part.',
+        'Read this one slowly.',
+    ];
+
+    function updateChapterTitle(index, total, cardEl) {
+        var ct = $('chapterTitle');
+        var counter = $('chapterCounter');
+        var text = $('chapterText');
+        if (!ct || !counter || !text) return;
+
+        var num = index + 1;
+        counter.textContent = 'Clause ' + num + ' of ' + (flipCardsBuilt ? total : total + '+');
+
+        // Pick phrase: first card gets the hook, last card gets the closer
+        var phrase;
+        if (index === 0) {
+            phrase = chapterPhrases[0];
+        } else if (flipCardsBuilt && index === total - 1) {
+            phrase = chapterPhrases[7]; // "One more look before the verdict."
+        } else {
+            // Rotate through middle phrases based on card index
+            phrase = chapterPhrases[((index - 1) % (chapterPhrases.length - 2)) + 1];
+        }
+        text.textContent = phrase;
+        ct.classList.add('visible');
     }
 
     // ── Update card navigation state ─────────────────────────
@@ -3923,7 +4363,7 @@
 
     // ── Phase 3: Render deep analysis into separate container ──
     function renderDeepAnalysisContent() {
-        var deepText = responseContent.substring(quickDoneContentLength);
+        var deepText = assembleDeepText();
         if (!deepText.trim()) return;
 
         // Add Opus header once
@@ -3974,6 +4414,9 @@
         }
 
         wrapClauseSections(deepAnalysisEl);
+
+        // Promote "How Opus 4.6 Analyzed This" to a callout near the top
+        promoteOpusMethodSection(deepAnalysisEl);
 
         // Animate new deep analysis cards
         deepAnalysisEl.querySelectorAll('.cross-clause-card, .playbook-card, .assessment-card').forEach(function(card) {
@@ -4128,20 +4571,56 @@
         return 'clause';
     }
 
+    // ── Promote "How Opus 4.6 Analyzed This" to top callout ──
+    function promoteOpusMethodSection(container) {
+        var opusH2 = null;
+        container.querySelectorAll('h2').forEach(function(h2) {
+            var t = h2.textContent.toLowerCase();
+            if (t.indexOf('how opus') >= 0 || t.indexOf('analyzed this') >= 0) opusH2 = h2;
+        });
+        if (!opusH2) return;
+
+        // Gather content between this H2 and the next H2/HR
+        var content = [];
+        var sibling = opusH2.nextElementSibling;
+        while (sibling && sibling.tagName !== 'H2' && !(sibling.tagName === 'HR' && sibling.classList.contains('editorial-divider'))) {
+            content.push(sibling);
+            sibling = sibling.nextElementSibling;
+        }
+        if (content.length === 0) return;
+
+        // Build callout
+        var callout = document.createElement('div');
+        callout.className = 'opus-method-callout';
+        callout.innerHTML = '<div class="callout-label">How Opus 4.6 Analyzed This Document</div>';
+        content.forEach(function(el) { callout.appendChild(el.cloneNode(true)); });
+
+        // Remove original section (H2 + content + preceding divider)
+        var prevDivider = opusH2.previousElementSibling;
+        if (prevDivider && prevDivider.classList && prevDivider.classList.contains('editorial-divider')) {
+            prevDivider.remove();
+        }
+        content.forEach(function(el) { el.remove(); });
+        opusH2.remove();
+
+        // Insert at top of deep analysis
+        container.insertBefore(callout, container.firstChild);
+    }
+
     // ── Clause data extraction ────────────────────────────────
     function extractClausesFromResponse() {
+        // DOM-based: reads from card elements (works for both front-only and full data)
+        var cards = flipCardContainer.querySelectorAll('.flip-card');
         var clauses = [];
-        var clauseRe = /###\s+(.+?)\s*\(([^)]+)\)[\s\S]*?\[?(GREEN|YELLOW|RED)\]?\s*(?:·|·)\s*Score:\s*(\d+)(?:\/100)?(?:\s*(?:·|·)\s*Trick:\s*(.+?))?$/gm;
-        var match;
-        while ((match = clauseRe.exec(responseContent)) !== null) {
+        cards.forEach(function(card) {
             clauses.push({
-                title: match[1].trim(),
-                section: match[2].trim(),
-                level: match[3].toLowerCase(),
-                score: parseInt(match[4]),
-                trick: match[5] ? match[5].trim() : ''
+                title: card.getAttribute('data-clause-title') || '',
+                section: card.getAttribute('data-section-ref') || '',
+                level: card.getAttribute('data-risk-level') || '',
+                score: parseInt(card.getAttribute('data-score') || '0'),
+                trick: card.getAttribute('data-trick') || ''
             });
-        }
+        });
         return clauses;
     }
 
@@ -4158,11 +4637,34 @@
         if (counts.yellow > 0) html += '<button class="filter-chip chip-yellow" data-filter="yellow">' + counts.yellow + ' Yellow</button>';
         if (counts.green > 0)  html += '<button class="filter-chip chip-green" data-filter="green">' + counts.green + ' Green</button>';
 
+        // Trick type chips (only for tricks appearing 2+ times)
+        var trickCounts = {};
+        clauses.forEach(function(c) {
+            if (c.trick) trickCounts[c.trick] = (trickCounts[c.trick] || 0) + 1;
+        });
+
+        var trickHtml = '';
+        var sortedTricks = Object.keys(trickCounts)
+            .filter(function(t) { return trickCounts[t] >= 2; })
+            .sort(function(a, b) { return trickCounts[b] - trickCounts[a]; });
+
+        sortedTricks.forEach(function(trick) {
+            var emoji = TRICK_MAP[trick] || '';
+            trickHtml += '<button class="filter-chip chip-trick" data-filter-trick="' +
+                escapeHtml(trick) + '">' + emoji + ' ' + escapeHtml(trick) +
+                ' <span class="chip-count">' + trickCounts[trick] + '</span></button>';
+        });
+
+        if (trickHtml) {
+            html += '<div class="trick-chip-row">' + trickHtml + '</div>';
+        }
+
         if (html) {
             filterChips.innerHTML = html;
             filterChips.classList.remove('hidden');
 
-            filterChips.querySelectorAll('.filter-chip').forEach(function(chip) {
+            // Risk level chip handlers
+            filterChips.querySelectorAll('.filter-chip[data-filter]').forEach(function(chip) {
                 chip.addEventListener('click', function() {
                     var level = chip.getAttribute('data-filter');
                     if (activeFilters.has(level)) {
@@ -4175,33 +4677,78 @@
                     applyFilters();
                 });
             });
+
+            // Trick type chip handlers
+            filterChips.querySelectorAll('.chip-trick').forEach(function(chip) {
+                chip.addEventListener('click', function() {
+                    var trick = chip.getAttribute('data-filter-trick');
+                    if (activeTrickFilters.has(trick)) {
+                        activeTrickFilters.delete(trick);
+                        chip.classList.remove('active');
+                    } else {
+                        activeTrickFilters.add(trick);
+                        chip.classList.add('active');
+                    }
+                    applyFilters();
+                });
+            });
+        }
+    }
+
+    function activateTrickFilter(trickName) {
+        // Activate a trick filter from playbook click
+        var chip = filterChips.querySelector('.chip-trick[data-filter-trick="' + CSS.escape(trickName) + '"]');
+        if (chip && !activeTrickFilters.has(trickName)) {
+            activeTrickFilters.add(trickName);
+            chip.classList.add('active');
+        }
+        applyFilters();
+        // Scroll to cards
+        var viewport = $('cardViewport');
+        if (viewport && !viewport.classList.contains('hidden')) {
+            viewport.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 
     function applyFilters() {
         var container = flipCardsBuilt && !isCompareMode ? flipCardContainer : resultsContent;
         var selector = '.clause-card, .flip-card';
-        if (activeFilters.size === 0) {
+        var noFilters = activeFilters.size === 0 && activeTrickFilters.size === 0;
+
+        if (noFilters) {
             container.querySelectorAll(selector).forEach(function(card) {
                 card.style.display = '';
             });
-            // If using card viewport, re-show current card
             if (flipCardsBuilt && !isCompareMode) showCardAtIndex(0);
             return;
         }
+
+        var visibleCards = [];
         container.querySelectorAll(selector).forEach(function(card) {
             var level = card.getAttribute('data-risk-level');
-            if (level && activeFilters.has(level)) {
+            var trick = card.getAttribute('data-trick') || '';
+
+            var riskMatch = activeFilters.size === 0 || (level && activeFilters.has(level));
+            var trickMatch = activeTrickFilters.size === 0 || activeTrickFilters.has(trick);
+
+            if (riskMatch && trickMatch) {
                 card.style.display = '';
-            } else if (level) {
+                visibleCards.push(card);
+            } else {
                 card.style.display = 'none';
             }
         });
+
+        // Show first visible card in card viewport mode
+        if (flipCardsBuilt && !isCompareMode && visibleCards.length > 0) {
+            var idx = parseInt(visibleCards[0].getAttribute('data-clause-index')) || 0;
+            showCardAtIndex(idx);
+        }
     }
 
     // ── Summary card builder ──────────────────────────────────
     function buildSummaryCard() {
-        var text = responseContent;
+        var text = assembleDeepText() || responseContent;
         var scoreMatch = text.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
         if (!scoreMatch) return;
         var score = parseInt(scoreMatch[1]);
@@ -4280,31 +4827,69 @@
         summaryContainer.innerHTML = h;
     }
 
-    // ── Thinking toggle (show/hide raw reasoning) ──────────────
-    $('thinkingToggle').addEventListener('click', function(e) {
-        e.stopPropagation();
-        var isCollapsed = thinkingPanel.classList.contains('collapsed');
-        if (isCollapsed) {
-            thinkingPanel.classList.remove('collapsed');
-            thinkingToggle.textContent = 'Hide reasoning';
-        } else {
-            thinkingPanel.classList.add('collapsed');
-            thinkingToggle.textContent = 'Show reasoning';
-        }
-    });
+    // ── Drafter's Playbook — trick frequency visualization ───
+    function buildPlaybookCard() {
+        var clauses = extractClausesFromResponse();
+        var trickCounts = {};
+        clauses.forEach(function(c) {
+            if (c.trick) {
+                trickCounts[c.trick] = (trickCounts[c.trick] || 0) + 1;
+            }
+        });
 
-    // ── Report button (show full verdict) ────────────────────
-    $('reportToggle').addEventListener('click', function(e) {
+        var sorted = Object.keys(trickCounts).sort(function(a, b) {
+            return trickCounts[b] - trickCounts[a];
+        });
+
+        if (sorted.length === 0) return;
+
+        var maxCount = trickCounts[sorted[0]];
+        var uniqueCount = sorted.length;
+
+        var h = '<div class="playbook-card">';
+        h += '<div class="playbook-header">';
+        h += '<span class="playbook-title">The Drafter\'s Playbook</span>';
+        h += '<span class="playbook-subtitle">' + uniqueCount + ' of 18 trick types found</span>';
+        h += '</div>';
+
+        h += '<div class="playbook-bars">';
+        sorted.forEach(function(trick) {
+            var count = trickCounts[trick];
+            var pct = Math.round((count / maxCount) * 100);
+            var emoji = TRICK_MAP[trick] || '';
+            var desc = TRICK_DESCRIPTIONS[trick] || '';
+            h += '<div class="playbook-row" data-trick="' + escapeHtml(trick) + '" title="' + escapeHtml(desc) + '">';
+            h += '<span class="playbook-trick-name">' + emoji + ' ' + escapeHtml(trick) + '</span>';
+            h += '<div class="playbook-bar-track"><div class="playbook-bar-fill" style="width:' + pct + '%"></div></div>';
+            h += '<span class="playbook-count">' + count + '\u00d7</span>';
+            h += '</div>';
+        });
+        h += '</div></div>';
+
+        summaryContainer.insertAdjacentHTML('beforeend', h);
+
+        // Click handler: playbook row → activate trick filter
+        summaryContainer.querySelectorAll('.playbook-row').forEach(function(row) {
+            row.addEventListener('click', function() {
+                var trick = row.getAttribute('data-trick');
+                if (trick) activateTrickFilter(trick);
+            });
+        });
+    }
+
+    // ── Verdict column expand button ─────────────────────────
+    verdictExpandBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         revealDeepAnalysis();
     });
 
     // ── Back to cards button (from verdict view) ──────────────
     $('backToCardsBtn').addEventListener('click', function() {
+        if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
         $('deepAnalysisSection').classList.add('hidden');
         $('cardViewport').classList.remove('hidden');
-        thinkingPanel.classList.add('hidden');
-        // Scroll to card viewport
+        // Re-show verdict column
+        if (isDoneRendering || deepTextComplete) verdictCol.classList.add('visible');
         setTimeout(function() {
             $('cardViewport').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
@@ -4312,13 +4897,21 @@
 
     // ── Back button ───────────────────────────────────────────
     backBtn.addEventListener('click', function() {
+        if (!isDoneRendering && eventSource) {
+            if (!confirm('Analysis is still running. Going back will discard all results.')) return;
+        }
         if (eventSource) { eventSource.close(); eventSource = null; }
         if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
+        if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
         stopStatusRotation();
         stopEditorialStatusRotation();
+        resetVerdictCol();
 
         analysisScreen.classList.add('hidden');
         uploadScreen.classList.remove('hidden');
+        // Reset layout expand state
+        var layoutEl = document.querySelector('.analysis-layout');
+        layoutEl.classList.remove('sidebar-visible');
 
         // Reset upload UI
         analyzeBtn.textContent = isCompareMode ? 'Compare documents' : 'Show me the dark side of small print';
@@ -4360,6 +4953,7 @@
             '<h1>' + escapeHtml(docName) + '</h1>' +
             (summaryContainer.innerHTML || '') +
             (flipCardsBuilt && !isCompareMode ? (flipCardContainer.innerHTML + deepAnalysisEl.innerHTML) : resultsContent.innerHTML) +
+            (counterDraftContent.innerHTML ? '<hr><h2>Counter-Draft Suggestions</h2>' + counterDraftContent.innerHTML : '') +
             '<div class="footer">Generated by FlipSide — The dark side of small print.<br>Powered by Claude Opus 4.6 extended thinking.</div>' +
             '</body></html>';
         var blob = new Blob([exportHtml], { type: 'text/html' });
@@ -4369,6 +4963,46 @@
         a.download = docName.replace(/[^a-z0-9]/gi, '_') + '_FlipSide.html';
         a.click();
         URL.revokeObjectURL(url);
+    });
+
+    // ── Email to Lawyer ─────────────────────────────────────────
+    $('emailLawyerBtn').addEventListener('click', function() {
+        var docName = 'FlipSide Analysis';
+        var meta = metadataLine.textContent;
+        if (meta) docName = meta.split('Type:')[1] ? meta.split('Type:')[1].split('Drafted')[0].trim() : docName;
+
+        // Extract risk score
+        var scoreMatch = responseContent.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
+        var score = scoreMatch ? scoreMatch[1] : '?';
+
+        // Extract top 3 concerns from summary card data
+        var concerns = [];
+        var assessmentStart = responseContent.indexOf('Overall Assessment');
+        var assessmentText = assessmentStart >= 0 ? responseContent.substring(assessmentStart) : responseContent;
+        var concernLines = assessmentText.match(/\d+\.\s*\*\*.+?\*\*\s*(?:—|[-–]).+/g);
+        if (concernLines) {
+            concernLines.slice(0, 3).forEach(function(line) {
+                var m = line.match(/\d+\.\s*\*\*(.+?)\*\*\s*(?:—|[-–])\s*(.+)/);
+                if (m) concerns.push(m[1] + ' — ' + m[2].trim());
+            });
+        }
+
+        var subject = 'FlipSide Analysis — ' + docName + ' (Risk: ' + score + '/100)';
+        var body = 'Hi,\n\n' +
+            'I ran an AI analysis on a document I received and wanted to share the key findings with you.\n\n' +
+            'Document: ' + docName + '\n' +
+            'Risk Score: ' + score + '/100\n\n';
+        if (concerns.length) {
+            body += 'Top concerns:\n';
+            concerns.forEach(function(c, i) { body += (i + 1) + '. ' + c + '\n'; });
+            body += '\n';
+        }
+        body += 'I have the full analysis saved as an HTML report (use "Save Report" in FlipSide to download).\n\n' +
+            'Could you review this and let me know which clauses I should push back on?\n\n' +
+            'Generated by FlipSide — The dark side of small print.\n' +
+            'Powered by Claude Opus 4.6 extended thinking.';
+
+        window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
     });
 
     // ── Dark mode ─────────────────────────────────────────────
@@ -4477,6 +5111,120 @@
     followupInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // ── Worst-Case Timeline ──────────────────────────────────
+    timelineBtn.addEventListener('click', function() {
+        if (!currentDocId || timelineBtn.disabled) return;
+        timelineBtn.disabled = true;
+        timelineBtn.textContent = 'Building timeline…';
+        timelineContent.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">' +
+            '<div class="pulsing-dots"><span></span><span></span><span></span></div>' +
+            '<div style="margin-top:0.8rem;font-size:0.85rem">Opus 4.6 is simulating what could go wrong…</div></div>';
+
+        var responseText = '';
+        fetch(BASE_URL + '/timeline/' + currentDocId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: documentFullText })
+        }).then(function(response) {
+            if (!response.ok) return response.json().then(function(err) { throw new Error(err.error || 'Request failed'); });
+            var reader = response.body.getReader();
+            var decoder = new TextDecoder();
+            var buffer = '';
+            var thinkingDone = false;
+
+            function processChunk(result) {
+                if (result.done) { timelineBtn.textContent = 'Timeline generated'; return; }
+                buffer += decoder.decode(result.value, { stream: true });
+                var lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i].trim();
+                    if (!line.startsWith('data: ')) continue;
+                    var msg;
+                    try { msg = JSON.parse(line.substring(6)); } catch(e) { continue; }
+                    if (msg.type === 'text') {
+                        if (!thinkingDone) { thinkingDone = true; timelineContent.innerHTML = ''; }
+                        responseText += msg.content;
+                        timelineContent.innerHTML = '<div class="counter-draft-content">' + safeMd2Html(responseText) + '</div>';
+                    } else if (msg.type === 'done') {
+                        if (responseText) timelineContent.innerHTML = '<div class="counter-draft-content">' + safeMd2Html(responseText) + '</div>';
+                        timelineBtn.textContent = 'Timeline generated';
+                        return;
+                    } else if (msg.type === 'error') {
+                        timelineContent.innerHTML = '<span style="color:var(--red)">' + escapeHtml(msg.content) + '</span>';
+                        timelineBtn.textContent = 'Worst-Case Timeline';
+                        timelineBtn.disabled = false;
+                        return;
+                    }
+                }
+                return reader.read().then(processChunk);
+            }
+            return reader.read().then(processChunk);
+        }).catch(function(err) {
+            timelineContent.innerHTML = '<span style="color:var(--red)">' + escapeHtml(err.message) + '</span>';
+            timelineBtn.textContent = 'Worst-Case Timeline';
+            timelineBtn.disabled = false;
+        });
+    });
+
+    // ── Counter-Draft ─────────────────────────────────────────
+    counterDraftBtn.addEventListener('click', function() {
+        if (!currentDocId || counterDraftBtn.disabled) return;
+        counterDraftBtn.disabled = true;
+        counterDraftBtn.textContent = 'Generating counter-draft…';
+        counterDraftContent.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">' +
+            '<div class="pulsing-dots"><span></span><span></span><span></span></div>' +
+            '<div style="margin-top:0.8rem;font-size:0.85rem">Opus 4.6 is drafting fair alternatives…</div></div>';
+
+        var responseText = '';
+        fetch(BASE_URL + '/counter-draft/' + currentDocId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: documentFullText })
+        }).then(function(response) {
+            if (!response.ok) return response.json().then(function(err) { throw new Error(err.error || 'Request failed'); });
+            var reader = response.body.getReader();
+            var decoder = new TextDecoder();
+            var buffer = '';
+            var thinkingDone = false;
+
+            function processChunk(result) {
+                if (result.done) { finishCounterDraft(); return; }
+                buffer += decoder.decode(result.value, { stream: true });
+                var lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i].trim();
+                    if (!line.startsWith('data: ')) continue;
+                    var msg;
+                    try { msg = JSON.parse(line.substring(6)); } catch(e) { continue; }
+                    if (msg.type === 'text') {
+                        if (!thinkingDone) { thinkingDone = true; counterDraftContent.innerHTML = ''; }
+                        responseText += msg.content;
+                        counterDraftContent.innerHTML = '<div class="counter-draft-content">' + safeMd2Html(responseText) + '</div>';
+                    } else if (msg.type === 'done') {
+                        if (responseText) counterDraftContent.innerHTML = '<div class="counter-draft-content">' + safeMd2Html(responseText) + '</div>';
+                        finishCounterDraft();
+                        return;
+                    } else if (msg.type === 'error') {
+                        counterDraftContent.innerHTML = '<span style="color:var(--red)">' + escapeHtml(msg.content) + '</span>';
+                        finishCounterDraft();
+                        return;
+                    }
+                }
+                return reader.read().then(processChunk);
+            }
+            return reader.read().then(processChunk);
+        }).catch(function(err) {
+            counterDraftContent.innerHTML = '<span style="color:var(--red)">' + escapeHtml(err.message) + '</span>';
+            finishCounterDraft();
+        });
+
+        function finishCounterDraft() {
+            counterDraftBtn.textContent = 'Counter-draft generated';
+        }
     });
 
 })();

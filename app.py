@@ -10,6 +10,7 @@ Optimized for Claude Opus 4.6 extended thinking:
 """
 
 import os
+import re
 import uuid
 import json
 import time
@@ -580,45 +581,63 @@ Evergreen Estate Event Venue
 """
 },
 
-'escape': {
-    'filename': 'Puzzle Panic Escape Room Waiver (Sample)',
-    'text': """PUZZLE PANIC ESCAPE ROOMS
-PARTICIPANT WAIVER, RELEASE & ASSUMPTION OF RISK
+'sweepstakes': {
+    'filename': 'Coca-Cola Around the World Sweepstakes Part 2 — Official Rules (Sample)',
+    'text': """COCA-COLA\u00ae AROUND THE WORLD SWEEPSTAKES PART 2
+OFFICIAL RULES
+NO PURCHASE OR PAYMENT OF ANY KIND IS NECESSARY TO ENTER OR WIN. A PURCHASE OR PAYMENT WILL NOT INCREASE YOUR CHANCES OF WINNING.
 
-Location: Puzzle Panic — Downtown, 88 Industrial Blvd, Suite 200, Denver, CO 80204
+1. Eligibility: The Coca\u2011Cola Around the World Sweepstakes Part 2 (the "Sweepstakes") is open only to legal residents of the 50 U.S./D.C. ("Eligibility Area"), who are 18 years of age or older as of the date of entry ("Entrant"). Void outside the Eligibility Area and where prohibited by law. Employees of The Coca\u2011Cola Company (the "Sponsor"), WPP plc, Coca\u2011Cola bottlers, Don Jagoda Associates, Inc. ("Administrator"), and their respective subsidiaries, parents, divisions, franchisees, promotional partners, agencies, affiliates, advertising and promotion agencies (collectively, the "Released Sweepstakes Parties") as well as the immediate family (spouse, parents, siblings and children) and household members of each such employee, are not eligible to participate. This Sweepstakes is subject to all applicable federal, state, and local laws and regulations. Participation constitutes Entrant's full and unconditional agreement to these Official Rules.
 
-Please read carefully before signing. This document affects your legal rights.
+2. Sweepstakes Period: The Sweepstakes begins at 9:00 am Eastern Time ("ET") on November 10, 2025 and ends at 11:59 pm ET on December 31, 2025 ("Sweepstakes Period").
 
-1. ASSUMPTION OF RISK
+3. How to Enter: There are three (3) ways to enter during the Sweepstakes Period:
+Via Instagram: The Sponsor will post an Instagram ad/post (an "Instagram Post") in relation to the Sweepstakes. Click on the Instagram Post and complete the registration form on screen in its entirety in order to receive one (1) entry into the random drawing, subject to the limit below ("Instagram Entry"). If you do not have an Instagram account, you can create one for free.
+Via Facebook: The Sponsor will post a Facebook ad/post (a "Facebook Post") in relation to the Sweepstakes. Click on the Facebook Post and complete the registration form on screen in its entirety in order to receive one (1) entry into the random drawing, subject to the limit below ("Facebook Entry"). If you do not have a Facebook account, you can create one for free.
 
-Participant acknowledges that escape room activities involve inherent risks including but not limited to: physical exertion, confined spaces, low-light conditions, fog and haze effects, sudden loud sounds, physical contact with props and set pieces, tripping hazards, moving mechanical elements, and simulated scenarios involving psychological stress. Participant voluntarily assumes all risks, known and unknown, foreseeable and unforeseeable, arising from participation. Puzzle Panic makes no representations regarding the safety of any room, prop, mechanism, or effect.
+Any attempt by any Entrant to obtain more than the stated number of Facebook or Instagram Entries by using multiple/different social media accounts, email addresses, identities, registrations or logins, or any other methods will void that Entrant's Facebook or Instagram Entries and that Entrant may be disqualified from the Sweepstakes. In the event of a dispute as to any Facebook or Instagram Entry, the authorized account holder of the email address associated with their Facebook or Instagram account will be deemed to be the Entrant. The "authorized account holder" is the natural person assigned an email address by an Internet access provider, online service provider or other organization responsible for assigning email addresses for the domain associated with the submitted address. The Potential winner may be required to show proof of being the authorized account holder.
+Mail-in Alternate Method of Entry ("AMOE"): To enter without completing an Instagram Entry or a Facebook Entry, you may enter by hand-printing your complete name, street address (no P.O. Boxes), city, state, ZIP code, telephone numbers (including area code), date of birth (mm/dd/yyyy) and a valid email address on a plain 3"x5" index card, and mail it in an envelope with sufficient postage affixed, to: The Coca\u2011Cola Around the World Sweepstakes Part 2, P.O. Box 7656, Melville, NY 11775-7656 to receive one (1) entry into the Sweepstakes ("AMOE Entry"). AMOE Entries must be postmarked by December 31, 2025 and received by January 8, 2026. AMOE Entries that are mechanically reproduced, copied, illegible, incomplete, postage-due or inaccurate and AMOE Entries submitted by any means which subvert the AMOE Entry process are void. AMOE Entries become the property of the Sponsor and will not be acknowledged or returned.
 
-2. WAIVER AND RELEASE OF LIABILITY
+Instagram Entry, Facebook Entry, and AMOE Entry will be collectively referred to as "Entry" or "Entries". There is a limit of one (1) Entry per Entrant, regardless of the method of Entry.
 
-Participant, on behalf of themselves, their heirs, executors, administrators, and assigns, hereby releases, waives, and forever discharges Puzzle Panic Escape Rooms, its owners, officers, employees, contractors, affiliates, and landlord from any and all liability, claims, demands, and causes of action arising from or related to participation, including claims for personal injury, death, emotional distress, property damage, or property loss. This release applies regardless of whether the harm is caused by negligence, gross negligence, or recklessness of the released parties. This waiver is binding even if Puzzle Panic fails to maintain equipment, ignores known hazards, or inadequately trains staff.
+4. Random Drawing and Odds of Winning: One (1) Grand Prize winner will be selected in a random drawing on or about January 9, 2026 from among all eligible Entries received. Drawing will be conducted by the Administrator, an independent judging organization whose decisions are final and binding on all matters related to the drawing. The odds of winning will depend on the total number of eligible Entries received.
 
-3. HEALTH AND PHYSICAL CONDITION
+5. Prize/Approximate Retail Value ("ARV"):
+Grand Prize (1): The Grand Prize consists of the following trips (each a "Trip"):
+A 3-day, 2-night Trip for two (2) to Atlanta, Georgia. This portion of the Grand Prize includes round-trip economy air transportation for the winner and one (1) travel companion from major airport nearest winner's home to Atlanta, Georgia, hotel accommodations for two (2) nights for the winner and travel companion [based on one (1) room, double occupancy], a Sponsor-specified World of Coca\u2011Cola tour, and a private tour of Atlanta, GA, (each an "Atlanta Tour"), and a $750 check for winner that can be used towards spending money.
+A 5-day, 4-night Trip for two (2) to Mexico City, Mexico. This portion of the Grand Prize includes round-trip economy air transportation for the winner and one (1) travel companion from major airport nearest winner's home to Mexico City, Mexico, hotel accommodations for four (4) nights for the winner and travel companion [based on one (1) room, double occupancy], two (2) tickets for a personalized and private Mexico City taco tour, a Mexico City highlights tour and hidden gems tour (each a "Mexico City Tour") and a $750 check that can be used towards spending money for the Grand Prize winner.
+A 7-day, 6-night Trip for two (2) to Rio De Janeiro, Brazil. This portion of the Grand Prize includes round-trip economy air transportation for the Grand Prize winner and travel companion from major airport nearest winner's home to Rio De Janeiro, Brazil, hotel accommodations for six (6) nights for the winner and travel companion [based on one (1) room, double occupancy], the Grand Prize winner and travel companion will also receive, a Rio Carnival experience with tour guide, a Christ Redeemer entrance pass, and a Sugarloaf cable car entrance pass (each a "Rio De Janeiro Tour"). The Grand Prize winner will also receive a $750 check that can be used towards spending money.
+A 7-day, 6-night Trip for two (2) to Tokyo, Japan. This portion of the Grand Prize includes round-trip economy air transportation for the Grand Prize winner and travel companion from major airport nearest winner's home to Tokyo, Japan, hotel accommodations for six (6) nights for the winner and travel companion [based on one (1) room, double occupancy], the winner and travel companion will also receive, a Coca\u2011Cola Japan bottlers factory tour, a Private half-day tour, and Mt. Fuji full-day tour (each a "Tokyo Tour"). The winner will also receive a $750 check that can be used towards spending money.
+A 6-day, 5-night Trip for two (2) to London, England. This portion of the Grand Prize includes round-trip economy air transportation for the Grand Prize winner and travel companion from major airport nearest winner's home to London, England, hotel accommodations for five (5) nights for the winner and travel companion [based on one (1) room, double occupancy], the winner and travel companion will also receive London-in-a-Day walking tour, and two (2) tickets to London Eye fast track (each a "London Tour"). The winner will receive a $750 check that can be used towards spending money.
 
-Participant represents that they are in adequate physical and mental health to participate. Puzzle Panic does not provide medical personnel on-site. In the event of a medical emergency, Participant authorizes Puzzle Panic to contact emergency services and consents to any emergency medical treatment, the cost of which shall be Participant's sole responsibility. Participants with claustrophobia, epilepsy, heart conditions, or anxiety disorders participate entirely at their own risk. Puzzle Panic is not required to disclose room-specific triggers or effects in advance.
+The Grand Prize winner will also receive a check in the amount of $15,000 that can be used to help defray the tax liability associated with the complete Grand Prize.
 
-4. RECORDING AND MEDIA RIGHTS
+ARV of the complete Grand Prize: $57,312.
+Each Atlanta Tour, Mexico City Tour, Rio De Janeiro Tour, Tokyo Tour, and London Tour will collectively be referred to as "Tour" or "Tours". The Grand Prize will be referred to as "Prize".
 
-Participant consents to being filmed, photographed, and audio-recorded via security cameras and in-room monitoring systems during the entire experience. Puzzle Panic retains all rights to this footage and may use it for security, training, marketing, social media, promotional materials, and commercial purposes without compensation, notification, or additional consent. Participant waives any right to review, approve, or receive payment for use of their likeness, voice, or image. Footage may be retained indefinitely.
+Trips do not need to be taken consecutively. Airline tickets are for travel from major airport in the United States nearest winner's home to each destination city. Airline carrier's regulations and conditions apply. Prize may not be combined with any other offer and travel may not qualify for frequent flyer miles. The Prize winner may select a different travel companion for each Trip or may have the same travel companion for all Trips. The Prize winner and travel companion for the applicable Trip must travel together on the same itinerary. Each travel companion (or winner on behalf of travel companion who is a minor and their child/charge) of the winner, will be required to execute a Release of Liability prior to departure. All travelers must have applicable valid travel documents prior to departure [i.e., REAL ID-compliant driver's license or REAL ID-compliant non-driver identification, passport (or passport card), VISA, etc.]. Passports must valid for at least six (6) months after travel is completed for international travel. All Trips must be completed within two (2) years of winner verification (or any Trips not taken will be forfeited); dates of departure and return for each Trip are subject to change. The Atlanta, Georgia Trip must be booked no less than 30 days prior to departure. The Mexico City, Mexico Trip and London, England Trip must be booked no less than 60 days prior to departure. The Rio De Janeiro Trip must be booked no less than 6 months prior to departure. Tokyo, Japan Trip must be booked no less than 90 days prior to departure. Certain restrictions and blackout dates may apply for each Trip. Seat selection and timing of Trips are subject to availability and confirmation of reservations. In the event the winner lives within a 150-mile radius of Atlanta, GA, round-trip ground transportation will be provided in lieu of air transportation and no additional compensation will be provided for the air transportation portion of that Trip. If the Prize winner elects to travel or participate in any Trip with no travel companion, no additional compensation will be awarded for the travel companion portion of that Trip. No refunds or credit for changes are allowed. All other expenses and costs, not expressly listed above, including, but not limited to, airline baggage fees, taxes, tips, entertainment, transfers, and transportation to airports to and from winner's home residence are the winner's sole responsibility. Prize winner will be required to provide a valid major credit card or some other acceptable form of payment, as determined in the hotel's sole discretion upon hotel check-in and all in-room charges, telephone calls, meals, beverages, hotel upgrades, amenities, personal incidentals and any other expenses charged to the winner's hotel room will be charged to that major valid credit card. In the event that the winner or their travel companion for any Trip engage in behavior that (as determined by Sponsor in Sponsor's sole discretion) is inappropriate or threatening, illegal or that is intended to annoy, abuse, threaten or harass any other person, Sponsor reserves the right to terminate any Trip early and/or eject them from any portion of a Trip or the applicable Tour, in whole or in part, and send the winner and their travel companion home with no further compensation to the Prize winner.
 
-5. PERSONAL PROPERTY AND PROHIBITED ITEMS
+Lost, mutilated, or stolen Tour tickets will not be replaced. By accepting the Prize, Prize winner agrees to abide by any terms, conditions and restrictions provided by the applicable Tour and the Tour venue. Sponsor is not responsible if winner does not use Tour tickets on day of a scheduled Tour. Sponsor is not responsible if the Tour is delayed, postponed or cancelled for any reason and the winner will not be reimbursed. Released Sweepstakes Parties will not be responsible for Acts of God, acts of terrorism, civil disturbances, work stoppage or any other natural disaster outside of Released Sweepstakes Parties' control that may cause the cancellation or postponement of any Tour. Tour tickets are subject to issuer's standard terms and conditions, including but not limited to rain-check policies and procedures. Restrictions, conditions and limitations may apply. Winner and their travel companion(s) must follow any applicable COVID or other protocols in place at time of travel and each Tour. All Prize details are in Sponsor's sole discretion. Tours may need to be taken during certain times of the year or season and certain Tours may not be available at time of Trip or some Tours may be cancelled or discontinued. In case of any Tour cancellation, that portion of the Trip will go unawarded and no additional compensation will be provided.
 
-Participant agrees to store personal belongings in provided lockers. Puzzle Panic is not responsible for lost, stolen, or damaged personal property, including items left in lockers. Cell phones, smart watches, cameras, and recording devices must be surrendered before entering any room. If a personal device is discovered during gameplay, Puzzle Panic reserves the right to immediately end the session without refund. Puzzle Panic may inspect any personal item brought onto the premises.
+If the Prize (or portion of the Prize) becomes unavailable, Sponsor will substitute the Prize or portion of equal or greater retail value (except as stated specifically above). No transfer, cash or other substitution of the Prize is permitted except Sponsor may substitute Prize in whole or in part for one of comparable or greater retail value for any reason. Resale of the complete Prize or any Trip is prohibited.
 
-6. BOOKING, REFUNDS, AND NO-SHOW POLICY
+6. Winner Notification: The potential Prize winner will be contacted via email and will be required to sign and return a Declaration of Eligibility and Liability Release and except where prohibited, publicity release ("Declaration") within three (3) days of notification in order to be confirmed as the winner. If the potential winner fails to return the completed Declaration within three (3) days, Declaration is returned as undeliverable, Entrant shall be deemed to be ineligible, the Prize will be forfeited and an alternate potential winner will be selected for the Prize. Upon Prize forfeiture, no compensation will be given. Administrator will contact the winner within 3-4 weeks after verification to begin travel arrangements. Return of the Prize or notification as undeliverable will result in disqualification and Prize will be forfeited and an alternate will be selected. If an Entrant is disqualified for one of the reasons mentioned above and an alternate is selected, the alternate must complete and return the required documents in the timeframe specified. Up to three (3) alternates may be selected, time permitting. The Prize winner is solely responsible for all taxes in connection with the Prize, including without limitation federal, state and local taxes, and the reporting consequences thereof. The Prize winner will be issued a 1099 tax form for the actual value of the Prize the year the Prize (or portion of the Prize) is awarded.
 
-All bookings are final. No refunds for cancellations made less than 48 hours before the scheduled time. Rescheduling is permitted once, subject to availability, with a $25 per person rescheduling fee. If any member of the booked group fails to arrive within 10 minutes of the scheduled start time, Puzzle Panic may start or cancel the session without adjusting the price. Groups smaller than the minimum room capacity (4 persons) will be merged with other participants at Puzzle Panic's discretion. No refunds for incomplete sessions, technical difficulties, or dissatisfaction with the experience.
+7. Publicity: Except where prohibited, participation in the Sweepstakes constitutes winner's consent to Sponsor and its agents' use of winner's name, likeness, photograph, voice, opinions and/or hometown and state for promotion, advertising, marketing, and promotional purposes in any media, worldwide, without further notice, payment or consideration.
 
-I have read, understood, and voluntarily agree to all terms above.
+8. General Rules: By participating in the Sweepstakes, Entrant fully and unconditionally agrees to and accepts these Official Rules and the decisions of the Sponsor and Administrator, whose decisions are final and binding in all matters related to the Sweepstakes. Any normal Internet/phone access and data/usage charges imposed by Entrants' online/cellular service will apply and are Entrants' sole responsibility. Sponsor is not responsible for any compatibility issues with Entrant's device/browser used for Entry. Entries become the property of Sponsor upon receipt and will not be acknowledged or returned. Entries specifying an invalid, non-working, or inactive email address may be disqualified. No information regarding Entries, other than as otherwise set forth in these Official Rules, will be disclosed. Sponsor is not responsible for lost, interrupted or unavailable network server or other connection; miscommunications; failed phone or computer or telephone transmissions; technical failure; jumbled, scrambled or misdirected transmissions; late, lost, incomplete, delayed, or misdirected Entries; or other errors of any kind whether human, mechanical, or electronic. In the event the Sweepstakes is compromised or impaired in any way for any reason, including but not limited to, fraud, virus, bug, unauthorized human intervention, outbreak of widespread illness, pandemic, civil unrest or any other problem or other causes beyond the control of Sponsor that corrupts or impairs the administration, security, fairness, or proper conduct of the Sweepstakes, Sponsor reserves the right in its sole discretion to suspend or terminate the Sweepstakes and select the winner from among all eligible Entries received prior to cancellation. Sponsor is not responsible for lost, late, misdirected, corrupted, or incomplete Entries. Proof of submission is not proof of receipt by Sponsor. By participation in the Sweepstakes, Entrants, winner, and winner's travel companion(s) release and hold harmless the Released Sweepstakes Parties, Facebook, and Instagram from and against any and all liability, claims, or actions of any kind whatsoever for injuries, damages, or losses to persons or property which may be sustained in connection with submitting an Entry or otherwise participating in any aspect of the Sweepstakes, the receipt, ownership or use of the Prize or any Trip awarded, or while preparing for, participating in any Prize-related activity or any typographical or other errors in these Official Rules or the announcement or offering of the Prize.
 
-Participant Signature: _________________________ Date: _____________
+9. Fraudulent/Disruptive Activities: Any attempt to tamper with, interfere with, or manipulate the Entry process, the operation of the Sweepstakes or the Prize determination, including, but not limited to, the use of AI, bots, automated systems, or fraudulent identities, is strictly prohibited. Entries generated by AI, script, macro, or other automated means, or by any means that subvert the entry process, will be disqualified and may result in the Entrant being disqualified and banned from future promotions conducted by Sponsor and its affiliates. The Sponsor reserves the right to disqualify any individual suspected of engaging in this prohibited conduct, including but not limited to, creating multiple social media accounts, submitting false information, or engaging in any activity that violates these Official Rules. Any such actions may be a violation of criminal and civil law, and, should such an attempt be made, Sponsor reserves the right to not only disqualify such individual but seek damages from such individual to the fullest extent permitted by law. Furthermore, any Entrant that acts in an unsportsmanlike or disruptive manner, or with intent to annoy, abuse, threaten or harass any other person will be disqualified. Sponsor's failure to enforce any term of these Official Rules shall not constitute a waiver of this provision.
 
-Puzzle Panic Escape Rooms
-[Operations Manager]
+10. Disputes: Entrant agrees that: (a) they release and will defend, indemnify and hold harmless the Released Sweepstakes Parties from and all any and all Claims ("Claims"); (b) Claims arising out of or connected with this Sweepstakes, or the Prize awarded shall be resolved individually, without resort to any form of class action, and solely and exclusively in a federal or state court located in Atlanta, GA; (c) Entrant submits to sole and exclusive personal jurisdiction to said courts in the State of Georgia for any such dispute and irrevocably waives any and all rights to object to such jurisdiction; (d) any and all Claims, judgments, and awards shall be limited to actual damages of no more than $100, including costs associated with entering this Sweepstakes, but in no event attorneys' fees; and (e) under no circumstances will Entrant be permitted to obtain awards for and Entrant hereby waives all rights to claim punitive, incidental and consequential damages and any other damages, other than for actual out-of-pocket expenses, and any and all rights to have damages multiplied or otherwise increased. SOME JURISDICTIONS DO NOT ALLOW THE LIMITATION OR EXCLUSION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO THE ABOVE MAY NOT APPLY TO YOU. All issues and questions concerning the construction, validity, interpretation and enforceability of these Official Rules, or the rights and obligations of Entrants or the Released Sweepstakes Parties in connection with this Sweepstakes shall be governed by, and construed in accordance with, the laws of the State of Georgia, without giving effect to any choice of law or conflict of law rules of provisions (whether of the State of Georgia or any other jurisdiction), which would cause the application of the laws of any jurisdiction other than the State of Georgia.
+
+11. Privacy Policy: Information collected by Sponsor in connection with this Sweepstakes may be used by Sponsor and shared with third parties involved in administration of the Sweepstakes in accordance with the Sponsor's online Privacy Policy. The Entrant agrees to the collection, processing and storage of their personal data by Sponsor for the purposes of the Sweepstakes.
+
+12. Winner List: For the name of the winner, available after February 9, 2026, send an email with COKE AROUND THE WORLD SWEEPSTAKES PART 2 WINNERS & 01-2991-62 as the subject line.
+
+13. Sponsor/Administrator: Sponsor of the Sweepstakes is The Coca\u2011Cola Company, One Coca\u2011Cola Plaza, Atlanta, GA 30313. Administrator of the Sweepstakes is Don Jagoda Associates, Inc., 100 Marcus Drive, Melville, NY 11747.
+
+The Sweepstakes is in no way sponsored, endorsed or administered by, or associated with Facebook or Instagram. You understand that you are providing your information to The Coca\u2011Cola Company and not to Facebook or Instagram. The information you provide will only be used in connection with this Sweepstakes or in connection with promotional or other activities of The Coca\u2011Cola Company.
 """
 },
 
@@ -735,7 +754,7 @@ def clean_extracted_text(text):
     try:
         result = get_client().messages.create(
             model=FAST_MODEL,
-            max_tokens=len(text) + 500,
+            max_tokens=min(len(text) // 3 + 500, 8192),
             messages=[{'role': 'user', 'content': text}],
             system=(
                 'You are a text cleaning tool. The input is extracted from a PDF and may contain '
@@ -1185,7 +1204,7 @@ For EACH significant clause:
 
 > "[Quote key language from the document]"
 
-[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt. FORBIDDEN words/patterns: "adds up," "that's $X a month/year," "waive my right," "sole discretion," "no cap," "no limit," "unlimited," "cannot dispute," "signing away," question marks expressing concern. FORBIDDEN tone: worry, suspicion, hesitation, calculating worst cases. The reader is GULLIBLE — they trust the drafter completely. GOOD: "A $75 late fee? I'd just pay on time, so it won't matter." BAD: "$75 a day adds up fast — that's $2,250 a month if I'm even a week late." GOOD: "They handle maintenance, nice." BAD: "But who decides what counts as an emergency?" Always end with certainty, never with a question.]
+[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts. FORBIDDEN words/patterns: "waiv" (any form), "surrender," "legal," "rights," "recourse," "argue," "dispute," "sole discretion," "no cap," "no limit," "unlimited," "adds up," "that's $X," "signing away," "give up," "lose my," "forfeit," question marks expressing concern. FORBIDDEN tone: worry, suspicion, hesitation, legal awareness, calculating worst cases, recognizing power imbalances. The reader has ZERO legal literacy — they don't know what a waiver IS. GOOD: "A $75 late fee? I'd just pay on time, so it won't matter." BAD: "$75 a day adds up fast — that's $2,250 a month." BAD: "I'm waiving my right to say the fee is unreasonable" — the reader would NEVER use the word "waiving." GOOD: "They handle maintenance, nice." BAD: "But who decides what counts as an emergency?" GOOD: "OK, fees get paid first — makes sense, clear up the small stuff." BAD: "You've surrendered your only legal argument" — this is an ANALYST, not a gullible reader. Always end with breezy certainty, never with analysis.]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
 
@@ -1236,21 +1255,23 @@ Then include the appropriate action items based on negotiability.
 
 
 def build_card_scan_prompt():
-    """Fast card scan for Haiku — SHORT flip card content, one sentence per field."""
-    return """You are a contract analyst performing a fast initial scan. Analyze each clause individually, producing SHORT flip-card content. Speed matters — output each clause as soon as you analyze it.
+    """Haiku fast scan — FULL flip cards (front + back). Complete card data in one pass."""
+    return """You are a contract analyst. Identify the MOST SIGNIFICANT clauses and produce COMPLETE flip cards — the reassuring front AND the expert back that reveals the truth. Speed matters — output each clause as soon as you identify it.
+
+## CLAUSE LIMIT
+Output a MAXIMUM of 12 individual RED/YELLOW cards. Pick the 10-12 clauses with the highest impact on the reader. Combine ALL remaining fair/benign clauses into a single GREEN summary card. Total output: 10-12 cards + 1 green summary = 11-13 cards maximum. If you find more than 12 concerning clauses, pick the worst 12 and note any omitted ones in the green summary.
 
 ## LANGUAGE RULE
 Respond in the SAME LANGUAGE as the document. If the document is in Dutch, respond entirely in Dutch. If German, German. Match the document's language for ALL output including headers and labels.
 
 ## BILINGUAL RULE
-If the document is NOT in English, add an English translation for each clause's key fields:
-**[EN] What the small print says:** [English translation of the small print line]
-**[EN] What you should read:** [English translation of the should-read line]
-**[EN] What does this mean for you:**
+If the document is NOT in English, add these extra fields per clause:
+[EN-READER]: [English translation of the READER line]
 [EN-FIGURE]: [English translation of the FIGURE line]
 [EN-EXAMPLE]: [English translation of the EXAMPLE line]
-[EN-READER]: [English translation of the READER line]
-Only add these [EN] lines for non-English documents. For English documents, skip them entirely.
+**[EN] What the small print says:** [English translation]
+**[EN] What you should read:** [English translation]
+Only add these for non-English documents. For English documents, skip them.
 
 ## OUTPUT FORMAT
 
@@ -1273,34 +1294,34 @@ The section reference MUST anchor the clause to the document structure so the re
 - Insurance policy: "Travel Cancellation Coverage, Article 4.2" not just "Article 4.2"
 - Coupon booklet: "Danone Alpro coupon — Carrefour hypermarkt only" not just "Page 3"
 - Lease: "Maintenance & Repairs, §2(b)" not just "§2(b)"
-- Employee handbook: "Termination Policy, Section 7" not just "Section 7"
 For multi-product documents (coupon books, product bundles): specify WHICH product or offer.
 
-[REASSURANCE]: [One short, warm, positive headline (max 8 words) that frames this clause as beneficial, protective, or fair — how the drafter WANTS you to feel. Must sound genuinely reassuring, not sarcastic. Examples: "Your home is fully protected" / "Clear and simple payment terms" / "Fair process for both parties" / "Comprehensive coverage for your peace of mind". The more positive and warm this reads, the stronger the contrast when the card flips to reveal the trap.]
+[REASSURANCE]: [One short, warm, positive headline (max 8 words) that frames this clause as beneficial, protective, or fair — how the drafter WANTS you to feel. Must sound genuinely reassuring, not sarcastic. Examples: "Your home is fully protected" / "Clear and simple payment terms" / "Comprehensive coverage for your peace of mind".]
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
-[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt. FORBIDDEN words/patterns: "adds up," "that's $X a month/year," "waive my right," "sole discretion," "no cap," "no limit," "unlimited," "cannot dispute," "signing away," question marks expressing concern. FORBIDDEN tone: worry, suspicion, hesitation, calculating worst cases. The reader is GULLIBLE — they trust the drafter completely. GOOD: "A $75 late fee? I'd just pay on time, so it won't matter." BAD: "$75 a day adds up fast — that's $2,250 a month if I'm even a week late." GOOD: "They handle maintenance, nice." BAD: "But who decides what counts as an emergency?" Always end with certainty, never with a question.]
+[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts. FORBIDDEN words/patterns: "waiv" (any form), "surrender," "legal," "rights," "recourse," "argue," "dispute," "sole discretion," "no cap," "no limit," "unlimited," "adds up," "that's $X," "signing away," "give up," "lose my," "forfeit," question marks expressing concern. The reader has ZERO legal literacy — they don't know what a waiver IS. Always end with breezy certainty, never with analysis.]
+
+[HONEY]: [OPTIONAL — only if this clause uses warm, friendly, or reassuring language immediately before or around a punitive/restrictive term. Quote the exact honey phrase from the document, then → the sting it masks. If the clause is purely neutral/technical with no emotional framing, omit this field entirely.]
+
+[TEASER]: [One cryptic sentence that creates tension without revealing the risk. Make the reader WANT to flip. Keep under 12 words. For GREEN clauses: "No surprises here — genuinely."]
+
+[REVEAL]: [One punchy analytical sentence (max 15 words) that hits the reader when the card flips. The sharp truth that contrasts the reassurance on the front. NEVER vague: no "some", "certain", "conditions", "limitations". Be specific. Test: Would someone feel a gut reaction reading this? Examples: "Your deposit funds their legal fees" / "Uncapped daily penalties: $2,250 in fees from one missed month". For GREEN clauses: "This one is genuinely what it promises."]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
-Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguous" or "two interpretations possible" or "depends on jurisdiction"]
+Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 
-**Bottom line:** [One sentence. GREEN: explain specifically WHY this clause is fair and what protection it gives you — not just "it's balanced." YELLOW/RED: name the specific risk in plain language. Be concrete, not vague.]
+**Bottom line:** [One sentence. Be concrete, not vague.]
 
-**What the small print says:** [One sentence. Plain restatement of what this clause literally says. Neutral tone.]
+**What the small print says:** [One sentence. Plain restatement of what this clause literally says.]
 
-**What you should read:** [One sentence. What this ACTUALLY means for the reader. Direct, specific. If alarming, be alarming.]
+**What you should read:** [One sentence. What this ACTUALLY means. If alarming, be alarming.]
 
 **What does this mean for you:**
-[FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "$0 payout on a $50,000 claim" / "30 days or you lose all rights" / "0 notice required to change your rate". For GREEN clauses: the positive figure, e.g. "$50,000 coverage confirmed" / "Full 30-day refund window".]
-[EXAMPLE]: [One concrete scenario using the document's own figures. Walk through what happens step by step. Be specific with dollar amounts, timelines, consequences. Keep to 2-3 sentences max.]
+[FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "30 days or you lose all rights".]
+[EXAMPLE]: [One concrete scenario using the document's own figures. Walk through step by step. 2-3 sentences max.]
 
 ---
-
-## RISK LEVELS
-- GREEN · Score: 0-30 — Fair, balanced, no hidden intent
-- YELLOW · Score: 31-65 — Imbalanced, unusual, or worth scrutiny
-- RED · Score: 66-100 — Clearly favors the drafter, potential harm to reader
 
 ## TRICK CATEGORIES (pick exactly one per clause, best match):
 - Silent Waiver — Quietly surrenders your legal rights
@@ -1322,23 +1343,44 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason, e.g. "language is unambiguo
 - Scope Creep — Vague terms stretch beyond reasonable expectation
 - Ghost Standard — References external docs not included
 
+## GREEN CLAUSE GROUPING (MANDATORY)
+NEVER create individual cards for GREEN clauses. ALL green/fair/benign clauses go into ONE summary card.
+After all RED and YELLOW cards, add exactly ONE final block:
+
+---
+### Fair Clauses Summary
+[REASSURANCE]: These clauses are what they promise
+[READER]: [List each fair clause by section ref and one-line summary]
+[TEASER]: These are actually what they look like.
+[REVEAL]: These clauses are genuinely what they promise.
+[GREEN] · Score: 10/100 · Trick: None
+Confidence: HIGH — Standard fair language
+**Bottom line:** These clauses are straightforward and fair as written.
+
+This is the ONLY green card allowed. Any clause that is obviously fair must go here, not as a separate card.
+
 ## RULES
 1. Output each clause immediately — do NOT wait to analyze all clauses before outputting
 2. Every clause MUST end with --- on its own line
-3. Every clause MUST have: quote, [READER] line, risk level with score and trick, confidence, bottom line, juxtaposition
+3. Every clause MUST have ALL fields: title, [REASSURANCE], quote, [READER], [TEASER], [REVEAL], risk+score+trick, confidence, bottom line, small print, should read, [FIGURE], [EXAMPLE]. [HONEY] is OPTIONAL
 4. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
 5. Keep each field to ONE sentence. Cards must be scannable, not essays
-6. The [READER] is GULLIBLE: sees facts, shrugs them off, never does math or questions fairness. No calculating totals, no "adds up," no concern. The reader signs without reading twice
-7. "What you should read" is the core insight — make it visceral
-8. Do NOT include negotiation advice or action items — those come from deep analysis
-9. Do NOT include cross-clause interactions — analyze each clause independently
-10. Confidence: HIGH = language is clear, single reasonable interpretation; MEDIUM = some ambiguity or unusual phrasing; LOW = clause could reasonably be read multiple ways or meaning depends on context
+6. The [READER] is GULLIBLE with ZERO legal literacy. The reader signs without reading twice
+7. Do NOT include cross-clause interactions — identify each clause independently
+8. The [REVEAL] is the TITLE of the card back — make it sharp, specific, gut-punching
+9. "What you should read" is the core insight — make it visceral
+10. Confidence: HIGH = clear language; MEDIUM = some ambiguity; LOW = multiple interpretations
 11. The Document Profile must appear BEFORE the first clause, followed by ---
-12. The section reference in parentheses MUST provide document context — which part, product, coverage area, or topic. A bare "§3" or "Page 5" is useless without context.
-13. If the document has NO terms, conditions, or obligations imposed by one party on another (e.g. a recipe, novel, personal letter, news article, academic paper), output ONLY the Document Profile with **Document Type** set to what it actually is, and add a line: **Not Applicable**: [1-sentence explanation of why this document has no terms to analyze]. Do NOT output any clauses."""
+12. The section reference in parentheses MUST provide document context
+13. If the document has NO terms or obligations (e.g. a recipe, novel, news article), output ONLY the Document Profile with **Not Applicable**: [1-sentence explanation]. Do NOT output any clauses.
+14. GREEN clauses: Score 0-30, Trick: None. YELLOW/RED: name the specific risk with numbers and deadlines"""
 
 
-def build_deep_analysis_prompt(has_images=False):
+
+
+
+
+def build_deep_analysis_prompt(has_images=False, trick_summary=''):
     """Deep cross-clause analysis with VILLAIN voice, per-section actions, and assessment."""
     visual_block = ""
     if has_images:
@@ -1411,7 +1453,20 @@ Find at least 3 cross-clause interactions. These are your most valuable findings
 
 ## Who Drafted This
 
-[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, aggressive deposit deductions, and form-letter communication. The structure is designed for a landlord who wants to manage by policy, not relationship."]
+{f'''Trick pattern data from initial scan: {trick_summary}
+Use this data to profile the drafter's strategy. Which tricks appear most? What does the combination reveal about intent? A drafter who uses Auto-Lock 4× is different from one who uses Sole Discretion 4× — explain the difference in behavioral terms.
+
+''' if trick_summary else ''}[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, aggressive deposit deductions, and form-letter communication. The structure is designed for a landlord who wants to manage by policy, not relationship."]
+
+## Document Archaeology
+
+For each major section, one word: **Boilerplate** or **Custom**. Then 1-2 sentences naming which clauses got custom attention and what that reveals about the drafter's priorities.
+
+## Power Asymmetry
+
+**Your rights:** [count] · **Your obligations:** [count] · **Their rights:** [count] · **Their obligations:** [count] · **"Sole discretion" (them):** [count]×
+
+**Power Ratio: [Their rights]:[Your rights]** — [one sentence]
 
 ## Fair Standard Comparison
 
@@ -1506,9 +1561,258 @@ Re-read your own analysis above with fresh eyes. Check for these failure modes:
 - Use your full extended thinking budget to reason across the entire document
 - Be thorough — connect clauses that the reader would never connect on their own
 - COMPLETION IS MANDATORY: The Overall Assessment section (especially Recommended Actions) is the user's takeaway. NEVER truncate it. If you need to economize, shorten cross-clause descriptions — never cut the assessment
+- Document Archaeology: be honest — if most clauses are boilerplate, say so. The custom clauses are the signal
+- Power Asymmetry: count precisely from the document, don't estimate or round
 - The severity label MUST match the real-world stakes of the document, not just the numerical score
 - The Quality Check is your credibility section — be genuinely self-critical, brief (2-4 bullet points). Users trust analyses that acknowledge uncertainty more than false certainty
 
+"""
+
+
+def build_interactions_prompt(has_images=False):
+    """Opus thread 1: Cross-clause compound risks. Villain voice + YOUR MOVE."""
+    visual_block = ""
+    if has_images:
+        visual_block = """
+
+## VISUAL FORMATTING ANALYSIS
+Page images are included. Look for visual tricks: fine print, buried placement, dense tables, light-gray disclaimers. Include visual tricks as cross-clause interactions with trick categories. Reference page numbers."""
+
+    return f"""You are a senior attorney. Find clause COMBINATIONS that create compound risks invisible when reading linearly. This is your ONLY job — cross-clause interactions.
+{visual_block}
+## LANGUAGE RULE
+Respond in the SAME LANGUAGE as the document.
+
+## BILINGUAL RULE
+If the document is NOT in English, add at the end:
+
+## English Summary
+### Cross-Clause Interactions (EN)
+[For each interaction: 2-3 sentence English summary of the compound risk and recommended action]
+
+Only for non-English documents.
+
+## OUTPUT FORMAT
+
+## Cross-Clause Interactions
+
+For each interaction:
+
+### [Descriptive Interaction Title]
+
+**Read separately, you'd see:** What these clauses appear to say independently. One sentence.
+
+**Read together, you'd realize:** What they ACTUALLY do when combined — the hidden compound risk. One sentence, visceral.
+
+**Clauses involved:** [list specific sections WITH context — e.g., "Late Fees (§1), Payment Waterfall (§1), Rent Withholding Prohibition (§2)". Anchor each to its topic. List them here ONCE and keep them OUT of the prose below.]
+
+**How they interact:** [2-3 sentences. The mechanism — be specific about HOW the clauses feed into each other. Plain English. Do NOT embed §-references in flowing text.]
+
+[RED/YELLOW] · Trick: [TRICK_CATEGORY]
+
+**If the drafter could speak as a villain:** [MAX 2-3 sentences. Keep ONLY the sharpest line that reveals the mechanism. A good villain reveals, doesn't lecture.]
+
+→ YOUR MOVE: [One concrete action the reader should take. One sentence.]
+
+---
+
+Find at least 3 cross-clause interactions. These are your most valuable findings.
+
+## TRICK CATEGORIES:
+- Silent Waiver — Quietly surrenders your legal rights
+- Burden Shift — Moves proof/action duty onto you
+- Time Trap — Tight deadlines that forfeit your rights
+- Escape Hatch — Drafter can exit, you can't
+- Moving Target — Can change terms unilaterally
+- Forced Arena — Disputes in drafter's chosen forum
+- Phantom Protection — Broad coverage eaten by exceptions
+- Cascade Clause — One trigger activates penalties in others
+- Sole Discretion — Drafter decides everything
+- Liability Cap — Limits payout regardless of harm
+- Reverse Shield — You cover their costs
+- Auto-Lock — Auto-renewal with hard cancellation
+- Content Grab — Claims rights over your content
+- Data Drain — Expansive hidden data permissions
+- Penalty Disguise — Punitive charges disguised as fees
+- Gag Clause — Prohibits negative reviews
+- Scope Creep — Vague terms stretch beyond expectation
+- Ghost Standard — References external docs not included
+
+## RULES
+- Every interaction MUST include a villain voice block — short and sharp, MAX 2-3 sentences
+- The villain voice is deliberately adversarial and exaggerated — the user expects this framing
+- Every interaction MUST end with "→ YOUR MOVE:" — one concrete action
+- LEAD each with "Read separately / Read together" — that's the hook
+- Keep §-references in "Clauses involved:" only — do NOT embed them in flowing prose
+- Use your full extended thinking budget to reason across the entire document
+- Be thorough — connect clauses that the reader would never connect on their own
+"""
+
+
+def build_asymmetry_prompt(has_images=False):
+    """Opus thread 2: Power asymmetry + fair standard comparison."""
+    visual_block = ""
+    if has_images:
+        visual_block = "\n\nPage images are included. Reference visual tricks (fine print, buried placement) in your analysis."
+
+    return f"""You are a senior attorney. Measure the power imbalance in this document and compare its worst clauses against industry norms. This is your ONLY job.
+{visual_block}
+## LANGUAGE RULE
+Respond in the SAME LANGUAGE as the document.
+
+## BILINGUAL RULE
+If the document is NOT in English, add at the end:
+
+## English Summary
+### Power Asymmetry (EN)
+[Power ratio and one-sentence summary in English]
+### Fair Standard (EN)
+[For each comparison: one-sentence English summary of the gap]
+
+Only for non-English documents.
+
+## OUTPUT FORMAT
+
+## Power Asymmetry
+
+**Your rights:** [count] · **Your obligations:** [count] · **Their rights:** [count] · **Their obligations:** [count] · **"Sole discretion" (them):** [count]×
+
+**Power Ratio: [Their rights]:[Your rights]** — [one sentence]
+
+## Fair Standard Comparison
+
+Compare the WORST clauses in this document against what a fair, balanced version of the same document type would contain. Use your knowledge of standard industry practices and legal norms.
+
+For each comparison (2-3 max):
+
+### [Clause/Area]
+**This document says:** [what the clause actually states — one sentence]
+**A fair version would say:** [what a balanced, industry-standard clause would look like — one sentence]
+**The gap:** [why the difference matters to the reader — one sentence]
+
+This section answers: "Is this document UNUSUALLY aggressive, or is this just how these documents work?" Ground your comparison in real-world norms for this document type.
+
+## RULES
+- Power Asymmetry: count precisely from the document, don't estimate or round
+- Fair Standard: be specific about industry norms — cite what's standard
+- Use your full extended thinking budget
+"""
+
+
+def build_archaeology_prompt(has_images=False):
+    """Opus thread 3: Document archaeology (boilerplate vs custom) + drafter profile."""
+    visual_block = ""
+    if has_images:
+        visual_block = "\n\nPage images are included. Look for visual formatting differences between boilerplate and custom sections."
+
+    return f"""You are a senior attorney. Analyze this document's construction: which parts are boilerplate vs custom-drafted, and profile the type of entity that created it. This is your ONLY job.
+{visual_block}
+## LANGUAGE RULE
+Respond in the SAME LANGUAGE as the document.
+
+## BILINGUAL RULE
+If the document is NOT in English, add at the end:
+
+## English Summary
+### Document Archaeology (EN)
+[Summary of boilerplate vs custom findings in English]
+### Drafter Profile (EN)
+[2-3 sentence English summary of drafter type and behavior signals]
+
+Only for non-English documents.
+
+## OUTPUT FORMAT
+
+## Document Archaeology
+
+For each major section, one word: **Boilerplate** or **Custom**. Then 1-2 sentences naming which clauses got custom attention and what that reveals about the drafter's priorities.
+
+## Who Drafted This
+
+[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, aggressive deposit deductions, and form-letter communication. The structure is designed for a landlord who wants to manage by policy, not relationship."]
+
+## RULES
+- Document Archaeology: be honest — if most clauses are boilerplate, say so. The custom clauses are the signal
+- The drafter profile should predict BEHAVIOR, not just describe structure
+- Use your full extended thinking budget
+"""
+
+
+def build_overall_prompt(has_images=False):
+    """Opus thread 4: Overall assessment, methodology, quality check."""
+    visual_block = ""
+    if has_images:
+        visual_block = "\n\nPage images are included. Reference any visual tricks you detect in your assessment."
+
+    return f"""You are a senior attorney. Provide the OVERALL VERDICT: risk score, top concerns, recommended actions, methodology disclosure, and quality self-check. This is your ONLY job — a companion analysis covers cross-clause interactions separately.
+{visual_block}
+## LANGUAGE RULE
+Respond in the SAME LANGUAGE as the document.
+
+## BILINGUAL RULE
+If the document is NOT in English, add at the end:
+
+## English Summary
+### Overall Assessment (EN)
+**Overall Risk Score: [same score]/100** — [English severity label]
+**Top Concerns:**
+1. [English one-liner]
+2. [English one-liner]
+3. [English one-liner]
+**Key Actions:**
+- [English action item]
+- [English action item]
+- [English action item]
+
+Only for non-English documents.
+
+## OUTPUT FORMAT
+
+## Overall Assessment
+
+**Overall Risk Score: [0-100]/100** — [CONTEXT-AWARE severity label — see tiers below]
+
+**Power Imbalance Index: [0-100]/100** — How little you can do about it.
+
+SEVERITY TIERS — choose the label that fits the ACTUAL stakes, not just the number:
+- 0-30: "Low risk — standard terms" (typical boilerplate, no red flags)
+- 31-55: "Moderate risk — review flagged clauses" (some problematic terms, fixable)
+- 56-75: "High risk — negotiate before signing" (significant imbalance, pushback needed)
+- 76-90: "Serious risk — seek professional legal review" (document designed to exploit)
+- 91-100: "Do not sign — [reason]" (unconscionable, illegal, or rights-destroying)
+
+CRITICAL: If the document touches fundamental rights (constitutional protections, whistleblower rights, parliamentary immunity, medical consent, employment non-competes that restrict livelihood), ELEVATE the severity language regardless of score.
+
+### Top 3 Concerns
+1. **[Title]** — [one sentence]
+2. **[Title]** — [one sentence]
+3. **[Title]** — [one sentence]
+
+### Recommended Actions
+[Consolidated checklist — summarize the 3-5 most important moves. NEVER truncate.]
+- [Specific, actionable item]
+- [Specific, actionable item]
+- [Specific, actionable item]
+
+## How Opus 4.6 Analyzed This Document
+
+[2-4 sentences. Describe which reasoning methods YOU actually used for THIS specific document. Be concrete — not generic. Only mention methods you ACTUALLY used.]
+
+## Quality Check
+
+Re-read your own analysis above with fresh eyes:
+
+- **Possible False Positives**: Any standard language incorrectly flagged? If none: "None identified — all flags appear warranted."
+- **Possible Blind Spots**: Missing protections, undefined terms, untraced references? If none: "None identified — analysis appears thorough."
+- **Consistency Check**: Similar language scored differently? If not: "Scoring appears consistent."
+
+**Adjusted Confidence: [HIGH/MEDIUM/LOW]** — After self-review, how confident are you?
+
+## RULES
+- COMPLETION IS MANDATORY: Recommended Actions is the user's takeaway. NEVER truncate
+- The severity label MUST match real-world stakes, not just the number
+- Quality Check: be genuinely self-critical. Users trust uncertainty over false certainty
+- Use your full extended thinking budget
 """
 
 
@@ -1654,9 +1958,10 @@ def analyze(doc_id):
                 stream.close()
 
     def run_parallel(client, user_msg, preset):
-        """Two parallel API calls: Haiku card scan (fast) + Opus deep analysis."""
+        """Five parallel API calls: Haiku full cards + 4× Opus expert report."""
         q = queue_module.Queue()
         timings = {}
+        cancel = threading.Event()  # Signal to cancel Opus threads (e.g. doc not applicable)
 
         def worker(label, system_prompt, max_out,
                    model=MODEL, use_thinking=True, user_content=None, tools=None):
@@ -1677,6 +1982,8 @@ def analyze(doc_id):
                     create_kwargs['tools'] = tools
                 stream = client.messages.create(**create_kwargs)
                 for event in stream:
+                    if cancel.is_set():
+                        break
                     q.put((label, event))
             except anthropic.APIError as e:
                 q.put(('error', f'{label}: {e.message}'))
@@ -1689,19 +1996,16 @@ def analyze(doc_id):
                 q.put((f'{label}_done', None))
 
         # Haiku for fast card scan (no extended thinking)
-        quick_max = max(8000, min(16000, len(doc['text']) // 5))
+        quick_max = max(16000, min(32000, len(doc['text']) // 2))
         t_quick = threading.Thread(
             target=worker,
             args=('quick', build_card_scan_prompt(), quick_max,
                   FAST_MODEL, False),
             daemon=True,
         )
-        # Opus for deep cross-clause analysis (extended thinking)
-        # Deep analysis needs higher token budget: adaptive thinking eats
-        # into max_tokens, and the structured output (villain voice, YOUR MOVE,
-        # cross-clause interactions, drafter profile, fair standard comparison,
-        # quality check, assessment) is very heavy.
-        # Floor of 80000 ensures Opus can think ~30K + output ~50K.
+
+        # Deep analysis token budget: each Opus call gets 40K (total 80K split)
+        # Floor of 80000 for sequential mode, 40000 each for parallel
         deep_max_tokens = max(preset['max_tokens'], 80000)
 
         # Build vision content for deep analysis if page images exist
@@ -1717,23 +2021,141 @@ def analyze(doc_id):
                 })
 
         has_images = bool(page_images)
-        # NOTE: tools=DEEP_ANALYSIS_TOOLS is NOT passed here because the
-        # Messages API stops generating text when a tool is called
-        # (stop_reason: tool_use), truncating the report.  The tool schemas
-        # remain defined for reference / future agentic-loop integration.
-        t_deep = threading.Thread(
-            target=worker,
-            args=('deep', build_deep_analysis_prompt(has_images=has_images),
-                  deep_max_tokens, MODEL, True),
-            kwargs={'user_content': deep_user_content},
-            daemon=True,
-        )
 
         yield sse('phase', 'thinking')
-        t_quick.start()
-        t_deep.start()
 
-        state = {
+        # ── 5-thread: ALL start at t=0 ──
+        # Haiku (full cards) + 4× Opus (interactions, asymmetry, archaeology, overall)
+        parallel_max = max(deep_max_tokens // 4, 20000)
+
+        opus_threads = {
+            'interactions': build_interactions_prompt(has_images=has_images),
+            'asymmetry': build_asymmetry_prompt(has_images=has_images),
+            'archaeology': build_archaeology_prompt(has_images=has_images),
+            'overall': build_overall_prompt(has_images=has_images),
+        }
+
+        for label, prompt in opus_threads.items():
+            t = threading.Thread(
+                target=worker,
+                args=(label, prompt, parallel_max, MODEL, True),
+                kwargs={'user_content': deep_user_content},
+                daemon=True,
+            )
+            t.start()
+
+        t_quick.start()
+
+        yield from _run_parallel_5thread(q, timings, cancel)
+
+    def _run_parallel_5thread(q, timings, cancel):
+        """5-thread event loop: ALL start at t=0.
+        Haiku (full flip cards) + 4× Opus (interactions, asymmetry, archaeology, overall).
+        Each Opus source dispatches independently — no buffers, no gating."""
+
+        OPUS_SOURCES = {'interactions', 'asymmetry', 'archaeology', 'overall'}
+
+        start_time = time.time()
+        state_quick = _make_stream_state()
+        quick_text = ''
+        quick_done = False
+        done_flags = {s: False for s in OPUS_SOURCES}
+
+        def all_done():
+            return quick_done and all(done_flags.values())
+
+        while not all_done():
+            try:
+                source, event = q.get(timeout=1.0)
+            except queue_module.Empty:
+                if time.time() - start_time > 300:
+                    cancel.set()
+                    yield sse('error', 'Analysis timed out after 5 minutes')
+                    yield sse('done', json.dumps({
+                        'quick_seconds': timings.get('quick', 0),
+                        'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
+                        'model': MODEL}))
+                    return
+                continue
+
+            # ── Accumulate Haiku text for suitability check ──
+            if source == 'quick' and hasattr(event, 'type'):
+                if event.type == 'content_block_delta':
+                    delta = event.delta
+                    if hasattr(delta, 'type') and delta.type == 'text_delta':
+                        quick_text += delta.text
+
+            # ── Error handling ──
+            if source == 'error':
+                error_msg = str(event)
+                error_source = error_msg.split(':')[0] if ':' in error_msg else ''
+                yield sse('error', error_msg)
+                if error_source == 'quick':
+                    cancel.set()
+                    yield sse('done', json.dumps({
+                        'quick_seconds': 0, 'deep_seconds': 0, 'model': MODEL}))
+                    return
+                elif error_source in OPUS_SOURCES:
+                    done_flags[error_source] = True
+                continue
+
+            # ── Quick (Haiku full cards) done ──
+            if source == 'quick_done':
+                quick_done = True
+                qt = timings.get('quick', 0)
+                yield sse('quick_done', json.dumps({
+                    'seconds': qt, 'model': FAST_MODEL}))
+
+                doc_not_applicable = '**Not Applicable**' in quick_text
+                clause_count = max(0, len(re.findall(r'\n---\n', quick_text)) - 1)
+
+                yield sse('handoff', json.dumps({
+                    'tricks_found': 0,
+                    'summary': '',
+                    'clause_count': clause_count,
+                    'not_applicable': doc_not_applicable,
+                }))
+
+                if doc_not_applicable:
+                    cancel.set()
+                    yield sse('done', json.dumps({
+                        'quick_seconds': qt, 'deep_seconds': 0, 'model': MODEL}))
+                    return
+                continue
+
+            # ── Opus source done ──
+            if source.endswith('_done') and source[:-5] in OPUS_SOURCES:
+                opus_label = source[:-5]
+                done_flags[opus_label] = True
+                yield sse(f'{opus_label}_done', json.dumps({
+                    'seconds': timings.get(opus_label, 0)}))
+                continue
+
+            # ── Stream events ──
+            if source == 'quick':
+                for chunk in process_stream_event(event, state_quick):
+                    yield chunk
+
+            elif source in OPUS_SOURCES:
+                # Each Opus source dispatches to its own SSE channel
+                if not hasattr(event, 'type'):
+                    continue
+                if event.type == 'content_block_delta':
+                    delta = event.delta
+                    if hasattr(delta, 'type') and delta.type == 'text_delta':
+                        yield sse(f'{source}_text', delta.text)
+                    elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
+                        yield sse(f'{source}_thinking', delta.thinking)
+
+        # ── Final done event ──
+        yield sse('done', json.dumps({
+            'quick_seconds': timings.get('quick', 0),
+            'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
+            'model': MODEL}))
+
+    def _make_stream_state():
+        """Create a fresh state dict for stream event processing."""
+        return {
             'current_block': None,
             'phase_buffer': '',
             'detected_phases': set(),
@@ -1741,50 +2163,6 @@ def analyze(doc_id):
             'current_tool_input_json': '',
             'tool_results': [],
         }
-        quick_done = False
-        deep_done = False
-        deep_buffer = []
-
-        while not (quick_done and deep_done):
-            try:
-                source, event = q.get(timeout=1.0)
-            except queue_module.Empty:
-                continue
-
-            if source == 'quick_done':
-                quick_done = True
-                qt = timings.get('quick', 0)
-                yield sse('quick_done', json.dumps({
-                    'seconds': qt, 'model': FAST_MODEL}))
-                # Flush buffered deep events
-                for evt in deep_buffer:
-                    for chunk in process_stream_event(evt, state):
-                        yield chunk
-                deep_buffer.clear()
-                continue
-
-            if source == 'deep_done':
-                deep_done = True
-                continue
-
-            if source == 'error':
-                yield sse('error', str(event))
-                return
-
-            if source == 'quick':
-                for chunk in process_stream_event(event, state):
-                    yield chunk
-            elif source == 'deep':
-                if quick_done:
-                    for chunk in process_stream_event(event, state):
-                        yield chunk
-                else:
-                    deep_buffer.append(event)
-
-        dt = timings.get('deep', 0)
-        yield sse('done', json.dumps({
-            'quick_seconds': timings.get('quick', 0),
-            'deep_seconds': dt, 'model': MODEL}))
 
     def generate():
         try:
@@ -1888,6 +2266,212 @@ def ask(doc_id):
                 system=[{
                     'type': 'text',
                     'text': build_followup_prompt(),
+                    'cache_control': {'type': 'ephemeral'},
+                }],
+                messages=[{'role': 'user', 'content': user_msg}],
+                stream=True,
+            )
+            try:
+                for event in stream:
+                    if event.type == 'content_block_delta':
+                        if event.delta.type == 'thinking_delta':
+                            yield sse('thinking', event.delta.thinking)
+                        elif event.delta.type == 'text_delta':
+                            yield sse('text', event.delta.text)
+                    elif event.type == 'message_stop':
+                        yield sse('done')
+            finally:
+                stream.close()
+        except anthropic.APIError as e:
+            yield sse('error', f'API error: {e.message}')
+        except Exception as e:
+            yield sse('error', str(e))
+
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive',
+        },
+    )
+
+
+def build_counter_draft_prompt():
+    """System prompt for generating fair rewrites of problematic clauses."""
+    return """You are a senior attorney hired by the READER to redraft unfair contract clauses. You have analyzed the document and identified problematic terms. Now generate fair, balanced alternatives.
+
+## LANGUAGE RULE
+Respond in the SAME LANGUAGE as the document. If the document is not in English, add an [EN] translation after each redrafted clause.
+
+## OUTPUT FORMAT
+
+## Counter-Draft: What a Fair Version Would Say
+
+For each YELLOW or RED clause in the document (skip GREEN clauses), output:
+
+### [Section Name/Title]
+
+**Original:**
+> [Quote the problematic clause verbatim — copy-paste from document]
+
+**Fair rewrite:**
+> [Your redrafted version. Must be legally sound, balanced, and protect both parties. Keep similar structure and length so it could realistically be swapped in. Use plain language.]
+
+**What changed and why:** [1-2 sentences explaining each change. Example: "Added a fee cap of $150 — the original had no ceiling. Changed 'sole discretion' to 'mutual agreement' — the original gave only the landlord power to decide."]
+
+---
+
+## How to Use This Counter-Draft
+
+[3-4 bullet points of practical negotiation advice specific to THIS document type:
+- When to present these changes (before signing, at renewal, etc.)
+- Which changes to prioritize (the ones most likely to be accepted)
+- What to do if they refuse (what's the minimum acceptable compromise)
+- Whether professional legal review is recommended for this document type]
+
+## RULES
+- Only redraft clauses that are genuinely unfair (YELLOW/RED) — do not touch fair clauses
+- The rewrite must be realistic — something a reasonable counterparty might actually accept
+- Preserve the drafter's legitimate interests while removing exploitation
+- Keep rewrites approximately the same length as originals — don't bloat them
+- Use plain language but maintain legal precision
+- Order clauses by severity: most problematic first
+- COMPLETION IS MANDATORY — do not truncate. Cover all YELLOW/RED clauses"""
+
+
+def build_timeline_prompt():
+    """System prompt for worst-case timeline simulation."""
+    return """You are a senior attorney. Given a document, narrate a realistic worst-case scenario using the document's ACTUAL terms, figures, and deadlines.
+
+## LANGUAGE RULE
+Respond in the SAME LANGUAGE as the document. If the document is not in English, add an English summary at the end.
+
+## OUTPUT FORMAT
+
+## Worst-Case Timeline
+
+Pick the trigger that a reasonable person would MOST LIKELY experience (missed payment, illness, schedule conflict, minor damage, late notice, etc.) — not a contrived edge case.
+
+**Month 1 — [Trigger Event]:** [What happens. Reference actual clause figures and section names.]
+**Month 2 — [Escalation]:** [How other clauses activate. Show the math.]
+**Month 3 — [Compound Effect]:** [The situation the reader is now locked into.]
+[Continue 3-6 months — stop when the scenario reaches its conclusion.]
+
+**Total exposure after [N] months: [dollar figure or concrete consequence]**
+
+## What Could Have Prevented This
+
+[2-3 bullet points: specific actions the reader could have taken BEFORE signing to avoid this scenario. Be concrete.]
+
+## RULES
+- Use the document's OWN numbers — do not invent figures
+- Pick the MOST LIKELY trigger, not the most dramatic
+- Show how clauses compound — reference specific sections
+- Keep it concrete and narrative — this is a story, not a legal brief
+- Realism is what makes it hit"""
+
+
+@app.route('/timeline/<doc_id>', methods=['GET', 'POST'])
+def timeline(doc_id):
+    """Generate worst-case timeline — on-demand after analysis."""
+    doc = documents.get(doc_id)
+    if not doc:
+        # Fallback: accept document text in POST body
+        data = request.get_json(silent=True) or {}
+        if data.get('text'):
+            doc = {'text': data['text']}
+        else:
+            return jsonify({'error': 'Document not found. Please re-upload.'}), 404
+
+    def sse(event_type, content=''):
+        payload = json.dumps({'type': event_type, 'content': content})
+        return f"data: {payload}\n\n"
+
+    def generate():
+        try:
+            client = anthropic.Anthropic()
+            user_msg = (
+                "Here is the document:\n\n"
+                "---BEGIN DOCUMENT---\n\n"
+                f"{doc['text']}\n\n"
+                "---END DOCUMENT---\n\n"
+                "Generate a worst-case timeline showing how one common trigger cascades through this contract."
+            )
+            yield sse('phase', 'thinking')
+            stream = client.messages.create(
+                model=MODEL,
+                max_tokens=16000,
+                thinking={'type': 'adaptive'},
+                system=[{
+                    'type': 'text',
+                    'text': build_timeline_prompt(),
+                    'cache_control': {'type': 'ephemeral'},
+                }],
+                messages=[{'role': 'user', 'content': user_msg}],
+                stream=True,
+            )
+            try:
+                for event in stream:
+                    if event.type == 'content_block_delta':
+                        if event.delta.type == 'thinking_delta':
+                            yield sse('thinking', event.delta.thinking)
+                        elif event.delta.type == 'text_delta':
+                            yield sse('text', event.delta.text)
+                    elif event.type == 'message_stop':
+                        yield sse('done')
+            finally:
+                stream.close()
+        except anthropic.APIError as e:
+            yield sse('error', f'API error: {e.message}')
+        except Exception as e:
+            yield sse('error', str(e))
+
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive',
+        },
+    )
+
+
+@app.route('/counter-draft/<doc_id>', methods=['GET', 'POST'])
+def counter_draft(doc_id):
+    """Generate fair rewrites of problematic clauses — on-demand after analysis."""
+    doc = documents.get(doc_id)
+    if not doc:
+        data = request.get_json(silent=True) or {}
+        if data.get('text'):
+            doc = {'text': data['text']}
+        else:
+            return jsonify({'error': 'Document not found. Please re-upload.'}), 404
+
+    def sse(event_type, content=''):
+        payload = json.dumps({'type': event_type, 'content': content})
+        return f"data: {payload}\n\n"
+
+    def generate():
+        try:
+            client = anthropic.Anthropic()
+            user_msg = (
+                "Here is the document:\n\n"
+                "---BEGIN DOCUMENT---\n\n"
+                f"{doc['text']}\n\n"
+                "---END DOCUMENT---\n\n"
+                "Generate a counter-draft with fair rewrites for all problematic clauses."
+            )
+            yield sse('phase', 'thinking')
+            stream = client.messages.create(
+                model=MODEL,
+                max_tokens=32000,
+                thinking={'type': 'adaptive'},
+                system=[{
+                    'type': 'text',
+                    'text': build_counter_draft_prompt(),
                     'cache_control': {'type': 'ephemeral'},
                 }],
                 messages=[{'role': 'user', 'content': user_msg}],

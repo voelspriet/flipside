@@ -24,12 +24,12 @@ You upload a document. FlipSide reads it as if it were the drafter's attorney �
 
 ### The Three Steps
 
-1. **Upload** — Drag in a PDF, DOCX, or paste text. Or pick from 9 built-in sample documents (lease, insurance, ToS, employment, loan, gym membership, medical consent, HOA rules, coupon booklet) — all authored by Claude, with clauses engineered to demonstrate each of the 18 trick categories.
+1. **Upload** — Drag in a PDF, DOCX, or paste text. Or pick from 12 built-in sample documents (lease, insurance, ToS, employment, loan, gym membership, medical consent, HOA rules, coupon booklet, wedding venue, pet adoption, and a real Coca-Cola sweepstakes) — sample contracts authored by Claude with clauses engineered to demonstrate each of the 18 trick categories, plus one real-world document.
 
-2. **Browse flip cards** — Cards appear one at a time within seconds. Each card is a clause:
-   - **Front**: A calm green header bar with a reassurance headline ("Your flexible payment timeline") followed by the reader's gullible first-person impression. This is how the drafter WANTS you to feel. Navigation is hidden until the user flips their first card — forcing the core mechanic.
-   - **Back**: What the drafter intended — a red/yellow risk header with villain voice, the key figure in large bold type ("$4,100 in penalties"), a concrete example scenario, and bottom-line action. The sidebar dims to 35% opacity to spotlight the reveal; the green front fades out during the 3D flip.
-   - **Confidence badge**: HIGH / MEDIUM / LOW — how certain Opus is about each finding
+2. **Browse flip cards** — Cards appear one at a time within seconds. Each card is a clause — and each card is a **model transition**:
+   - **Front (Haiku 4.5)**: A calm green header bar with a reassurance headline ("Your flexible payment timeline") followed by the reader's gullible first-person impression. Haiku's shallow understanding is a *feature* — it naturally plays the trusting reader who skims and signs. This is how the drafter WANTS you to feel. Navigation is hidden until the user flips their first card — forcing the core mechanic.
+   - **Back (Opus 4.6)**: What the drafter intended — a red/yellow risk header with the key figure in large bold type ("$4,100 in penalties"), a concrete example scenario calculated with extended thinking, and bottom-line action. The sidebar dims to 35% opacity to spotlight the reveal; the green front fades out during the 3D flip. **When you flip the card, you're literally switching from a smaller model's naive take to a larger model's expert analysis.**
+   - **Confidence badge**: HIGH / MEDIUM / LOW — Opus 4.6's calibrated confidence with reasoning, not pattern-matched
    - Color-coded: **Green** (standard) · **Yellow** (notable) · **Red** (strategically asymmetric)
    - **Bilingual**: Non-English documents include collapsible English translations per card
    - **Document preview**: Sidebar shows the full document text with page dividers and numbered clause markers (①②③) that highlight when you navigate cards. Page navigation tabs appear progressively — only for pages that contain findings — so a 50-page document might show 8 tabs, not 50. Fuzzy matching ensures markers appear even when PDF text extraction differs from model quotes.
@@ -80,9 +80,9 @@ FlipSide uses more Opus 4.6 capabilities than any single feature would require �
 | 5 | **Context compaction** | After analysis, users ask follow-up questions. Each follow-up sends the full document + analysis as context. Compaction enables extended Q&A without hitting the context window |
 | 6 | **Vision / multimodal** | PDF pages sent as images — Opus detects fine print, buried placement, visual hierarchy tricks invisible to text extraction |
 | 7 | **Tool use** | `assess_risk` and `flag_interaction` tools structure findings with risk level, confidence %, trick type during deep analysis |
-| 8 | **Confidence signaling** | Each flip card shows HIGH/MEDIUM/LOW confidence with hover-reveal reasoning |
+| 8 | **Confidence signaling** | Each card back shows Opus 4.6's calibrated HIGH/MEDIUM/LOW confidence with reasoned explanation — not pattern-matched, but thought through |
 | 9 | **Self-correction** | Quality Check — Opus reviews its own analysis for false positives and blind spots before presenting results |
-| 10 | **Split-model parallel** | Haiku 4.5 for fast cards, Opus 4.6 for deep analysis, both running simultaneously |
+| 10 | **Split-model architecture** | **The flip card IS the model transition.** Haiku 4.5 generates card fronts (naive reader voice), Opus 4.6 generates card backs (expert analysis with extended thinking). The product metaphor and the model architecture are the same thing |
 | 11 | **Prompt caching** | System prompts cached server-side for 90% cost reduction on repeated analyses |
 | 12 | **Benchmark comparison** | Fair Standard Comparison — worst clauses measured against industry norms |
 | 13 | **Multilingual + bilingual** | Analyzes in the document's language (drafter's perspective), offers EN translations on each flip card and deep analysis summary. Two languages = two perspectives |
@@ -91,7 +91,7 @@ FlipSide uses more Opus 4.6 capabilities than any single feature would require �
 
 Five capabilities from [Anthropic's Opus 4.6 announcement](https://www.anthropic.com/research/introducing-claude-opus-4-6) are **structurally necessary** for FlipSide to work. Remove any one and the product degrades:
 
-1. **Adaptive thinking — the reasoning IS the product.** The extended thinking stream is not hidden behind a loading spinner — it IS the interface. Users watch Opus adopt the drafter's perspective in real time. The model decides how deeply to reason per clause, spending more thinking tokens on complex cross-clause interactions and less on standard boilerplate. Most projects use extended thinking as a black box. FlipSide makes it visible.
+1. **Adaptive thinking — the reasoning IS the product.** The extended thinking stream is not hidden behind a loading spinner — it IS the interface. Opus decides its own reasoning depth for every card back AND the cross-clause verdict — spending more thinking tokens on complex interactions and less on standard boilerplate. Users watch Opus adopt the drafter's perspective in real time. Most projects use extended thinking as a black box. FlipSide makes it visible on every single card flip.
 
 2. **Long-context retrieval — finding legal traps spread across pages.** Anthropic reports "76% on MRCR v2 8-needle 1M — a qualitative shift in how much context a model can actually use." FlipSide applies this to cross-clause interaction detection: Clause 2(c) excludes water damage from "gradual seepage over 14 days." Clause 2(e) defines the inspection timeline at 30 days. Neither clause is dangerous alone. Together, they deny virtually all residential water damage claims. The model holds the entire document in working memory and reasons across distant clauses simultaneously.
 
@@ -144,70 +144,99 @@ The underlying principle is the same: **don't take yourself as the measurement o
                             ▼
                 Flask extracts text (PDF/DOCX/paste)
                             │
-                ┌───────────┴───────────┐
-                │                       │
-                ▼                       ▼
-        ┌──────────────┐      ┌─────────────────┐
-        │   HAIKU 4.5  │      │   OPUS 4.6               │
-        │              │      │                          │
-        │  Card scan   │      │  Deep analysis           │
-        │  No thinking │      │  Ext. thinking           │
-        │  8-16K tokens│      │  48K+ tokens             │
-        │  Confidence  │      │  + Vision (PDF images)   │
-        │  badges      │      │  + Tool use (assess_risk,│
-        │              │      │    flag_interaction)      │
-        │  ~5s: first  │      │  ~40-100s total          │
-        │  flip card   │      │                          │
-        └──────┬───────┘      └────────┬─────────────────┘
-               │                       │
-               ▼                       ▼
-        Cards stream in          Buffered until
-        one at a time            user requests it
-               │                       │
-               ▼                       ▼
-        ┌──────────────────────────────────────┐
-        │           FLIP CARDS                  │
-        │  Front: Green "Everything's standard" │
-        │  Back:  Red ✗ "What they intended"   │
-        │  Sidebar dims → card spotlighted     │
-        │  Confidence: HIGH/MEDIUM/LOW          │
-        │  User browses ← →                    │
-        │                                      │
-        │         "Full Verdict →"             │
-        │               │                      │
-        │               ▼                      │
-        │         DEEP ANALYSIS                │
-        │  Cross-clause interactions            │
-        │  Villain voice per finding            │
-        │  → YOUR MOVE action per section       │
-        │  Fair Standard Comparison             │
-        │  Who Drafted This (drafter profile)   │
-        │  Quality Check (self-correction)      │
-        │  How Opus 4.6 Analyzed This           │
-        │  Overall Risk + Power Imbalance       │
-        │               │                      │
-        │               ▼                      │
-        │         FOLLOW-UP                    │
-        │  "What happens if I'm late?"         │
-        │  Opus traces through all clauses     │
-        └──────────────────────────────────────┘
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+ ┌──────────────┐  ┌────────────────┐  ┌────────────────┐
+ │  HAIKU 4.5   │  │  OPUS 4.6-A   │  │  OPUS 4.6-B   │
+ │              │  │               │  │               │
+ │  Card FRONTS │  │  Card BACKS   │  │  Cross-clause │
+ │  Naive reader│  │  Expert       │  │  + verdict    │
+ │  No thinking │  │  Ext.thinking │  │  Ext.thinking │
+ │              │  │  + Vision     │  │  + Vision     │
+ │  ~10s: first │  │  Waits for    │  │  Starts at    │
+ │  card appears│  │  Haiku's list │  │  t=0          │
+ └──────┬───────┘  └───────┬───────┘  └───────┬───────┘
+        │                  │                   │
+        │           thinking deltas      thinking deltas
+        │           piped to verdict     piped to verdict
+        │           column from t=0      column from t=0
+        │                  │                   │
+        ▼                  ▼                   ▼
+  Card fronts         Card backs          Full Verdict
+  stream in           fill in on flip     ready when user
+  (~10-25s)           (~40-60s)           navigates past
+                                          last card (~50s)
+        │                  │                   │
+        ▼                  ▼                   ▼
+ ┌─────────────────────────────────────────────────────┐
+ │                    FLIP CARDS                        │
+ │                                                     │
+ │  Front (Haiku 4.5): Green "Everything's standard"   │
+ │  ─── user flips ─── THE MODEL ITSELF CHANGES ───    │
+ │  Back (Opus 4.6):   Red ✗ "What they intended"     │
+ │                                                     │
+ │  Sidebar dims → card spotlighted                    │
+ │  Confidence: Opus-calibrated HIGH/MEDIUM/LOW        │
+ │  User browses ← →                                  │
+ │                                                     │
+ │         "Full Verdict →"                            │
+ │               │                                     │
+ │               ▼                                     │
+ │         CROSS-CLAUSE ANALYSIS (Opus 4.6-B)          │
+ │  Cross-clause interactions (between-clause risks)   │
+ │  Villain voice per finding                          │
+ │  → YOUR MOVE action per section                     │
+ │  Fair Standard Comparison                           │
+ │  Who Drafted This (drafter profile)                 │
+ │  Quality Check (self-correction)                    │
+ │  How Opus 4.6 Analyzed This                         │
+ │  Overall Risk + Power Imbalance                     │
+ │               │                                     │
+ │               ▼                                     │
+ │         FOLLOW-UP                                   │
+ │  "What happens if I'm late?"                        │
+ │  Opus traces through all clauses                    │
+ └─────────────────────────────────────────────────────┘
 ```
 
-Two models run in parallel: **Haiku 4.5** scans clauses fast (first card in ~5 seconds), while **Opus 4.6** with extended thinking reasons across all clauses simultaneously to find compound risks invisible when reading clause by clause. The user browses flip cards while Opus thinks in the background.
+### Five-Stage Agentic Pipeline
 
-**Tech stack:** Python/Flask (1,815 lines), Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend (4,469 lines), DOMPurify for XSS protection on LLM output. 9 built-in sample documents with generated thumbnails. No external APIs beyond Anthropic. No database required. Bilingual analysis for non-English documents. Deployable behind a reverse proxy with URL prefix.
+FlipSide is a five-stage agentic pipeline where the model transition is **user-visible**. The user triggers the switch from Haiku to Opus by flipping a card — the product mechanic and the architecture are the same thing.
+
+| Stage | Agent | What It Does | What the User Sees |
+|---|---|---|---|
+| 1. **Naive Read** | Haiku 4.5 | Card fronts — reassurance headline, gullible reader voice, teaser. Haiku's shallow understanding naturally plays the trusting reader. | Cards fly in within seconds. The user reads the naive take. |
+| 2. **Expert Analysis** | Opus 4.6-A | Card backs — risk score, figure, example, bottom line, trick classification. Extended thinking per clause. Receives Haiku's clause list for 1:1 matching. | User flips a card → **the model changes**. Opus's expert take fades in. |
+| 3. **Synthesis** | Opus 4.6-B | Cross-clause interactions, drafter profile, overall assessment. Only analysis that spans BETWEEN clauses — no per-clause repetition. | Full Verdict appears after last card. Focused, no redundancy. |
+| 4. **Counter-Draft** | Opus 4.6 (separate call) | Rewrites unfair clauses with negotiable alternatives the user can propose | Fair-language replacements per flagged clause |
+| 5. **Refine** | Opus 4.6 (interactive Q&A) | User asks follow-up questions → Opus traces answers through all clauses with extended thinking | Open-ended consultation loop |
+
+Three models run in parallel at t=0: **Haiku 4.5** generates card fronts (first card in ~10 seconds), **Opus 4.6-A** generates expert card backs (filling in as the user flips), and **Opus 4.6-B** produces the cross-clause verdict. When the user flips a card, they're literally switching from Haiku's naive perspective to Opus's expert analysis — the product metaphor IS the model orchestration.
+
+**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend, DOMPurify for XSS protection on LLM output. 12 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes). No external APIs beyond Anthropic. No database required. Bilingual analysis for non-English documents. Deployable behind a reverse proxy with URL prefix.
 
 ---
 
 ## The Demo Moment
 
-The user uploads a real homeowner's insurance policy. Opus 4.6 begins reasoning as the insurer's underwriting counsel:
+The user uploads a real homeowner's insurance policy. Cards appear within seconds.
 
-> *"Section 1 grants broad coverage for 'direct physical loss.' From the insurer's perspective, the strategic value of this broad grant is that it creates a feeling of total protection that makes the policyholder less likely to scrutinize the exclusions."*
+**Card front (Haiku 4.5 — the naive reader):**
+> *"Comprehensive coverage for your peace of mind"*
+>
+> I'D THINK: OK, so my house is covered for "direct physical loss" — that sounds like everything. Water damage, fire, theft. Good. That's exactly what I'm paying for.
 
-> *"Exclusion 2(c) excludes water damage from 'gradual seepage over 14 days.' The insurer knows that most residential water damage IS gradual. The 14-day threshold means almost any water claim can be reclassified as 'gradual' after the fact."*
+The audience nods. That IS what they'd think.
 
-Clauses turn red as risks are identified. The audience — every one of whom has signed something they didn't fully understand — watches the other side's strategy become visible in real time.
+**User flips the card. The model changes.**
+
+**Card back (Opus 4.6 — the expert, with extended thinking):**
+> RED · Score: 82/100 · Trick: Phantom Protection
+>
+> **$0 payout on a $50,000 water damage claim.** Exclusion 2(c) excludes "gradual seepage over 14 days." Clause 2(e) sets the inspection window at 30 days. Together: virtually all residential water damage can be reclassified as "gradual" after the fact. The broad coverage on the front is a psychological anchor — it makes you stop reading before you reach the exclusions that take it away.
+
+The audience realizes: the calm green front and the red back weren't just different text. They were different models — a smaller model's naive trust, replaced by a larger model's expert analysis. The flip card IS the model transition.
 
 ---
 
@@ -238,8 +267,10 @@ On February 2, 2026, Anthropic launched a [legal plugin for Claude Cowork](https
 
 The legal plugin uses Opus for clause flagging and redline suggestions — standard contract review. FlipSide pushes Opus 4.6 into capabilities the plugin does not use:
 
+- **Split-model architecture → the flip IS the transition** — No other application makes the model switch a user-visible interaction. When the user flips a card, they literally switch from Haiku's naive take to Opus's expert analysis. The architecture IS the product metaphor. The quality gap between models isn't a limitation — it's the experience.
 - **Low over-refusals → villain voice** — Opus role-plays as the drafter's attorney, sustaining a hostile viewpoint across the entire document. Previous models would self-censor or add disclaimers. Opus 4.6's low over-refusal rate means it fully commits to the adversarial perspective that IS the product.
 - **Long-context retrieval → cross-clause detection** — The model holds the full document in working memory and reasons across distant clauses simultaneously to find compound risks (penalty cascades, exclusion interactions) invisible when reading clause by clause. This is the "qualitative shift in how much context a model can actually use" that Anthropic describes.
+- **Adaptive thinking → per-clause depth** — Opus uses extended thinking on every card back, deciding its own reasoning depth per clause. A boilerplate payment term gets light analysis. A cascading penalty clause gets deep reasoning. The thinking is visible in the interface, not hidden behind a spinner.
 - **Effort controls → user-facing intelligence dial** — Quick/Standard/Deep maps to the new `effort` API parameter (medium/high/max). Users choose their own speed/depth tradeoff.
 - **Context compaction → follow-up without limits** — After analysis, users ask questions ("What happens if I'm 3 months late?") and Opus traces the answer through all clauses. Compaction enables extended Q&A sessions without hitting the context window.
 - **Vision / multimodal** — PDF pages sent as images to detect visual formatting tricks (fine print, buried placement, table manipulation) that text extraction misses entirely.
@@ -272,6 +303,12 @@ This project documents not just the product, but the entire decision-making proc
 | [Three AI Failures](docs/ANCHORING_FAILURE.md) | Confirmation bias, framing bias, vocabulary bias — all caught by the human |
 | [Strategy Decisions](strategy.md) | 14 strategy decisions with rationale (debugging, meta-prompting, architecture, contrast pivot, fuzzy matching, "Think Like a Document" UX) |
 | [All docs](docs/) | 18+ methodology and decision documents |
+
+## What's Next
+
+- **Browser extension** — Flag Terms of Service on any website before you click "I Agree." The same five-stage pipeline, triggered by a single button on any page with legal text.
+- **Collaborative review** — Share your analysis with a lawyer or community group via link. The "Email to Lawyer" button already constructs the top 3 concerns — a shareable report is the natural next step.
+- **Benchmarking** — Compare your lease or insurance policy against anonymized analyses of similar documents. "Your landlord's late fee clause is harsher than 82% of leases we've seen."
 
 ## Builder
 
