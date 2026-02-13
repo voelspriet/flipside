@@ -317,6 +317,9 @@ Persistent verdict summary appears when all 4 Opus sections complete: risk score
 **Entry 72 — Header Layout + Privacy + Bug Fixes**
 Header rearranged: action buttons (Copy, Email, Export, Dark mode, Home) moved left next to brand, status pill + model badge moved right. Rich verdict summary: scores + Power Imbalance Index + rights/obligations counts + power ratio extracted from Opus threads. Privacy notice added to upload screen ("analyzed by Claude and never stored"). Fixed: duplicate Drafter's Playbook on re-render, verdict summary PII duplicate line, all three columns aligned to same top position. Data persistence audit confirmed: no disk writes, no database, no temp files — documents exist only in memory during session.
 
+**Entry 73 — FAQ + The FlipSide Fair Clause**
+Left sidebar navigation added to upload screen with 8-section FAQ: What is FlipSide, How it works (5-thread architecture), Your data & privacy (nothing stored), What Claude keeps (Anthropic API policy — not used for training, 30-day safety retention, no sharing), Why is it free (MIT, hackathon origin, $300/hr attorney access), Is this legal advice (no), Who built this (Henk van Ess, non-coder). The centerpiece: The FlipSide Fair Clause — a 7-provision model service agreement written by Opus 4.6 with extended thinking. Each section shows the reasoning and names the trick it avoids (Content Grab, Forced Arena, Cascade Clause, asymmetric exit). Score 0/100, power ratio 1:1, no tricks detected. The clause teaches users the trick vocabulary before they upload, making flip card reveals more meaningful.
+
 ---
 
 ### Current State
@@ -324,13 +327,13 @@ Header rearranged: action buttons (Copy, Email, Export, Dark mode, Home) moved l
 | Artifact | Lines | Status |
 |----------|-------|--------|
 | `app.py` | 2,615 | Backend: Flask, SSE, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, 8 prompts, dynamic token budget, suitability gate, 14 sample docs |
-| `templates/index.html` | 6,145 | Card-first frontend: instant flip cards, focused verdict reading mode, live tricks panel, verdict summary, clean export, home button, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
+| `templates/index.html` | 6,470 | Card-first frontend: instant flip cards, focused verdict reading mode, live tricks panel, verdict summary, clean export, home button, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 72 entries, complete process timeline |
+| `HACKATHON_LOG.md` | This file | 73 entries, complete process timeline |
 | `README.md` | Product description + 14 Opus capabilities + meta-prompting discovery |
 
 ---
@@ -381,14 +384,14 @@ The first four are the same error at different scales: **the AI uses itself as t
 | Artifact | Purpose |
 |----------|---------|
 | `app.py` (2,615 lines) | Flask backend: 8 prompts, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
-| `templates/index.html` (6,145 lines) | Card-first frontend: instant flip cards, verdict summary, clean export, home button, live tricks panel, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
+| `templates/index.html` (6,470 lines) | Card-first frontend: instant flip cards, verdict summary, clean export, home button, live tricks panel, FAQ + Fair Clause, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
 | `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| This file | 72 entries, complete process timeline |
+| This file | 73 entries, complete process timeline |
 
 ## 14 Opus 4.6 Capabilities Used
 
