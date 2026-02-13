@@ -248,18 +248,56 @@ Security audit revealed that deep analysis, compare mode, and follow-up answers 
 
 ---
 
+### Phase 8: The Model Placement Pivot
+
+**Entry 58 — FAILURE: Opus Card Backs Never Rendered**
+We spent 3+ hours trying to get Opus 4.6 onto the back of flip cards. The idea was compelling: Haiku generates the naive front (fast, gullible), Opus generates the expert back (deep, precise). The "flip IS the model transition" — literally switching from a small model to a large one mid-animation. Three separate approaches to inject Opus-generated HTML into the card back DOM all failed: `replaceWith`, `innerHTML`, and `cloneNode`. The HTML was correct. The matching worked. But injecting new content into a `preserve-3d` CSS container 60-70 seconds after initial render consistently produced invisible or corrupt results. Root cause: DOM mutation inside a 3D-transformed element that has already been painted, transformed, and cached by the browser's compositor is unreliable. The back content arrived too late into a container that the GPU had already baked.
+
+**Entry 59 — Haiku Was Already Great at Cards**
+When the DOM rendering bug forced us to let Haiku produce both card sides, we discovered something we hadn't tested: Haiku 4.5 was already doing a great job on card backs. With the constrained output format (tagged fields, 18-category trick taxonomy, score range 0-100), Haiku correctly identifies risk patterns, classifies tricks, writes punchy bottom lines, and produces concrete figures using the document's actual numbers. The structured prompt format guides Haiku to consistent, high-quality results. We had assumed the card back — the big reveal — needed Opus 4.6's extended thinking to be convincing. It didn't. When you give a fast model a clear format and a focused task, it performs. Cards now render with both sides from Haiku in ~12 seconds. No skeleton loading. No waiting for Opus. Instant flip from the moment the card appears.
+
+**Entry 60 — 5-Thread Architecture: Where Opus 4.6 Actually Shines**
+With Haiku owning the cards, Opus 4.6 was redirected to four focused expert threads — each targeting a capability that Haiku genuinely cannot deliver:
+
+1. **Cross-clause compound risks** (`interactions` thread) — Opus holds multiple clauses in working memory simultaneously and reasons about their interaction. "Section 3's liability cap interacts with Section 7's indemnification to create unlimited personal exposure." Haiku analyzes clauses one at a time; Opus connects them. This requires the kind of multi-step reasoning that extended thinking enables.
+
+2. **Power asymmetry analysis + fair standard** (`asymmetry` thread) — Opus quantifies how many obligations fall on each party, computes a power ratio ("You have 23 obligations. They have 4. Ratio: 5.75:1"), and constructs a counterfactual: what would a balanced version of this clause look like? This requires legal reasoning and counterfactual generation — capabilities that emerge with extended thinking but not with pattern matching.
+
+3. **Document archaeology + drafter profiling** (`archaeology` thread) — Opus distinguishes boilerplate (template language, generic) from custom-drafted clauses (specific to this deal, recently modified). It reasons about writing style, specificity, and internal consistency to build a drafter profile: "Drafted by a large property management company using a template last updated circa 2019, with custom additions to Sections 4 and 11." This is deductive reasoning from stylistic evidence — Haiku would guess, Opus deduces.
+
+4. **Overall assessment with self-correction** (`overall` thread) — The meta-analysis: overall risk score with reasoning, methodology disclosure ("How Opus 4.6 Analyzed This"), and a quality check where Opus reviews its own analysis for false positives and blind spots. Self-correction — the model critiquing its own output — is a capability that requires the depth of extended thinking. Haiku doesn't second-guess itself.
+
+All 4 Opus threads plus Haiku start at t=0. No dependencies. No buffers. No gating. Each thread's output streams independently into a collapsible verdict column. The event loop dropped from ~200 lines of buffer-stitching logic to ~30 lines of independent dispatch.
+
+**Entry 61 — Seven Opus 4.6 Capabilities, Each in Its Own Place**
+The 5-thread architecture isn't just a performance optimization — it's a capability showcase. Each Opus feature now has a dedicated stage where it's the star:
+
+| Capability | Where it lives | Why only Opus can do it |
+|-----------|---------------|----------------------|
+| Extended thinking (compound reasoning) | Interactions thread | Multi-clause working memory + step-by-step logical chains |
+| Counterfactual generation | Asymmetry thread | "What would a fair version say?" requires legal reasoning |
+| Stylistic deduction | Archaeology thread | Distinguishing template from custom by writing patterns |
+| Self-correction | Overall thread | Reviewing own analysis for false positives requires metacognition |
+| Vision / multimodal | Deep analysis (PDF images) | Detecting 6pt fine print, buried placement, visual hierarchy tricks |
+| Multi-turn follow-up | `/ask/<doc_id>` endpoint | Holding full document + prior analysis in context for conversational Q&A |
+| Confidence calibration | All Opus threads | Explicit reasoning chains backing HIGH/MEDIUM/LOW judgments |
+
+The lesson: the most creative use of a frontier model isn't putting it everywhere — it's identifying the specific capabilities that only it can deliver and building features around those capabilities. Haiku gets the cards. Opus gets the expert verdict. Each model gets a stage that showcases what it does best.
+
+---
+
 ### Current State
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 1,815 | Backend: Flask, SSE, parallel Haiku+Opus, vision, tool use, follow-up, prompt caching, 7 prompts, dynamic token budget, suitability gate |
-| `templates/index.html` | 4,469 | Card-first frontend: flip cards, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
+| `app.py` | 2,519 | Backend: Flask, SSE, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, 8 prompts, dynamic token budget, suitability gate |
+| `templates/index.html` | 5,233 | Card-first frontend: instant flip cards, collapsible verdict column, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 57 entries, complete process timeline |
+| `HACKATHON_LOG.md` | This file | 61 entries, complete process timeline |
 | `README.md` | Product description + 13 Opus capabilities + meta-prompting discovery |
 
 ---
@@ -309,33 +347,34 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (1,815 lines) | Flask backend: 7 prompts, Haiku+Opus parallel, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate |
-| `templates/index.html` (4,469 lines) | Card-first frontend: flip cards, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
+| `app.py` (2,519 lines) | Flask backend: 8 prompts, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate |
+| `templates/index.html` (5,233 lines) | Card-first frontend: instant flip cards, collapsible verdict column, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
 | `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| This file | 51 entries, complete process timeline |
+| This file | 61 entries, complete process timeline |
 
-## 13 Opus 4.6 Capabilities Used
+## 14 Opus 4.6 Capabilities Used
 
 | # | Capability | Visible in product |
 |---|-----------|-------------------|
-| 1 | Extended thinking (adaptive) | Reasoning panel, cross-clause analysis |
-| 2 | Perspective adoption | Drafter's attorney voice on flip card backs |
-| 3 | Vision / multimodal | PDF page images → visual formatting tricks detected |
+| 1 | Extended thinking (compound reasoning) | 4 parallel Opus threads: interactions, asymmetry, archaeology, overall |
+| 2 | Perspective adoption | Villain voice in interactions ("YOUR MOVE"), drafter profiling in archaeology |
+| 3 | Vision / multimodal | PDF page images → visual formatting tricks detected (font size, buried placement) |
 | 4 | Tool use | `assess_risk` + `flag_interaction` structured tool calls |
 | 5 | Multi-turn follow-up | "Ask about this document" after analysis |
-| 6 | Confidence signaling | HIGH/MEDIUM/LOW badges on each flip card |
-| 7 | Self-correction | Quality Check section reviews its own analysis |
-| 8 | Benchmark comparison | Fair Standard Comparison against industry norms |
-| 9 | Split-model parallel | Haiku 4.5 (fast cards) + Opus 4.6 (deep analysis) |
-| 10 | Prompt caching | System prompts cached for 90% cost reduction |
-| 11 | Long-context retrieval | Cross-clause interaction detection across full documents (no truncation) |
-| 12 | Low over-refusals | Villain voice sustains adversarial role-play without self-censoring |
-| 13 | Multilingual + bilingual | Analyzes in document's language, EN translations on cards |
+| 6 | Confidence calibration | HIGH/MEDIUM/LOW badges with explicit reasoning chains |
+| 7 | Self-correction | Quality Check in overall thread — reviews own analysis for false positives and blind spots |
+| 8 | Counterfactual generation | Fair Standard Comparison: "This document says / A fair version would say" |
+| 9 | Stylistic deduction | Document archaeology: boilerplate vs custom, drafter profile from writing patterns |
+| 10 | Split-model parallel | Haiku 4.5 (instant full cards) + 4× Opus 4.6 (expert verdict threads) |
+| 11 | Prompt caching | System prompts cached for 90% cost reduction |
+| 12 | Long-context retrieval | Cross-clause interaction detection across full documents (no truncation) |
+| 13 | Low over-refusals | Villain voice sustains adversarial role-play without self-censoring |
+| 14 | Multilingual + bilingual | Analyzes in document's language, EN translations on cards |
 
 ## What Remains
 
