@@ -956,7 +956,7 @@
         .card-viewport { margin: 0.5rem 0 1.5rem; }
         .card-navigation {
             display: flex; align-items: center; justify-content: center;
-            gap: 1.5rem; padding: 1.5rem 0;
+            gap: 1.5rem; padding: 0.5rem 0 0.75rem;
         }
         .card-nav-btn {
             display: inline-flex; align-items: center; gap: 0.35rem;
@@ -1438,7 +1438,7 @@
             max-height: 0; opacity: 0; overflow: hidden;
             transition: opacity 0.5s var(--ease-out-expo), max-height 0.4s var(--ease-out-expo), padding 0.4s ease;
         }
-        .chapter-title.visible { opacity: 1; max-height: 4rem; padding: 1rem 1rem 0.5rem; }
+        .chapter-title.visible { opacity: 1; max-height: 4rem; padding: 0.3rem 1rem 0.4rem; }
         .chapter-title-text {
             font-family: 'DM Sans', sans-serif; font-size: 1.15rem;
             font-weight: 500; font-style: italic;
@@ -3849,9 +3849,11 @@
             // Restyle skeleton as a static message (no pulse)
             skeleton.querySelectorAll('.skeleton-pulse').forEach(function(el) { el.style.display = 'none'; });
             skeleton.querySelector('.skeleton-btn').style.display = 'none';
-            // Hide deep status — no point showing Opus progress for unsuitable docs
+            // Hide deep status and verdict column — no point showing Opus for unsuitable docs
             if (documentNotApplicable) {
                 $('deepStatus').classList.add('hidden');
+                hideVerdictCol();
+                stopVerdictCountdown();
             }
         }
     }
@@ -3972,7 +3974,7 @@
             '</div>' +
             '</div>' +
             (clause.teaser ? '<div class="card-teaser">' + escapeHtml(clause.teaser) + '</div>' : '') +
-            '<button class="flip-trigger">' + (index === 0 ? '<span>Now flip it</span><span class="flip-trigger-spin">\u27F3</span>' : '<span>Now flip it</span><span class="flip-trigger-arrow">&rarr;</span>') + '</button>' +
+            '<button class="flip-trigger"><span>Now flip it</span><span class="flip-trigger-spin">\u27F3</span></button>' +
             '</div>';
 
         // ── Back body: full reveal — figure, example, bottom line ──
@@ -4349,7 +4351,7 @@
             _verdictRenderTimer = setTimeout(function() {
                 _verdictRenderTimer = null;
                 // Show verdict column as soon as we get first text
-                if (!verdictCol.classList.contains('visible') && !isCompareMode) {
+                if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable) {
                     showVerdictCol();
                 }
                 var bodyEl = $('opusBody_' + source);
@@ -4716,7 +4718,7 @@
         indicator.className = 'verdict-streaming';
         indicator.innerHTML = '<div class="pulsing-dots"><span></span><span></span><span></span></div>' +
             '<div class="verdict-streaming-label">' +
-            (hasDeepContent ? 'Building your Full Verdict...' : 'Opus 4.6 is reasoning...') + '</div>';
+            (hasDeepContent ? 'Building your Full Verdict — almost there...' : 'Our expert is reading and reasoning — this takes about a minute') + '</div>';
         deepAnalysisEl.appendChild(indicator);
 
         if (!_verdictScrolled) {
@@ -5537,22 +5539,113 @@
         var meta = metadataLine.textContent;
         if (meta) docName = meta.split('Type:')[1] ? meta.split('Type:')[1].split('Drafted')[0].trim() : docName;
 
+        // Build clean export from structured data
+        var clauses = extractClausesFromResponse();
+        var cards = flipCardContainer.querySelectorAll('.flip-card');
+        var body = '';
+
+        // Metadata
+        var metaPills = metadataLine.querySelectorAll('.meta-pill');
+        if (metaPills.length) {
+            body += '<div class="meta">';
+            metaPills.forEach(function(p) {
+                var label = p.querySelector('.meta-pill-label');
+                var value = p.querySelector('.meta-pill-value');
+                if (label && value) body += '<span class="meta-item"><strong>' + label.textContent + '</strong> ' + escapeHtml(value.textContent) + '</span>';
+            });
+            body += '</div>';
+        }
+
+        // Overall score from summary
+        var scoreMatch = responseContent.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
+        if (scoreMatch) {
+            var s = parseInt(scoreMatch[1]);
+            var sLabel = s > 80 ? 'High risk' : s > 65 ? 'Elevated risk' : s > 40 ? 'Moderate risk' : 'Low risk';
+            var sColor = s > 65 ? '#a83d20' : s > 35 ? '#8a6508' : '#1e6b38';
+            body += '<div class="score-summary"><span class="score-number" style="color:' + sColor + '">' + s + '/100</span> <span class="score-desc">' + sLabel + '</span></div>';
+        }
+
+        // Clauses from flip cards
+        if (cards.length) {
+            body += '<h2>Clause Analysis</h2>';
+            cards.forEach(function(card, i) {
+                var title = card.getAttribute('data-clause-title') || 'Clause ' + (i + 1);
+                var risk = card.getAttribute('data-risk-level') || '';
+                var score = card.getAttribute('data-score') || '';
+                var trick = card.getAttribute('data-trick') || '';
+                var section = card.getAttribute('data-section-ref') || '';
+
+                var riskClass = 'risk-' + risk;
+                body += '<div class="clause"><div class="clause-header">';
+                body += '<span class="risk-badge ' + riskClass + '">' + risk.toUpperCase() + '</span>';
+                if (score) body += ' <span class="clause-score">' + score + '/100</span>';
+                if (trick) body += ' <span class="clause-trick">' + escapeHtml(trick) + '</span>';
+                body += '</div>';
+                body += '<h3>' + escapeHtml(title) + '</h3>';
+                if (section) body += '<div class="clause-ref">' + escapeHtml(section) + '</div>';
+
+                // Front: reader voice
+                var readerEl = card.querySelector('.reader-voice-text');
+                if (readerEl && readerEl.textContent.trim()) {
+                    body += '<blockquote class="reader"><strong>What a trusting reader sees:</strong> ' + escapeHtml(readerEl.textContent.trim()) + '</blockquote>';
+                }
+
+                // Back: reveal, figure, example, bottom line
+                var backBody = card.querySelector('.back-body');
+                if (backBody) {
+                    var figure = card.querySelector('.back-figure');
+                    var example = card.querySelector('.back-example');
+                    var bottomLine = card.querySelector('.back-bottom-line');
+                    if (figure) body += '<div class="figure">' + escapeHtml(figure.textContent.trim()) + '</div>';
+                    if (example) body += '<p class="example">' + escapeHtml(example.textContent.trim()) + '</p>';
+                    if (bottomLine) body += '<p class="bottom-line"><strong>Bottom line:</strong> ' + escapeHtml(bottomLine.textContent.trim()) + '</p>';
+                }
+                body += '</div>';
+            });
+        }
+
+        // Deep analysis (Opus verdict)
+        var deepText = assembleDeepText();
+        if (deepText.trim()) {
+            body += '<hr><h2>Expert Verdict</h2>';
+            body += '<div class="verdict">' + safeMd2Html(deepText) + '</div>';
+        }
+
+        // Counter-draft
+        if (counterDraftContent.innerHTML && counterDraftContent.textContent.trim()) {
+            body += '<hr><h2>Counter-Draft Suggestions</h2>';
+            body += '<div class="verdict">' + counterDraftContent.innerHTML + '</div>';
+        }
+
         var exportHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
-            '<title>' + escapeHtml(docName) + ' — FlipSide Analysis</title>' +
-            '<style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1rem;color:#1a1a18;line-height:1.6}' +
-            'h1{font-size:1.5rem;border-bottom:2px solid #c44b28;padding-bottom:0.5rem}' +
-            'h2{margin-top:2rem;color:#3d3b36}h3{margin-top:1.5rem}' +
-            'blockquote{border-left:3px solid #c44b28;padding:0.5rem 1rem;margin:0.5rem 0;background:#faf8f4;font-style:italic}' +
-            '.risk-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.75rem;font-weight:700}' +
-            '.risk-green{background:#e8f5e9;color:#1e6b38}.risk-yellow{background:#fff8e1;color:#8a6508}.risk-red{background:#fce4ec;color:#a83d20}' +
-            'hr{border:none;border-top:1px solid #e2ddd4;margin:1.5rem 0}' +
-            '.footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e2ddd4;font-size:0.8rem;color:#9c9789}' +
+            '<title>' + escapeHtml(docName) + ' \u2014 FlipSide Analysis</title>' +
+            '<style>' +
+            'body{font-family:"DM Sans",system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1.5rem;color:#1a1a18;line-height:1.65}' +
+            'h1{font-size:1.4rem;border-bottom:2px solid #c44b28;padding-bottom:0.5rem;margin-bottom:0.5rem}' +
+            'h2{margin-top:2.5rem;font-size:1.15rem;color:#3d3b36;border-bottom:1px solid #e2ddd4;padding-bottom:0.3rem}' +
+            'h3{margin-top:0.5rem;margin-bottom:0.3rem;font-size:1rem}' +
+            '.meta{margin-bottom:1.5rem;font-size:0.85rem;color:#6b6860}' +
+            '.meta-item{display:inline-block;margin-right:1.5rem}' +
+            '.score-summary{font-size:1.1rem;margin:1rem 0 1.5rem;padding:0.8rem 1rem;background:#faf8f4;border-radius:6px;border-left:3px solid #c44b28}' +
+            '.score-number{font-size:1.4rem;font-weight:700}.score-desc{color:#6b6860}' +
+            '.clause{margin:1.5rem 0;padding:1rem;background:#faf8f4;border-radius:6px;border:1px solid #e2ddd4}' +
+            '.clause-header{margin-bottom:0.3rem;font-size:0.82rem}' +
+            '.clause-score{font-weight:700}.clause-trick{color:#6b6860;font-style:italic}' +
+            '.clause-ref{font-size:0.78rem;color:#9c9789;margin-bottom:0.5rem}' +
+            '.risk-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.72rem;font-weight:700;text-transform:uppercase}' +
+            '.risk-red{background:#fce4ec;color:#a83d20}.risk-yellow{background:#fff8e1;color:#8a6508}.risk-green{background:#e8f5e9;color:#1e6b38}' +
+            'blockquote{border-left:3px solid #c44b28;padding:0.5rem 1rem;margin:0.8rem 0;background:#fff;font-style:italic;border-radius:0 4px 4px 0}' +
+            '.figure{font-size:1.1rem;font-weight:700;color:#a83d20;margin:0.5rem 0}' +
+            '.example{color:#3d3b36;margin:0.3rem 0}.bottom-line{margin:0.5rem 0}' +
+            '.verdict{margin-top:0.5rem}' +
+            '.verdict h3{margin-top:1.2rem}.verdict blockquote{border-left-color:#9c9789}' +
+            'hr{border:none;border-top:1px solid #e2ddd4;margin:2rem 0}' +
+            '.footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e2ddd4;font-size:0.78rem;color:#9c9789}' +
             '</style></head><body>' +
-            '<h1>' + escapeHtml(docName) + '</h1>' +
-            (summaryContainer.innerHTML || '') +
-            (flipCardsBuilt && !isCompareMode ? (flipCardContainer.innerHTML + deepAnalysisEl.innerHTML) : resultsContent.innerHTML) +
-            (counterDraftContent.innerHTML ? '<hr><h2>Counter-Draft Suggestions</h2>' + counterDraftContent.innerHTML : '') +
-            '<div class="footer">Generated by FlipSide — The dark side of small print.<br>Powered by Claude Opus 4.6 extended thinking.</div>' +
+            '<h1>FlipSide Analysis</h1>' +
+            '<p style="font-size:1.05rem;color:#3d3b36;margin-top:-0.3rem">' + escapeHtml(docName) + '</p>' +
+            body +
+            '<div class="footer">Generated by FlipSide \u2014 The dark side of small print.<br>Powered by Claude Opus 4.6 extended thinking. \u2022 flipside.digitaldigging.org</div>' +
             '</body></html>';
         var blob = new Blob([exportHtml], { type: 'text/html' });
         var url = URL.createObjectURL(blob);
@@ -5819,7 +5912,7 @@
         timelineBtn.textContent = 'Building timeline…';
         timelineContent.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">' +
             '<div class="pulsing-dots"><span></span><span></span><span></span></div>' +
-            '<div style="margin-top:0.8rem;font-size:0.85rem">Opus 4.6 is simulating what could go wrong…</div></div>';
+            '<div style="margin-top:0.8rem;font-size:0.85rem">Our expert is simulating what could go wrong — about 30 seconds</div></div>';
 
         var responseText = '';
         fetch(BASE_URL + '/timeline/' + currentDocId, {
@@ -5875,7 +5968,7 @@
         counterDraftBtn.textContent = 'Generating counter-draft…';
         counterDraftContent.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">' +
             '<div class="pulsing-dots"><span></span><span></span><span></span></div>' +
-            '<div style="margin-top:0.8rem;font-size:0.85rem">Opus 4.6 is drafting fair alternatives…</div></div>';
+            '<div style="margin-top:0.8rem;font-size:0.85rem">Our expert is drafting fair alternatives — about 30 seconds</div></div>';
 
         var responseText = '';
         fetch(BASE_URL + '/counter-draft/' + currentDocId, {
