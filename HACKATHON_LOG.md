@@ -284,6 +284,12 @@ The 5-thread architecture isn't just a performance optimization — it's a capab
 
 The lesson: the most creative use of a frontier model isn't putting it everywhere — it's identifying the specific capabilities that only it can deliver and building features around those capabilities. Haiku gets the cards. Opus gets the expert verdict. Each model gets a stage that showcases what it does best.
 
+**Entry 62 — English-Only Output with Original-Language Quotes**
+Reversed the bilingual approach. All prompts now output in English regardless of document language. Quotes from non-English documents are kept in the original language with English translations in parentheses. Removed ~125 lines of bilingual code: EN-READER/EN-FIGURE/EN-EXAMPLE fields, reader-voice-en rendering, en-report-summary collapsible wrapper. Added `**Language**` field to Document Profile metadata. New "Report in [language]" header button uses the `/ask` endpoint to translate the full analysis into the document's language for download. English is the universal analysis language; the original language is preserved only where it matters — in the actual document quotes.
+
+**Entry 63 — "Message the Company" Feature**
+After the deep analysis summary, a button appears: "Draft a message to [Company Name]" (drafter name from metadata). Opus 4.6 generates a professional, firm-but-polite complaint letter citing the specific high-risk clauses found. Uses the existing `/ask` endpoint — zero new backend code. Streams the response live, then offers "Copy to clipboard" and "Open in email" action buttons. This is the follow-through feature: analysis → understanding → action.
+
 ---
 
 ### Current State
@@ -291,13 +297,13 @@ The lesson: the most creative use of a frontier model isn't putting it everywher
 | Artifact | Lines | Status |
 |----------|-------|--------|
 | `app.py` | 2,519 | Backend: Flask, SSE, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, 8 prompts, dynamic token budget, suitability gate |
-| `templates/index.html` | 5,233 | Card-first frontend: instant flip cards, collapsible verdict column, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
+| `templates/index.html` | 5,400+ | Card-first frontend: instant flip cards, collapsible verdict column, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 61 entries, complete process timeline |
+| `HACKATHON_LOG.md` | This file | 63 entries, complete process timeline |
 | `README.md` | Product description + 13 Opus capabilities + meta-prompting discovery |
 
 ---

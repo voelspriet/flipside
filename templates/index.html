@@ -580,6 +580,13 @@
             text-transform: uppercase; letter-spacing: 0.05em;
         }
         .verdict-status.hidden { display: none; }
+        .verdict-time-pill {
+            display: inline-block;
+            background: var(--bg-warm); border: 1px solid var(--border);
+            border-radius: 100px; padding: 0.1rem 0.5rem;
+            font-size: 0.58rem; color: var(--text-secondary);
+            margin-left: 0.3rem; vertical-align: middle;
+        }
         /* Opus collapsible sections */
         .opus-section { border-bottom: 1px solid var(--border); }
         .opus-section:last-child { border-bottom: none; }
@@ -2246,7 +2253,7 @@
             <button class="verdict-expand-btn" id="verdictExpandBtn">Read full verdict &rarr;</button>
         </div>
         <div class="verdict-body" id="verdictBody">
-            <div class="verdict-status" id="verdictStatus">Opus Foursix, our expert, is reading the small print</div>
+            <div class="verdict-status" id="verdictStatus">Our expert is reading the small print <span class="verdict-time-pill">~2 min</span></div>
             <div class="opus-section" id="opusSection_interactions" data-source="interactions">
                 <div class="opus-section-header" data-toggle="interactions">
                     <span class="opus-dot pulsing"></span>
@@ -4224,7 +4231,7 @@
         });
         var verdictStatusEl = $('verdictStatus');
         if (verdictStatusEl) {
-            verdictStatusEl.textContent = 'Opus Foursix, our expert, is reading the small print';
+            verdictStatusEl.innerHTML = 'Our expert is reading the small print <span class="verdict-time-pill">~2 min</span>';
             verdictStatusEl.classList.remove('hidden');
         }
     }
