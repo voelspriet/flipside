@@ -4518,63 +4518,21 @@
         var el = $('verdictSummary');
         if (!el || el.classList.contains('visible')) return;
         var overall = opusSections.overall.text || '';
-        var asymmetry = opusSections.asymmetry.text || '';
-        var html = '';
 
-        // Line 1: Risk score + PII + first substantive sentence
-        var scoreMatch = overall.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
-        var piiMatch = overall.match(/Power Imbalance Index[:\s]*(\d+)\/100/i);
-        var scoreParts = [];
-        if (scoreMatch) {
-            var s = parseInt(scoreMatch[1]);
-            var sc = s > 65 ? 'var(--red-text)' : s > 35 ? 'var(--yellow-text)' : 'var(--green-text)';
-            scoreParts.push('<span class="verdict-summary-score" style="color:' + sc + '">' + s + '/100</span>');
-        }
-        if (piiMatch) {
-            var p = parseInt(piiMatch[1]);
-            var pc = p > 65 ? 'var(--red-text)' : p > 35 ? 'var(--yellow-text)' : 'var(--green-text)';
-            scoreParts.push('Power Imbalance: <span class="verdict-summary-score" style="color:' + pc + '">' + p + '/100</span>');
-        }
-        if (scoreParts.length) html += '<div>' + scoreParts.join(' · ') + '</div>';
-
-        // First substantive sentence from overall (strip markdown before filtering)
+        // Extract the first substantive prose sentence as a clean conclusion
         var lines = overall.split('\n');
-        var firstLine = '';
+        var conclusion = '';
         for (var i = 0; i < lines.length; i++) {
             var l = lines[i].trim().replace(/\*\*/g, '').replace(/\*/g, '');
-            if (!l || l.startsWith('#') || l.startsWith('---') || /^Overall Risk/i.test(l) || /^Power Imbalance/i.test(l) || /^\d+\/100/.test(l) || /^SEVERITY/i.test(l)) continue;
-            firstLine = l;
+            // Skip headings, scores, labels, numbered lists, empty lines
+            if (!l || l.startsWith('#') || l.startsWith('---') || /^Overall Risk/i.test(l) || /^Power Imbalance/i.test(l) || /^\d+\/100/.test(l) || /^SEVERITY/i.test(l) || /^\d+\.\s/.test(l) || /^\d+:\d+/.test(l) || l.length < 20) continue;
+            conclusion = l;
             break;
         }
-        if (firstLine) {
-            if (firstLine.length > 150) firstLine = firstLine.substring(0, 148).replace(/\s+\S*$/, '') + '…';
-            html += '<div style="margin-top:0.3rem;font-size:0.72rem;color:var(--text-secondary)">' + escapeHtml(firstLine) + '</div>';
-        }
 
-        // Line 2: Rights/obligations from asymmetry section
-        var rightsMatch = asymmetry.match(/Your rights[:\s]*\*?\*?(\d+)/i);
-        var yourObMatch = asymmetry.match(/Your obligations[:\s]*\*?\*?(\d+)/i);
-        var theirRMatch = asymmetry.match(/Their rights[:\s]*\*?\*?(\d+)/i);
-        var theirObMatch = asymmetry.match(/Their obligations[:\s]*\*?\*?(\d+)/i);
-        if (rightsMatch || theirRMatch) {
-            var counts = [];
-            if (rightsMatch) counts.push('Your rights: ' + rightsMatch[1]);
-            if (theirRMatch) counts.push('Their rights: ' + theirRMatch[1]);
-            if (yourObMatch) counts.push('Your obligations: ' + yourObMatch[1]);
-            if (theirObMatch) counts.push('Their obligations: ' + theirObMatch[1]);
-            html += '<div class="verdict-summary-rights">' + counts.join(' · ') + '</div>';
-        }
-
-        // Line 3: Power Ratio from asymmetry
-        var ratioMatch = asymmetry.match(/Power Ratio[:\s]*([^\n]+)/i);
-        if (ratioMatch) {
-            var ratio = ratioMatch[1].replace(/\*\*/g, '').replace(/\*/g, '').trim();
-            if (ratio.length > 100) ratio = ratio.substring(0, 98).replace(/\s+\S*$/, '') + '…';
-            html += '<div class="verdict-summary-ratio">' + escapeHtml(ratio) + '</div>';
-        }
-
-        if (!html) return;
-        el.innerHTML = html;
+        if (!conclusion) return;
+        if (conclusion.length > 200) conclusion = conclusion.substring(0, 198).replace(/\s+\S*$/, '') + '…';
+        el.innerHTML = '<div style="font-size:0.72rem;color:var(--text-secondary);line-height:1.5">' + escapeHtml(conclusion) + '</div>';
         el.classList.add('visible');
     }
     function resetVerdictCol() {
