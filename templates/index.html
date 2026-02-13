@@ -1008,6 +1008,51 @@
             font-size: 1rem;
         }
 
+        /* ── Message the Company ────────────────────── */
+        .message-company-section {
+            margin: 1.2rem 0;
+        }
+        .message-company-btn {
+            width: 100%; padding: 0.85rem 1.2rem;
+            background: var(--bg-card); border: 1.5px solid var(--accent);
+            border-radius: var(--radius); color: var(--accent);
+            font-family: var(--font-mono); font-size: 0.78rem;
+            letter-spacing: 0.04em; text-transform: uppercase;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .message-company-btn:hover {
+            background: var(--accent); color: white;
+        }
+        .message-company-btn.generating {
+            background: var(--bg-warm); border-color: var(--border);
+            color: var(--text-secondary); cursor: wait;
+        }
+        .message-company-icon { font-size: 1rem; }
+        .message-company-output {
+            margin-top: 1rem; padding: 1.2rem 1.5rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); font-size: 0.88rem;
+            line-height: 1.65; color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+        .message-company-output p { margin: 0.6rem 0; }
+        .message-actions {
+            display: flex; gap: 0.6rem; margin-top: 1rem;
+            padding-top: 0.8rem; border-top: 1px solid var(--border);
+        }
+        .message-action-btn {
+            flex: 1; padding: 0.55rem 0.8rem;
+            background: var(--bg-warm); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text-primary);
+            font-family: var(--font-mono); font-size: 0.72rem;
+            letter-spacing: 0.03em; text-transform: uppercase;
+            cursor: pointer; transition: all 0.15s ease;
+        }
+        .message-action-btn:hover {
+            background: var(--accent); color: white; border-color: var(--accent);
+        }
+
         /* ── Flip cards (3D) ─────────────────────────── */
         @keyframes cardWoosh {
             0% { transform: translateY(80px) scale(0.96); opacity: 0; filter: blur(6px); }
@@ -4851,6 +4896,119 @@
         h += '</div></div></div>';
 
         summaryContainer.innerHTML = h;
+
+        // "Message the Company" button — between summary and playbook
+        var drafterMatch = responseContent.match(/\*\*Drafted By\*\*[:\s]*([^\n*]+)/i);
+        var companyName = drafterMatch ? drafterMatch[1].trim() : null;
+        if (companyName) {
+            var msgBtn = '<div class="message-company-section">';
+            msgBtn += '<button class="message-company-btn" id="messageCompanyBtn">';
+            msgBtn += '<span class="message-company-icon">\u2709</span> ';
+            msgBtn += 'Draft a message to ' + escapeHtml(companyName);
+            msgBtn += '</button>';
+            msgBtn += '<div class="message-company-output hidden" id="messageCompanyOutput"></div>';
+            msgBtn += '</div>';
+            summaryContainer.insertAdjacentHTML('beforeend', msgBtn);
+
+            $('messageCompanyBtn').addEventListener('click', function() {
+                var btn = this;
+                if (btn.classList.contains('generating')) return;
+                btn.classList.add('generating');
+                btn.innerHTML = '<span class="pulsing-dots"><span></span><span></span><span></span></span> Drafting your message...';
+
+                var clauses = extractClausesFromResponse();
+                var topConcerns = clauses
+                    .filter(function(c) { return c.riskLevel === 'RED' || c.score >= 60; })
+                    .sort(function(a, b) { return (b.score || 0) - (a.score || 0); })
+                    .slice(0, 5);
+
+                var concernsList = topConcerns.map(function(c) {
+                    return '- ' + c.title + ' (Score: ' + (c.score || '?') + '/100, Trick: ' + (c.trick || 'unknown') + '): ' + (c.bottomLine || c.reveal || '');
+                }).join('\n');
+
+                var roleMatch = responseContent.match(/\*\*Your Role\*\*[:\s]*([^\n*]+)/i);
+                var typeMatch = responseContent.match(/\*\*Document Type\*\*[:\s]*([^\n*]+)/i);
+                var userRole = roleMatch ? roleMatch[1].trim() : 'the other party';
+                var docType = typeMatch ? typeMatch[1].trim() : 'document';
+
+                var prompt = 'Write a professional, firm but polite message from ' + userRole +
+                    ' to ' + companyName + ' about their ' + docType + '.\n\n' +
+                    'Risk Score: ' + score + '/100. Power Imbalance: ' + (piiScore || '?') + '/100.\n\n' +
+                    'Top concerns found by analysis:\n' + concernsList + '\n\n' +
+                    'The message should:\n' +
+                    '1. State that the sender has had the ' + docType + ' independently analyzed\n' +
+                    '2. Name the specific clauses of concern (use the real section titles/numbers)\n' +
+                    '3. Ask for written clarification or revision on each point\n' +
+                    '4. Be professional — not threatening, not apologetic\n' +
+                    '5. End with a clear request for a response within a reasonable timeframe\n' +
+                    '6. Be 200-300 words, ready to send as-is\n\n' +
+                    'Write ONLY the message body. No subject line, no explanation.';
+
+                var outputEl = $('messageCompanyOutput');
+                outputEl.classList.remove('hidden');
+                outputEl.innerHTML = '<span class="pulsing-dots"><span></span><span></span><span></span></span>';
+
+                // Use the follow-up /ask endpoint with the complaint prompt
+                var url = BASE_URL + '/ask/' + currentDocId;
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: prompt })
+                }).then(function(resp) {
+                    if (!resp.ok) throw new Error('Request failed');
+                    var reader = resp.body.getReader();
+                    var decoder = new TextDecoder();
+                    var fullText = '';
+                    var buffer = '';
+
+                    function readChunk() {
+                        return reader.read().then(function(result) {
+                            if (result.done) {
+                                btn.classList.remove('generating');
+                                btn.innerHTML = '<span class="message-company-icon">\u2709</span> Regenerate message';
+                                // Add copy + mailto buttons
+                                var actions = '<div class="message-actions">';
+                                actions += '<button class="message-action-btn" id="copyMessageBtn">Copy to clipboard</button>';
+                                actions += '<button class="message-action-btn" id="mailtoMessageBtn">Open in email</button>';
+                                actions += '</div>';
+                                outputEl.insertAdjacentHTML('beforeend', actions);
+                                $('copyMessageBtn').addEventListener('click', function() {
+                                    navigator.clipboard.writeText(fullText).then(function() {
+                                        $('copyMessageBtn').textContent = 'Copied!';
+                                        setTimeout(function() { $('copyMessageBtn').textContent = 'Copy to clipboard'; }, 2000);
+                                    });
+                                });
+                                $('mailtoMessageBtn').addEventListener('click', function() {
+                                    var subj = 'Regarding your ' + docType + ' — Request for Clarification';
+                                    window.location.href = 'mailto:?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(fullText);
+                                });
+                                return;
+                            }
+                            buffer += decoder.decode(result.value, { stream: true });
+                            var lines = buffer.split('\n');
+                            buffer = lines.pop();
+                            lines.forEach(function(line) {
+                                if (line.startsWith('data: ')) {
+                                    try {
+                                        var evt = JSON.parse(line.substring(6));
+                                        if (evt.type === 'text' || evt.type === 'answer_text') {
+                                            fullText += evt.content;
+                                            outputEl.innerHTML = safeMd2Html(fullText);
+                                        }
+                                    } catch(e) {}
+                                }
+                            });
+                            return readChunk();
+                        });
+                    }
+                    return readChunk();
+                }).catch(function(err) {
+                    btn.classList.remove('generating');
+                    btn.innerHTML = '<span class="message-company-icon">\u2709</span> Draft a message to ' + escapeHtml(companyName);
+                    outputEl.innerHTML = '<p style="color:var(--red)">Failed to generate message. Please try again.</p>';
+                });
+            });
+        }
     }
 
     // ── Drafter's Playbook — trick frequency visualization ───
