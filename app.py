@@ -21,6 +21,7 @@ from io import BytesIO
 
 from flask import Flask, request, jsonify, render_template, Response
 from dotenv import load_dotenv
+import httpx
 import anthropic
 
 load_dotenv()
@@ -50,6 +51,7 @@ def store_document(doc_id, doc):
 
 MODEL = os.environ.get('FLIPSIDE_MODEL', 'claude-opus-4-6')
 FAST_MODEL = os.environ.get('FLIPSIDE_FAST_MODEL', 'claude-haiku-4-5-20251001')
+SYNTHESIS_MAX_TOKENS = 8000  # ~1500 words + thinking for expert panel synthesis
 
 # Module-level client for utility functions (text cleaning etc.)
 _client = None
@@ -924,11 +926,21 @@ def extract_pdf(file_storage):
     pdf_bytes = file_storage.read()
     text_parts = []
     page_images = []
+    ocr_used = False
+    use_ocr_for_all = None  # None = undecided, True/False after first page test
+
+    def text_quality(t):
+        """Score text: fraction of tokens that look like real words."""
+        words = t.split()
+        if not words:
+            return 0
+        good = sum(1 for w in words if 2 <= len(w) <= 20 and sum(c.isalpha() for c in w) / max(len(w), 1) > 0.7)
+        return good / len(words)
+
     with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
         for i, page in enumerate(pdf.pages):
             page_text = page.extract_text()
-            if page_text:
-                text_parts.append(page_text)
+            pil_img = None
             if i < MAX_VISION_PAGES:
                 try:
                     img = page.to_image(resolution=VISION_DPI)
@@ -950,13 +962,43 @@ def extract_pdf(file_storage):
                 except Exception as e:
                     print(f'[extract_pdf] Page image rendering failed: {e}')
                     page_images.append(None)  # Placeholder to keep indices aligned
+            # OCR: test on first page, then apply decision to all pages
+            if use_ocr_for_all is None and pil_img:
+                # First page with an image — test OCR vs embedded text
+                try:
+                    import pytesseract
+                    ocr_text = pytesseract.image_to_string(pil_img)
+                    ocr_score = text_quality(ocr_text) if ocr_text else 0
+                    orig_score = text_quality(page_text) if page_text else 0
+                    use_ocr_for_all = ocr_score > orig_score + 0.05
+                    print(f'[extract_pdf] Page 1 quality test: embedded={orig_score:.2f}, OCR={ocr_score:.2f} → {"OCR" if use_ocr_for_all else "embedded"} for all pages')
+                    if use_ocr_for_all:
+                        page_text = ocr_text
+                        ocr_used = True
+                except Exception as e:
+                    print(f'[extract_pdf] OCR test failed: {e}')
+                    use_ocr_for_all = False
+            elif use_ocr_for_all:
+                # OCR won on first page — OCR this page too
+                try:
+                    import pytesseract
+                    ocr_img = pil_img or page.to_image(resolution=VISION_DPI).original
+                    ocr_text = pytesseract.image_to_string(ocr_img)
+                    if ocr_text and len(ocr_text.strip()) > len((page_text or '').strip()):
+                        page_text = ocr_text
+                except Exception as e:
+                    print(f'[extract_pdf] OCR failed for page {i+1}: {e}')
+            if page_text:
+                text_parts.append(page_text)
+    if ocr_used:
+        print('[extract_pdf] OCR was used for scanned pages')
     # Tag each page so the sidebar can render page dividers
     # and later clauses from page 3+ are matchable
     tagged = []
     for i, part in enumerate(text_parts):
         tagged.append(f'\n\n— Page {i + 1} —\n\n{part}')
     raw_text = ''.join(tagged).strip()
-    return clean_extracted_text(raw_text), page_images
+    return clean_extracted_text(raw_text), page_images, ocr_used
 
 
 def extract_docx(file_storage):
@@ -992,8 +1034,9 @@ def upload():
             filename = file.filename
             ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
 
+            ocr_used = False
             if ext == 'pdf':
-                text, page_images = extract_pdf(file)
+                text, page_images, ocr_used = extract_pdf(file)
             elif ext == 'docx':
                 text = extract_docx(file)
             elif ext in ('txt', 'text', 'md'):
@@ -1038,14 +1081,17 @@ def upload():
             except Exception:
                 pass
 
-        return jsonify({
+        resp = {
             'doc_id': doc_id,
             'filename': filename,
             'text_length': len(text),
             'preview': text[:300],
             'full_text': text,
             'thumbnail': thumbnail,
-        })
+        }
+        if ocr_used:
+            resp['ocr_used'] = True
+        return jsonify(resp)
 
     except Exception as e:
         print(f'[upload/compare] Error: {e}')
@@ -1269,7 +1315,7 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 
 
 def build_interactions_prompt(has_images=False):
-    """Opus thread 1: Cross-clause compound risks. Villain voice + YOUR MOVE."""
+    """Opus thread 1: Cross-clause compound risks. Findings + deep content."""
     visual_block = ""
     if has_images:
         visual_block = """
@@ -1282,31 +1328,55 @@ Page images are included. Look for visual tricks: fine print, buried placement, 
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
-## OUTPUT FORMAT
+## OUTPUT FORMAT — TAGGED SECTIONS
 
-## Cross-Clause Interactions
+You MUST use the exact tags below. The frontend parses these tags to build a layered report.
 
-For each interaction:
+[SUMMARY_CONTRIBUTION]
+One sentence summarizing cross-clause risks for a non-expert. Example: "Three clause combinations create compounding penalties that could cost you thousands if you're ever late on a single payment." No jargon. No clause numbers. Concrete consequence.
+[/SUMMARY_CONTRIBUTION]
 
-### [Descriptive Interaction Title]
+For each cross-clause interaction, emit a [FINDING] block:
+
+[FINDING id="interactions_1"]
+[FINDING_TITLE]Human-readable title that passes the "would you text this to a friend?" test. NOT legal jargon. Example: "If you're late once, you might never catch up"[/FINDING_TITLE]
+[FINDING_SOURCE]Quote the EXACT text from EACH clause involved. Label each:
+Clause A (Section X): "verbatim text..."
+Clause B (Section Y): "verbatim text..."
+Use the document's actual words, not a paraphrase.[/FINDING_SOURCE]
+[FINDING_EXPLANATION]2-3 sentences in plain language. Concrete. With numbers from the document. Example: "Separately, each clause looks normal — a $50 late fee and a payment priority order. Together, your late fee gets paid BEFORE your rent, so next month you're 'short' again. The cycle never ends."[/FINDING_EXPLANATION]
+[FINDING_SEVERITY]standard | aggressive | unusual[/FINDING_SEVERITY]
+[FINDING_SEVERITY_CONTEXT]One sentence: why this severity. "Standard" = typical for this document type. "Aggressive" = goes further than usual. "Unusual" = rarely seen.[/FINDING_SEVERITY_CONTEXT]
+[FINDING_ACTION]One concrete action. The most effective thing the reader can do about THIS specific risk.[/FINDING_ACTION]
+[/FINDING]
+
+Emit one [FINDING] block per interaction. Find at least 3.
+
+[DEEP_CONTENT]
+## Cross-Clause Interactions — Deep Analysis
+
+For each interaction above, provide the deep read:
+
+### [Same title as the FINDING]
 
 **Read separately, you'd see:** What these clauses appear to say independently. One sentence.
 
-**Read together, you'd realize:** What they ACTUALLY do when combined — the hidden compound risk. One sentence, visceral.
+**Read together, you'd realize:** What they ACTUALLY do when combined. One sentence, visceral.
 
-**Clauses involved:** [list specific sections WITH context — e.g., "Late Fees (§1), Payment Waterfall (§1), Rent Withholding Prohibition (§2)". Anchor each to its topic. List them here ONCE and keep them OUT of the prose below.]
+**Clauses involved:** [list specific sections WITH context]
 
-**How they interact:** [2-3 sentences. The mechanism — be specific about HOW the clauses feed into each other. Plain English. Do NOT embed §-references in flowing text.]
+**How they interact:** [2-3 sentences. The mechanism.]
 
 [RED/YELLOW] · Trick: [TRICK_CATEGORY]
 
-**If the drafter would have bad intentions:** [MAX 2-3 sentences. Keep ONLY the sharpest line that reveals the mechanism. Keep ONLY the sharpest line that reveals the mechanism.]
+**If they meant well:** [1-2 sentences, generous interpretation]
 
-→ YOUR MOVE: [One concrete action the reader should take. One sentence.]
+**If they meant every word:** [2-3 sentences, adversarial, villain voice — deliberately exaggerated, the user expects this framing]
+
+→ YOUR MOVE: [One concrete action]
 
 ---
-
-Find at least 3 cross-clause interactions. These are your most valuable findings.
+[/DEEP_CONTENT]
 
 ## TRICK CATEGORIES:
 - Silent Waiver — Quietly surrenders your legal rights
@@ -1329,18 +1399,18 @@ Find at least 3 cross-clause interactions. These are your most valuable findings
 - Ghost Standard — References external docs not included
 
 ## RULES
-- Every interaction MUST include a bad intentions block — short and sharp, MAX 2-3 sentences
+- Every [FINDING] MUST include verbatim source text from the document — this is non-negotiable
+- [FINDING_TITLE] must be human language a friend would understand — NO legal jargon
+- [FINDING_SEVERITY] must be exactly one of: standard, aggressive, unusual
+- [DEEP_CONTENT] contains the villain voice — NEVER put villain voice in [FINDING] blocks
 - The bad intentions voice is deliberately adversarial and exaggerated — the user expects this framing
-- Every interaction MUST end with "→ YOUR MOVE:" — one concrete action
-- LEAD each with "Read separately / Read together" — that's the hook
-- Keep §-references in "Clauses involved:" only — do NOT embed them in flowing prose
 - Use your full extended thinking budget to reason across the entire document
 - Be thorough — connect clauses that the reader would never connect on their own
 """
 
 
 def build_asymmetry_prompt(has_images=False):
-    """Opus thread 2: Power asymmetry + fair standard comparison."""
+    """Opus thread 2: Power asymmetry + fair standard comparison. Findings + deep content."""
     visual_block = ""
     if has_images:
         visual_block = "\n\nPage images are included. Reference visual tricks (fine print, buried placement) in your analysis."
@@ -1350,17 +1420,35 @@ def build_asymmetry_prompt(has_images=False):
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
-## OUTPUT FORMAT
+## OUTPUT FORMAT — TAGGED SECTIONS
 
-## Power Asymmetry
+You MUST use the exact tags below. The frontend parses these tags to build a layered report.
+
+[SUMMARY_CONTRIBUTION]
+One sentence about the power balance. Include the power ratio as one number. Example: "They have 4× more rights than you, and 3 clauses go further than what's standard for this type of agreement." No jargon.
+[/SUMMARY_CONTRIBUTION]
+
+For each unfair clause compared against industry norms, emit a [FINDING] block:
+
+[FINDING id="asymmetry_1"]
+[FINDING_TITLE]Human-readable title. NOT "Unlimited Indemnification Flowing One Way Against a $100 Wall". YES: "If you get hurt on their trip, you pay their lawyer"[/FINDING_TITLE]
+[FINDING_SOURCE]Quote the EXACT clause text from the document. Use the document's actual words, not a paraphrase. If multiple clauses are involved, label each.[/FINDING_SOURCE]
+[FINDING_EXPLANATION]2-3 sentences. What this means in concrete terms. With numbers from the document where possible. Example: "If you trip on their trip and break your leg, you pay their legal bills — not the other way around. There's no cap on what you'd owe. Meanwhile, if they cancel the trip entirely, the most they'd give you is $100."[/FINDING_EXPLANATION]
+[FINDING_SEVERITY]standard | aggressive | unusual[/FINDING_SEVERITY]
+[FINDING_SEVERITY_CONTEXT]One sentence. For "standard": "This is typical for [document type]. Most [type] have this." For "aggressive": "This goes further than usual. A fair version would [what's standard]." For "unusual": "This is rarely seen. In a fair version, [what you'd expect]."[/FINDING_SEVERITY_CONTEXT]
+[FINDING_ACTION]One concrete action the reader can take about THIS specific imbalance.[/FINDING_ACTION]
+[/FINDING]
+
+Emit 2-3 [FINDING] blocks for the worst imbalances.
+
+[DEEP_CONTENT]
+## Power Balance — Deep Analysis
 
 **Your rights:** [count] · **Your obligations:** [count] · **Their rights:** [count] · **Their obligations:** [count] · **"Sole discretion" (them):** [count]×
 
 **Power Ratio: [Their rights]:[Your rights]** — [one sentence]
 
 ## Fair Standard Comparison
-
-Compare the WORST clauses in this document against what a fair, balanced version of the same document type would contain. Use your knowledge of standard industry practices and legal norms.
 
 For each comparison (2-3 max):
 
@@ -1369,9 +1457,13 @@ For each comparison (2-3 max):
 **A fair version would say:** [what a balanced, industry-standard clause would look like — one sentence]
 **The gap:** [why the difference matters to the reader — one sentence]
 
-This section answers: "Is this document UNUSUALLY aggressive, or is this just how these documents work?" Ground your comparison in real-world norms for this document type.
+This section answers: "Is this document UNUSUALLY aggressive, or is this just how these documents work?"
+[/DEEP_CONTENT]
 
 ## RULES
+- Every [FINDING] MUST include verbatim source text from the document — this is non-negotiable
+- [FINDING_TITLE] must be human language a friend would understand — NO legal jargon
+- [FINDING_SEVERITY] must be exactly one of: standard, aggressive, unusual
 - Power Asymmetry: count precisely from the document, don't estimate or round
 - Fair Standard: be specific about industry norms — cite what's standard
 - Use your full extended thinking budget
@@ -1379,7 +1471,7 @@ This section answers: "Is this document UNUSUALLY aggressive, or is this just ho
 
 
 def build_archaeology_prompt(has_images=False):
-    """Opus thread 3: Document archaeology (boilerplate vs custom) + drafter profile."""
+    """Opus thread 3: Document archaeology (boilerplate vs custom) + drafter profile. Findings + deep content."""
     visual_block = ""
     if has_images:
         visual_block = "\n\nPage images are included. Look for visual formatting differences between boilerplate and custom sections."
@@ -1389,40 +1481,69 @@ def build_archaeology_prompt(has_images=False):
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
-## OUTPUT FORMAT
+## OUTPUT FORMAT — TAGGED SECTIONS
 
-## Document Archaeology
+You MUST use the exact tags below. The frontend parses these tags to build a layered report.
+
+[SUMMARY_CONTRIBUTION]
+One sentence about the document's construction. Example: "Most of this contract is standard boilerplate, but 3 custom-added clauses reveal the drafter's real priorities — and they all favor the landlord." No jargon.
+[/SUMMARY_CONTRIBUTION]
+
+If any custom-drafted clauses reveal deliberate risk-shifting, emit [FINDING] blocks:
+
+[FINDING id="archaeology_1"]
+[FINDING_TITLE]Human-readable title about what the custom clause does. Example: "They added a clause specifically to limit your deposit refund"[/FINDING_TITLE]
+[FINDING_SOURCE]Quote the EXACT custom clause text from the document. Use the document's actual words, not a paraphrase.[/FINDING_SOURCE]
+[FINDING_EXPLANATION]2-3 sentences. Why this was custom-added and what it reveals about the drafter's intent. What does a boilerplate version of this clause look like?[/FINDING_EXPLANATION]
+[FINDING_SEVERITY]standard | aggressive | unusual[/FINDING_SEVERITY]
+[FINDING_SEVERITY_CONTEXT]One sentence. Is this custom addition typical? How does it compare to what's standard?[/FINDING_SEVERITY_CONTEXT]
+[FINDING_ACTION]One concrete action the reader can take.[/FINDING_ACTION]
+[/FINDING]
+
+Only emit [FINDING] blocks for CUSTOM clauses that shift risk. Boilerplate sections do NOT need findings — they go in [DEEP_CONTENT].
+
+[DEEP_CONTENT]
+## Document Archaeology — Deep Analysis
 
 For each major section, one word: **Boilerplate** or **Custom**. Then 1-2 sentences naming which clauses got custom attention and what that reveals about the drafter's priorities.
 
 ## Who Drafted This
 
-[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, aggressive deposit deductions, and form-letter communication. The structure is designed for a landlord who wants to manage by policy, not relationship."]
+[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. The drafter profile should predict BEHAVIOR, not just describe structure. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, aggressive deposit deductions, and form-letter communication."]
+[/DEEP_CONTENT]
 
 ## RULES
+- Every [FINDING] MUST include verbatim source text from the document — this is non-negotiable
+- [FINDING_TITLE] must be human language a friend would understand — NO legal jargon
+- [FINDING_SEVERITY] must be exactly one of: standard, aggressive, unusual
+- Only create [FINDING] blocks for CUSTOM clauses that shift risk — not for boilerplate
 - Document Archaeology: be honest — if most clauses are boilerplate, say so. The custom clauses are the signal
-- The drafter profile should predict BEHAVIOR, not just describe structure
 - Use your full extended thinking budget
 """
 
 
 def build_overall_prompt(has_images=False):
-    """Opus thread 4: Overall assessment, methodology, quality check."""
+    """Opus thread 4: Overall assessment, verdict tier, checklist, methodology, quality check."""
     visual_block = ""
     if has_images:
         visual_block = "\n\nPage images are included. Reference any visual tricks you detect in your assessment."
 
-    return f"""You are a senior attorney. Provide the OVERALL VERDICT: risk score, top concerns, recommended actions, methodology disclosure, and quality self-check. This is your ONLY job — a companion analysis covers cross-clause interactions separately.
+    return f"""You are a senior attorney. Provide the OVERALL VERDICT: what this document is, whether to worry, top concerns, what to do next, methodology, and self-check. This is your ONLY job — companion analyses cover cross-clause interactions, power asymmetry, and document archaeology separately.
 {visual_block}
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
-- [English action item]
 
-Only for non-English documents.
+## OUTPUT FORMAT — TAGGED SECTIONS
 
-## OUTPUT FORMAT
+You MUST use the exact tags below. The frontend parses these tags to build a layered report.
 
-## Overall Assessment
+[SUMMARY_CONTRIBUTION]
+This is the MOST IMPORTANT section — it becomes the first thing users read.
+
+Write EXACTLY 3-5 sentences, zero jargon, zero clause numbers:
+1. What is this document? → One sentence identifying the document type and parties. Example: "This is a Coca-Cola sweepstakes — a lottery for a trip worth $57,000."
+2. Should you worry? → One sentence calibrated to actual severity. NOT always alarming. For a clean document: "This is a standard agreement with typical protections." For a risky one: "If you only enter: low risk. If you WIN: read on."
+3-5. The top 3 risks → One sentence each, in human language. Each risk sentence should name a concrete consequence (a dollar amount, a time limit, a right you lose). NOT "Unlimited Indemnification Flowing One Way" — instead: "If you get hurt on their trip, you pay THEIR lawyer."
 
 **Verdict: [TIER]**
 
@@ -1436,23 +1557,50 @@ Choose EXACTLY ONE tier — the tier name must appear verbatim after "Verdict:":
 Selection guidance:
 - Look at the SEVERITY of the worst clauses, not just the count
 - A single unconscionable clause can warrant DO NOT SIGN even if everything else is green
-- If the document touches fundamental rights (constitutional protections, whistleblower rights, medical consent, employment non-competes that restrict livelihood), ELEVATE the tier
+- If the document touches fundamental rights, ELEVATE the tier
 - When in doubt between two tiers, choose the more protective one
+[/SUMMARY_CONTRIBUTION]
+
+[CHECKLIST]
+A chronological action list — things to DO, in ORDER. Adapt the sections to the document type.
+
+For a contract/agreement the user hasn't signed yet:
+Before you sign:
+- [Specific action referencing a specific clause]
+- [Specific action]
+
+After you sign:
+- [Set a calendar reminder for specific date/deadline from the document]
+- [Keep a copy of specific document]
+
+If something goes wrong:
+- [Your first step is X, not Y]
+
+For a sweepstakes/ToS already accepted:
+If you win / If something changes:
+- [Specific action]
+- [Budget specific amount for specific reason]
+
+RULES for checklist:
+- Max 5 items per section. Max 3 sections.
+- Each item must reference something SPECIFIC from the document (a date, a clause, an amount).
+- If there are more actions needed, the document is too risky — say "get professional advice" instead.
+- For genuinely fair documents: "No unusual actions needed. Standard precautions apply."
+[/CHECKLIST]
+
+[DEEP_CONTENT]
+## The Big Picture — Deep Analysis
 
 ### Top 3 Concerns
-1. **[Title]** — [one sentence]
-2. **[Title]** — [one sentence]
-3. **[Title]** — [one sentence]
+1. **[Title]** — [one sentence with concrete consequence]
+2. **[Title]** — [one sentence with concrete consequence]
+3. **[Title]** — [one sentence with concrete consequence]
 
-### Recommended Actions
-[Consolidated checklist — summarize the 3-5 most important moves. NEVER truncate.]
-- [Specific, actionable item]
-- [Specific, actionable item]
-- [Specific, actionable item]
+### If They Meant Well
+[2-3 sentences. Generous interpretation of the document's intent.]
 
-## How Opus 4.6 Analyzed This Document
-
-[2-4 sentences. Describe which reasoning methods YOU actually used for THIS specific document. Be concrete — not generic. Only mention methods you ACTUALLY used.]
+### If They Meant Every Word
+[2-3 sentences. Adversarial interpretation. What's the worst-case reading?]
 
 ## Quality Check
 
@@ -1463,13 +1611,94 @@ Re-read your own analysis above with fresh eyes:
 - **Consistency Check**: Similar language scored differently? If not: "Scoring appears consistent."
 
 **Adjusted Confidence: [HIGH/MEDIUM/LOW]** — After self-review, how confident are you?
+[/DEEP_CONTENT]
+
+[COLOPHON]
+## How Opus 4.6 Analyzed This Document
+[2-4 sentences. Describe which reasoning methods YOU actually used for THIS specific document. Be concrete — not generic. Only mention methods you ACTUALLY used.]
+
+This analysis was produced by Claude Opus 4.6 using adaptive thinking across 4 parallel expert threads: cross-clause interactions, power asymmetry, document archaeology, and overall assessment. Each thread independently reasoned about the document and allocated its own thinking budget based on complexity.
+
+This is not legal advice. For documents with significant financial or legal implications, consult a qualified attorney in your jurisdiction.
+[/COLOPHON]
 
 ## RULES
-- COMPLETION IS MANDATORY: Recommended Actions is the user's takeaway. NEVER truncate
-- The severity label MUST match real-world stakes, not just the number
-- Quality Check: be genuinely self-critical. Users trust uncertainty over false certainty
+- [SUMMARY_CONTRIBUTION] is the user's FIRST IMPRESSION — it must be clear, calm, and calibrated. Never alarming for fair documents
+- [CHECKLIST] is the user's TAKEAWAY — it must be actionable and chronological. NEVER truncate
+- [DEEP_CONTENT] Quality Check: be genuinely self-critical. Users trust uncertainty over false certainty
+- The severity tier MUST match real-world stakes, not just the number of red flags
 - Use your full extended thinking budget
 """
+
+
+def build_synthesis_prompt():
+    """Opus thread 5: Expert Panel Synthesis — reads all 4 expert reports and produces a 4-voice synthesis."""
+    return """You are the SYNTHESIS CHAIR of a 4-expert panel that just analyzed a legal document. You have access to ALL four expert reports. Your job: produce a unified synthesis that NO individual expert could write alone.
+
+## LANGUAGE RULE
+ALWAYS respond in ENGLISH regardless of the document's language.
+
+## YOUR 4 VOICES — output ALL four sections in this exact order:
+
+## What You Need to Know
+
+Plain-language briefing for a non-expert. 8th-grade reading level. THIS IS YOUR LARGEST SECTION (400-600 words).
+
+Structure:
+1. **One-sentence verdict** — what this document IS, in plain terms
+2. **The 3 biggest risks** — explain each in simple language. No jargon. Cite which expert flagged it.
+3. **What to do right now** — numbered action list (5-7 items), specific and concrete
+4. **Email you can send** — a ready-to-copy paragraph the reader can send to the other party. Professional tone, cites specific clause numbers, requests specific changes. Start with "Dear [Other Party],"
+
+## If They Meant Well
+
+Good-faith interpretation. Steelman the drafter's position (200-300 words).
+- For each major flagged clause, explain WHY it might exist for legitimate business reasons
+- Reference which expert flagged it and provide the charitable counter-reading
+- Acknowledge industry norms that might explain harsh-looking language
+- End with: "The most charitable reading of this document is that..."
+
+## If They Meant Every Word
+
+Bad-faith interpretation — villain voice applied to the WHOLE DOCUMENT as a system (200-300 words).
+- Do NOT go clause-by-clause — treat the document as one coordinated strategy
+- What is the document DESIGNED to achieve if every clause is enforced to maximum effect?
+- Use vivid, specific language: "This isn't a lease — it's a revenue optimization machine with a bed attached"
+- Reference findings from multiple experts to build the systemic picture
+- End with the single most devastating sentence about what signing means
+
+## Cross-Expert Connections
+
+Where the 4 expert reports converge, contradict, or reveal hidden patterns (200-300 words).
+- **Convergences**: Which risks did multiple experts independently flag? (This strengthens the signal)
+- **Contradictions**: Did experts disagree on severity or interpretation? Why?
+- **Hidden patterns**: What emerges ONLY when you read all 4 reports together? (e.g., custom-drafted sections correlating with the harshest terms, boilerplate providing cover for bespoke traps)
+- **The one thing everyone missed**: Is there a risk that falls between expert domains?
+
+## RULES
+- DO NOT repeat or summarize the 4 expert reports — the user has already read them
+- Every claim MUST reference specific findings from specific experts (e.g., "The Archaeology expert found...", "Both the Interactions and Asymmetry experts flagged...")
+- "What You Need to Know" MUST be the longest section
+- Total output target: 1000-1500 words
+- COMPLETION IS MANDATORY — never truncate
+- Use your full extended thinking budget to find cross-expert patterns before writing
+"""
+
+
+def build_synthesis_user_content(user_msg, thread_texts):
+    """Build user message for synthesis: original document + all 4 expert reports."""
+    parts = [user_msg]
+    labels = {
+        'interactions': 'CROSS-CLAUSE INTERACTIONS EXPERT',
+        'asymmetry': 'POWER ASYMMETRY EXPERT',
+        'archaeology': 'DOCUMENT ARCHAEOLOGY EXPERT',
+        'overall': 'OVERALL ASSESSMENT EXPERT',
+    }
+    for source in ['interactions', 'asymmetry', 'archaeology', 'overall']:
+        text = thread_texts.get(source, '').strip()
+        if text:
+            parts.append(f"\n\n---BEGIN {labels[source]} REPORT---\n\n{text}\n\n---END {labels[source]} REPORT---")
+    return '\n'.join(parts)
 
 
 @app.route('/compare', methods=['POST'])
@@ -1703,12 +1932,13 @@ def analyze(doc_id):
 
         t_quick.start()
 
-        yield from _run_parallel_5thread(q, timings, cancel)
+        yield from _run_parallel_5thread(q, timings, cancel, worker, user_msg)
 
-    def _run_parallel_5thread(q, timings, cancel):
+    def _run_parallel_5thread(q, timings, cancel, worker=None, user_msg=None):
         """5-thread event loop: ALL start at t=0.
         Haiku (full flip cards) + 4× Opus (interactions, asymmetry, archaeology, overall).
-        Each Opus source dispatches independently — no buffers, no gating."""
+        Each Opus source dispatches independently — no buffers, no gating.
+        After all 4 experts finish, launches synthesis thread (non-blocking)."""
 
         OPUS_SOURCES = {'interactions', 'asymmetry', 'archaeology', 'overall'}
 
@@ -1717,22 +1947,32 @@ def analyze(doc_id):
         quick_text = ''
         quick_done = False
         done_flags = {s: False for s in OPUS_SOURCES}
+        thread_texts = {s: '' for s in OPUS_SOURCES}  # Accumulate for synthesis
+        synthesis_started = False
+        synthesis_done = False
 
         def all_done():
-            return quick_done and all(done_flags.values())
+            base = quick_done and all(done_flags.values())
+            if not base:
+                return False
+            if synthesis_started:
+                return synthesis_done
+            return True
 
         while not all_done():
+            # ── Wall-clock timeout: fires even if queue has events ──
+            if time.time() - start_time > 300:
+                cancel.set()
+                yield sse('error', 'Analysis timed out after 5 minutes')
+                yield sse('done', json.dumps({
+                    'quick_seconds': timings.get('quick', 0),
+                    'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
+                    'model': MODEL}))
+                return
+
             try:
                 source, event = q.get(timeout=1.0)
             except queue_module.Empty:
-                if time.time() - start_time > 300:
-                    cancel.set()
-                    yield sse('error', 'Analysis timed out after 5 minutes')
-                    yield sse('done', json.dumps({
-                        'quick_seconds': timings.get('quick', 0),
-                        'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
-                        'model': MODEL}))
-                    return
                 continue
 
             # ── Accumulate Haiku text for suitability check ──
@@ -1754,6 +1994,8 @@ def analyze(doc_id):
                     return
                 elif error_source in OPUS_SOURCES:
                     done_flags[error_source] = True
+                elif error_source == 'synthesis':
+                    synthesis_done = True  # Don't block completion on synthesis failure
                 continue
 
             # ── Quick (Haiku full cards) done ──
@@ -1786,6 +2028,27 @@ def analyze(doc_id):
                 done_flags[opus_label] = True
                 yield sse(f'{opus_label}_done', json.dumps({
                     'seconds': timings.get(opus_label, 0)}))
+
+                # Launch synthesis when all 4 experts are done
+                if not synthesis_started and all(done_flags.values()) and worker and user_msg:
+                    synthesis_started = True
+                    synth_user = build_synthesis_user_content(user_msg, thread_texts)
+                    t_synth = threading.Thread(
+                        target=worker,
+                        args=('synthesis', build_synthesis_prompt(),
+                              SYNTHESIS_MAX_TOKENS, MODEL, True),
+                        kwargs={'user_content': synth_user},
+                        daemon=True,
+                    )
+                    t_synth.start()
+
+                continue
+
+            # ── Synthesis done ──
+            if source == 'synthesis_done':
+                synthesis_done = True
+                yield sse('synthesis_done', json.dumps({
+                    'seconds': timings.get('synthesis', 0)}))
                 continue
 
             # ── Stream events ──
@@ -1800,14 +2063,27 @@ def analyze(doc_id):
                 if event.type == 'content_block_delta':
                     delta = event.delta
                     if hasattr(delta, 'type') and delta.type == 'text_delta':
+                        thread_texts[source] += delta.text  # Accumulate for synthesis
                         yield sse(f'{source}_text', delta.text)
                     elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
                         yield sse(f'{source}_thinking', delta.thinking)
+
+            elif source == 'synthesis':
+                # Synthesis thread streams its own SSE channel
+                if not hasattr(event, 'type'):
+                    continue
+                if event.type == 'content_block_delta':
+                    delta = event.delta
+                    if hasattr(delta, 'type') and delta.type == 'text_delta':
+                        yield sse('synthesis_text', delta.text)
+                    elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
+                        yield sse('synthesis_thinking', delta.thinking)
 
         # ── Final done event ──
         yield sse('done', json.dumps({
             'quick_seconds': timings.get('quick', 0),
             'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
+            'synthesis_seconds': timings.get('synthesis', 0),
             'model': MODEL}))
 
     def _make_stream_state():
@@ -1823,7 +2099,9 @@ def analyze(doc_id):
 
     def generate():
         try:
-            client = anthropic.Anthropic()
+            client = anthropic.Anthropic(
+                timeout=httpx.Timeout(180.0, connect=10.0)  # 3 min per call
+            )
             is_compare = doc.get('mode') == 'compare'
             depth = doc.get('depth', 'standard')
             preset = DEPTH_PRESETS.get(depth, DEPTH_PRESETS['standard'])
@@ -2154,6 +2432,58 @@ def counter_draft(doc_id):
             'Connection': 'keep-alive',
         },
     )
+
+
+@app.route('/fetch-url', methods=['POST'])
+def fetch_url():
+    """Fetch a public URL and extract text content."""
+    try:
+        data = request.get_json(silent=True) or {}
+        url = data.get('url', '').strip()
+        depth = data.get('depth', 'standard')
+        if not url:
+            return jsonify({'error': 'No URL provided.'}), 400
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+
+        import requests as req
+        from bs4 import BeautifulSoup
+
+        resp = req.get(url, timeout=15, headers={
+            'User-Agent': 'Mozilla/5.0 (compatible; FlipSide/1.0)'
+        })
+        resp.raise_for_status()
+
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        for tag in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe']):
+            tag.decompose()
+
+        text = soup.get_text(separator='\n', strip=True)
+        text = re.sub(r'\n{3,}', '\n\n', text)
+
+        if len(text) < 50:
+            return jsonify({'error': 'Could not extract meaningful text from this URL.'}), 400
+
+        title_tag = soup.find('title')
+        title = title_tag.string.strip() if title_tag and title_tag.string else url[:80]
+
+        doc_id = str(uuid.uuid4())
+        store_document(doc_id, {
+            'text': text,
+            'filename': title[:100],
+            'depth': depth,
+        })
+
+        return jsonify({
+            'doc_id': doc_id,
+            'filename': title[:100],
+            'text_length': len(text),
+            'preview': text[:500],
+            'full_text': text,
+        })
+    except Exception as e:
+        print(f'[fetch-url] Error: {e}')
+        return jsonify({'error': f'Could not fetch URL: {str(e)}'}), 400
 
 
 if __name__ == '__main__':

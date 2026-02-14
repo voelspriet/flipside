@@ -1374,9 +1374,9 @@
         .tricks-detected-bar.expanded + .tricks-detected-pills { display: flex; }
 
         /* ── Inline verdict section (after cards) ── */
+        /* ── Inline verdict (5-layer report) ── */
         .inline-verdict {
-            display: none; /* shown when user clicks "Full Verdict" */
-            padding: 0; margin-top: 1rem;
+            display: none; padding: 0; margin-top: 1rem;
             animation: fadeUp 0.5s var(--ease-out-expo) both;
         }
         .inline-verdict.visible { display: block; }
@@ -1395,6 +1395,166 @@
             text-transform: uppercase; letter-spacing: 0.12em;
             white-space: nowrap;
         }
+        .inline-verdict-progress {
+            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+            padding: 1.5rem; margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
+        }
+
+        /* Layer 1 — Summary */
+        .verdict-layer-summary {
+            padding: 1.5rem; margin-bottom: 1.5rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); box-shadow: var(--shadow-sm);
+        }
+        .verdict-summary-text {
+            font-size: 0.92rem; line-height: 1.7; color: var(--text-body);
+        }
+        .verdict-summary-text strong { color: var(--text-primary); }
+        .verdict-tier-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.3rem 0.8rem; margin-top: 0.75rem; border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 700;
+            letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        .verdict-tier-badge.tier-green { background: rgba(45,138,78,0.1); color: var(--green); border: 1px solid var(--green-border); }
+        .verdict-tier-badge.tier-yellow { background: rgba(176,128,0,0.1); color: var(--yellow-dark); border: 1px solid var(--yellow); }
+        .verdict-tier-badge.tier-red { background: rgba(196,75,40,0.08); color: var(--accent); border: 1px solid var(--accent); }
+        .verdict-power-ratio {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.2rem 0.6rem; margin-left: 0.5rem; border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            color: var(--text-muted); background: var(--bg-surface);
+            border: 1px solid var(--border);
+        }
+
+        /* Layer 2 — Findings */
+        .verdict-layer-findings { margin-bottom: 1.5rem; }
+        .verdict-layer-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.6rem 0; margin-bottom: 0.75rem; cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+        .verdict-layer-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-secondary);
+        }
+        .verdict-layer-chevron {
+            font-size: 0.7rem; color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+        .verdict-layer.collapsed .verdict-layer-chevron { transform: rotate(-90deg); }
+        .verdict-layer.collapsed .verdict-layer-body { display: none; }
+
+        .verdict-finding {
+            margin-bottom: 1.25rem; padding: 1.25rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); box-shadow: var(--shadow-sm);
+        }
+        .verdict-finding-title {
+            font-size: 0.95rem; font-weight: 700; color: var(--text-primary);
+            line-height: 1.35; margin-bottom: 0.75rem;
+        }
+        .verdict-finding-source {
+            border-left: 3px solid var(--border); margin: 0.6rem 0;
+            padding: 0.6rem 0.9rem; font-size: 0.82rem; line-height: 1.6;
+            color: var(--text-secondary); background: var(--bg-surface);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+        .verdict-finding-source-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted); margin-bottom: 0.3rem;
+        }
+        .verdict-finding-explanation {
+            font-size: 0.88rem; line-height: 1.65; color: var(--text-body);
+            margin: 0.6rem 0;
+        }
+        .verdict-finding-meta {
+            display: flex; align-items: center; flex-wrap: wrap;
+            gap: 0.5rem; margin-top: 0.6rem;
+        }
+        .verdict-severity-badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 0.2rem 0.55rem; border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; font-weight: 700;
+            letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        .verdict-severity-badge.severity-standard { background: rgba(45,138,78,0.08); color: var(--green); }
+        .verdict-severity-badge.severity-aggressive { background: rgba(176,128,0,0.08); color: var(--yellow-dark); }
+        .verdict-severity-badge.severity-unusual { background: rgba(196,75,40,0.08); color: var(--accent); }
+        .verdict-finding-action {
+            display: flex; align-items: flex-start; gap: 0.5rem;
+            margin-top: 0.6rem; padding: 0.5rem 0.75rem;
+            background: rgba(45,138,78,0.04); border-radius: var(--radius-sm);
+            font-size: 0.82rem; line-height: 1.5; color: var(--text-body);
+        }
+        .verdict-finding-action::before {
+            content: '\2192'; flex-shrink: 0; font-weight: 700;
+            color: var(--green);
+        }
+        .verdict-show-all {
+            display: block; text-align: center; padding: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            color: var(--accent); cursor: pointer;
+            letter-spacing: 0.04em;
+        }
+        .verdict-show-all:hover { text-decoration: underline; }
+
+        /* Layer 3 — Checklist */
+        .verdict-layer-checklist { margin-bottom: 1.5rem; }
+        .verdict-checklist-section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted); margin: 0.75rem 0 0.4rem;
+        }
+        .verdict-checklist-item {
+            display: flex; align-items: flex-start; gap: 0.5rem;
+            padding: 0.35rem 0; font-size: 0.85rem; line-height: 1.55;
+            color: var(--text-body);
+        }
+        .verdict-checklist-item::before {
+            content: '\25A1'; flex-shrink: 0; font-size: 0.9rem;
+            color: var(--text-muted); margin-top: 0.05rem;
+        }
+
+        /* Layer 4 — Deep Read */
+        .verdict-layer-deep { margin-bottom: 1.5rem; }
+        .verdict-deep-body {
+            padding: 1.25rem; background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            font-size: 0.88rem; line-height: 1.65; color: var(--text-body);
+        }
+        .verdict-deep-body h2 { font-size: 1rem; margin: 1.25rem 0 0.5rem; font-weight: 700; }
+        .verdict-deep-body h3 { font-size: 0.92rem; margin: 1rem 0 0.4rem; font-weight: 600; }
+        .verdict-deep-body p { margin: 0.4rem 0; }
+        .verdict-deep-body ul, .verdict-deep-body ol { padding-left: 1.2rem; margin: 0.4rem 0; }
+        .verdict-deep-body li { margin: 0.2rem 0; }
+        .verdict-deep-body blockquote {
+            border-left: 3px solid var(--border); margin: 0.6rem 0;
+            padding: 0.4rem 0.8rem; color: var(--text-secondary); font-size: 0.85rem;
+            background: var(--bg-surface); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        /* Layer 5 — Colophon */
+        .verdict-layer-colophon { margin-bottom: 1.5rem; }
+        .verdict-colophon-body {
+            padding: 1rem; font-size: 0.76rem; line-height: 1.6;
+            color: var(--text-muted); background: var(--bg-surface);
+            border: 1px solid var(--border-light); border-radius: var(--radius);
+        }
+        .verdict-colophon-body p { margin: 0.3rem 0; }
+
+        /* Legacy support: keep old classes for export/tools */
         .inline-verdict-section {
             margin-bottom: 2rem; padding: 1.5rem;
             background: var(--bg-card); border: 1px solid var(--border);
@@ -1422,23 +1582,6 @@
             font-family: 'DM Sans', sans-serif;
             font-size: 0.88rem; line-height: 1.65; color: var(--text-body);
         }
-        .inline-verdict-section-body h2 { font-size: 1rem; margin: 1.25rem 0 0.5rem; font-weight: 700; }
-        .inline-verdict-section-body h3 { font-size: 0.92rem; margin: 1rem 0 0.4rem; font-weight: 600; }
-        .inline-verdict-section-body p { margin: 0.4rem 0; }
-        .inline-verdict-section-body ul, .inline-verdict-section-body ol { padding-left: 1.2rem; margin: 0.4rem 0; }
-        .inline-verdict-section-body li { margin: 0.2rem 0; }
-        .inline-verdict-section-body blockquote {
-            border-left: 3px solid var(--border); margin: 0.6rem 0;
-            padding: 0.4rem 0.8rem; color: var(--text-secondary); font-size: 0.85rem;
-            background: var(--bg-surface); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-        }
-        .inline-verdict-progress {
-            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-            padding: 1.5rem; margin: 1rem 0;
-            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-            color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
-        }
-        /* Verdict section loading placeholder */
         .inline-verdict-section.loading {
             opacity: 0.5; min-height: 80px;
         }
@@ -6633,8 +6776,253 @@
         }
     };
 
+    // ── Tagged output parser for 5-layer verdict ──────────────
+    function parseTaggedBlock(text, openTag, closeTag) {
+        // Extract content between [OPEN_TAG] and [/CLOSE_TAG]
+        var re = new RegExp('\\[' + openTag + '\\]([\\s\\S]*?)\\[\\/' + closeTag + '\\]', 'g');
+        var matches = [];
+        var m;
+        while ((m = re.exec(text)) !== null) {
+            matches.push(m[1].trim());
+        }
+        return matches;
+    }
+
+    function parseFindings(text) {
+        // Parse [FINDING id="..."] blocks with inner tagged fields
+        var findings = [];
+        var re = /\[FINDING[^\]]*\]([\s\S]*?)\[\/FINDING\]/g;
+        var m;
+        while ((m = re.exec(text)) !== null) {
+            var block = m[1];
+            var idMatch = m[0].match(/id="([^"]+)"/);
+            var finding = {
+                id: idMatch ? idMatch[1] : 'f' + findings.length,
+                title: extractInnerTag(block, 'FINDING_TITLE'),
+                source: extractInnerTag(block, 'FINDING_SOURCE'),
+                explanation: extractInnerTag(block, 'FINDING_EXPLANATION'),
+                severity: extractInnerTag(block, 'FINDING_SEVERITY').toLowerCase().trim(),
+                severityContext: extractInnerTag(block, 'FINDING_SEVERITY_CONTEXT'),
+                action: extractInnerTag(block, 'FINDING_ACTION')
+            };
+            if (finding.title) findings.push(finding);
+        }
+        return findings;
+    }
+
+    function extractInnerTag(block, tagName) {
+        var re = new RegExp('\\[' + tagName + '\\]([\\s\\S]*?)\\[\\/' + tagName + '\\]');
+        var m = re.exec(block);
+        return m ? m[1].trim() : '';
+    }
+
+    function parseAllThreadsForLayers() {
+        // Collect tagged content from all 4 Opus threads
+        var summaries = [];
+        var findings = [];
+        var deepParts = [];
+        var checklist = '';
+        var colophon = '';
+        var sources = ['interactions', 'asymmetry', 'archaeology', 'overall'];
+
+        sources.forEach(function(source) {
+            var text = opusSections[source].text || '';
+            if (!text.trim()) return;
+
+            // Summary contributions
+            var sc = parseTaggedBlock(text, 'SUMMARY_CONTRIBUTION', 'SUMMARY_CONTRIBUTION');
+            sc.forEach(function(s) { summaries.push(s); });
+
+            // Findings
+            var f = parseFindings(text);
+            f.forEach(function(finding) { findings.push(finding); });
+
+            // Deep content
+            var dc = parseTaggedBlock(text, 'DEEP_CONTENT', 'DEEP_CONTENT');
+            dc.forEach(function(d) { deepParts.push(d); });
+
+            // Checklist (only from overall thread)
+            if (source === 'overall') {
+                var cl = parseTaggedBlock(text, 'CHECKLIST', 'CHECKLIST');
+                if (cl.length) checklist = cl[0];
+                var co = parseTaggedBlock(text, 'COLOPHON', 'COLOPHON');
+                if (co.length) colophon = co[0];
+            }
+        });
+
+        // Add synthesis text as deep content if available
+        if (opusSections.synthesis.text.trim()) {
+            deepParts.unshift(opusSections.synthesis.text);
+        }
+
+        // Sort findings: unusual > aggressive > standard
+        var severityOrder = { unusual: 0, aggressive: 1, standard: 2 };
+        findings.sort(function(a, b) {
+            return (severityOrder[a.severity] || 2) - (severityOrder[b.severity] || 2);
+        });
+
+        return { summaries: summaries, findings: findings, deepParts: deepParts, checklist: checklist, colophon: colophon };
+    }
+
+    function extractVerdictTier(summaryText) {
+        var m = summaryText.match(/\*\*Verdict:\s*([A-Z\s]+?)\*\*/);
+        if (!m) m = summaryText.match(/Verdict:\s*([A-Z\s]+?)(?:\n|$)/);
+        if (!m) return null;
+        var tier = m[1].trim();
+        var tierMap = {
+            'SIGN WITH CONFIDENCE': 'green',
+            'READ THE FLAGGED CLAUSES': 'yellow',
+            'NEGOTIATE BEFORE SIGNING': 'yellow',
+            'SEEK LEGAL REVIEW': 'red',
+            'DO NOT SIGN': 'red'
+        };
+        return { name: tier, color: tierMap[tier] || 'yellow' };
+    }
+
+    function extractPowerRatio(text) {
+        // Look for power ratio in asymmetry thread
+        var asymText = opusSections.asymmetry.text || '';
+        var m = asymText.match(/Power Ratio:\s*(\d+:\d+)/i);
+        if (!m) m = asymText.match(/(\d+)\s*×\s*more rights/i);
+        if (m) return m[1] || m[0];
+        return '';
+    }
+
+    function renderLayer1(summaries) {
+        // Build the summary text — overall thread's summary is primary
+        var summaryText = summaries.join('\n\n');
+        if (!summaryText) return '';
+
+        // Extract and remove verdict tier line from display text
+        var tier = extractVerdictTier(summaryText);
+        var displayText = summaryText
+            .replace(/\*\*Verdict:\s*[A-Z\s]+?\*\*/g, '')
+            .replace(/Verdict:\s*[A-Z\s]+?\n?/g, '')
+            .trim();
+
+        var html = '<div class="verdict-layer-summary">';
+        html += '<div class="verdict-summary-text">' + safeMd2Html(displayText) + '</div>';
+        if (tier) {
+            html += '<span class="verdict-tier-badge tier-' + tier.color + '">' + escapeHtml(tier.name) + '</span>';
+        }
+        var ratio = extractPowerRatio();
+        if (ratio) {
+            html += '<span class="verdict-power-ratio">Power ' + escapeHtml(ratio) + '</span>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function renderLayer2(findings) {
+        if (!findings.length) return '';
+        var maxVisible = 5;
+        var html = '<div class="verdict-layer verdict-layer-findings">';
+        html += '<div class="verdict-layer-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
+        html += '<span class="verdict-layer-title">Risks Explained (' + findings.length + ')</span>';
+        html += '<span class="verdict-layer-chevron">\u25BC</span></div>';
+        html += '<div class="verdict-layer-body">';
+
+        findings.forEach(function(f, i) {
+            var hidden = i >= maxVisible ? ' style="display:none" data-extra-finding' : '';
+            html += '<div class="verdict-finding"' + hidden + '>';
+            html += '<div class="verdict-finding-title">' + escapeHtml(f.title) + '</div>';
+            if (f.source) {
+                html += '<div class="verdict-finding-source">';
+                html += '<div class="verdict-finding-source-label">\uD83D\uDCC4 What the document says</div>';
+                html += escapeHtml(f.source).replace(/\n/g, '<br>');
+                html += '</div>';
+            }
+            if (f.explanation) {
+                html += '<div class="verdict-finding-explanation">' + safeMd2Html(f.explanation) + '</div>';
+            }
+            html += '<div class="verdict-finding-meta">';
+            if (f.severity) {
+                html += '<span class="verdict-severity-badge severity-' + f.severity + '">' + escapeHtml(f.severity) + '</span>';
+            }
+            if (f.severityContext) {
+                html += '<span style="font-size:0.76rem;color:var(--text-secondary)">' + escapeHtml(f.severityContext) + '</span>';
+            }
+            html += '</div>';
+            if (f.action) {
+                html += '<div class="verdict-finding-action">' + escapeHtml(f.action) + '</div>';
+            }
+            html += '</div>';
+        });
+        if (findings.length > maxVisible) {
+            html += '<span class="verdict-show-all" onclick="this.parentElement.querySelectorAll(\'[data-extra-finding]\').forEach(function(el){el.style.display=\'\'});this.remove()">Show all ' + findings.length + ' findings \u2192</span>';
+        }
+        html += '</div></div>';
+        return html;
+    }
+
+    function renderLayer3(checklist) {
+        if (!checklist) return '';
+        var html = '<div class="verdict-layer verdict-layer-checklist collapsed">';
+        html += '<div class="verdict-layer-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
+        // Count checklist items
+        var itemCount = (checklist.match(/^- /gm) || []).length;
+        html += '<span class="verdict-layer-title">Your Checklist (' + itemCount + ' items)</span>';
+        html += '<span class="verdict-layer-chevron">\u25BC</span></div>';
+        html += '<div class="verdict-layer-body">';
+        // Parse checklist sections
+        var lines = checklist.split('\n');
+        lines.forEach(function(line) {
+            var trimmed = line.trim();
+            if (!trimmed) return;
+            // Section headers (lines not starting with -)
+            if (!trimmed.startsWith('-') && !trimmed.startsWith('*') && trimmed.endsWith(':')) {
+                html += '<div class="verdict-checklist-section-title">' + escapeHtml(trimmed) + '</div>';
+            } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                html += '<div class="verdict-checklist-item">' + escapeHtml(trimmed.substring(2)) + '</div>';
+            }
+        });
+        html += '</div></div>';
+        return html;
+    }
+
+    function renderLayer4(deepParts) {
+        if (!deepParts.length) return '';
+        var deepText = deepParts.join('\n\n');
+        var safeMd = deepText
+            .replace(/^# .+$/gm, '')
+            .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
+            .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
+            .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
+            .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
+        var rendered = safeMd2Html(safeMd);
+        rendered = styleRiskBadges(rendered);
+        rendered = styleReaderBlocks(rendered);
+        rendered = styleDrafterBlocks(rendered);
+        rendered = safeHtml(rendered);
+
+        var html = '<div class="verdict-layer verdict-layer-deep collapsed">';
+        html += '<div class="verdict-layer-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
+        html += '<span class="verdict-layer-title">Deep Analysis</span>';
+        html += '<span class="verdict-layer-chevron">\u25BC</span></div>';
+        html += '<div class="verdict-layer-body">';
+        html += '<div class="verdict-deep-body">' + rendered + '</div>';
+        html += '</div></div>';
+        return html;
+    }
+
+    function renderLayer5(colophon) {
+        if (!colophon) return '';
+        var html = '<div class="verdict-layer verdict-layer-colophon collapsed">';
+        html += '<div class="verdict-layer-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
+        html += '<span class="verdict-layer-title">About This Analysis</span>';
+        html += '<span class="verdict-layer-chevron">\u25BC</span></div>';
+        html += '<div class="verdict-layer-body">';
+        html += '<div class="verdict-colophon-body">' + safeMd2Html(colophon) + '</div>';
+        html += '</div></div>';
+        return html;
+    }
+
+    function hasTaggedContent(text) {
+        return /\[SUMMARY_CONTRIBUTION\]/.test(text) || /\[FINDING /.test(text) || /\[DEEP_CONTENT\]/.test(text);
+    }
+
     function revealDeepAnalysis() {
-        // Render inline verdict below cards (Problem 3: no more separate view)
+        // Render 5-layer verdict below cards
         var inlineVerdict = $('inlineVerdict');
         var inlineContent = $('inlineVerdictContent');
         var inlineProgress = $('inlineVerdictProgress');
@@ -6647,59 +7035,70 @@
         // Also show the legacy deep analysis section for tools that depend on it
         var section = $('deepAnalysisSection');
         section.classList.remove('hidden');
-        // But keep card viewport visible! (inline verdict is below cards)
-        // $('cardViewport').classList.add('hidden'); — removed
         hideVerdictCol();
 
-        // Build inline verdict sections (synthesis first)
-        var html = '';
-        var sources = ['synthesis', 'interactions', 'asymmetry', 'archaeology', 'overall'];
-        sources.forEach(function(source) {
-            var config = VERDICT_SECTIONS[source];
-            if (!config) return;
-            var text = opusSections[source].text.trim();
-            var isDone = opusSections[source].done;
-            // Skip synthesis if it has no text (e.g. not-applicable docs, or never started)
-            if (source === 'synthesis' && !text) return;
-            if (!text && !isDone) {
-                // Section not started yet — show loading placeholder
-                html += '<div class="inline-verdict-section loading" data-source="' + source + '">' +
+        // Check if we have tagged content (new format) or legacy markdown
+        var anyTagged = ['interactions', 'asymmetry', 'archaeology', 'overall'].some(function(s) {
+            return hasTaggedContent(opusSections[s].text || '');
+        });
+
+        if (anyTagged) {
+            // New 5-layer rendering
+            var layers = parseAllThreadsForLayers();
+            var html = '';
+            html += renderLayer1(layers.summaries);
+            html += renderLayer2(layers.findings);
+            html += renderLayer3(layers.checklist);
+            html += renderLayer4(layers.deepParts);
+            html += renderLayer5(layers.colophon);
+            inlineContent.innerHTML = html;
+        } else {
+            // Legacy fallback: render per-thread sections (old format)
+            var html = '';
+            var sources = ['synthesis', 'interactions', 'asymmetry', 'archaeology', 'overall'];
+            sources.forEach(function(source) {
+                var config = VERDICT_SECTIONS[source];
+                if (!config) return;
+                var text = opusSections[source].text.trim();
+                var isDone = opusSections[source].done;
+                if (source === 'synthesis' && !text) return;
+                if (!text && !isDone) {
+                    html += '<div class="inline-verdict-section loading" data-source="' + source + '">' +
+                        '<div class="inline-verdict-section-header">' +
+                        '<div class="inline-verdict-section-icon">' + config.icon + '</div>' +
+                        '<div><div class="inline-verdict-section-title">' + config.title + '</div>' +
+                        '<div class="inline-verdict-section-subtitle">' + config.subtitle + '</div></div>' +
+                        '</div>' +
+                        '<div class="inline-verdict-section-body"><span class="pulsing-dots"><span></span><span></span><span></span></span> Analysis in progress...</div>' +
+                        '</div>';
+                    return;
+                }
+                var safeMd = text
+                    .replace(/^# .+$/gm, '')
+                    .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
+                    .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
+                    .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
+                    .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
+                var rendered = safeMd2Html(safeMd);
+                rendered = styleRiskBadges(rendered);
+                rendered = styleReaderBlocks(rendered);
+                rendered = styleDrafterBlocks(rendered);
+                rendered = safeHtml(rendered);
+                html += '<div class="inline-verdict-section' + (isDone ? '' : ' loading') + '" data-source="' + source + '">' +
                     '<div class="inline-verdict-section-header">' +
                     '<div class="inline-verdict-section-icon">' + config.icon + '</div>' +
                     '<div><div class="inline-verdict-section-title">' + config.title + '</div>' +
                     '<div class="inline-verdict-section-subtitle">' + config.subtitle + '</div></div>' +
                     '</div>' +
-                    '<div class="inline-verdict-section-body"><span class="pulsing-dots"><span></span><span></span><span></span></span> Analysis in progress...</div>' +
-                    '</div>';
-                return;
-            }
-            var safeMd = text
-                .replace(/^# .+$/gm, '')
-                .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
-                .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
-                .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
-                .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
-            var rendered = safeMd2Html(safeMd);
-            rendered = styleRiskBadges(rendered);
-            rendered = styleReaderBlocks(rendered);
-            rendered = styleDrafterBlocks(rendered);
-            rendered = safeHtml(rendered);
-
-            html += '<div class="inline-verdict-section' + (isDone ? '' : ' loading') + '" data-source="' + source + '">' +
-                '<div class="inline-verdict-section-header">' +
-                '<div class="inline-verdict-section-icon">' + config.icon + '</div>' +
-                '<div><div class="inline-verdict-section-title">' + config.title + '</div>' +
-                '<div class="inline-verdict-section-subtitle">' + config.subtitle + '</div></div>' +
-                '</div>' +
-                '<div class="inline-verdict-section-body">' + rendered +
-                (isDone ? '' : '<span class="verdict-cursor"></span>') +
-                '</div></div>';
-        });
-        inlineContent.innerHTML = html;
+                    '<div class="inline-verdict-section-body">' + rendered +
+                    (isDone ? '' : '<span class="verdict-cursor"></span>') +
+                    '</div></div>';
+            });
+            inlineContent.innerHTML = html;
+        }
 
         if (isComplete) {
             inlineProgress.classList.add('hidden');
-            // Also render into legacy deep analysis for export/tools
             renderDeepAnalysisContent();
             buildSummaryCard();
             buildPlaybookCard();
