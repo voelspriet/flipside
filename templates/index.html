@@ -3243,8 +3243,6 @@
         'Ghost Standard': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h.01"/><path d="M12 15h.01"/><path d="M15 15h.01"/></svg>'
     };
     // Backward compat — emoji fallback
-    var TRICK_MAP = {};
-    Object.keys(TRICK_ICONS).forEach(function(k) { TRICK_MAP[k] = ''; });
 
     // ── Document type category icons (from demo tiles) ───
     var DOC_TYPE_ICONS = [
@@ -3332,8 +3330,6 @@
         ]
     };
 
-    var thinkingKeywords = /\b(asymmetric|one-sided|hidden|buried|disguised|waiver|penalty|forfeit|exclusion|loophole|unilateral|discretion|cascade|strategic|deliberately|advantage|obligation|burden|ambiguous|vague|trap|lock-in|irreversible)\b/gi;
-
     // ── Base URL (supports reverse proxy prefix like /flipside) ──
     var BASE_URL = {{ request.script_root | tojson }};
 
@@ -3357,7 +3353,6 @@
     var animatedCardTitles = new Set();
     var activeFilters = new Set(); // 'red', 'yellow', 'green'
     var activeTrickFilters = new Set(); // trick type names
-    var toolResults = [];
     var documentFullText = '';
     var documentThumbnail = null;
     var currentDocId = '';
@@ -3478,7 +3473,7 @@
     var verdictTitle     = $('verdictTitle');
     var verdictBody      = $('verdictBody');
     var verdictExpandBtn = $('verdictExpandBtn');
-    var _verdictRenderTimer = null;
+    var _verdictRenderTimers = {};
     var _verdictAutoScroll = true;
     var _verdictCountdownInterval = null;
     var _verdictCountdownSec = 120;
@@ -3520,6 +3515,10 @@
     marked.setOptions({ breaks: true, gfm: true });
     function safeMd2Html(md) {
         return DOMPurify.sanitize(marked.parse(md));
+    }
+    function safeHtml(html) {
+        // Re-sanitize after post-DOMPurify regex transforms (style functions)
+        return DOMPurify.sanitize(html);
     }
 
     // ── Event delegation for flip cards + card navigation ──
@@ -4086,6 +4085,8 @@
 
     // ── Switch to analysis screen ─────────────────────────────
     function switchToAnalysis(docId, filename) {
+        // Clean up timers from any previous analysis
+        stopEditorialStatusRotation();
         // Reset state
         thinkingContent = '';
         responseContent = '';
@@ -4147,7 +4148,6 @@
         timelineContent.innerHTML = '';
         timelineBtn.disabled = false;
         timelineBtn.textContent = 'Worst-Case Timeline';
-        toolResults = [];
         $('deepAnalysisSection').classList.add('hidden');
         metadataLine.classList.add('hidden');
         metadataLine.classList.remove('visible');
@@ -4286,9 +4286,6 @@
                     break;
 
                 case 'tool_result':
-                    var toolData = {};
-                    try { toolData = JSON.parse(msg.content); } catch(e) {}
-                    toolResults.push(toolData);
                     break;
 
                 case 'handoff':
@@ -4449,19 +4446,30 @@
             }
         };
 
+        var _sseRetryCount = 0;
+        var _sseMaxRetries = 2;
         eventSource.onerror = function() {
             if (eventSource) { eventSource.close(); eventSource = null; }
-            if (!statusPill.classList.contains('done')) {
-                statusText.textContent = 'Connection lost';
-                statusPill.classList.add('done');
-                removeCursor();
-                stopStatusRotation();
-                if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
-                if (responseContent.length < 50) {
-                    resultsArea.classList.remove('hidden');
-                    resultsContent.innerHTML = '<div class="error-msg">Connection lost during analysis.' +
-                        '<br><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
-                }
+            if (statusPill.classList.contains('done')) return;
+            // Retry on transient failures if analysis is still in progress
+            if (_sseRetryCount < _sseMaxRetries && responseContent.length > 0) {
+                _sseRetryCount++;
+                statusText.textContent = 'Reconnecting (' + _sseRetryCount + '/' + _sseMaxRetries + ')...';
+                setTimeout(function() {
+                    if (statusPill.classList.contains('done')) return;
+                    connectStream(docId);
+                }, 2000 * _sseRetryCount);
+                return;
+            }
+            statusText.textContent = 'Connection lost';
+            statusPill.classList.add('done');
+            removeCursor();
+            stopStatusRotation();
+            if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
+            if (responseContent.length < 50) {
+                resultsArea.classList.remove('hidden');
+                resultsContent.innerHTML = '<div class="error-msg">Connection lost during analysis.' +
+                    '<br><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
             }
         };
     }
@@ -4570,19 +4578,7 @@
         if (statusRotateInterval) { clearInterval(statusRotateInterval); statusRotateInterval = null; }
     }
 
-    // ── Thinking rendering ────────────────────────────────────
-    function highlightThinking(text) {
-        var escaped = escapeHtml(text);
-        return escaped.replace(thinkingKeywords, '<span class="kw">$&</span>');
-    }
-
-    function renderThinking() {
-        // Thinking panel removed — no-op
-    }
-
-    function removeCursor() {
-        // Thinking panel removed — no-op
-    }
+    function removeCursor() { /* no-op — thinking panel removed */ }
 
     // ── Results rendering ─────────────────────────────────────
     function renderResults() {
@@ -4629,7 +4625,7 @@
             html = styleReaderBlocks(html);
             html = styleDrafterBlocks(html);
             html = styleSplitClauses(html);
-            resultsContent.innerHTML = html;
+            resultsContent.innerHTML = safeHtml(html);
             wrapClauseSections(resultsContent);
             resultsArea.classList.remove('hidden');
             return;
@@ -5295,9 +5291,9 @@
         }
     }
     function renderOpusSection(source) {
-        if (!_verdictRenderTimer) {
-            _verdictRenderTimer = setTimeout(function() {
-                _verdictRenderTimer = null;
+        if (!_verdictRenderTimers[source]) {
+            _verdictRenderTimers[source] = setTimeout(function() {
+                _verdictRenderTimers[source] = null;
                 // Show verdict column as soon as we get first text
                 if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable && hasFlippedOnce) {
                     showVerdictCol();
@@ -5310,7 +5306,7 @@
                 html = styleRiskBadges(html);
                 html = styleReaderBlocks(html);
                 html = styleDrafterBlocks(html);
-                bodyEl.innerHTML = html;
+                bodyEl.innerHTML = safeHtml(html);
                 // Append cursor while streaming
                 if (!opusSections[source].done) {
                     var cur = document.createElement('span');
@@ -5325,7 +5321,7 @@
                         fHtml = styleRiskBadges(fHtml);
                         fHtml = styleReaderBlocks(fHtml);
                         fHtml = styleDrafterBlocks(fHtml);
-                        contentEl.innerHTML = fHtml;
+                        contentEl.innerHTML = safeHtml(fHtml);
                         if (!opusSections[source].done) {
                             var fc = document.createElement('span');
                             fc.className = 'verdict-cursor';
@@ -5387,7 +5383,7 @@
                 html = styleReaderBlocks(html);
                 html = styleDrafterBlocks(html);
                 html = styleSplitClauses(html);
-                bodyEl.innerHTML = html;
+                bodyEl.innerHTML = safeHtml(html);
             }
         }
         // If user is in focused mode, update the counter (new section available)
@@ -5453,7 +5449,8 @@
         var summaryEl = $('verdictSummary');
         if (summaryEl) { summaryEl.innerHTML = ''; summaryEl.classList.remove('visible'); }
         _verdictAutoScroll = true;
-        if (_verdictRenderTimer) { clearTimeout(_verdictRenderTimer); _verdictRenderTimer = null; }
+        Object.keys(_verdictRenderTimers).forEach(function(k) { clearTimeout(_verdictRenderTimers[k]); });
+        _verdictRenderTimers = {};
         // Reset accumulators and section UI — lock all sections
         Object.keys(opusSections).forEach(function(k) {
             opusSections[k] = { text: '', done: false };
@@ -5573,7 +5570,7 @@
             html = styleReaderBlocks(html);
             html = styleDrafterBlocks(html);
             html = styleSplitClauses(html);
-            contentEl.innerHTML = html;
+            contentEl.innerHTML = safeHtml(html);
         } else {
             contentEl.innerHTML = '<p style="color:var(--text-muted);font-style:italic;">Content loading...</p>';
         }
@@ -5693,7 +5690,7 @@
             html = styleRiskBadges(html);
             html = styleReaderBlocks(html);
             html = styleDrafterBlocks(html);
-            deepAnalysisEl.innerHTML = html;
+            deepAnalysisEl.innerHTML = safeHtml(html);
         } else {
             deepAnalysisEl.innerHTML = '';
         }
@@ -5983,7 +5980,7 @@
         html = styleReaderBlocks(html);
         html = styleDrafterBlocks(html);
         html = styleSplitClauses(html);
-        deepAnalysisEl.innerHTML = html;
+        deepAnalysisEl.innerHTML = safeHtml(html);
 
         wrapClauseSections(deepAnalysisEl);
 

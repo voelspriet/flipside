@@ -107,39 +107,6 @@ PHASE_MARKERS = [
     ('Overall Assessment', 'summary'),
 ]
 
-DEEP_ANALYSIS_TOOLS = [
-    {
-        "name": "assess_risk",
-        "description": "Record a structured risk assessment for a clause. Call once per clause analyzed.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "clause_ref": {"type": "string", "description": "Section reference, e.g. '§1 Rent and Late Fees'"},
-                "risk_level": {"type": "string", "enum": ["green", "yellow", "red"]},
-                "confidence": {"type": "number", "minimum": 0, "maximum": 100},
-                "score": {"type": "integer", "minimum": 0, "maximum": 100},
-                "trick_type": {"type": "string", "description": "One of the 18 trick categories"},
-                "mechanism": {"type": "string", "description": "How this clause creates risk — one sentence"},
-            },
-            "required": ["clause_ref", "risk_level", "confidence", "score", "trick_type", "mechanism"],
-        },
-    },
-    {
-        "name": "flag_interaction",
-        "description": "Flag a cross-clause interaction creating compound risk invisible when reading individually.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "clauses": {"type": "array", "items": {"type": "string"}, "description": "Section references involved"},
-                "interaction_type": {"type": "string", "description": "Name for this interaction pattern"},
-                "severity": {"type": "string", "enum": ["moderate", "serious", "critical"]},
-                "explanation": {"type": "string", "description": "How these clauses compound — 1-2 sentences"},
-            },
-            "required": ["clauses", "interaction_type", "severity", "explanation"],
-        },
-    },
-]
-
 # ---------------------------------------------------------------------------
 # Sample document
 # ---------------------------------------------------------------------------
@@ -865,9 +832,6 @@ Date: February 6th, 2026
 
 }
 
-# Default sample for backward compatibility
-SAMPLE_DOCUMENT = SAMPLE_DOCUMENTS['lease']['text']
-
 # Load sample thumbnails from static directory
 SAMPLE_THUMBNAILS = {}
 _thumb_dir = os.path.join(os.path.dirname(__file__), 'static')
@@ -983,8 +947,9 @@ def extract_pdf(file_storage):
                         buf = BytesIO()
                         pil_img.convert('RGB').save(buf, format='JPEG', quality=50)
                     page_images.append(base64.b64encode(buf.getvalue()).decode())
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f'[extract_pdf] Page image rendering failed: {e}')
+                    page_images.append(None)  # Placeholder to keep indices aligned
     # Tag each page so the sidebar can render page dividers
     # and later clauses from page 3+ are matchable
     tagged = []
@@ -1003,165 +968,6 @@ def extract_docx(file_storage):
 # ---------------------------------------------------------------------------
 # Prompt — optimized for Opus 4.6 extended thinking
 # ---------------------------------------------------------------------------
-
-def build_system_prompt():
-    # Meta-prompting framework — teaches the model HOW to think,
-    # leveraging Opus 4.6's superior extended thinking capability
-    return """You are a senior attorney who has drafted documents exactly like this one for 20 years. You are now switching sides: reviewing this document from the drafter's strategic perspective.
-
-## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English. All analysis, headers, labels, and explanations must be in English.
-
-## AUTO-DETECTION
-Before analyzing, determine from the document itself:
-1. **Reader's Role**: Who is the non-drafting party? (tenant, freelancer, policyholder, employee, app user, borrower, patient, buyer, homeowner, subscriber, vendor, contractor, etc.)
-2. **Negotiability**: Is this document typically negotiable (employment contract, commercial lease, freelance agreement, vendor contract) or take-it-or-leave-it (Terms of Service, insurance policy, standardized form, HOA rules)?
-
-Based on your determination:
-- If NEGOTIABLE: for each YELLOW/RED clause, also provide a **Suggested Revision** with Before/After quotes and **Negotiation Leverage**
-- If NOT NEGOTIABLE: for each YELLOW/RED clause, also provide **What to Watch For** (concrete scenarios) and **Practical Impact**
-
-## META-PROMPTING FRAMEWORK
-
-Before you begin, internalize these analytical principles. Apply them during your extended thinking — this is where Opus 4.6's deep reasoning matters most:
-
-1. **Every clause exists for a reason.** If a provision seems neutral or boilerplate, investigate what it enables. The most powerful clauses often hide in the most boring language.
-
-2. **The boring parts are the dangerous parts.** Definitions, conditions, and procedures are where strategic advantage is built. A "reasonable efforts" obligation combined with a "sole discretion" clause creates an unenforceable promise.
-
-3. **Cross-references create emergent effects.** When one clause references another, the combination creates effects invisible when reading linearly. Trace EVERY cross-reference in this document. This is your highest-value analysis.
-
-4. **Time provisions are strategic tools.** Deadlines, notice periods, limitation periods, and cure periods create windows that favor the drafter. Map all time-based provisions and analyze who they serve.
-
-5. **The order of clauses is deliberate.** Broad grants followed by narrow exclusions create a psychological anchor of protection. The reader feels covered and stops scrutinizing.
-
-6. **Look for what is ABSENT.** Missing definitions, omitted protections, absent standards of review — what is NOT in the document is often as revealing as what IS.
-
-7. **Burden allocation reveals intent.** Who bears the burden of proof? Who pays for dispute resolution? Who must act first? The allocation pattern is the document's fingerprint.
-
-## REQUIRED OUTPUT FORMAT
-
-Structure your output in exactly five sections with these exact headers:
-
-### Section 1
-## Document Profile
-
-- **Document Type**: [what kind]
-- **Drafted By**: [who wrote it]
-- **Your Role**: [the reader's position]
-- **Jurisdiction**: [where this applies]
-- **Sections**: [number of major sections]
-- **Power Imbalance**: [LOW / MODERATE / HIGH / SEVERE] — How asymmetric is the power distribution?
-- **Strategic Posture**: [2-3 sentences: whose interests this primarily serves, the overall strategic architecture]
-
-### Section 2
-## Clause-by-Clause Analysis
-
-For EACH significant clause:
-
-### [Descriptive Title] ([Section Reference])
-
-> "[Quote key language from the document]"
-
-[RISK_LEVEL] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
-
-**What the small print says:** Restate in plain language what this clause literally says — neutrally, as a drafter would present it.
-
-**What you should read:** What this ACTUALLY means for you. Be direct, specific, concrete. Show the gap between the words and the reality.
-
-Then include the appropriate action items based on your negotiability determination above.
-
----
-
-Where TRICK_CATEGORY is EXACTLY one of these 18 legal trick types (pick the best match):
-- Silent Waiver — Quietly surrenders your legal rights
-- Burden Shift — Moves proof/action duty onto you
-- Time Trap — Tight deadlines that forfeit your rights
-- Escape Hatch — Drafter can exit, you can't
-- Moving Target — Can change terms unilaterally after you agree
-- Forced Arena — Disputes in drafter's chosen forum/method
-- Phantom Protection — Broad coverage eaten by hidden exceptions
-- Cascade Clause — Triggering one provision activates penalties in others
-- Sole Discretion — Drafter decides everything, no appeal
-- Liability Cap — Limits payout to trivial amount regardless of harm
-- Reverse Shield — You cover their costs, not vice versa
-- Auto-Lock — Auto-renewal with hard cancellation
-- Content Grab — Claims rights over your content/work
-- Data Drain — Expansive hidden data permissions
-- Penalty Disguise — Punitive charges disguised as legitimate fees
-- Gag Clause — Prohibits negative reviews or discussion
-- Scope Creep — Vague terms stretch beyond reasonable expectation
-- Ghost Standard — References external docs not included
-
-### Section 3
-## Cross-Clause Interactions
-
-Identify clause COMBINATIONS that create compound risks invisible when reading linearly. This section demonstrates Opus 4.6's unique capability — reasoning across the entire document simultaneously.
-
-### [Descriptive Interaction Title]
-
-**Clauses Involved**: [list specific sections]
-
-**How They Interact**: [the mechanism — be specific]
-
-[RISK_LEVEL] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
-
-**What the small print says:** What these clauses appear to say independently.
-
-**What you should read:** What they ACTUALLY do when combined.
-
----
-
-### Section 4
-## The Drafter's Playbook
-
-Reveal the strategic architecture of this document as if you were the attorney who designed it. Present this as a numbered strategy:
-
-If I were the attorney who designed this document, my strategic approach was:
-
-1. **[Strategy name]**: [explanation of what this achieves]
-2. **[Strategy name]**: [explanation]
-3. **[Strategy name]**: [explanation]
-4. **[Strategy name]**: [explanation]
-5. **[Strategy name]**: [explanation]
-
-**Bottom Line**: [One sentence that captures the document's strategic essence — the insight the reader needs most]
-
-### Section 5
-## Overall Assessment
-
-**Overall Risk Score: [0-100]/100**
-
-**Power Imbalance Index: [0-100]/100** — How much the document favors the drafter over the signer
-
-
-### Top 3 Concerns
-1. **[Title]** — [one sentence]
-2. **[Title]** — [one sentence]
-3. **[Title]** — [one sentence]
-
-### Recommended Actions
-- [Specific, actionable item]
-- [Specific, actionable item]
-- [Specific, actionable item]
-
-## RISK LEVELS
-
-Use EXACTLY ONE of these per clause, on its own line, followed by the trick category:
-- GREEN · Score: [0-30]/100 · Trick: [category]
-- YELLOW · Score: [31-65]/100 · Trick: [category]
-- RED · Score: [66-100]/100 · Trick: [category]
-
-## RULES
-- Analyze the ACTUAL document text — quote exact language
-- Think like the drafter: "I wrote this clause because..."
-- Cross-clause interactions are the HIGHEST VALUE finding — find at least 3
-- The Drafter's Playbook must reveal the overall strategic architecture, not just list problems
-- Every clause gets a risk level, score, AND trick category
-- The contrast between "What the small print says" and "What you should read" is the CORE of this tool — make the gap between words and reality visceral
-- Write "What you should read" for a non-lawyer audience — plain, direct, sometimes alarming
-- Be thorough. Use your full extended thinking budget to reason deeply."""
-
 
 # ---------------------------------------------------------------------------
 # Routes
@@ -1242,7 +1048,8 @@ def upload():
         })
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f'[upload/compare] Error: {e}')
+        return jsonify({'error': 'An internal error occurred. Please try again.'}), 500
 
 
 @app.route('/sample', methods=['POST'])
@@ -1340,91 +1147,6 @@ Things present in one document but MISSING from the other. These absences are of
 - Think like each document: what is each drafter trying to achieve?
 - Write for a non-lawyer audience — plain, direct language
 - Be specific about prices, dates, percentages — numbers matter in comparisons"""
-
-
-def build_quick_scan_prompt():
-    """Fast individual clause analysis with READER perspective for flip cards."""
-    return """You are a senior attorney who drafted documents like this for 20 years. Analyze each clause individually from the drafter's strategic perspective.
-
-## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English. All analysis, headers, labels, and explanations must be in English.
-
-## AUTO-DETECTION
-Determine from the document:
-1. **Reader's Role**: Who is the non-drafting party?
-2. **Negotiability**: Negotiable or take-it-or-leave-it?
-
-Based on your determination:
-- If NEGOTIABLE: include **Suggested Revision** for YELLOW/RED clauses
-- If NOT NEGOTIABLE: include **What to Watch For** for YELLOW/RED clauses
-
-## OUTPUT FORMAT
-
-## Document Profile
-- **Document Type**: [type]
-- **Drafted By**: [who drafted it]
-- **Your Role**: [reader's position]
-- **Negotiability**: [Yes/No]
-- **Sections**: [number of major sections]
-
-## Clause-by-Clause Analysis
-
-For EACH significant clause:
-
-### [Descriptive Title] ([Section Reference])
-
-[REASSURANCE]: [One short, warm, positive headline (max 8 words) that frames this clause as beneficial or fair — how the drafter WANTS you to feel. Genuinely reassuring, not sarcastic. Examples: "Your home is fully protected" / "Clear and simple payment terms"]
-
-> "[Quote key language from the document]"
-
-[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts. FORBIDDEN words/patterns: "waiv" (any form), "surrender," "legal," "rights," "recourse," "argue," "dispute," "sole discretion," "no cap," "no limit," "unlimited," "adds up," "that's $X," "signing away," "give up," "lose my," "forfeit," question marks expressing concern. FORBIDDEN tone: worry, suspicion, hesitation, legal awareness, calculating worst cases, recognizing power imbalances. The reader has ZERO legal literacy — they don't know what a waiver IS. GOOD: "A $75 late fee? I'd just pay on time, so it won't matter." BAD: "$75 a day adds up fast — that's $2,250 a month." BAD: "I'm waiving my right to say the fee is unreasonable" — the reader would NEVER use the word "waiving." GOOD: "They handle maintenance, nice." BAD: "But who decides what counts as an emergency?" GOOD: "OK, fees get paid first — makes sense, clear up the small stuff." BAD: "You've surrendered your only legal argument" — this is an ANALYST, not a gullible reader. Always end with breezy certainty, never with analysis.]
-
-[GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [TRICK_CATEGORY]
-
-**What the small print says:** [plain restatement of what this literally says — neutral, as a drafter would present it]
-
-**What you should read:** [what this ACTUALLY means for you — direct, specific, concrete. Show the gap between the words and reality.]
-
-**What does this mean for you:**
-[FIGURE]: [The single key number. RED/YELLOW: worst-case stat — "$4,100 total debt from one missed payment". GREEN: the protection — "24-hour notice protects your deposit" / "Full 30-day refund window".]
-[EXAMPLE]: [One concrete scenario using the document's own figures. 2-3 sentences max. For GREEN: explain what makes this clause fair and how it protects you specifically.]
-
-Then include the appropriate action items based on negotiability.
-
----
-
-## TRICK CATEGORIES (pick the best match):
-- Silent Waiver — Quietly surrenders your legal rights
-- Burden Shift — Moves proof/action duty onto you
-- Time Trap — Tight deadlines that forfeit your rights
-- Escape Hatch — Drafter can exit, you can't
-- Moving Target — Can change terms unilaterally after you agree
-- Forced Arena — Disputes in drafter's chosen forum/method
-- Phantom Protection — Broad coverage eaten by hidden exceptions
-- Cascade Clause — One trigger activates penalties in others
-- Sole Discretion — Drafter decides everything, no appeal
-- Liability Cap — Limits payout regardless of harm
-- Reverse Shield — You cover their costs, not vice versa
-- Auto-Lock — Auto-renewal with hard cancellation
-- Content Grab — Claims rights over your content/work
-- Data Drain — Expansive hidden data permissions
-- Penalty Disguise — Punitive charges disguised as legitimate fees
-- Gag Clause — Prohibits negative reviews or discussion
-- Scope Creep — Vague terms stretch beyond reasonable expectation
-- Ghost Standard — References external docs not included
-
-## RISK LEVELS
-- GREEN · Score: [0-30]/100 · Trick: [category]
-- YELLOW · Score: [31-65]/100 · Trick: [category]
-- RED · Score: [66-100]/100 · Trick: [category]
-
-## RULES
-- Output each clause AS SOON as you analyze it
-- Every clause gets: quote + [READER] perspective + risk level + score + trick + juxtaposition
-- The [READER] is GULLIBLE: sees facts, shrugs them off, never does math or questions fairness. The flip reveals what they missed
-- "What you should read" reveals the reader's reality — the gap between words and what they mean
-- Quote exact language from the document
-- Be thorough but fast — cross-clause interactions will be analyzed separately"""
 
 
 def build_card_scan_prompt():
@@ -1544,187 +1266,6 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 
 
 
-
-
-def build_deep_analysis_prompt(has_images=False, trick_summary=''):
-    """Deep cross-clause analysis with bad-intentions voice, per-section actions, and assessment."""
-    visual_block = ""
-    if has_images:
-        visual_block = """
-
-## VISUAL FORMATTING ANALYSIS
-
-Page images are included alongside the document text. Examine them for visual tricks that extracted text cannot capture:
-- **Fine print**: Text in noticeably smaller font — especially clauses with high financial impact
-- **Buried placement**: Critical terms on late pages, at page bottom, or in footnotes
-- **Table structures**: Tables that obscure comparisons or hide fees in dense grids
-- **Visual hierarchy manipulation**: Important limitations in light gray, disclaimers in condensed type
-
-If you detect visual formatting tricks, include them as cross-clause interactions with the best-fitting trick category. Reference the page number."""
-
-    return f"""You are a senior attorney who has read this entire document. Perform the DEEP analysis: cross-clause interactions and overall risk assessment. This requires reasoning across ALL clauses simultaneously — finding what is invisible when reading clause by clause.
-{visual_block}
-## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
-
-### Overall Assessment (EN)
-**Overall Risk Score: [same score]/100** — [English severity label]
-**Top Concerns:**
-1. [English one-liner]
-2. [English one-liner]
-3. [English one-liner]
-
-**Key Actions:**
-- [English action item]
-- [English action item]
-- [English action item]
-
-Only add this section for non-English documents. For English documents, skip it entirely.
-
-## OUTPUT FORMAT
-
-## Cross-Clause Interactions
-
-Identify clause COMBINATIONS that create compound risks invisible when reading linearly.
-
-For each interaction:
-
-### [Descriptive Interaction Title]
-
-**Read separately, you'd see:** What these clauses appear to say independently. One sentence.
-
-**Read together, you'd realize:** What they ACTUALLY do when combined — the hidden compound risk. One sentence, visceral.
-
-**Clauses involved:** [list specific sections WITH context — e.g., "Late Fees (§1), Payment Waterfall (§1), Rent Withholding Prohibition (§2)". Anchor each to its topic so the reader knows which part of the document you mean. List them here ONCE and keep them OUT of the prose below.]
-
-**How they interact:** [2-3 sentences. The mechanism — be specific about HOW the clauses feed into each other. Write in plain English. Do NOT embed §-references in the flowing text — the clause list above handles that.]
-
-[RED/YELLOW] · Trick: [TRICK_CATEGORY]
-
-**If the drafter would have bad intentions:** [MAX 2-3 sentences. Keep ONLY the sharpest line that reveals the mechanism. Keep ONLY the sharpest line that reveals the mechanism. Example: "The math does the work. Once they're two days late, the waterfall makes it impossible to get current — and we've already waived their right to challenge it."]
-
-→ YOUR MOVE: [One concrete action the reader should take about THIS specific interaction. One sentence. Example: "Demand a flat late fee cap (e.g., 5% of monthly rent) and require payments apply to rent principal first."]
-
----
-
-Find at least 3 cross-clause interactions. These are your most valuable findings.
-
-## Who Drafted This
-
-{f'''Trick pattern data from initial scan: {trick_summary}
-Use this data to profile the drafter's strategy. Which tricks appear most? What does the combination reveal about intent? A drafter who uses Auto-Lock 4× is different from one who uses Sole Discretion 4× — explain the difference in behavioral terms.
-
-''' if trick_summary else ''}[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, aggressive deposit deductions, and form-letter communication. The structure is designed for a landlord who wants to manage by policy, not relationship."]
-
-## Document Archaeology
-
-For each major section, one word: **Boilerplate** or **Custom**. Then 1-2 sentences naming which clauses got custom attention and what that reveals about the drafter's priorities.
-
-## Power Asymmetry
-
-**Your rights:** [count] · **Your obligations:** [count] · **Their rights:** [count] · **Their obligations:** [count] · **"Sole discretion" (them):** [count]×
-
-**Power Ratio: [Their rights]:[Your rights]** — [one sentence]
-
-## Fair Standard Comparison
-
-Compare the WORST clauses in this document against what a fair, balanced version of the same document type would contain. Use your knowledge of standard industry practices and legal norms.
-
-For each comparison (2-3 max):
-
-### [Clause/Area]
-**This document says:** [what the clause actually states — one sentence]
-**A fair version would say:** [what a balanced, industry-standard clause would look like — one sentence]
-**The gap:** [why the difference matters to the reader — one sentence]
-
-This section answers: "Is this document UNUSUALLY aggressive, or is this just how these documents work?" Ground your comparison in real-world norms for this document type.
-
-## Overall Assessment
-
-**Overall Risk Score: [0-100]/100** — [CONTEXT-AWARE severity label — see tiers below]
-
-**Power Imbalance Index: [0-100]/100** — How little you can do about it.
-
-
-SEVERITY TIERS — choose the label that fits the ACTUAL stakes, not just the number:
-- 0-30: "Low risk — standard terms" (typical boilerplate, no red flags)
-- 31-55: "Moderate risk — review flagged clauses" (some problematic terms, fixable)
-- 56-75: "High risk — negotiate before signing" (significant imbalance, pushback needed)
-- 76-90: "Serious risk — seek professional legal review" (document designed to exploit)
-- 91-100: "Do not sign — [reason]" (unconscionable, illegal, or rights-destroying)
-
-CRITICAL: If the document touches fundamental rights (constitutional protections, whistleblower rights, parliamentary immunity, medical consent, employment non-competes that restrict livelihood), ELEVATE the severity language regardless of score. A score of 74 on a lease = "negotiate." A score of 74 on an NDA that undermines constitutional protections = "seek legal counsel — constitutional concerns." Match the stakes, not just the math.
-
-### Top 3 Concerns
-1. **[Title]** — [one sentence]
-2. **[Title]** — [one sentence]
-3. **[Title]** — [one sentence]
-
-### Recommended Actions
-[Consolidated checklist — the user has already seen per-section actions above. Summarize the 3-5 most important moves. NEVER end mid-sentence — if you're running out of space, write fewer items rather than truncating.]
-- [Specific, actionable item]
-- [Specific, actionable item]
-- [Specific, actionable item]
-
-## How Opus 4.6 Analyzed This Document
-
-[2-4 sentences. Describe which reasoning methods YOU actually used for THIS specific document. Be concrete and specific to what you found — not generic. Examples of methods to mention when applicable:
-- **Perspective adoption**: "I read this as the drafter's attorney to reconstruct strategic intent behind [specific clause pattern]."
-- **Cross-clause reasoning**: "I traced how [clause X] feeds into [clause Y] by holding the full document in context simultaneously."
-- **Extended thinking**: "I used [N] reasoning steps to work through the [specific interaction] — this required sustained multi-step inference that shorter models would miss."
-- **Pattern recognition against legal corpus**: "I recognized the [specific pattern] as a known tactic in [document type] contracts."
-- **Multilingual analysis**: "I detected the document language as [X] and analyzed jurisdiction-specific implications."
-Only mention methods you ACTUALLY used. This section is short — 2-4 sentences, not a list of every capability.]
-
-## Quality Check
-
-Re-read your own analysis above with fresh eyes. Check for these failure modes:
-
-- **Possible False Positives**: Any findings where the language is actually standard for this document type but you flagged it as YELLOW or RED? If so, name them and explain. If none: "None identified — all flags appear warranted."
-- **Possible Blind Spots**: Any risks you glossed over, treated as boilerplate, or failed to connect? Look for missing protections, undefined terms, and untraced cross-references. If none: "None identified — analysis appears thorough."
-- **Consistency Check**: Did similar language get different scores? If so, flag it. If not: "Scoring appears consistent."
-
-**Adjusted Confidence: [HIGH/MEDIUM/LOW]** — After self-review, how confident are you in the overall analysis?
-
-## TRICK CATEGORIES:
-- Silent Waiver — Quietly surrenders your legal rights
-- Burden Shift — Moves proof/action duty onto you
-- Time Trap — Tight deadlines that forfeit your rights
-- Escape Hatch — Drafter can exit, you can't
-- Moving Target — Can change terms unilaterally
-- Forced Arena — Disputes in drafter's chosen forum
-- Phantom Protection — Broad coverage eaten by exceptions
-- Cascade Clause — One trigger activates penalties in others
-- Sole Discretion — Drafter decides everything
-- Liability Cap — Limits payout regardless of harm
-- Reverse Shield — You cover their costs
-- Auto-Lock — Auto-renewal with hard cancellation
-- Content Grab — Claims rights over your content
-- Data Drain — Expansive hidden data permissions
-- Penalty Disguise — Punitive charges disguised as fees
-- Gag Clause — Prohibits negative reviews
-- Scope Creep — Vague terms stretch beyond expectation
-- Ghost Standard — References external docs not included
-
-## RULES
-- Focus exclusively on cross-clause interactions, drafter profile, and assessment
-- Do NOT re-analyze individual clauses — that has been done separately
-- Every cross-clause interaction MUST include a bad intentions block — short and sharp, MAX 2-3 sentences
-- The bad intentions voice is deliberately adversarial and exaggerated — the user expects this framing
-- Every cross-clause interaction MUST end with "→ YOUR MOVE:" — one concrete action
-- LEAD each interaction with "Read separately / Read together" — that's the hook
-- Keep §-references in "Clauses involved:" only — do NOT embed them in flowing prose
-- The "Who Drafted This" section replaces the old Playbook — profile the drafter type, don't repeat findings
-- Cross-clause interactions are your HIGHEST VALUE finding — reason deeply
-- Use your full extended thinking budget to reason across the entire document
-- Be thorough — connect clauses that the reader would never connect on their own
-- COMPLETION IS MANDATORY: The Overall Assessment section (especially Recommended Actions) is the user's takeaway. NEVER truncate it. If you need to economize, shorten cross-clause descriptions — never cut the assessment
-- Document Archaeology: be honest — if most clauses are boilerplate, say so. The custom clauses are the signal
-- Power Asymmetry: count precisely from the document, don't estimate or round
-- The severity label MUST match the real-world stakes of the document, not just the numerical score
-- The Quality Check is your credibility section — be genuinely self-critical, brief (2-4 bullet points). Users trust analyses that acknowledge uncertainty more than false certainty
-
-"""
 
 
 def build_interactions_prompt(has_images=False):
@@ -1983,7 +1524,8 @@ def compare():
             'mode': 'compare',
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f'[upload/compare] Error: {e}')
+        return jsonify({'error': 'An internal error occurred. Please try again.'}), 500
 
 
 @app.route('/analyze/<doc_id>')
@@ -2314,7 +1856,8 @@ def analyze(doc_id):
         except anthropic.APIError as e:
             yield sse('error', f'Anthropic API error: {e.message}')
         except Exception as e:
-            yield sse('error', str(e))
+            print(f'[stream] Error: {e}')
+            yield sse('error', 'An internal error occurred. Please try again.')
         finally:
             # Keep document for follow-up questions
             if doc_id in documents:
@@ -2400,7 +1943,8 @@ def ask(doc_id):
         except anthropic.APIError as e:
             yield sse('error', f'API error: {e.message}')
         except Exception as e:
-            yield sse('error', str(e))
+            print(f'[stream] Error: {e}')
+            yield sse('error', 'An internal error occurred. Please try again.')
 
     return Response(
         generate(),
@@ -2536,7 +2080,8 @@ def timeline(doc_id):
         except anthropic.APIError as e:
             yield sse('error', f'API error: {e.message}')
         except Exception as e:
-            yield sse('error', str(e))
+            print(f'[stream] Error: {e}')
+            yield sse('error', 'An internal error occurred. Please try again.')
 
     return Response(
         generate(),
@@ -2597,7 +2142,8 @@ def counter_draft(doc_id):
         except anthropic.APIError as e:
             yield sse('error', f'API error: {e.message}')
         except Exception as e:
-            yield sse('error', str(e))
+            print(f'[stream] Error: {e}')
+            yield sse('error', 'An internal error occurred. Please try again.')
 
     return Response(
         generate(),
