@@ -5681,6 +5681,7 @@
 
         if (hasDeepContent) {
             var safeMd = deepText
+                .replace(/^# .+$/gm, '')
                 .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
                 .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
                 .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
@@ -5967,6 +5968,8 @@
         }
 
         var safeMd = deepText
+            // Strip Opus-generated H1 titles (redundant with our H2 section labels)
+            .replace(/^# .+$/gm, '')
             .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
             .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
             .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
@@ -6054,6 +6057,9 @@
     // ── Clause card wrapping ──────────────────────────────────
     function wrapClauseSections(container) {
         container = container || resultsContent;
+
+        // Remove any Opus-generated H1 titles (redundant with our section labels)
+        container.querySelectorAll('h1').forEach(function(h1) { h1.remove(); });
 
         // Add editorial dividers before H2 section headings (Cross-Clause, Playbook, Assessment)
         container.querySelectorAll('h2').forEach(function(h2) {
