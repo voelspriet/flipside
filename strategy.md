@@ -823,3 +823,78 @@ The instinct was: put the best model on the most visible feature (card backs). T
 ### The Lesson
 
 At halftime, FlipSide's engineering depth was ahead of its presentation layer. Documentation fixes — README rewrite, log corrections, submission summary, license attribution — gained **+0.65 composite points** without writing a single line of product code. The product was always 8.5+; the presentation was dragging it to 7.9. Now the only remaining gap is the demo video. Everything a judge needs to read is accurate, complete, and internally consistent. The video is the last artifact that captures the 30% Demo weight — and it's the difference between a strong submission and a winning one.
+
+---
+
+## Decision 23: Synthesize Conflicting Feedback Into a Structured Prompt Instead of /plan
+
+**Date**: 2025-02-14
+**Context**: After real user testing, five people returned feedback that directly contradicted each other. Erik Borra reported navigation confusion, scroll sync bugs, jargon problems, and count mismatches. Ray Kentie had a near panic attack — he thought FlipSide was flagging a real threat and got scared. Other testers said "simple tool, clear" and "leuke tool." The user themselves added observations about visual polish and sample labeling. The problem wasn't a single feature request — it was a tangle of conflicting opinions about the same product, where one person's "too scary" was another person's "clear and useful."
+
+**The strategy**: Skip `/plan` mode entirely. Instead, treat the conflicting feedback as raw material for a synthesis prompt. Drop all the opinions into a single message, then produce a comprehensive, categorized analysis that:
+
+1. **Separates signal from noise** — filter out cosmetic preferences, keep functional problems
+2. **Finds the common thread** — "too scary" and "navigation confusion" are both symptoms of the same root cause: missing context framing
+3. **Organizes by problem, not by person** — 5 people's feedback collapsed into 9 distinct problems
+4. **Specifies solutions at implementation granularity** — each problem includes exact CSS, HTML, and JS changes needed
+5. **Preserves the product's identity** — solutions must not dilute the flip card mechanic or the editorial tone
+
+The 9 problems identified:
+
+| # | Problem | Root Feedback |
+|---|---------|---------------|
+| 1 | Emotional safety — no framing that this is analysis, not an alert | Ray's panic, "thought it was a scam" |
+| 2 | Navigation buried at bottom, invisible until scroll | Erik's "navigation should be at top" |
+| 3 | Expert report in separate column — users never found it | Erik's "expert report placement confusing" |
+| 4 | Scroll sync broken between sidebar and cards | Erik's "scroll sync broken" |
+| 5 | Jargon in headings — "Cross-Clause Interactions", "Document Archaeology" | Erik's "jargon unclear" |
+| 6 | Risk count mismatch between summary and actual cards | Erik's "count mismatch" |
+| 7 | Download missing source text | Erik's "download needs source text" |
+| 8 | Visual polish gaps — cards, transitions, spacing | User's own observations |
+| 9 | Narrative flow — the story from upload to verdict | Synthesis of all feedback |
+
+**What happened**:
+
+The user said "execute all" — implement everything immediately. No planning phase, no approval loop, no incremental review. The prompt *was* the plan.
+
+All 9 problems were implemented in a single session (~490 net lines added to `index.html`):
+
+1. **Context banner** — green-bordered safety frame at top: "FlipSide is analyzing this document for your protection. This is not a warning — it's a tool to help you understand what you're signing." Updates with final clause count. Sample documents get a yellow "DEMO DOCUMENT" badge.
+
+2. **Sticky top navigation** — card nav duplicated to a sticky bar at `top: 58px` with colored risk pips (red/yellow/green dots). Both top and bottom nav stay in sync.
+
+3. **Inline verdict** — the third column (verdict) was eliminated entirely. Opus analysis now renders inline below the card viewport. Layout simplified from 3-column to 2-column. Removed all `showVerdictCol()` calls (3 locations).
+
+4. **Scroll sync fix** — `scrollPreviewToCard()` rewritten to use `getBoundingClientRect()` + relative offset calculation instead of the broken approach. Added auto-flip on clause marker click.
+
+5. **Plain-language headings** — "Cross-Clause Interactions" → "Hidden Combinations", "Power Asymmetry & Fair Standard" → "Power Balance", "Document Archaeology & Drafter" → "Custom vs. Boilerplate", "Overall Assessment" → "The Big Picture". Each gets a subtitle and SVG icon via `VERDICT_SECTIONS` config object.
+
+6. **Accurate risk counting** — `updateRiskSummary()` counts actual parsed cards by risk level instead of using hardcoded or estimated numbers.
+
+7. **PDF download with source text** — replaced HTML export with client-side PDF generation via `html2pdf.js`. The PDF includes the full source document text with page markers.
+
+8. **Visual refinements** — card back restructured (bottom line first, then risk header), flip trigger text changed from "Now flip it ↻" to "See what this really means ›", trick footnotes restyled as pill chips.
+
+9. **Narrative flow** — context banner → sticky nav → cards → inline verdict creates a single-scroll story. No hidden columns, no modal panels, no layout shifts.
+
+**Why skipping /plan worked here**:
+
+- **/plan is for ambiguous scope** — here the scope was fully defined by the feedback itself. Five people told us exactly what was wrong. The work was translating complaints into implementations, not deciding what to build.
+
+- **The prompt IS the plan** — by organizing feedback into 9 numbered problems with specific solutions, the synthesis prompt served as both the analysis artifact and the execution spec. A separate planning phase would have produced the same document with an extra approval round-trip.
+
+- **Conflicting opinions need synthesis, not arbitration** — `/plan` would have presented options for each conflict (e.g., "Option A: make it less scary, Option B: keep the intensity"). The synthesis approach found that the conflicts were false dichotomies — you can keep the intensity AND add safety framing. You don't have to choose between "scary" and "useful."
+
+- **Speed matters for user-testing feedback** — the insights from live testing have a half-life. The longer you wait to act, the more context you lose about *why* someone panicked or *where* they got confused. Immediate execution preserves the emotional context of the feedback.
+
+- **Codebase exploration preceded synthesis** — before writing the prompt, an Explore agent scanned the full 7300-line frontend to understand what already existed. The prompt wasn't written in a vacuum; it was grounded in the actual code structure, which meant every proposed solution was implementable.
+
+**What else was done beyond the 9 problems**:
+
+- **`VERDICT_SECTIONS` config pattern** — created a declarative config object mapping each Opus source to title, subtitle, and SVG icon. This replaces scattered string literals and makes future section changes single-point edits.
+- **Mobile CSS adjustments** — all new elements (sticky nav, context banner, sample badge, inline verdict) received responsive breakpoints.
+- **State variable `isSampleAnalysis`** — distinguishes sample documents from uploaded ones to control the demo badge. Set in `startSampleAnalysis()`, cleared in `startAnalysis()`.
+- **Tricks detected bar** — collapsible panel showing detected tricks as pills, rendered from `_detectedTricks` accumulator.
+- **DOMPurify integration** — all new rendered content routes through `safeMd2Html()`.
+
+**Key insight**: When feedback contradicts, the instinct is to pick a side or find a compromise. The better move is to reframe the contradiction as a design constraint. "Too scary" + "clear and useful" = "add context framing without reducing analytical depth." The conflicting opinions aren't a problem to solve — they're the specification for the solution.
