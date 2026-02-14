@@ -3,3 +3,5 @@ anthropic
 python-docx
 pdfplumber
 python-dotenv
+requests
+beautifulsoup4
