@@ -30,6 +30,23 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 documents = {}
+_documents_lock = threading.Lock()
+DOCUMENT_TTL = 30 * 60  # 30 minutes
+
+def _evict_stale_documents():
+    """Remove documents older than DOCUMENT_TTL."""
+    now = time.time()
+    with _documents_lock:
+        stale = [k for k, v in documents.items() if now - v.get('_ts', 0) > DOCUMENT_TTL]
+        for k in stale:
+            del documents[k]
+
+def store_document(doc_id, doc):
+    """Store a document with a timestamp, evicting stale entries first."""
+    _evict_stale_documents()
+    doc['_ts'] = time.time()
+    with _documents_lock:
+        documents[doc_id] = doc
 
 MODEL = os.environ.get('FLIPSIDE_MODEL', 'claude-opus-4-6')
 FAST_MODEL = os.environ.get('FLIPSIDE_FAST_MODEL', 'claude-haiku-4-5-20251001')
@@ -1192,14 +1209,14 @@ def upload():
         negotiable = request.form.get('negotiable', 'false') == 'true'
         depth = request.form.get('depth', 'standard')
 
-        documents[doc_id] = {
+        store_document(doc_id, {
             'text': text,
             'filename': filename,
             'role': role,
             'negotiable': negotiable,
             'depth': depth,
             'page_images': page_images,
-        }
+        })
 
         # Generate a small thumbnail from the first page image
         thumbnail = None
@@ -1241,13 +1258,13 @@ def sample():
     filename = doc['filename']
 
     doc_id = str(uuid.uuid4())
-    documents[doc_id] = {
+    store_document(doc_id, {
         'text': text,
         'filename': filename,
         'role': role,
         'negotiable': negotiable,
         'depth': depth,
-    }
+    })
 
     return jsonify({
         'doc_id': doc_id,
@@ -1948,14 +1965,14 @@ def compare():
 
         depth = request.form.get('depth', 'standard')
         doc_id = str(uuid.uuid4())
-        documents[doc_id] = {
+        store_document(doc_id, {
             'text': texts[0],
             'text2': texts[1],
             'filename': filenames[0],
             'filename2': filenames[1],
             'depth': depth,
             'mode': 'compare',
-        }
+        })
 
         return jsonify({
             'doc_id': doc_id,
@@ -2476,12 +2493,7 @@ def timeline(doc_id):
     """Generate worst-case timeline — on-demand after analysis."""
     doc = documents.get(doc_id)
     if not doc:
-        # Fallback: accept document text in POST body
-        data = request.get_json(silent=True) or {}
-        if data.get('text'):
-            doc = {'text': data['text']}
-        else:
-            return jsonify({'error': 'Document not found. Please re-upload.'}), 404
+        return jsonify({'error': 'Document not found. Please re-upload.'}), 404
 
     def sse(event_type, content=''):
         payload = json.dumps({'type': event_type, 'content': content})
@@ -2542,11 +2554,7 @@ def counter_draft(doc_id):
     """Generate fair rewrites of problematic clauses — on-demand after analysis."""
     doc = documents.get(doc_id)
     if not doc:
-        data = request.get_json(silent=True) or {}
-        if data.get('text'):
-            doc = {'text': data['text']}
-        else:
-            return jsonify({'error': 'Document not found. Please re-upload.'}), 404
+        return jsonify({'error': 'Document not found. Please re-upload.'}), 404
 
     def sse(event_type, content=''):
         payload = json.dumps({'type': event_type, 'content': content})

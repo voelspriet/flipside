@@ -6,8 +6,8 @@
     <title>FlipSide — The Other Side of Small Print</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js" integrity="sha256-k04+Nuni2gr7Gm51B1uw8JrwUpOoROhKdHfvQJEcNJo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js" integrity="sha256-SCmGefnjCPBf3NW3QhwV/PtUWEWjqZu68xAziQYQ6ws=" crossorigin="anonymous"></script>
     <style>
         /* ══════════════════════════════════════════════════════
            RESET & DESIGN SYSTEM
@@ -3614,6 +3614,9 @@
     // ── Keyboard navigation ──
     document.addEventListener('keydown', function(e) {
         if (analysisScreen.classList.contains('hidden')) return;
+        // Don't capture keys when user is typing in an input/textarea
+        var ae = document.activeElement;
+        if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
         var viewport = $('cardViewport');
         if (!viewport || viewport.classList.contains('hidden')) return;
         var cards = flipCardContainer.querySelectorAll('.flip-card');
@@ -6551,7 +6554,7 @@
         var classifiedCount = 0;
         var greenCount = 0;
         clauses.forEach(function(c) {
-            if (c.riskLevel === 'green') { greenCount++; return; }
+            if (c.level === 'green') { greenCount++; return; }
             totalClauses++;
             if (c.trick && c.trick.toLowerCase() !== 'none') {
                 trickCounts[c.trick] = (trickCounts[c.trick] || 0) + 1;
