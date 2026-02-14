@@ -206,7 +206,7 @@ The underlying principle is the same: **don't take yourself as the measurement o
                    (~15-60s)                    auto-expanding
 ```
 
-**Seven-Stage Pipeline**
+**Eight-Stage Pipeline**
 
 | Stage | Agent | What It Does | What the User Sees |
 | --- | --- | --- | --- |
@@ -215,8 +215,9 @@ The underlying principle is the same: **don't take yourself as the measurement o
 | 3. Asymmetry | Opus 4.6 Thread 2 | Power ratio, fair standard comparison | Verdict column section 2 streams in |
 | 4. Archaeology | Opus 4.6 Thread 3 | Boilerplate vs. custom, drafter profile | Verdict column section 3 streams in |
 | 5. Overall | Opus 4.6 Thread 4 | Assessment, methodology, quality check | Auto-expands after 1-3 complete |
-| 6. Counter-Draft | Opus 4.6 (on demand) | Rewrites unfair clauses with alternatives | Fair-language replacements per clause |
-| 7. Follow-up | Opus 4.6 (interactive) | User questions → Opus traces through all clauses | Consultation + message-the-company |
+| 6. Synthesis | Opus 4.6 (auto) | Reads all expert output, produces 4-voice panel synthesis | Streams in while user reads verdict — non-blocking |
+| 7. Counter-Draft | Opus 4.6 (on demand) | Rewrites unfair clauses with alternatives | Fair-language replacements per clause |
+| 8. Follow-up | Opus 4.6 (interactive) | User questions → Opus traces through all clauses | Consultation + message-the-company |
 
 **Key architectural insight:** We originally put Opus 4.6 on the card backs — assuming the flip needed the most powerful model. After 3 hours of DOM rendering failures, we discovered Haiku was already doing a great job on cards. Opus's real value is in the work Haiku *can't* do: cross-clause reasoning, power analysis, archaeological deduction, and self-correction. Each model now has a stage that showcases what it does best. See [strategy.md](strategy.md) for the full decision story.
 

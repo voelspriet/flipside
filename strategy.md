@@ -898,3 +898,40 @@ All 9 problems were implemented in a single session (~490 net lines added to `in
 - **DOMPurify integration** — all new rendered content routes through `safeMd2Html()`.
 
 **Key insight**: When feedback contradicts, the instinct is to pick a side or find a compromise. The better move is to reframe the contradiction as a design constraint. "Too scary" + "clear and useful" = "add context framing without reducing analytical depth." The conflicting opinions aren't a problem to solve — they're the specification for the solution.
+
+---
+
+## Decision 24: Expert Panel Synthesis + Fact-Checker QC Pass
+
+**Date**: 2026-02-14
+**Context**: The 4 Opus expert threads (interactions, asymmetry, archaeology, overall) produce independent reports that never see each other's findings. A user testing the Coca-Cola sweepstakes sample revealed 5 credibility issues: the context banner claimed "17 clauses" while the nav showed 6, the tax figures contradicted themselves ($20-25K headline vs $17.7-18.7K calculation), the "Honey Trap" label collided with the trick taxonomy, clause counts shifted during streaming, and the card back had 5 competing labels.
+
+### Part 1: Expert Panel Synthesis
+
+**The strategy**: Add a 6th Opus call that reads ALL expert outputs and produces a 4-voice synthesis that no single expert could write alone. Non-blocking: the verdict is readable at 4/4 experts; synthesis streams as a bonus.
+
+**The 4 synthesis voices**:
+1. **"What You Need to Know"** — Plain-language briefing. 8th-grade reading level. Top risks, concrete actions, pre-drafted email paragraph.
+2. **"If They Meant Well"** — Good-faith interpretation. Steelmans each flagged clause.
+3. **"If They Meant Every Word"** — Bad-faith interpretation. Villain voice on the document AS A SYSTEM.
+4. **"Cross-Expert Connections"** — Convergences, contradictions, hidden patterns invisible to any single expert.
+
+**Implementation**: `build_synthesis_prompt()` + `build_synthesis_user_content()`. Launches after all experts complete. Frontend shows synthesis section with accent-colored styling. `SYNTHESIS_MAX_TOKENS = 8000`.
+
+### Part 2: Fact-Checker QC Pass
+
+**The strategy**: Analyze the product as a fact-checker would — not a designer, not a developer. Look for internal contradictions, misleading numbers, confusing labels, and unstable displays. Then fix each issue at the correct layer (code, prompt, or design).
+
+**5 QC fixes**:
+
+| # | Issue | Layer | Fix |
+|---|-------|-------|-----|
+| 1 | Banner "17 clauses" contradicts nav "6 of 7" | Code | Removed count from banner. Numbers shown in card nav + sidebar only. |
+| 2 | FIGURE ($20-25K) contradicts EXAMPLE ($17.7-18.7K) | Prompt | Rule 16: FIGURE must be derivable from EXAMPLE math. "Write EXAMPLE first, then extract FIGURE." |
+| 3 | "HONEY TRAP" label collides with trick taxonomy | Code | Renamed to "THE LURE" — cannot be confused with the 18 trick categories. |
+| 4 | Counts shift during streaming (6→7 clauses, 5→6 tricks) | Code | Nav hides total during streaming. Tricks bar shows "Tricks detected" (no count) until quick_done. |
+| 5 | 5 competing ALL-CAPS labels on card back | Design | 3-tier hierarchy: "But in reality" (story), figure+example (data), "Find in document" + "The lure" (utility). |
+
+**Why a fact-checker's lens matters**: FlipSide's entire premise is "we find the numbers they hope you won't check." If the tool itself publishes internally inconsistent numbers, the premise collapses. Fix #2 (FIGURE/EXAMPLE consistency) is particularly important — it's a prompt-level instruction that prevents the model from rounding differently in headlines vs calculations. A tool that claims to expose math tricks cannot make math mistakes.
+
+**Key insight**: QC for an AI product has three layers — code (what the frontend shows), prompts (what the model outputs), and design (how labels compete for attention). Most bugs are found in code. The hardest bugs live in prompts, because they're non-deterministic and only appear on certain inputs. The FIGURE/EXAMPLE inconsistency would never show up in a code review — it only appears when a specific document triggers different rounding in two model fields.

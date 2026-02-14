@@ -48,6 +48,190 @@ def store_document(doc_id, doc):
     doc['_ts'] = time.time()
     with _documents_lock:
         documents[doc_id] = doc
+    # Pre-scan + pre-generate cards during upload (skip compare mode)
+    if doc.get('mode') != 'compare':
+        doc['_prescan_event'] = threading.Event()
+        doc['_precards_event'] = threading.Event()
+        threading.Thread(
+            target=_prescan_document, args=(doc_id,), daemon=True
+        ).start()
+
+
+def _prescan_document(doc_id):
+    """Background: identify clauses AND pre-generate cards during upload.
+    Phase 1 (~7s): clause identification → sets _prescan_event
+    Phase 2 (~8s): parallel card generation → sets _precards_event
+    By the time user clicks Analyze, cards are already done."""
+    doc = documents.get(doc_id)
+    if not doc or not doc.get('text'):
+        if doc:
+            doc['_prescan'] = None
+            doc.get('_prescan_event', threading.Event()).set()
+            doc.get('_precards_event', threading.Event()).set()
+        return
+    try:
+        import anthropic as _anthropic
+        client = _anthropic.Anthropic()
+        fast_model = os.environ.get('FLIPSIDE_FAST_MODEL', 'claude-haiku-4-5-20251001')
+        user_msg = (
+            "Analyze the following document from the drafter's "
+            "strategic perspective.\n\n"
+            "---BEGIN DOCUMENT---\n\n"
+            f"{doc['text']}\n\n"
+            "---END DOCUMENT---"
+        )
+
+        # ── Phase 1: Identification scan ──
+        t0 = time.time()
+        response = client.messages.create(
+            model=fast_model,
+            max_tokens=4000,
+            system=[{
+                'type': 'text',
+                'text': build_clause_id_prompt(),
+                'cache_control': {'type': 'ephemeral'},
+            }],
+            messages=[{'role': 'user', 'content': user_msg}],
+        )
+        scan_text = response.content[0].text
+        profile_text, clauses, green_text = parse_identification_output(scan_text)
+        scan_seconds = round(time.time() - t0, 1)
+        doc['_prescan'] = {
+            'scan_text': scan_text,
+            'profile_text': profile_text,
+            'clauses': clauses,
+            'green_text': green_text,
+            'seconds': scan_seconds,
+        }
+        print(f'[prescan] {doc_id[:8]}: {len(clauses)} clauses in {scan_seconds}s')
+        doc.get('_prescan_event', threading.Event()).set()
+
+        # ── Phase 2: Pre-generate cards in parallel ──
+        if clauses and '**Not Applicable**' not in scan_text:
+            card_system = build_single_card_system(doc['text'])
+            total_cards = len(clauses) + (1 if green_text else 0)
+            card_results = {}
+            card_events = {}
+
+            def card_worker(idx, user_content):
+                try:
+                    resp = client.messages.create(
+                        model=fast_model,
+                        max_tokens=4000,
+                        system=[{
+                            'type': 'text',
+                            'text': card_system,
+                            'cache_control': {'type': 'ephemeral'},
+                        }],
+                        messages=[{'role': 'user', 'content': user_content}],
+                    )
+                    card_results[idx] = resp.content[0].text
+                except Exception as e:
+                    print(f'[precard] {doc_id[:8]} card {idx}: Error: {e}')
+                    card_results[idx] = ''
+                finally:
+                    card_events[idx].set()
+
+            for i, clause_info in enumerate(clauses):
+                card_events[i] = threading.Event()
+                card_user_msg = (
+                    f"Generate a complete flip card for this specific clause:\n\n"
+                    f"Title: {clause_info['title']}\n"
+                    f"Section Reference: {clause_info.get('section', 'Not specified')}\n"
+                    f"Risk Level: {clause_info['risk']}\n"
+                    f"Score: {clause_info['score']}/100\n"
+                    f"Trick Category: {clause_info['trick']}\n"
+                    f"Key Quote: \"{clause_info['quote']}\"\n\n"
+                    f"Analyze the clause in the document and output the COMPLETE flip card."
+                )
+                threading.Thread(
+                    target=card_worker, args=(i, card_user_msg), daemon=True
+                ).start()
+
+            if green_text:
+                green_idx = len(clauses)
+                card_events[green_idx] = threading.Event()
+                threading.Thread(
+                    target=card_worker,
+                    args=(green_idx, build_green_summary_user(green_text)),
+                    daemon=True,
+                ).start()
+
+            # Wait for all cards
+            for idx in range(total_cards):
+                card_events[idx].wait(timeout=30)
+
+            cards_seconds = round(time.time() - t0 - scan_seconds, 1)
+            doc['_precards'] = {
+                'cards': [card_results.get(i, '') for i in range(total_cards)],
+                'seconds': cards_seconds,
+            }
+            print(f'[precard] {doc_id[:8]}: {total_cards} cards in {cards_seconds}s '
+                  f'(total {round(scan_seconds + cards_seconds, 1)}s)')
+        else:
+            doc['_precards'] = None
+
+    except Exception as e:
+        print(f'[prescan] {doc_id[:8]}: Error: {e}')
+        doc['_prescan'] = doc.get('_prescan')  # Keep Phase 1 if it succeeded
+        if not doc.get('_prescan'):
+            doc['_prescan'] = None
+    finally:
+        doc.get('_prescan_event', threading.Event()).set()
+        doc.get('_precards_event', threading.Event()).set()
+
+
+def _build_claims_summary(prescan, precards):
+    """Build a concise summary of all flagged claims for the Opus verdict prompt.
+    Parses pre-generated card texts to extract key findings per clause."""
+    if not prescan or not precards:
+        return ''
+    clauses = prescan.get('clauses', [])
+    cards = precards.get('cards', [])
+    if not clauses or not cards:
+        return ''
+
+    lines = [
+        '## PRE-ANALYZED FLAGGED CLAIMS',
+        'The card scan identified these flagged clauses. Reference them in your verdict — '
+        'ensure [FLAGGED_CLAIMS] covers ALL of them with consumer impact.\n',
+    ]
+    for i, card_text in enumerate(cards):
+        if not card_text or 'Fair Clauses Summary' in card_text:
+            continue
+        # Extract title from ### heading
+        title_match = re.search(r'^###\s+(.+)', card_text, re.MULTILINE)
+        title = title_match.group(1).strip() if title_match else f'Clause {i + 1}'
+        # Extract risk/score/trick from [RED] · Score: 85/100 · Trick: ...
+        risk_match = re.search(
+            r'\[(RED|YELLOW|GREEN)\]\s*[·•]\s*Score:\s*(\d+)/100\s*[·•]\s*Trick:\s*(.+)',
+            card_text)
+        if risk_match:
+            risk, score, trick = risk_match.group(1), risk_match.group(2), risk_match.group(3).strip()
+        elif i < len(clauses):
+            risk, score, trick = clauses[i]['risk'], clauses[i]['score'], clauses[i]['trick']
+        else:
+            risk, score, trick = '?', '?', 'Unknown'
+        # Extract REVEAL, bottom line, FIGURE
+        reveal_m = re.search(r'\[REVEAL\]:\s*(.+)', card_text)
+        bl_m = re.search(r'\*\*Bottom line:\*\*\s*(.+)', card_text)
+        fig_m = re.search(r'\[FIGURE\]:\s*(.+)', card_text)
+        reveal = reveal_m.group(1).strip() if reveal_m else ''
+        bottom_line = bl_m.group(1).strip() if bl_m else ''
+        figure = fig_m.group(1).strip() if fig_m else ''
+
+        lines.append(f'Claim {i + 1}: {title}')
+        lines.append(f'  Risk: {risk} | Score: {score}/100 | Trick: {trick}')
+        if reveal:
+            lines.append(f'  Finding: {reveal}')
+        if figure:
+            lines.append(f'  Impact: {figure}')
+        if bottom_line:
+            lines.append(f'  Bottom line: {bottom_line}')
+        lines.append('')
+
+    return '\n'.join(lines)
+
 
 MODEL = os.environ.get('FLIPSIDE_MODEL', 'claude-opus-4-6')
 FAST_MODEL = os.environ.get('FLIPSIDE_FAST_MODEL', 'claude-haiku-4-5-20251001')
@@ -1307,9 +1491,249 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 12. The section reference in parentheses MUST provide document context
 13. If the document has NO terms or obligations (e.g. a recipe, novel, news article), output ONLY the Document Profile with **Not Applicable**: [1-sentence explanation]. Do NOT output any clauses.
 14. GREEN clauses: Score 0-30, Trick: None. YELLOW/RED clauses MUST have a trick from the 18 categories above — NEVER leave it blank or write "N/A"
-15. The risk line format is MANDATORY for every clause: [LEVEL] · Score: [N]/100 · Trick: [CATEGORY] — all three parts, always"""
+15. The risk line format is MANDATORY for every clause: [LEVEL] · Score: [N]/100 · Trick: [CATEGORY] — all three parts, always
+16. [FIGURE] and [EXAMPLE] must be mathematically consistent — the headline number in [FIGURE] MUST be derivable from the step-by-step calculation in [EXAMPLE]. Write [EXAMPLE] first in your head, THEN extract the summary number for [FIGURE]. Never round differently between the two"""
 
 
+def build_clause_id_prompt():
+    """Phase 1: Lightweight identification scan. Minimal output for speed."""
+    return """You are a contract analyst. Quickly scan this document and identify the most significant clauses that a consumer should worry about.
+
+## LANGUAGE RULE
+ALWAYS respond in ENGLISH regardless of the document's language.
+
+## OUTPUT FORMAT
+
+First, output the Document Profile:
+
+## Document Profile
+- **Document Type**: [type of document]
+- **Drafted By**: [who drafted it]
+- **Your Role**: [the non-drafting party's role]
+- **Jurisdiction**: [jurisdiction if identifiable, otherwise "Not specified"]
+- **Language**: [language of the document]
+- **Sections**: [number of major sections]
+
+Then list each significant clause (maximum 12 RED/YELLOW), one per line:
+
+CLAUSE: [Descriptive Title] ([Context — Section/Product/Coverage]) | RISK: [RED/YELLOW] | SCORE: [0-100] | TRICK: [category] | QUOTE: "[copy-paste the single most revealing sentence from this clause]"
+
+After all RED/YELLOW clauses, list ALL fair/benign clauses on one line:
+
+GREEN_CLAUSES: [Section ref]: [one-line description]; [Section ref]: [one-line description]; ...
+
+## TRICK CATEGORIES (pick exactly one per clause):
+Silent Waiver, Burden Shift, Time Trap, Escape Hatch, Moving Target, Forced Arena, Phantom Protection, Cascade Clause, Sole Discretion, Liability Cap, Reverse Shield, Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, Ghost Standard
+
+## RULES
+1. Maximum 12 RED/YELLOW clauses — pick the highest-impact ones
+2. Output in order of severity (worst first)
+3. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
+4. If the document has NO terms or obligations (e.g. a recipe, novel, news article), output ONLY the Document Profile followed by: **Not Applicable**: [1-sentence explanation]
+5. The section reference in parentheses MUST provide document context (e.g., "Early Termination, §4.2" not just "§4.2")
+6. Be fast — this is a speed scan, not deep analysis"""
+
+
+def build_single_card_system(doc_text):
+    """Phase 2: System prompt for per-clause card generation.
+    Includes document text so prompt caching is shared across parallel calls."""
+    return f"""You are a contract analyst generating a SINGLE complete flip card. Output ONLY the card content — no preamble, no "Here is the card", no --- separators.
+
+## LANGUAGE RULE
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
+
+## CARD FORMAT
+
+### [Descriptive Title] ([Context — Section/Product/Coverage])
+
+The section reference MUST anchor the clause to the document structure so the reader knows WHERE they are. Examples:
+- Insurance policy: "Travel Cancellation Coverage, Article 4.2" not just "Article 4.2"
+- Coupon booklet: "Danone Alpro coupon — Carrefour hypermarkt only" not just "Page 3"
+- Lease: "Maintenance & Repairs, §2(b)" not just "§2(b)"
+For multi-product documents (coupon books, product bundles): specify WHICH product or offer.
+
+[REASSURANCE]: [One short, warm, positive headline (max 8 words) that frames this clause as beneficial, protective, or fair — how the drafter WANTS you to feel. Must sound genuinely reassuring, not sarcastic. Examples: "Your home is fully protected" / "Clear and simple payment terms" / "Comprehensive coverage for your peace of mind".]
+
+> "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
+
+[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts. FORBIDDEN words/patterns: "waiv" (any form), "surrender," "legal," "rights," "recourse," "argue," "dispute," "sole discretion," "no cap," "no limit," "unlimited," "adds up," "that's $X," "signing away," "give up," "lose my," "forfeit," question marks expressing concern. The reader has ZERO legal literacy — they don't know what a waiver IS. Always end with breezy certainty, never with analysis.]
+
+[HONEY]: [OPTIONAL — only if this clause uses warm, friendly, or reassuring language immediately before or around a punitive/restrictive term. Quote the exact honey phrase from the document, then → the sting it masks. If the clause is purely neutral/technical with no emotional framing, omit this field entirely.]
+
+[TEASER]: [One cryptic sentence that creates tension without revealing the risk. Make the reader WANT to flip. Keep under 12 words. For GREEN clauses: "No surprises here — genuinely."]
+
+[REVEAL]: [One punchy analytical sentence (max 15 words) that hits the reader when the card flips. The sharp truth that contrasts the reassurance on the front. NEVER vague: no "some", "certain", "conditions", "limitations". Be specific. Test: Would someone feel a gut reaction reading this? Examples: "Your deposit funds their legal fees" / "Uncapped daily penalties: $2,250 in fees from one missed month". For GREEN clauses: "This one is genuinely what it promises."]
+
+[GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
+Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
+
+**Bottom line:** [One sentence. Be concrete, not vague.]
+
+**What the small print says:** [One sentence. Plain restatement of what this clause literally says.]
+
+**What you should read:** [One sentence. What this ACTUALLY means. If alarming, be alarming.]
+
+**What does this mean for you:**
+[FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "30 days or you lose all rights".]
+[EXAMPLE]: [One concrete scenario using the document's own figures. Walk through step by step. 2-3 sentences max.]
+
+## TRICK CATEGORIES (pick exactly one per clause, best match):
+- Silent Waiver — Quietly surrenders your legal rights
+- Burden Shift — Moves proof/action duty onto you
+- Time Trap — Tight deadlines that forfeit your rights
+- Escape Hatch — Drafter can exit, you can't
+- Moving Target — Can change terms unilaterally after you agree
+- Forced Arena — Disputes in drafter's chosen forum/method
+- Phantom Protection — Broad coverage eaten by hidden exceptions
+- Cascade Clause — One trigger activates penalties in others
+- Sole Discretion — Drafter decides everything, no appeal
+- Liability Cap — Limits payout regardless of harm
+- Reverse Shield — You cover their costs, not vice versa
+- Auto-Lock — Auto-renewal with hard cancellation
+- Content Grab — Claims rights over your content/work
+- Data Drain — Expansive hidden data permissions
+- Penalty Disguise — Punitive charges disguised as legitimate fees
+- Gag Clause — Prohibits negative reviews or discussion
+- Scope Creep — Vague terms stretch beyond reasonable expectation
+- Ghost Standard — References external docs not included
+
+## RULES
+1. Every field is MANDATORY: title, REASSURANCE, quote, READER, TEASER, REVEAL, risk+score+trick, confidence, bottom line, small print, should read, FIGURE, EXAMPLE. HONEY is optional.
+2. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
+3. Keep each field to ONE sentence. Cards must be scannable, not essays
+4. The [READER] is GULLIBLE with ZERO legal literacy. The reader signs without reading twice
+5. The [REVEAL] is the TITLE of the card back — make it sharp, specific, gut-punching
+6. "What you should read" is the core insight — make it visceral
+7. Confidence: HIGH = clear language; MEDIUM = some ambiguity; LOW = multiple interpretations
+8. Do NOT output --- separators or any text outside the card format
+9. YELLOW/RED clauses MUST have a trick from the 18 categories above — NEVER leave it blank or write "N/A"
+
+## DOCUMENT:
+
+---BEGIN DOCUMENT---
+
+{doc_text}
+
+---END DOCUMENT---"""
+
+
+def build_green_summary_user(green_clauses_text):
+    """User message for the GREEN summary card worker."""
+    return f"""Generate the GREEN summary card for these fair clauses:
+
+{green_clauses_text}
+
+Use EXACTLY this format:
+
+### Fair Clauses Summary
+
+[REASSURANCE]: These clauses are what they promise
+
+[READER]: [List each fair clause by section ref and one-line summary]
+
+[TEASER]: These are actually what they look like.
+
+[REVEAL]: These clauses are genuinely what they promise.
+
+[GREEN] · Score: 10/100 · Trick: None
+Confidence: HIGH — Standard fair language
+
+**Bottom line:** These clauses are straightforward and fair as written.
+
+**What the small print says:** Standard fair terms with no hidden catches.
+
+**What you should read:** These clauses are genuinely what they promise.
+
+**What does this mean for you:**
+[FIGURE]: No hidden costs or risks
+[EXAMPLE]: These clauses work as advertised — fair terms for both parties."""
+
+
+def parse_identification_output(text):
+    """Parse Phase 1 identification scan into profile, clauses, and green text."""
+    lines = text.strip().split('\n')
+
+    profile_lines = []
+    clauses = []
+    green_text = ''
+    in_profile = False
+    profile_ended = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Start of profile section
+        if '## Document Profile' in stripped or (not profile_ended and '**Document Type**' in stripped):
+            in_profile = True
+
+        # End of profile section
+        if in_profile and (stripped.startswith('CLAUSE:') or stripped.startswith('GREEN_CLAUSES:')
+                           or stripped.startswith('**Not Applicable**')):
+            in_profile = False
+            profile_ended = True
+
+        if in_profile:
+            profile_lines.append(line)
+            continue
+
+        # Clause lines
+        if stripped.startswith('CLAUSE:'):
+            clause = _parse_clause_line(stripped)
+            if clause:
+                clauses.append(clause)
+
+        # Green clauses
+        if stripped.startswith('GREEN_CLAUSES:') or stripped.startswith('GREEN:'):
+            green_text = stripped.split(':', 1)[1].strip() if ':' in stripped else ''
+
+        # Not Applicable — add to profile
+        if '**Not Applicable**' in stripped:
+            profile_lines.append(line)
+
+    profile_text = '\n'.join(profile_lines).strip()
+
+    # Ensure profile has header
+    if profile_text and '## Document Profile' not in profile_text:
+        profile_text = '## Document Profile\n' + profile_text
+
+    return profile_text, clauses, green_text
+
+
+def _parse_clause_line(line):
+    """Parse a single CLAUSE: line into a dict."""
+    try:
+        content = line[len('CLAUSE:'):].strip()
+        parts = [p.strip() for p in content.split('|')]
+
+        result = {'title': '', 'section': '', 'risk': 'RED', 'score': 50, 'trick': '', 'quote': ''}
+
+        # First part: Title (Section)
+        title_part = parts[0] if parts else ''
+        paren_match = re.search(r'\(([^)]+)\)\s*$', title_part)
+        if paren_match:
+            result['section'] = paren_match.group(1)
+            result['title'] = title_part[:paren_match.start()].strip()
+        else:
+            result['title'] = title_part
+
+        for part in parts[1:]:
+            if part.startswith('RISK:'):
+                result['risk'] = part[5:].strip()
+            elif part.startswith('SCORE:'):
+                try:
+                    result['score'] = int(re.search(r'\d+', part).group())
+                except (AttributeError, ValueError):
+                    pass
+            elif part.startswith('TRICK:'):
+                result['trick'] = part[6:].strip()
+            elif part.startswith('QUOTE:'):
+                quote = part[6:].strip().strip('"').strip('\u201c').strip('\u201d')
+                result['quote'] = quote
+
+        return result if result['title'] else None
+    except Exception as e:
+        print(f'[parse_clause] Error: {e} — line: {line[:100]}')
+        return None
 
 
 
@@ -1522,112 +1946,134 @@ For each major section, one word: **Boilerplate** or **Custom**. Then 1-2 senten
 """
 
 
-def build_overall_prompt(has_images=False):
-    """Opus thread 4: Overall assessment, verdict tier, checklist, methodology, quality check."""
+def build_verdict_prompt(has_images=False):
+    """Single Opus verdict thread: one-screen report for normal people.
+    Covers cross-clause interactions, power balance, drafter profile, and overall assessment
+    in one coherent pass. Auto-detects jurisdiction from document text."""
     visual_block = ""
     if has_images:
-        visual_block = "\n\nPage images are included. Reference any visual tricks you detect in your assessment."
+        visual_block = "\n\nPage images are included. Look for visual tricks: fine print, buried placement, dense tables, light-gray disclaimers."
 
-    return f"""You are a senior attorney. Provide the OVERALL VERDICT: what this document is, whether to worry, top concerns, what to do next, methodology, and self-check. This is your ONLY job — companion analyses cover cross-clause interactions, power asymmetry, and document archaeology separately.
+    return f"""You are a senior attorney writing a verdict for someone who NEVER reads contracts. They will read ONE screen and then close the tab. Make every word count.
+
+Your job: analyze this ENTIRE document — cross-clause interactions, power balance, drafter intent, and overall risk — in ONE coherent report. You are the only expert. Be thorough in your thinking, ruthlessly concise in your output.
 {visual_block}
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ## OUTPUT FORMAT — TAGGED SECTIONS
 
-You MUST use the exact tags below. The frontend parses these tags to build a layered report.
+You MUST use the exact tags below. The frontend parses these tags.
 
-[SUMMARY_CONTRIBUTION]
-This is the MOST IMPORTANT section — it becomes the first thing users read.
+[VERDICT_TIER]
+EXACTLY ONE of these — the tier name must appear verbatim:
+- SIGN WITH CONFIDENCE
+- READ THE FLAGGED CLAUSES
+- NEGOTIATE BEFORE SIGNING
+- SEEK LEGAL REVIEW
+- DO NOT SIGN
+[/VERDICT_TIER]
 
-Write EXACTLY 3-5 sentences, zero jargon, zero clause numbers:
-1. What is this document? → One sentence identifying the document type and parties. Example: "This is a Coca-Cola sweepstakes — a lottery for a trip worth $57,000."
-2. Should you worry? → One sentence calibrated to actual severity. NOT always alarming. For a clean document: "This is a standard agreement with typical protections." For a risky one: "If you only enter: low risk. If you WIN: read on."
-3-5. The top 3 risks → One sentence each, in human language. Each risk sentence should name a concrete consequence (a dollar amount, a time limit, a right you lose). NOT "Unlimited Indemnification Flowing One Way" — instead: "If you get hurt on their trip, you pay THEIR lawyer."
+[WHAT_IS_THIS]
+One sentence. What is this document, who are the parties, what's the deal?
+Example: "This is a Coca-Cola sweepstakes — a lottery for a trip worth $57,000."
+Example: "This is a 12-month residential lease between you and GreenTree Property Management."
+[/WHAT_IS_THIS]
 
-**Verdict: [TIER]**
+[SHOULD_YOU_WORRY]
+One sentence. Calibrated to actual severity. NOT always alarming.
+For a clean document: "This is a standard agreement with typical protections."
+For a conditional risk: "If you only enter: low risk. If you WIN: read on."
+For a bad document: "This contract has serious problems you need to address before signing."
+[/SHOULD_YOU_WORRY]
 
-Choose EXACTLY ONE tier — the tier name must appear verbatim after "Verdict:":
-- SIGN WITH CONFIDENCE — Standard fair terms, no red flags, typical boilerplate
-- READ THE FLAGGED CLAUSES — Some issues worth knowing about, but manageable
-- NEGOTIATE BEFORE SIGNING — Significant imbalance, pushback needed on key terms
-- SEEK LEGAL REVIEW — Document designed to exploit, professional review essential
-- DO NOT SIGN — Unconscionable terms, illegal clauses, or rights-destroying language
+[THE_MAIN_THING]
+The single worst risk in this document. 2-3 sentences MAX.
+Must name a concrete consequence: a dollar amount, a time limit, a right you lose.
+Must quote or reference the actual clause text so the user can verify.
+NOT: "Unlimited Indemnification Flowing One Way Against a $100 Wall"
+YES: "If you get hurt on their trip, YOU pay their lawyer — not the other way around. There's no cap on what you'd owe. Meanwhile, the most they'd pay you for anything is $100."
+If jurisdiction is provided and this clause violates local law, say so: "This may actually be illegal under [statute]."
+[/THE_MAIN_THING]
 
-Selection guidance:
-- Look at the SEVERITY of the worst clauses, not just the count
-- A single unconscionable clause can warrant DO NOT SIGN even if everything else is green
-- If the document touches fundamental rights, ELEVATE the tier
-- When in doubt between two tiers, choose the more protective one
-[/SUMMARY_CONTRIBUTION]
+[ONE_ACTION]
+One sentence. The single most effective thing the user should do.
+For negotiable docs: "Ask to change [specific thing] to [specific alternative]."
+For non-negotiable docs: "Before signing, check whether [specific thing]."
+For already-accepted docs: "If [trigger], your first step is [action]."
+[/ONE_ACTION]
+
+[POWER_RATIO]
+One line: "Their rights: N — Your rights: N" or "They have Nx more rights than you."
+[/POWER_RATIO]
+
+[RISKS]
+2-4 additional risks beyond the main thing, each as ONE sentence.
+Order by impact on the reader's wallet/rights, worst first.
+Each risk names a concrete consequence.
+Separate risks with newlines.
+[/RISKS]
 
 [CHECKLIST]
-A chronological action list — things to DO, in ORDER. Adapt the sections to the document type.
-
-For a contract/agreement the user hasn't signed yet:
-Before you sign:
-- [Specific action referencing a specific clause]
-- [Specific action]
-
-After you sign:
-- [Set a calendar reminder for specific date/deadline from the document]
-- [Keep a copy of specific document]
-
-If something goes wrong:
-- [Your first step is X, not Y]
-
-For a sweepstakes/ToS already accepted:
-If you win / If something changes:
-- [Specific action]
-- [Budget specific amount for specific reason]
-
-RULES for checklist:
-- Max 5 items per section. Max 3 sections.
-- Each item must reference something SPECIFIC from the document (a date, a clause, an amount).
-- If there are more actions needed, the document is too risky — say "get professional advice" instead.
-- For genuinely fair documents: "No unusual actions needed. Standard precautions apply."
+Chronological action list. Things to DO, in ORDER.
+Adapt sections to document type:
+- "Before you sign:" / "After you sign:" / "If something goes wrong:"
+- Or: "If you win:" / "If something changes:"
+Max 5 items per section. Max 3 sections.
+Each item references something SPECIFIC from the document.
+For fair documents: "No unusual actions needed."
 [/CHECKLIST]
 
-[DEEP_CONTENT]
-## The Big Picture — Deep Analysis
+[FLAGGED_CLAIMS]
+List EVERY flagged (RED/YELLOW) clause. For EACH one, output exactly:
+- **Clause title (section reference)** — ONE sentence: what this means for YOU, the consumer. Concrete consequence.
 
-### Top 3 Concerns
-1. **[Title]** — [one sentence with concrete consequence]
-2. **[Title]** — [one sentence with concrete consequence]
-3. **[Title]** — [one sentence with concrete consequence]
-
-### If They Meant Well
-[2-3 sentences. Generous interpretation of the document's intent.]
-
-### If They Meant Every Word
-[2-3 sentences. Adversarial interpretation. What's the worst-case reading?]
-
-## Quality Check
-
-Re-read your own analysis above with fresh eyes:
-
-- **Possible False Positives**: Any standard language incorrectly flagged? If none: "None identified — all flags appear warranted."
-- **Possible Blind Spots**: Missing protections, undefined terms, untraced references? If none: "None identified — analysis appears thorough."
-- **Consistency Check**: Similar language scored differently? If not: "Scoring appears consistent."
-
-**Adjusted Confidence: [HIGH/MEDIUM/LOW]** — After self-review, how confident are you?
-[/DEEP_CONTENT]
+Order by risk score (highest first). Include ALL flagged clauses — do not skip any.
+If pre-analyzed claims are provided after the document text, use those as your source and cover every one.
+If no pre-analyzed claims are available, identify them yourself from the document.
+For fair documents with no flagged clauses: "No clauses were flagged."
+[/FLAGGED_CLAIMS]
 
 [COLOPHON]
-## How Opus 4.6 Analyzed This Document
-[2-4 sentences. Describe which reasoning methods YOU actually used for THIS specific document. Be concrete — not generic. Only mention methods you ACTUALLY used.]
-
-This analysis was produced by Claude Opus 4.6 using adaptive thinking across 4 parallel expert threads: cross-clause interactions, power asymmetry, document archaeology, and overall assessment. Each thread independently reasoned about the document and allocated its own thinking budget based on complexity.
-
-This is not legal advice. For documents with significant financial or legal implications, consult a qualified attorney in your jurisdiction.
+2-3 sentences about how you analyzed this document. Be specific about what reasoning you used.
+End with: "This is not legal advice."
 [/COLOPHON]
 
+[JURISDICTION]
+Auto-detect the jurisdiction from the document text.
+Look for: governing law clauses, addresses, state/country references, regulatory bodies mentioned, court jurisdictions named.
+Output format:
+- Line 1: The jurisdiction (e.g., "California, USA" or "Netherlands, EU" or "Unknown")
+- Line 2+: If jurisdiction is identified, note any clauses that VIOLATE local law — cite the specific statute.
+  Distinguish ILLEGAL (void/unenforceable under local law) from merely UNFAIR (bad but legal).
+  Warn about MISSING required clauses for this jurisdiction.
+  If uncertain about a specific law, say "check with a local attorney" rather than guessing.
+- If no jurisdiction can be determined: "Jurisdiction could not be determined from the document text. The analysis above is jurisdiction-neutral."
+[/JURISDICTION]
+
+## ANALYSIS INSTRUCTIONS
+Before writing your output, use your full extended thinking budget to:
+1. Read the ENTIRE document — every clause, every section
+2. Find cross-clause COMBINATIONS that create compound risks invisible when reading linearly
+3. Count the power balance: your rights vs their rights, your obligations vs theirs
+4. Identify which sections are boilerplate vs custom-drafted — custom sections reveal the drafter's real priorities
+5. Assess overall severity — calibrate to real-world stakes, not just the count of red flags
+6. Self-check: any false positives? Any blind spots? Standard language incorrectly flagged?
+7. Identify the jurisdiction — look for governing law clauses, addresses, regulatory references
+
+## TRICK CATEGORIES (use in your thinking, not in output):
+Silent Waiver, Burden Shift, Time Trap, Escape Hatch, Moving Target, Forced Arena,
+Phantom Protection, Cascade Clause, Sole Discretion, Liability Cap, Reverse Shield,
+Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, Ghost Standard
+
 ## RULES
-- [SUMMARY_CONTRIBUTION] is the user's FIRST IMPRESSION — it must be clear, calm, and calibrated. Never alarming for fair documents
-- [CHECKLIST] is the user's TAKEAWAY — it must be actionable and chronological. NEVER truncate
-- [DEEP_CONTENT] Quality Check: be genuinely self-critical. Users trust uncertainty over false certainty
-- The severity tier MUST match real-world stakes, not just the number of red flags
-- Use your full extended thinking budget
+- The user will read ONE screen. Every word must earn its place.
+- [THE_MAIN_THING] is the heart of the report. Get this right.
+- NEVER use legal jargon in the output. Write like you're texting a friend.
+- Calibrate severity: a fair document should say "you're fine." Don't invent problems.
+- Bold only dollar amounts and time limits — nothing else.
+- Do NOT repeat information across sections. Each tag has ONE job.
+- Use your full extended thinking budget — thorough thinking, concise output.
 """
 
 
@@ -1844,7 +2290,7 @@ def analyze(doc_id):
                 stream.close()
 
     def run_parallel(client, user_msg, preset):
-        """Five parallel API calls: Haiku full cards + 4× Opus expert report."""
+        """Two parallel API calls: Haiku full cards + single Opus verdict."""
         q = queue_module.Queue()
         timings = {}
         cancel = threading.Event()  # Signal to cancel Opus threads (e.g. doc not applicable)
@@ -1881,17 +2327,7 @@ def analyze(doc_id):
                 timings[label] = round(time.time() - t0, 1)
                 q.put((f'{label}_done', None))
 
-        # Haiku for fast card scan (no extended thinking)
-        quick_max = max(16000, min(32000, len(doc['text']) // 2))
-        t_quick = threading.Thread(
-            target=worker,
-            args=('quick', build_card_scan_prompt(), quick_max,
-                  FAST_MODEL, False),
-            daemon=True,
-        )
-
-        # Deep analysis token budget: each Opus call gets 40K (total 80K split)
-        # Floor of 80000 for sequential mode, 40000 each for parallel
+        # Deep analysis token budget
         deep_max_tokens = max(preset['max_tokens'], 80000)
 
         # Build vision content for deep analysis if page images exist
@@ -1910,37 +2346,305 @@ def analyze(doc_id):
 
         yield sse('phase', 'thinking')
 
-        # ── 5-thread: ALL start at t=0 ──
-        # Haiku (full cards) + 4× Opus (interactions, asymmetry, archaeology, overall)
-        parallel_max = max(deep_max_tokens // 4, 20000)
+        # ── Non-blocking check: are pre-generated cards ready? ──
+        precards_event = doc.get('_precards_event')
+        claims_summary = ''
+        if precards_event and precards_event.is_set():
+            ps = doc.get('_prescan')
+            pc = doc.get('_precards')
+            if (ps and ps.get('clauses') and pc and pc.get('cards')):
+                claims_summary = _build_claims_summary(ps, pc)
 
-        opus_threads = {
-            'interactions': build_interactions_prompt(has_images=has_images),
-            'asymmetry': build_asymmetry_prompt(has_images=has_images),
-            'archaeology': build_archaeology_prompt(has_images=has_images),
-            'overall': build_overall_prompt(has_images=has_images),
-        }
+        # ── Start Opus verdict at t=0 — enriched with card data if available ──
+        verdict_max = max(deep_max_tokens, 80000)
+        opus_user = deep_user_content
+        if claims_summary:
+            if isinstance(opus_user, list):
+                # Image mode: replace first text block with enriched version
+                opus_user = [{'type': 'text', 'text': user_msg + '\n\n' + claims_summary}] + opus_user[1:]
+            else:
+                opus_user = (opus_user or user_msg) + '\n\n' + claims_summary
+            print(f'[verdict] Opus enriched with {len(claims_summary)} chars of card context')
+        t_opus = threading.Thread(
+            target=worker,
+            args=('overall', build_verdict_prompt(has_images=has_images),
+                  verdict_max, MODEL, True),
+            kwargs={'user_content': opus_user},
+            daemon=True,
+        )
+        t_opus.start()
 
-        for label, prompt in opus_threads.items():
+        # ── Check for pre-generated cards (fastest path) ──
+        if precards_event:
+            precards_event.wait(timeout=25)
+        prescan = doc.get('_prescan')
+        precards = doc.get('_precards')
+
+        if (prescan and prescan.get('clauses') and precards
+                and precards.get('cards')
+                and '**Not Applicable**' not in prescan.get('scan_text', '')):
+            # Cards pre-generated during upload — emit instantly!
+            print(f'[scan] Using pre-generated cards ({len(precards["cards"])} cards, '
+                  f'ready during upload)')
+            profile_text = prescan['profile_text']
+            if profile_text:
+                yield sse('text', profile_text + '\n\n---\n\n')
+            for card_text in precards['cards']:
+                card_text = card_text.strip().strip('-').strip()
+                if card_text:
+                    yield sse('text', card_text + '\n\n---\n\n')
+            clause_count = sum(
+                1 for c in precards['cards']
+                if c and 'Fair Clauses Summary' not in c)
+            yield sse('quick_done', json.dumps({
+                'seconds': 0.1, 'model': FAST_MODEL}))
+            yield sse('handoff', json.dumps({
+                'tricks_found': 0, 'summary': '',
+                'clause_count': clause_count,
+                'not_applicable': False,
+            }))
+            # Only wait for Opus verdict
+            yield from _run_parallel_cards(q, timings, cancel, 0)
+            return
+
+        # ── Phase 1: Use pre-scan results or fall back to blocking scan ──
+        t0_scan = time.time()
+        scan_text = ''
+        if prescan and prescan.get('clauses'):
+            # Pre-scan completed during upload — use cached results
+            scan_text = prescan['scan_text']
+            profile_text = prescan['profile_text']
+            clauses = prescan['clauses']
+            green_text = prescan['green_text']
+            timings['scan'] = prescan.get('seconds', 0)
+            print(f'[scan] Using pre-scan results ({len(clauses)} clauses, {timings["scan"]}s during upload)')
+        elif prescan and '**Not Applicable**' in prescan.get('scan_text', ''):
+            # Pre-scan found not applicable
+            scan_text = prescan['scan_text']
+            profile_text = prescan.get('profile_text', '')
+            clauses = []
+            green_text = ''
+            timings['scan'] = prescan.get('seconds', 0)
+        else:
+            # No pre-scan or pre-scan failed — blocking scan
+            try:
+                scan_response = client.messages.create(
+                    model=FAST_MODEL,
+                    max_tokens=4000,
+                    system=[{
+                        'type': 'text',
+                        'text': build_clause_id_prompt(),
+                        'cache_control': {'type': 'ephemeral'},
+                    }],
+                    messages=[{'role': 'user', 'content': user_msg}],
+                )
+                scan_text = scan_response.content[0].text
+            except Exception as e:
+                print(f'[scan] Phase 1 failed: {e}, falling back to single-pass')
+                quick_max = max(16000, min(32000, len(doc['text']) // 2))
+                t_quick = threading.Thread(
+                    target=worker,
+                    args=('quick', build_card_scan_prompt(), quick_max,
+                          FAST_MODEL, False),
+                    daemon=True,
+                )
+                t_quick.start()
+                yield from _run_parallel_fallback(q, timings, cancel)
+                return
+
+            timings['scan'] = round(time.time() - t0_scan, 1)
+            print(f'[scan] Phase 1 complete in {timings["scan"]}s')
+
+            # Parse identification output
+            profile_text, clauses, green_text = parse_identification_output(scan_text)
+
+        # ── Handle Not Applicable ──
+        if '**Not Applicable**' in scan_text or not clauses:
+            if profile_text:
+                yield sse('text', profile_text + '\n')
+            cancel.set()
+            yield sse('quick_done', json.dumps({
+                'seconds': timings['scan'], 'model': FAST_MODEL}))
+            yield sse('handoff', json.dumps({
+                'tricks_found': 0, 'summary': '',
+                'clause_count': 0,
+                'not_applicable': '**Not Applicable**' in scan_text}))
+            yield sse('done', json.dumps({
+                'quick_seconds': timings['scan'], 'deep_seconds': 0, 'model': MODEL}))
+            return
+
+        # ── Emit Document Profile ──
+        if profile_text:
+            yield sse('text', profile_text + '\n\n---\n\n')
+
+        # ── Phase 2: Parallel per-clause card generation ──
+        card_system = build_single_card_system(doc['text'])
+        total_cards = len(clauses) + (1 if green_text else 0)
+        print(f'[scan] Starting {total_cards} parallel card workers '
+              f'({len(clauses)} clauses + {"1 green" if green_text else "0 green"})')
+
+        for i, clause_info in enumerate(clauses):
+            card_user_msg = (
+                f"Generate a complete flip card for this specific clause:\n\n"
+                f"Title: {clause_info['title']}\n"
+                f"Section Reference: {clause_info.get('section', 'Not specified')}\n"
+                f"Risk Level: {clause_info['risk']}\n"
+                f"Score: {clause_info['score']}/100\n"
+                f"Trick Category: {clause_info['trick']}\n"
+                f"Key Quote: \"{clause_info['quote']}\"\n\n"
+                f"Analyze the clause in the document and output the COMPLETE flip card."
+            )
             t = threading.Thread(
                 target=worker,
-                args=(label, prompt, parallel_max, MODEL, True),
-                kwargs={'user_content': deep_user_content},
+                args=(f'card_{i}', card_system, 4000, FAST_MODEL, False),
+                kwargs={'user_content': card_user_msg},
                 daemon=True,
             )
             t.start()
 
-        t_quick.start()
+        # Green summary card
+        if green_text:
+            green_idx = len(clauses)
+            t = threading.Thread(
+                target=worker,
+                args=(f'card_{green_idx}', card_system, 2000, FAST_MODEL, False),
+                kwargs={'user_content': build_green_summary_user(green_text)},
+                daemon=True,
+            )
+            t.start()
 
-        yield from _run_parallel_5thread(q, timings, cancel, worker, user_msg)
+        yield from _run_parallel_cards(q, timings, cancel, total_cards)
 
-    def _run_parallel_5thread(q, timings, cancel, worker=None, user_msg=None):
-        """5-thread event loop: ALL start at t=0.
-        Haiku (full flip cards) + 4× Opus (interactions, asymmetry, archaeology, overall).
-        Each Opus source dispatches independently — no buffers, no gating.
-        After all 4 experts finish, launches synthesis thread (non-blocking)."""
+    def _run_parallel_cards(q, timings, cancel, total_cards):
+        """Event loop for parallel per-clause card generation + Opus verdict.
+        Cards are buffered and emitted in order as they complete."""
 
-        OPUS_SOURCES = {'interactions', 'asymmetry', 'archaeology', 'overall'}
+        OPUS_SOURCES = {'overall'}
+
+        start_time = time.time()
+        card_texts = {}
+        card_done_flags = {}
+        next_card_to_emit = 0
+        cards_all_done = (total_cards == 0)  # Pre-generated cards: already emitted
+        done_flags = {s: False for s in OPUS_SOURCES}
+        thread_texts = {s: '' for s in OPUS_SOURCES}
+
+        def all_done():
+            return cards_all_done and all(done_flags.values())
+
+        while not all_done():
+            # ── Wall-clock timeout ──
+            if time.time() - start_time > 300:
+                cancel.set()
+                yield sse('error', 'Analysis timed out after 5 minutes')
+                yield sse('done', json.dumps({
+                    'quick_seconds': timings.get('scan', 0),
+                    'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
+                    'model': MODEL}))
+                return
+
+            try:
+                source, event = q.get(timeout=1.0)
+            except queue_module.Empty:
+                continue
+
+            # ── Error handling ──
+            if source == 'error':
+                error_msg = str(event)
+                error_source = error_msg.split(':')[0] if ':' in error_msg else ''
+                yield sse('error', error_msg)
+                if error_source.startswith('card_'):
+                    try:
+                        idx = int(error_source.split('_')[1])
+                        card_done_flags[idx] = True
+                        card_texts.setdefault(idx, '')
+                    except (IndexError, ValueError):
+                        pass
+                elif error_source in OPUS_SOURCES:
+                    done_flags[error_source] = True
+                continue
+
+            # ── Card streaming events: accumulate text per card ──
+            if source.startswith('card_') and not source.endswith('_done'):
+                idx = int(source.split('_')[1])
+                card_texts.setdefault(idx, '')
+                if hasattr(event, 'type') and event.type == 'content_block_delta':
+                    delta = event.delta
+                    if hasattr(delta, 'type') and delta.type == 'text_delta':
+                        card_texts[idx] += delta.text
+                continue
+
+            # ── Card done: buffer and emit in order ──
+            if source.startswith('card_') and source.endswith('_done'):
+                idx_str = source[5:-5]  # 'card_0_done' → '0'
+                idx = int(idx_str)
+                card_done_flags[idx] = True
+
+                # Emit all consecutive completed cards from buffer
+                while next_card_to_emit < total_cards and card_done_flags.get(next_card_to_emit):
+                    card_text = card_texts.get(next_card_to_emit, '').strip()
+                    if card_text:
+                        # Strip any leading/trailing --- the model might add
+                        card_text = card_text.strip('-').strip()
+                        yield sse('text', card_text + '\n\n---\n\n')
+                    next_card_to_emit += 1
+
+                # All cards done?
+                if next_card_to_emit >= total_cards:
+                    cards_all_done = True
+                    card_times = [timings.get(f'card_{i}', 0) for i in range(total_cards)]
+                    max_card_time = max(card_times) if card_times else 0
+                    # Report wall-clock time from analysis start (not cumulative)
+                    total_quick = round(time.time() - start_time, 1)
+
+                    yield sse('quick_done', json.dumps({
+                        'seconds': total_quick, 'model': FAST_MODEL}))
+
+                    # Count RED/YELLOW clauses (exclude green summary)
+                    clause_count = sum(
+                        1 for i in range(total_cards)
+                        if card_texts.get(i, '')
+                        and 'Fair Clauses Summary' not in card_texts.get(i, ''))
+
+                    yield sse('handoff', json.dumps({
+                        'tricks_found': 0,
+                        'summary': '',
+                        'clause_count': clause_count,
+                        'not_applicable': False,
+                    }))
+                continue
+
+            # ── Opus source done ──
+            if source.endswith('_done') and source[:-5] in OPUS_SOURCES:
+                opus_label = source[:-5]
+                done_flags[opus_label] = True
+                yield sse(f'{opus_label}_done', json.dumps({
+                    'seconds': timings.get(opus_label, 0)}))
+                continue
+
+            # ── Opus stream events ──
+            if source in OPUS_SOURCES:
+                if not hasattr(event, 'type'):
+                    continue
+                if event.type == 'content_block_delta':
+                    delta = event.delta
+                    if hasattr(delta, 'type') and delta.type == 'text_delta':
+                        thread_texts[source] += delta.text
+                        yield sse(f'{source}_text', delta.text)
+                    elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
+                        yield sse(f'{source}_thinking', delta.thinking)
+
+        # ── Final done event ──
+        yield sse('done', json.dumps({
+            'quick_seconds': timings.get('scan', 0),
+            'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
+            'model': MODEL}))
+
+    def _run_parallel_fallback(q, timings, cancel):
+        """Fallback event loop: single Haiku stream + single Opus verdict.
+        Used when Phase 1 identification scan fails."""
+
+        OPUS_SOURCES = {'overall'}
 
         start_time = time.time()
         state_quick = _make_stream_state()
@@ -2029,18 +2733,7 @@ def analyze(doc_id):
                 yield sse(f'{opus_label}_done', json.dumps({
                     'seconds': timings.get(opus_label, 0)}))
 
-                # Launch synthesis when all 4 experts are done
-                if not synthesis_started and all(done_flags.values()) and worker and user_msg:
-                    synthesis_started = True
-                    synth_user = build_synthesis_user_content(user_msg, thread_texts)
-                    t_synth = threading.Thread(
-                        target=worker,
-                        args=('synthesis', build_synthesis_prompt(),
-                              SYNTHESIS_MAX_TOKENS, MODEL, True),
-                        kwargs={'user_content': synth_user},
-                        daemon=True,
-                    )
-                    t_synth.start()
+                # Synthesis skipped — single verdict thread covers everything
 
                 continue
 
