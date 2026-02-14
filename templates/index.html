@@ -5134,6 +5134,8 @@
                         buildFilterChips();
                         buildPlaybookCard();
                     }
+                    // Always update nav — ensures Next button exits "Analyzing" state
+                    updateCardNavigation();
                     break;
 
                 // ── Opus section text/done events (4 expert sources + synthesis) ──
@@ -6168,6 +6170,7 @@
         _quickDoneSafetyTimer = setTimeout(function() {
             if (!quickDone && !flipCardsBuilt) {
                 console.log('[FlipSide] Safety net: quick_done not received after 60s, treating cards as built');
+                quickDone = true;
                 flipCardsBuilt = true;
                 updateCardNavigation();
             }
