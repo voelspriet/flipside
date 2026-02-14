@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js" integrity="sha256-k04+Nuni2gr7Gm51B1uw8JrwUpOoROhKdHfvQJEcNJo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js" integrity="sha256-SCmGefnjCPBf3NW3QhwV/PtUWEWjqZu68xAziQYQ6ws=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js" crossorigin="anonymous"></script>
     <style>
         /* ══════════════════════════════════════════════════════
            RESET & DESIGN SYSTEM
@@ -845,6 +846,18 @@
         .opus-dot.done {
             background: #4caf50; animation: none;
         }
+        #opusSection_synthesis {
+            border-top: 2px solid var(--accent);
+            margin-top: 0.5rem;
+            padding-top: 0.3rem;
+        }
+        #opusSection_synthesis .opus-dot.done {
+            background: var(--accent);
+        }
+        #opusSection_synthesis .opus-section-title {
+            color: var(--accent);
+            font-weight: 700;
+        }
         .opus-section-title {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.6rem; font-weight: 600;
@@ -1200,6 +1213,253 @@
             font-variant-numeric: tabular-nums;
         }
         .card-nav-counter strong { color: var(--text-primary); font-weight: 700; }
+
+        /* ── Context banner — emotional safety framing ── */
+        .context-banner {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            padding: 0.85rem 1.25rem; margin-bottom: 1rem;
+            background: var(--bg-warm); border: 1px solid var(--green-border);
+            border-left: 3px solid var(--green); border-radius: var(--radius);
+            animation: fadeUp 0.5s var(--ease-out-expo) both;
+        }
+        .context-banner-icon {
+            flex-shrink: 0; width: 20px; height: 20px; color: var(--green);
+            margin-top: 1px;
+        }
+        .context-banner-text {
+            font-size: 0.82rem; line-height: 1.55; color: var(--text-secondary);
+        }
+        .context-banner-text strong { color: var(--text-body); font-weight: 600; }
+
+        /* ── Sample document badge ── */
+        .sample-badge {
+            position: sticky; top: 72px; z-index: 50;
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0.85rem; margin-bottom: 0.75rem;
+            background: var(--bg-warm); border: 1px solid var(--border);
+            border-radius: 100px; width: fit-content;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            letter-spacing: 0.06em; text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .sample-badge-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--yellow); flex-shrink: 0;
+        }
+
+        /* ── Sticky card nav (top) ── */
+        .card-nav-sticky {
+            position: sticky; top: 58px; z-index: 40;
+            display: none; /* shown after first flip */
+            flex-wrap: wrap;
+            align-items: center; justify-content: space-between;
+            gap: 0.75rem; padding: 0.55rem 1rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .card-nav-sticky.visible { display: flex; }
+        .card-nav-sticky .card-nav-btn {
+            padding: 0.35rem 0.8rem; font-size: 0.76rem;
+        }
+        .card-nav-sticky .card-nav-counter {
+            font-size: 0.72rem;
+        }
+        .card-nav-pips {
+            display: flex; align-items: center; gap: 4px;
+        }
+        .card-nav-pip {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--border); transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card-nav-pip.active {
+            transform: scale(1.3);
+        }
+        .card-nav-pip.pip-green { background: var(--green); }
+        .card-nav-pip.pip-yellow { background: var(--yellow); }
+        .card-nav-pip.pip-red { background: var(--accent); }
+
+        /* ── Verdict progress strip ── */
+        .verdict-progress-strip {
+            display: none;
+            width: 100%; align-items: center; justify-content: center;
+            gap: 0.6rem; padding: 0.45rem 0.8rem 0.35rem;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            letter-spacing: 0.03em; color: var(--text-muted);
+        }
+        .verdict-progress-strip.visible { display: flex; }
+        .verdict-strip-dots {
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .verdict-strip-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            border: 1.5px solid var(--text-muted);
+            background: transparent; transition: all 0.4s var(--ease-out-expo);
+        }
+        .verdict-strip-dot.done {
+            background: var(--accent); border-color: var(--accent);
+        }
+        .verdict-strip-dot:not(.done) {
+            animation: verdictDotPulse 1.8s ease-in-out infinite;
+        }
+        .verdict-strip-dot:nth-child(2):not(.done) { animation-delay: 0.15s; }
+        .verdict-strip-dot:nth-child(3):not(.done) { animation-delay: 0.3s; }
+        .verdict-strip-dot:nth-child(4):not(.done) { animation-delay: 0.45s; }
+        @keyframes verdictDotPulse {
+            0%, 100% { opacity: 0.4; } 50% { opacity: 1; }
+        }
+        #verdictStripReady {
+            display: flex; align-items: center; gap: 0.6rem;
+            color: var(--accent); font-weight: 700;
+        }
+        #verdictStripReady .verdict-strip-cta {
+            padding: 0.3rem 0.7rem; border-radius: 100px;
+            background: var(--accent); color: #fff;
+            border: none; cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 700;
+            letter-spacing: 0.03em;
+            animation: verdictCtaPulse 2.5s ease-in-out infinite;
+        }
+        @keyframes verdictCtaPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(196,75,40,0.3); }
+            50% { box-shadow: 0 0 0 6px rgba(196,75,40,0); }
+        }
+
+        /* ── Risk summary strip ── */
+        .risk-summary-strip {
+            display: none; /* shown after all cards built */
+            align-items: center; justify-content: center;
+            gap: 1.2rem; padding: 0.4rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            letter-spacing: 0.04em; color: var(--text-muted);
+        }
+        .risk-summary-strip.visible { display: flex; }
+        .risk-summary-strip .risk-count { display: inline-flex; align-items: center; gap: 0.3rem; }
+        .risk-summary-strip .risk-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .risk-summary-strip .risk-dot-red { background: var(--red); }
+        .risk-summary-strip .risk-dot-yellow { background: var(--yellow); }
+        .risk-summary-strip .risk-dot-green { background: var(--green); }
+
+        /* ── Tricks detected (collapsible, in card nav area) ── */
+        .tricks-detected-bar {
+            display: none; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0.85rem; margin: 0 0 0.75rem;
+            background: var(--bg-warm); border: 1px solid var(--border);
+            border-radius: var(--radius); cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tricks-detected-bar.visible { display: flex; }
+        .tricks-detected-bar:hover { border-color: var(--accent); }
+        .tricks-detected-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-secondary); flex: 1;
+        }
+        .tricks-detected-chevron {
+            font-size: 0.72rem; color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+        .tricks-detected-bar.expanded .tricks-detected-chevron { transform: rotate(180deg); }
+        .tricks-detected-pills {
+            display: none; flex-wrap: wrap; gap: 0.3rem;
+            padding: 0 0 0.5rem;
+        }
+        .tricks-detected-bar.expanded + .tricks-detected-pills { display: flex; }
+
+        /* ── Inline verdict section (after cards) ── */
+        .inline-verdict {
+            display: none; /* shown when user clicks "Full Verdict" */
+            padding: 0; margin-top: 1rem;
+            animation: fadeUp 0.5s var(--ease-out-expo) both;
+        }
+        .inline-verdict.visible { display: block; }
+        .inline-verdict-divider {
+            display: flex; align-items: center; gap: 1rem;
+            margin: 1.5rem 0 1.5rem; color: var(--text-muted);
+        }
+        .inline-verdict-divider::before,
+        .inline-verdict-divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+        .inline-verdict-divider-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            white-space: nowrap;
+        }
+        .inline-verdict-section {
+            margin-bottom: 2rem; padding: 1.5rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); box-shadow: var(--shadow-sm);
+        }
+        .inline-verdict-section-header {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            margin-bottom: 1rem; padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .inline-verdict-section-icon {
+            width: 28px; height: 28px; flex-shrink: 0;
+            color: var(--accent); margin-top: 2px;
+        }
+        .inline-verdict-section-icon svg { width: 100%; height: 100%; }
+        .inline-verdict-section-title {
+            font-size: 1.05rem; font-weight: 700; color: var(--text-primary);
+            line-height: 1.3;
+        }
+        .inline-verdict-section-subtitle {
+            font-size: 0.78rem; color: var(--text-secondary);
+            margin-top: 0.15rem; line-height: 1.4;
+        }
+        .inline-verdict-section-body {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem; line-height: 1.65; color: var(--text-body);
+        }
+        .inline-verdict-section-body h2 { font-size: 1rem; margin: 1.25rem 0 0.5rem; font-weight: 700; }
+        .inline-verdict-section-body h3 { font-size: 0.92rem; margin: 1rem 0 0.4rem; font-weight: 600; }
+        .inline-verdict-section-body p { margin: 0.4rem 0; }
+        .inline-verdict-section-body ul, .inline-verdict-section-body ol { padding-left: 1.2rem; margin: 0.4rem 0; }
+        .inline-verdict-section-body li { margin: 0.2rem 0; }
+        .inline-verdict-section-body blockquote {
+            border-left: 3px solid var(--border); margin: 0.6rem 0;
+            padding: 0.4rem 0.8rem; color: var(--text-secondary); font-size: 0.85rem;
+            background: var(--bg-surface); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+        .inline-verdict-progress {
+            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+            padding: 1.5rem; margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        /* Verdict section loading placeholder */
+        .inline-verdict-section.loading {
+            opacity: 0.5; min-height: 80px;
+        }
+        .inline-verdict-section.loading .inline-verdict-section-body {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+
+        /* ── Sidebar document icon ── */
+        .sidebar-doc-icon {
+            display: flex; align-items: center; justify-content: center;
+            padding: 0.6rem 0 0.4rem;
+        }
+        .sidebar-doc-icon svg { color: var(--text-dim); }
+
+        /* ── Clause marker glow ── */
+        .doc-clause-marker {
+            box-shadow: 0 0 0 3px rgba(196, 75, 40, 0.08);
+        }
 
         /* ── Section label ──────────────────────────── */
         .section-label {
@@ -1562,13 +1822,12 @@
             color: var(--text-muted);
         }
 
-        /* Skeleton card — loading placeholder */
+        /* Skeleton — ghost card that looks like a real card being built */
         .skeleton-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 0;
-            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 0 1rem;
             transition: none;
         }
         .skeleton-card.fly-to-sidebar {
@@ -1579,38 +1838,208 @@
             0% { opacity: 1; transform: translateX(0) scale(1); }
             100% { opacity: 0; transform: translateX(-40%) scale(0.6); }
         }
-        .skeleton-pulse {
+
+        /* Ghost flip card — the hero element */
+        .ghost-flip-card {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+        .ghost-header {
+            padding: 0.85rem 1.5rem;
+            background: var(--green-bg);
+            border-bottom: 1px solid var(--green-border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .ghost-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--green-border) 25%, rgba(92,141,105,0.3) 50%, var(--green-border) 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 2s ease-in-out infinite;
+        }
+        .ghost-bar.w70 { width: 70%; }
+        .ghost-bar.w50 { width: 50%; }
+        .ghost-body {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .ghost-line {
+            height: 7px;
+            border-radius: 4px;
             background: linear-gradient(90deg, var(--bg-surface) 25%, var(--border-light) 50%, var(--bg-surface) 75%);
             background-size: 200% 100%;
-            animation: skeletonShimmer 1.8s ease-in-out infinite;
-            border-radius: 6px;
+            animation: skeletonShimmer 2s ease-in-out infinite;
+        }
+        .ghost-line.w90 { width: 90%; }
+        .ghost-line.w75 { width: 75%; }
+        .ghost-line.w60 { width: 60%; }
+        .ghost-line:nth-child(2) { animation-delay: 0.15s; }
+        .ghost-line:nth-child(3) { animation-delay: 0.3s; }
+        .ghost-line:nth-child(4) { animation-delay: 0.45s; }
+        .ghost-footer {
+            padding: 0.75rem 1.5rem;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: center;
+        }
+        .ghost-footer .ghost-bar {
+            width: 40%;
+            height: 7px;
+            background: linear-gradient(90deg, rgba(196,75,40,0.08) 25%, rgba(196,75,40,0.18) 50%, rgba(196,75,40,0.08) 75%);
+            background-size: 200% 100%;
         }
         @keyframes skeletonShimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-        .skeleton-reassurance {
-            height: 1.6rem; width: 75%; margin-bottom: 1rem;
+
+        /* Status below ghost card */
+        .skeleton-status {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
         }
-        .skeleton-section {
-            height: 0.7rem; width: 40%; margin-bottom: 1.5rem;
+
+        /* Two-act progress strip — "more is coming" */
+        .skeleton-acts {
+            display: flex;
+            align-items: stretch;
+            margin-top: 1rem;
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
         }
-        .skeleton-reader {
-            height: 0.85rem; width: 90%; margin-bottom: 0.6rem;
+        .skeleton-act {
+            flex: 1;
+            padding: 0.65rem 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
         }
-        .skeleton-reader-short {
-            height: 0.85rem; width: 60%; margin-bottom: 1.5rem;
+        .skeleton-act:first-child {
+            background: rgba(196, 75, 40, 0.05);
+            border-right: 1px solid var(--border);
         }
+        .skeleton-act-label {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.5rem;
+            color: var(--text-dim);
+        }
+        .skeleton-act:first-child .skeleton-act-label { color: var(--accent); }
+        .skeleton-act-title {
+            font-weight: 600;
+            color: var(--text-heading);
+            font-size: 0.65rem;
+        }
+        .skeleton-act-desc {
+            color: var(--text-muted);
+            font-size: 0.55rem;
+            line-height: 1.4;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .skeleton-act-status {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 0.15rem;
+            font-size: 0.52rem;
+            font-weight: 600;
+        }
+        .skeleton-act:first-child .skeleton-act-status { color: var(--accent); }
+        .skeleton-act:last-child .skeleton-act-status { color: var(--text-dim); }
+
+        /* Verdict teaser strip — live Opus findings as they arrive */
+        .verdict-teaser {
+            display: none;
+            width: 100%;
+            margin-top: 0.75rem;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+        .verdict-teaser.visible { display: block; }
+        .verdict-teaser-header {
+            padding: 0.55rem 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .verdict-teaser-body {
+            padding: 0.5rem 0.85rem;
+        }
+        .verdict-teaser-item {
+            padding: 0.35rem 0;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: var(--text-body);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        .verdict-teaser-item:last-child { border-bottom: none; }
+        .verdict-teaser-item .teaser-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .verdict-teaser-item .teaser-text {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        .verdict-teaser-item.locked .teaser-text {
+            color: var(--text-dim);
+        }
+
         .skeleton-waiting {
             display: flex; align-items: center; justify-content: center; gap: 0.6rem;
             padding: 0.9rem 2rem;
-            border-top: 1px solid var(--border-light);
             font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
             font-weight: 500; color: var(--text-muted);
             letter-spacing: 0.02em;
         }
-        .skeleton-pulses {
-            padding: 2rem 2rem 0;
+        .ocr-banner {
+            margin: 0.5rem 1.5rem;
+            padding: 0.5rem 1rem;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            color: #664d03;
+            text-align: center;
+            font-weight: 500;
         }
 
 
@@ -2302,6 +2731,16 @@
             .layout-flipped .analysis-sidebar {
                 opacity: 1;
             }
+            /* New elements: mobile adjustments */
+            .card-nav-sticky {
+                position: sticky; top: 50px;
+                border-radius: var(--radius-sm);
+                padding: 0.4rem 0.6rem;
+            }
+            .sample-badge { position: relative; top: auto; }
+            .inline-verdict-section { padding: 1rem; }
+            .inline-verdict-section-header { gap: 0.5rem; }
+            .inline-verdict-section-icon { width: 24px; height: 24px; }
 
             /* Phase 2: Bottom sheet for verdict */
             .verdict-col {
@@ -2548,9 +2987,11 @@
         @media (max-width: 600px) {
             /* Sample docs: 2 columns on small screens */
             .demo-grid { grid-template-columns: repeat(2, 1fr); }
-            /* Skeleton card */
-            .skeleton-pulses { padding: 1.5rem 1.25rem 0; }
-            .skeleton-waiting { font-size: 0.68rem; }
+            /* Skeleton loading */
+            .skeleton-card { padding: 1rem 0.5rem 0.75rem; }
+            .skeleton-acts { flex-direction: column; }
+            .skeleton-act:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+            .verdict-teaser-item { flex-direction: column; gap: 0.2rem; }
 
             /* Upload screen */
             .brand h1 { font-size: 2.4rem; }
@@ -2741,7 +3182,7 @@
 <!-- ═══════════════════════════════════════════════════════
      SCREEN 1: UPLOAD
      ═══════════════════════════════════════════════════════ -->
-<section id="upload-screen">
+<section id="upload-screen" aria-label="Document upload">
     <nav class="upload-nav" id="uploadNav">
         <div class="upload-nav-brand">FlipSide</div>
         <div class="upload-nav-label">Get started</div>
@@ -2762,7 +3203,6 @@
             <h1>FlipSide</h1>
             <div class="tagline">The dark side of small print.</div>
             <div class="tagline" style="font-style: normal; font-weight: 400; margin-top: 0.3rem; font-size: 0.88rem; color: var(--text-muted);">What did you agree to?</div>
-            <div style="margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.02em;">We show you what a trusting reader sees &mdash; then flip the card to reveal what an expert catches.</div>
         </div>
 
         <div class="upload-card fade-up fade-up-d1">
@@ -2783,6 +3223,9 @@
                     </div>
                 </div>
                 <textarea id="pasteArea" class="paste-area hidden" placeholder="Paste contract text here..."></textarea>
+                <div id="urlInputArea" class="hidden" style="margin-top:0.5rem">
+                    <input type="url" id="urlInput" placeholder="https://example.com/terms-of-service" style="width:100%;padding:0.6rem 0.8rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;background:var(--bg-surface);color:var(--text-body)">
+                </div>
             </div>
 
             <!-- Compare mode (two documents) -->
@@ -2827,11 +3270,13 @@
                 <button class="depth-btn" data-depth="deep">Deep</button>
             </div>
 
-            <button class="analyze-btn hidden" id="analyzeBtn" disabled>Show me the dark side of small print</button>
+            <button class="analyze-btn hidden" id="analyzeBtn" disabled aria-label="Start document analysis">Show me the dark side of small print</button>
             <div id="uploadError" class="upload-error hidden"></div>
 
             <div class="upload-links">
                 <a id="pasteToggle">Paste text instead</a>
+                <span class="upload-link-sep">·</span>
+                <a href="#" id="urlToggle" class="upload-link">Paste URL instead</a>
                 <a id="compareToggle">Compare two documents</a>
             </div>
 
@@ -3025,30 +3470,30 @@
 <!-- ═══════════════════════════════════════════════════════
      SCREEN 2/3: ANALYSIS
      ═══════════════════════════════════════════════════════ -->
-<section id="analysis-screen" class="hidden">
+<section id="analysis-screen" class="hidden" aria-label="Document analysis">
     <header class="analysis-header">
         <div class="header-left">
             <span class="header-brand" id="headerBrand">FlipSide</span>
-            <button class="header-btn hidden" id="copyAllBtn">Copy all</button>
-            <button class="header-btn hidden" id="emailLawyerBtn">Email to Lawyer</button>
-            <button class="header-btn hidden" id="exportBtn">Save Report</button>
-            <button class="header-btn hidden" id="exportLangBtn" title="Download report in document language"></button>
-            <button class="header-btn" id="darkModeBtn" title="Toggle dark mode">&#9790;</button>
-            <button class="header-btn home-btn" id="backBtn" title="Back to home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
+            <button class="header-btn hidden" id="copyAllBtn" aria-label="Copy all analysis to clipboard">Copy all</button>
+            <button class="header-btn hidden" id="emailLawyerBtn" aria-label="Email analysis to your lawyer">Email to Lawyer</button>
+            <button class="header-btn hidden" id="exportBtn" aria-label="Download report as PDF">Download PDF</button>
+            <button class="header-btn hidden" id="exportLangBtn" title="Download report in document language" aria-label="Download report in document language"></button>
+            <button class="header-btn" id="darkModeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">&#9790;</button>
+            <button class="header-btn home-btn" id="backBtn" title="Back to home" aria-label="Return to upload screen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
         </div>
         <div class="header-right">
             <span class="capability-ticker hidden" id="capabilityTicker"></span>
-            <div class="status-pill" id="statusPill">
+            <div class="status-pill" id="statusPill" role="status" aria-live="polite">
                 <span class="status-dot"></span>
                 <span id="statusText">Starting analysis...</span>
                 <span class="elapsed-time" id="elapsedTime"></span>
             </div>
             <span class="model-badge">Opus 4.6 + Haiku 4.5</span>
-            <button class="header-overflow-btn" id="headerOverflowBtn" title="More actions">&#8943;</button>
+            <button class="header-overflow-btn" id="headerOverflowBtn" title="More actions" aria-label="More actions" aria-expanded="false">&#8943;</button>
             <div class="header-overflow-menu hidden" id="headerOverflowMenu">
                 <button data-action="copy" class="hidden">Copy all</button>
                 <button data-action="email" class="hidden">Email to Lawyer</button>
-                <button data-action="export" class="hidden">Save Report</button>
+                <button data-action="export" class="hidden">Download PDF</button>
                 <button data-action="exportLang" class="hidden"></button>
             </div>
         </div>
@@ -3064,6 +3509,7 @@
             <div class="metadata-line hidden" id="metadataLine"></div>
         </div>
         <div class="editorial-loading hidden" id="editorialLoading">
+            <div class="sidebar-doc-icon"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="20" height="26" rx="2"/><path d="M10 9h12M10 13h12M10 17h8"/><circle cx="21" cy="22" r="5" stroke-width="1.5"/><path d="M24.5 25.5l2.5 2.5"/></svg></div>
             <div class="editorial-loading-label">What the small print says</div>
             <div class="editorial-loading-text" id="editorialLoadingText"></div>
             <div class="editorial-loading-indicator">
@@ -3078,34 +3524,118 @@
 
         <!-- Card viewport: one card at a time -->
         <div class="card-viewport hidden" id="cardViewport">
-            <!-- Skeleton card: mimics a real flip card while waiting for first clause -->
-            <div class="skeleton-card hidden" id="skeletonCard">
-                <div class="risk-header risk-header-green" style="opacity:0.5">
-                    <span class="risk-header-label" style="color:var(--green-text)">You think that</span>
-                    <div class="skeleton-pulse" style="height:1.2rem;width:70%;border-radius:6px"></div>
-                </div>
-                <div class="skeleton-pulses">
-                    <div class="skeleton-pulse skeleton-section"></div>
-                    <div class="skeleton-pulse skeleton-reader"></div>
-                    <div class="skeleton-pulse skeleton-reader-short"></div>
-                    <div class="skeleton-pulse skeleton-reader" style="width:70%"></div>
-                </div>
-                <div class="skeleton-waiting" id="skeletonMessage">
-                    <span class="pulsing-dots"><span></span><span></span><span></span></span>
-                    Waiting for first clause to be flipped
+            <!-- Context banner — emotional safety framing -->
+            <div class="context-banner hidden" id="contextBanner">
+                <svg class="context-banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v4"/><circle cx="11" cy="15" r="0.5" fill="currentColor"/></svg>
+                <div class="context-banner-text" id="contextBannerText">
+                    <strong>FlipSide has analyzed this document</strong> and found clauses worth a closer look. This is an educational review — no action is required.
                 </div>
             </div>
-            <div id="flipCardContainer"></div>
-            <nav class="card-navigation hidden" id="cardNavigation">
-                <button class="card-nav-btn card-nav-prev" disabled>
+            <!-- Sample document badge -->
+            <div class="sample-badge hidden" id="sampleBadge">
+                <span class="sample-badge-dot"></span>
+                Sample Document — This is a demo analysis
+            </div>
+            <!-- Sticky card navigation (top) -->
+            <nav class="card-nav-sticky" id="cardNavSticky" aria-label="Clause card navigation">
+                <button class="card-nav-btn card-nav-prev" disabled aria-label="Previous clause">
+                    <span>&larr;</span> <span>Prev</span>
+                </button>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                    <span class="card-nav-counter" id="stickyCardCounter">Clause <strong>1</strong> of <strong>1</strong></span>
+                    <div class="card-nav-pips" id="cardNavPips"></div>
+                </div>
+                <button class="card-nav-btn card-nav-next" aria-label="Next clause">
+                    <span class="card-nav-next-label">Next &rarr;</span>
+                </button>
+                <div class="verdict-progress-strip" id="verdictProgressStrip">
+                    <div id="verdictStripBuilding">
+                        <span class="verdict-strip-dots" id="verdictStripDots">
+                            <span class="verdict-strip-dot" data-expert="interactions"></span>
+                            <span class="verdict-strip-dot" data-expert="asymmetry"></span>
+                            <span class="verdict-strip-dot" data-expert="archaeology"></span>
+                            <span class="verdict-strip-dot" data-expert="overall"></span>
+                        </span>
+                        <span id="verdictStripText">Expert verdict building &mdash; 0 of 4 done</span>
+                    </div>
+                    <div id="verdictStripReady" class="hidden">
+                        <span>Your Expert Verdict is Ready</span>
+                        <button class="verdict-strip-cta" id="verdictStripCta">Read it &rarr;</button>
+                    </div>
+                </div>
+            </nav>
+            <!-- Risk summary strip -->
+            <div class="risk-summary-strip" id="riskSummaryStrip"></div>
+            <!-- Tricks detected bar (collapsible) -->
+            <div class="tricks-detected-bar" id="tricksDetectedBar">
+                <span class="tricks-detected-label" id="tricksDetectedLabel">0 tricks detected</span>
+                <span class="tricks-detected-chevron">&#9660;</span>
+            </div>
+            <div class="tricks-detected-pills" id="tricksDetectedPills"></div>
+            <!-- Skeleton: ghost card + two-act strip while waiting for first clause -->
+            <div class="skeleton-card hidden" id="skeletonCard">
+                <!-- Ghost flip card — looks like a real card being assembled -->
+                <div class="ghost-flip-card">
+                    <div class="ghost-header">
+                        <div class="ghost-bar w70"></div>
+                        <div class="ghost-bar w50"></div>
+                    </div>
+                    <div class="ghost-body">
+                        <div class="ghost-line w90"></div>
+                        <div class="ghost-line w75"></div>
+                        <div class="ghost-line w90"></div>
+                        <div class="ghost-line w60"></div>
+                    </div>
+                    <div class="ghost-footer">
+                        <div class="ghost-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="skeleton-status">
+                    <span class="pulsing-dots"><span></span><span></span><span></span></span>
+                    <span id="skeletonStatusText">Building your first card</span>
+                </div>
+
+                <!-- Two-act strip: tells users what's coming -->
+                <div class="skeleton-acts" id="skeletonActs">
+                    <div class="skeleton-act">
+                        <div class="skeleton-act-label">Now</div>
+                        <div class="skeleton-act-title">Flip Cards</div>
+                        <div class="skeleton-act-desc">Individual clauses — flip to see what's hidden</div>
+                        <div class="skeleton-act-status"><span class="pulsing-dots" style="transform:scale(0.7)"><span></span><span></span><span></span></span> Building...</div>
+                    </div>
+                    <div class="skeleton-act">
+                        <div class="skeleton-act-label">~2 min</div>
+                        <div class="skeleton-act-title">Expert Verdict</div>
+                        <div class="skeleton-act-desc">How clauses work together, who has the power, what was custom-written</div>
+                        <div class="skeleton-act-status"><span class="pulsing-dots" style="transform:scale(0.7)"><span></span><span></span><span></span></span> Expert working...</div>
+                    </div>
+                </div>
+
+                <!-- Verdict teaser — appears as Opus finds things -->
+                <div class="verdict-teaser" id="verdictTeaser">
+                    <div class="verdict-teaser-header">
+                        <span class="pulsing-dots" style="transform:scale(0.7)"><span></span><span></span><span></span></span>
+                        Live from your expert
+                    </div>
+                    <div class="verdict-teaser-body" id="verdictTeaserBody"></div>
+                </div>
+
+                <div class="skeleton-waiting hidden" id="skeletonMessage"></div>
+                <div class="ocr-banner hidden" id="ocrBanner">Scanned document detected &mdash; OCR extraction used, may take a bit longer</div>
+            </div>
+            <div id="flipCardContainer" aria-live="polite" aria-relevant="additions"></div>
+            <nav class="card-navigation hidden" id="cardNavigation" aria-label="Clause card navigation">
+                <button class="card-nav-btn card-nav-prev" disabled aria-label="Previous clause">
                     <span>&larr;</span> <span>Previous</span>
                 </button>
                 <span class="card-nav-counter">Clause <strong>1</strong> of <strong>1</strong></span>
-                <button class="card-nav-btn card-nav-next">
+                <button class="card-nav-btn card-nav-next" aria-label="Next clause">
                     <span class="card-nav-next-label">Next clause &rarr;</span>
                 </button>
             </nav>
-            <div class="card-nav-dots" id="cardNavDots"></div>
+            <div class="card-nav-dots" id="cardNavDots" role="navigation" aria-label="Clause indicators"></div>
             <div class="chapter-title" id="chapterTitle">
                 <span class="chapter-title-counter" id="chapterCounter"></span>
                 <span class="chapter-title-text" id="chapterText"></span>
@@ -3114,16 +3644,27 @@
                 <span class="pulsing-dots"><span></span><span></span><span></span></span>
                 <span id="deepStatusText">Opus 4.6 is building your Full Verdict...</span>
             </div>
+            <!-- Inline verdict section (after cards) -->
+            <div class="inline-verdict" id="inlineVerdict">
+                <div class="inline-verdict-divider">
+                    <span class="inline-verdict-divider-text">Full Expert Verdict</span>
+                </div>
+                <div id="inlineVerdictContent"></div>
+                <div class="inline-verdict-progress hidden" id="inlineVerdictProgress">
+                    <span class="pulsing-dots"><span></span><span></span><span></span></span>
+                    <span id="inlineVerdictProgressText">Expert analysis in progress...</span>
+                </div>
+            </div>
         </div>
 
         <!-- Results: summary + deep analysis (compare mode uses resultsContent) -->
         <div class="results-area hidden" id="resultsArea">
             <div id="resultsContent"></div>
             <div id="deepAnalysisSection" class="hidden">
-                <button class="back-to-cards-btn" id="backToCardsBtn">&larr; Back to clauses</button>
+                <button class="back-to-cards-btn" id="backToCardsBtn" aria-label="Return to clause cards">&larr; Back to clauses</button>
                 <div id="summaryContainer"></div>
                 <div id="filterChips" class="filter-chips hidden"></div>
-                <div id="deepAnalysisContent"></div>
+                <div id="deepAnalysisContent" aria-live="polite"></div>
                 <div class="counter-draft-section hidden" id="counterDraftSection">
                     <hr class="editorial-divider">
                     <div class="section-label" style="margin-bottom:1rem">Go deeper</div>
@@ -3171,30 +3712,38 @@
             <div class="opus-section locked" id="opusSection_interactions" data-source="interactions">
                 <div class="opus-section-header" data-toggle="interactions">
                     <span class="opus-dot pulsing"></span>
-                    <span class="opus-section-title">Cross-Clause Interactions</span>
+                    <span class="opus-section-title">Hidden Combinations</span>
                 </div>
                 <div class="opus-section-body collapsed" id="opusBody_interactions"></div>
             </div>
             <div class="opus-section locked" id="opusSection_asymmetry" data-source="asymmetry">
                 <div class="opus-section-header" data-toggle="asymmetry">
                     <span class="opus-dot pulsing"></span>
-                    <span class="opus-section-title">Power Asymmetry &amp; Fair Standard</span>
+                    <span class="opus-section-title">Power Balance</span>
                 </div>
                 <div class="opus-section-body collapsed" id="opusBody_asymmetry"></div>
             </div>
             <div class="opus-section locked" id="opusSection_archaeology" data-source="archaeology">
                 <div class="opus-section-header" data-toggle="archaeology">
                     <span class="opus-dot pulsing"></span>
-                    <span class="opus-section-title">Document Archaeology &amp; Drafter</span>
+                    <span class="opus-section-title">Custom vs. Boilerplate</span>
                 </div>
                 <div class="opus-section-body collapsed" id="opusBody_archaeology"></div>
             </div>
             <div class="opus-section locked" id="opusSection_overall" data-source="overall">
                 <div class="opus-section-header" data-toggle="overall">
                     <span class="opus-dot pulsing"></span>
-                    <span class="opus-section-title">Overall Assessment</span>
+                    <span class="opus-section-title">The Big Picture</span>
                 </div>
                 <div class="opus-section-body collapsed" id="opusBody_overall"></div>
+            </div>
+            <div class="opus-section locked" id="opusSection_synthesis" data-source="synthesis"
+                 style="display:none;">
+                <div class="opus-section-header" data-toggle="synthesis">
+                    <span class="opus-dot pulsing"></span>
+                    <span class="opus-section-title">Expert Panel Synthesis</span>
+                </div>
+                <div class="opus-section-body collapsed" id="opusBody_synthesis"></div>
             </div>
             <!-- Focused reading panel (replaces section list when user clicks a completed section) -->
             <div class="verdict-focused-panel" id="verdictFocusedPanel">
@@ -3258,7 +3807,9 @@
           svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18V11"/><path d="M10 18V11"/><path d="M14 18V11"/><path d="M18 18V11"/><path d="M4 7h16l-8-5z"/></svg>' },
         { keys: ['gym', 'fitness', 'membership', 'health club', 'workout'], label: 'Gym',
           svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>' },
-        { keys: ['medical', 'patient', 'consent', 'hipaa', 'treatment', 'procedure', 'healthcare', 'hospital'], label: 'Medical',
+        { keys: ['court', 'plea', 'criminal', 'civil', 'judicial', 'lawsuit', 'litigation', 'arbitration', 'settlement', 'judgment', 'indictment', 'prosecution', 'defendant'], label: 'Court',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 7h16z"/><rect x="4" y="7" width="16" height="2"/><path d="M6 9v9"/><path d="M10 9v9"/><path d="M14 9v9"/><path d="M18 9v9"/><rect x="3" y="18" width="18" height="2" rx="0.5"/></svg>' },
+        { keys: ['medical', 'patient', 'hipaa', 'treatment', 'procedure', 'healthcare', 'hospital', 'medical consent'], label: 'Medical',
           svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>' },
         { keys: ['hoa', 'homeowner association', 'bylaws', 'covenants', 'cc&r', 'community rules'], label: 'HOA',
           svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' },
@@ -3355,6 +3906,7 @@
     var activeTrickFilters = new Set(); // trick type names
     var documentFullText = '';
     var documentThumbnail = null;
+    var documentOcrUsed = false;
     var currentDocId = '';
     var userHasScrolled = false;
     var lastAutoScrollY = 0;
@@ -3366,6 +3918,9 @@
     var editorialStatusInterval = null;
     var editorialStatusIdx = 0;
     var _detectedTricks = {};  // Live trick accumulator: { trickName: count }
+    var isSampleAnalysis = false;  // Whether current analysis is from a sample document
+    var _quickDoneSafetyTimer = null;  // Safety net: treat cards as built if quick_done is delayed
+    var _verdictStripRead = false;  // Whether user has clicked through to verdict (hides strip)
 
     // ── Elements ──────────────────────────────────────────────
     var $ = function(id) { return document.getElementById(id); };
@@ -3502,12 +4057,13 @@
             _verdictCountdownInterval = null;
         }
     }
-    // 4 Opus section accumulators
+    // 4 Opus expert sections + 1 synthesis section
     var opusSections = {
         interactions: { text: '', done: false },
         asymmetry: { text: '', done: false },
         archaeology: { text: '', done: false },
-        overall: { text: '', done: false }
+        overall: { text: '', done: false },
+        synthesis: { text: '', done: false }
     };
 
 
@@ -3550,10 +4106,10 @@
                     document.querySelectorAll('.flip-hint-tooltip').forEach(function(el) {
                         el.remove();
                     });
-                    // Show verdict column now that user has discovered the flip
-                    if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable) {
-                        showVerdictCol();
-                    }
+                    // Verdict column stays hidden — inline verdict below cards (Problem 3)
+                    // Data continues streaming into opusSections for inline rendering
+                    requestNotificationPermission();
+                    updateVerdictStrip();
                 }
             }
             return;
@@ -3606,8 +4162,24 @@
             var idx = parseInt(highlight.getAttribute('data-card-index'));
             if (!isNaN(idx) && flipCardContainer.querySelectorAll('.flip-card').length > idx) {
                 showCardAtIndex(idx);
+                // Auto-flip to back if user has already discovered the flip mechanic (Problem 4)
+                if (hasFlippedOnce) {
+                    var cards = flipCardContainer.querySelectorAll('.flip-card');
+                    if (cards[idx]) {
+                        setTimeout(function() {
+                            cards[idx].classList.add('flipped');
+                            var layout = cards[idx].closest('.analysis-layout');
+                            if (layout) layout.classList.add('layout-flipped');
+                        }, 400);
+                    }
+                }
             }
         }
+    });
+
+    // ── Tricks detected bar: toggle collapse ──
+    $('tricksDetectedBar').addEventListener('click', function() {
+        this.classList.toggle('expanded');
     });
 
     // ── Keyboard navigation ──
@@ -3651,10 +4223,8 @@
                         if (!hasFlippedOnce) {
                             hasFlippedOnce = true;
                             updateCardNavigation();
-                            // Show verdict column on keyboard flip too
-                            if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable) {
-                                showVerdictCol();
-                            }
+                            // Verdict column stays hidden — inline verdict below cards (Problem 3)
+                            updateVerdictStrip();
                         }
                     } else {
                         if (kbLayout) kbLayout.classList.remove('layout-flipped');
@@ -3793,9 +4363,11 @@
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             menu.classList.toggle('hidden');
+            btn.setAttribute('aria-expanded', !menu.classList.contains('hidden'));
         });
         document.addEventListener('click', function() {
             menu.classList.add('hidden');
+            btn.setAttribute('aria-expanded', 'false');
         });
         // Wire overflow menu buttons to their real counterparts
         menu.querySelectorAll('button').forEach(function(item) {
@@ -3856,7 +4428,8 @@
         } else {
             var hasFile = selectedFile !== null;
             var hasText = pasteArea.value.trim().length > 0;
-            ready = hasFile || hasText;
+            var hasUrl = urlInput && urlInput.value.trim().length > 0;
+            ready = hasFile || hasText || hasUrl;
         }
         analyzeBtn.disabled = !ready;
         // Show/hide depth selector + analyze button; toggle demo grid
@@ -3926,6 +4499,33 @@
         updateAnalyzeBtn();
     });
     pasteArea.addEventListener('input', updateAnalyzeBtn);
+
+    // ── URL input toggle ─────────────────────────────────────────────
+    var urlToggle = $('urlToggle');
+    var urlInput = $('urlInput');
+    var urlInputArea = $('urlInputArea');
+    if (urlToggle) {
+        urlToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (isCompareMode) return;
+            var isHidden = urlInputArea.classList.contains('hidden');
+            if (isHidden) {
+                urlInputArea.classList.remove('hidden');
+                urlInput.focus();
+                urlToggle.textContent = 'Upload file instead';
+                pasteArea.classList.add('hidden');
+                pasteArea.value = '';
+                pasteToggle.textContent = 'Paste text instead';
+                if (selectedFile) { selectedFile = null; fileInput.value = ''; fileInfo.classList.add('hidden'); uploadPrompt.classList.remove('hidden'); }
+            } else {
+                urlInputArea.classList.add('hidden');
+                urlInput.value = '';
+                urlToggle.textContent = 'Paste URL instead';
+            }
+            updateAnalyzeBtn();
+        });
+        urlInput.addEventListener('input', updateAnalyzeBtn);
+    }
 
     // ── Compare mode toggle ───────────────────────────────────
     compareToggle.addEventListener('click', function(e) {
@@ -3999,6 +4599,7 @@
     function startSampleAnalysis(sampleType) {
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = 'Loading...';
+        isSampleAnalysis = true;
 
         fetch(BASE_URL + '/sample', {
             method: 'POST',
@@ -4010,6 +4611,7 @@
             if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the dark side of small print'; return; }
             documentFullText = (data.full_text || '').replace(/\n*— Page \d+ —\n*/g, '\n\n');
             documentThumbnail = data.thumbnail || null;
+            documentOcrUsed = false;
             switchToAnalysis(data.doc_id, data.filename);
         })
         .catch(function(err) {
@@ -4029,11 +4631,35 @@
     });
 
     function startAnalysis() {
+        isSampleAnalysis = false;
         var formData = new FormData();
         if (selectedFile) {
             formData.append('file', selectedFile);
         } else if (pasteArea.value.trim()) {
             formData.append('text', pasteArea.value.trim());
+        } else if (urlInput && urlInput.value.trim()) {
+            // URL mode — fetch from server
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Fetching URL...';
+            fetch(BASE_URL + '/fetch-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: urlInput.value.trim(), depth: analysisDepth })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the dark side of small print'; return; }
+                documentFullText = (data.full_text || '').replace(/\n*— Page \d+ —\n*/g, '\n\n');
+                documentThumbnail = null;
+                documentOcrUsed = false;
+                switchToAnalysis(data.doc_id, data.filename);
+            })
+            .catch(function(err) {
+                showError('URL fetch failed: ' + err.message);
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Show me the dark side of small print';
+            });
+            return; // Don't fall through to the file upload path
         } else {
             showError('Please select a file or paste text.');
             return;
@@ -4049,6 +4675,7 @@
                 if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Show me the dark side of small print'; return; }
                 documentFullText = (data.full_text || '').replace(/\n*— Page \d+ —\n*/g, '\n\n');
                 documentThumbnail = data.thumbnail || null;
+                documentOcrUsed = !!data.ocr_used;
                 switchToAnalysis(data.doc_id, data.filename);
             })
             .catch(function(err) {
@@ -4095,6 +4722,7 @@
         isDoneRendering = false;
         deepTextComplete = false;
         _verdictScrolled = false;
+        _verdictStripRead = false;
         animatedCardTitles = new Set();
         activeFilters = new Set();
         flipCardsBuilt = false;
@@ -4120,6 +4748,15 @@
         // Verdict column: hidden until verdict is ready — cards are the focus
         resetVerdictCol();
 
+        // Reset verdict progress strip
+        var vStrip = $('verdictProgressStrip');
+        if (vStrip) {
+            vStrip.classList.remove('visible');
+            vStrip.querySelectorAll('.verdict-strip-dot').forEach(function(d) { d.classList.remove('done'); });
+            $('verdictStripBuilding').classList.remove('hidden');
+            $('verdictStripReady').classList.add('hidden');
+            $('verdictStripText').textContent = 'Expert verdict building \u2014 0 of 4 done';
+        }
 
         // Reset UI
         resultsContent.innerHTML = '';
@@ -4165,10 +4802,44 @@
         $('exportBtn').classList.add('hidden');
         $('emailLawyerBtn').classList.add('hidden');
         backBtn.classList.remove('hidden');
+        // Reset new UI elements
+        $('contextBanner').classList.add('hidden');
+        $('sampleBadge').classList.add('hidden');
+        $('cardNavSticky').classList.remove('visible');
+        $('riskSummaryStrip').classList.remove('visible');
+        $('riskSummaryStrip').innerHTML = '';
+        $('tricksDetectedBar').classList.remove('visible', 'expanded');
+        $('tricksDetectedPills').innerHTML = '';
+        $('cardNavPips').innerHTML = '';
+        $('inlineVerdict').classList.remove('visible');
+        $('inlineVerdictContent').innerHTML = '';
+        $('inlineVerdictProgress').classList.add('hidden');
+        _detectedTricks = {};
+        _teaserExtracted = {};
+        if (_quickDoneSafetyTimer) { clearTimeout(_quickDoneSafetyTimer); _quickDoneSafetyTimer = null; }
+        document.title = _originalTitle;
 
-        // Show flip prompt + skeleton card in center while waiting for first clause
+        // Show ghost card skeleton while waiting for first clause
         var skeleton = $('skeletonCard');
         skeleton.classList.remove('hidden');
+        // Restore elements (may have been hidden by "no cards" fallback)
+        var ghostCard = skeleton.querySelector('.ghost-flip-card');
+        if (ghostCard) ghostCard.style.display = '';
+        var actsEl = skeleton.querySelector('.skeleton-acts');
+        if (actsEl) actsEl.style.display = '';
+        var statusElSk = skeleton.querySelector('.skeleton-status');
+        if (statusElSk) statusElSk.style.display = '';
+        var skMsg = $('skeletonMessage');
+        if (skMsg) { skMsg.classList.add('hidden'); skMsg.innerHTML = ''; }
+        // Reset verdict teaser
+        var teaser = $('verdictTeaser');
+        if (teaser) { teaser.classList.remove('visible'); }
+        var teaserBody = $('verdictTeaserBody');
+        if (teaserBody) teaserBody.innerHTML = '';
+        var skStatusTxt = $('skeletonStatusText');
+        if (skStatusTxt) skStatusTxt.textContent = 'Building your first card';
+        var ocrBanner = $('ocrBanner');
+        if (ocrBanner) ocrBanner.classList.toggle('hidden', !documentOcrUsed);
         $('cardViewport').classList.remove('hidden');
         resultsArea.classList.remove('hidden');
 
@@ -4307,6 +4978,7 @@
 
                 case 'quick_done':
                     quickDone = true;
+                    if (_quickDoneSafetyTimer) { clearTimeout(_quickDoneSafetyTimer); _quickDoneSafetyTimer = null; }
                     var qdData = {};
                     try { qdData = JSON.parse(msg.content); } catch(e) {}
                     var qdSec = qdData.seconds ? qdData.seconds.toFixed(1) + 's' : '';
@@ -4321,7 +4993,7 @@
                     }
                     break;
 
-                // ── Opus section text/done events (4 sources) ──
+                // ── Opus section text/done events (4 expert sources + synthesis) ──
                 case 'interactions_text':
                 case 'asymmetry_text':
                 case 'archaeology_text':
@@ -4329,13 +5001,22 @@
                     var opusSrc = msg.type.replace('_text', '');
                     opusSections[opusSrc].text += msg.content;
                     renderOpusSection(opusSrc);
+                    updateVerdictTeaser(opusSrc);
+                    break;
+
+                case 'synthesis_text':
+                    opusSections.synthesis.text += msg.content;
+                    // Show the section element on first text arrival
+                    var synthEl = $('opusSection_synthesis');
+                    if (synthEl && synthEl.style.display === 'none') synthEl.style.display = '';
+                    renderOpusSection('synthesis');
                     break;
 
                 case 'interactions_thinking':
                 case 'asymmetry_thinking':
                 case 'archaeology_thinking':
                 case 'overall_thinking':
-                    // Discard Opus thinking — we only show text output
+                case 'synthesis_thinking':
                     thinkingCharCount += msg.content.length;
                     break;
 
@@ -4346,9 +5027,17 @@
                     var doneSrc = msg.type.replace('_done', '');
                     opusSections[doneSrc].done = true;
                     markOpusSectionDone(doneSrc);
-                    // Check if all 4 Opus sections are done
-                    var allOpusDone = Object.keys(opusSections).every(function(k) { return opusSections[k].done; });
-                    if (allOpusDone) {
+                    // Check if all 4 expert sections are done (synthesis is non-blocking)
+                    var allExpertsDone = ['interactions','asymmetry','archaeology','overall']
+                        .every(function(k) { return opusSections[k].done; });
+                    if (allExpertsDone && !opusSections.synthesis.done) {
+                        // Experts done, synthesis in progress — allow reading
+                        stopVerdictCountdown();
+                        verdictTitle.textContent = 'Experts done \u2014 synthesizing\u2026';
+                        updateVerdictButton();
+                        if (flipCardsBuilt) updateCardNavigation();
+                    }
+                    if (allExpertsDone && opusSections.synthesis.done) {
                         deepTextComplete = true;
                         stopVerdictCountdown();
                         var verdictStatusEl = $('verdictStatus');
@@ -4356,6 +5045,25 @@
                         verdictTitle.textContent = 'Your verdict is ready';
                         updateVerdictButton();
                         if (flipCardsBuilt) updateCardNavigation();
+                        onVerdictReady();
+                    }
+                    break;
+
+                case 'synthesis_done':
+                    opusSections.synthesis.done = true;
+                    markOpusSectionDone('synthesis');
+                    // Check if this completes everything
+                    var allExpDone = ['interactions','asymmetry','archaeology','overall']
+                        .every(function(k) { return opusSections[k].done; });
+                    if (allExpDone) {
+                        deepTextComplete = true;
+                        stopVerdictCountdown();
+                        var vsEl = $('verdictStatus');
+                        if (vsEl) vsEl.classList.add('hidden');
+                        verdictTitle.textContent = 'Your verdict is ready';
+                        updateVerdictButton();
+                        if (flipCardsBuilt) updateCardNavigation();
+                        onVerdictReady();
                     }
                     break;
 
@@ -4376,9 +5084,11 @@
                     try { doneData = JSON.parse(msg.content); } catch(e) {}
                     var quickSec = doneData.quick_seconds ? doneData.quick_seconds.toFixed(1) : null;
                     var deepSec = doneData.deep_seconds ? doneData.deep_seconds.toFixed(1) : null;
+                    var synthSec = doneData.synthesis_seconds ? doneData.synthesis_seconds.toFixed(1) : null;
                     var timingStr = 'Analysis complete';
                     if (quickSec && deepSec) {
                         timingStr = 'Complete \u2014 Cards: ' + quickSec + 's \u00B7 Expert: ' + deepSec + 's';
+                        if (synthSec && parseFloat(synthSec) > 0) timingStr += ' \u00B7 Synthesis: ' + synthSec + 's';
                     }
                     statusText.textContent = timingStr;
 
@@ -4815,6 +5525,14 @@
         flipCardsBuilt = true;
         updateCardNavigation();
         buildFilterChips();
+        // Update context banner with final count
+        var totalBuilt = flipCardContainer.querySelectorAll('.flip-card').length;
+        if (totalBuilt > 0) {
+            var bannerText = $('contextBannerText');
+            if (bannerText) {
+                bannerText.innerHTML = '<strong>FlipSide has analyzed this document</strong> and found ' + totalBuilt + ' clause' + (totalBuilt !== 1 ? 's' : '') + ' worth a closer look. This is an educational review \u2014 no action is required.';
+            }
+        }
         // buildPlaybookCard() called after quick_done — Haiku now provides trick data
 
         // If no cards were found, show an explanation
@@ -4837,10 +5555,16 @@
                     'FlipSide scanned this ' + escapeHtml(docType).toLowerCase() +
                     ' but found no terms that need your attention. This is a good sign — the document appears straightforward.';
             }
-            // Restyle skeleton as a static message (no pulse)
-            skeleton.querySelectorAll('.skeleton-pulse').forEach(function(el) { el.style.display = 'none'; });
-            var skWait = skeleton.querySelector('.skeleton-waiting');
-            if (skWait) skWait.style.display = 'none';
+            // Restyle skeleton as a static message (hide ghost card + acts)
+            var ghostCard = skeleton.querySelector('.ghost-flip-card');
+            if (ghostCard) ghostCard.style.display = 'none';
+            var actsEl = skeleton.querySelector('.skeleton-acts');
+            if (actsEl) actsEl.style.display = 'none';
+            var teaserEl = skeleton.querySelector('.verdict-teaser');
+            if (teaserEl) teaserEl.style.display = 'none';
+            var statusEl2 = skeleton.querySelector('.skeleton-status');
+            if (statusEl2) statusEl2.style.display = 'none';
+            skMsg.classList.remove('hidden');
             // Hide deep status and verdict column — no point showing Opus for unsuitable docs
             if (documentNotApplicable) {
                 $('deepStatus').classList.add('hidden');
@@ -4970,7 +5694,8 @@
             '</div>' +
             '</div>' +
             (clause.teaser ? '<div class="card-teaser">' + escapeHtml(clause.teaser) + '</div>' : '') +
-            '<button class="flip-trigger"><span>Now flip it</span><span class="flip-trigger-spin">\u27F3</span></button>' +
+            '<div class="card-teaser-label" style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;padding:0.5rem 2rem 0">What the fine print actually says</div>' +
+            '<button class="flip-trigger" aria-label="Flip card to reveal hidden clause details"><span>See what this really means</span><span class="flip-trigger-arrow" style="margin-left:0.4rem">&rsaquo;</span></button>' +
             '</div>';
 
         // ── Back body: full reveal — quote, figure, example, bottom line ──
@@ -5029,20 +5754,37 @@
 
         var backTitle = clause.reveal || clause.title;
         var backLabel = (risk === 'green') ? 'And that\u2019s correct' : 'But in reality';
-        backHtml = '<div class="flip-card-back"><div class="back-content">' +
-            '<div class="risk-header risk-header-' + risk + '">' +
+        // Build back with bottom line first for softer reveal, then risk header + details
+        var backInnerHtml = '';
+        // Lead with bottom line (calm context) for non-green cards
+        if (risk !== 'green' && clause.bottomLine) {
+            backInnerHtml += '<div class="back-bottom-line-lead" style="padding:1rem 1.75rem 0.5rem;font-size:0.88rem;line-height:1.55;color:var(--text-secondary)">' +
+                escapeHtml(clause.bottomLine) + '</div>';
+        }
+        backInnerHtml += '<div class="risk-header risk-header-' + risk + '">' +
             '<span class="risk-header-label">' + backLabel + '</span>' +
             '<h3 class="clause-title">' + escapeHtml(backTitle) + '</h3>' +
-            '</div>' +
-            '<div class="back-body">' + backBodyHtml + '</div>' +
-            '<div class="back-footer">' +
-            (clause.trick ? '<span class="trick-footnote" title="' + escapeHtml(trickDesc) + '">' + (TRICK_ICONS[clause.trick] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[clause.trick] + '</span> ' : '') + escapeHtml(clause.trick) + '</span>' : '') +
-            '<button class="flip-back-trigger"><span class="flip-back-arrow">&larr;</span><span>Flip back</span></button>' +
-            '</div>' +
-            '</div></div>';
+            '</div>';
+        // Remove the duplicate bottom line from backBodyHtml since we showed it first
+        var adjustedBackBody = backBodyHtml;
+        if (risk !== 'green' && clause.bottomLine) {
+            adjustedBackBody = adjustedBackBody.replace(/<div class="back-bottom-line">[\s\S]*?<\/div>/, '');
+        }
+        backInnerHtml += '<div class="back-body">' + adjustedBackBody + '</div>';
+        // Trick chip + flip back
+        backInnerHtml += '<div class="back-footer">';
+        if (clause.trick) {
+            backInnerHtml += '<span class="trick-footnote" style="position:relative;right:auto;top:auto;transform:none;display:inline-flex;align-items:center;gap:0.3rem;padding:0.2rem 0.55rem;background:var(--bg-warm);border:1px solid var(--border);border-radius:100px;opacity:1;pointer-events:auto;margin-left:1rem" title="' + escapeHtml(trickDesc) + '">' +
+                (TRICK_ICONS[clause.trick] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[clause.trick] + '</span> ' : '') + escapeHtml(clause.trick) + '</span>';
+        }
+        backInnerHtml += '<button class="flip-back-trigger" aria-label="Flip card back to front"><span class="flip-back-arrow">&larr;</span><span>Flip back</span></button>';
+        backInnerHtml += '</div>';
+        backHtml = '<div class="flip-card-back"><div class="back-content">' + backInnerHtml + '</div></div>';
 
         var cardEl = document.createElement('div');
         cardEl.className = 'flip-card hidden';
+        cardEl.setAttribute('role', 'article');
+        cardEl.setAttribute('aria-label', 'Clause ' + (index + 1) + ': ' + (clause.title || 'Untitled'));
         cardEl.setAttribute('data-clause-index', index);
         cardEl.setAttribute('data-risk-level', risk);
         if (clause.trick) cardEl.setAttribute('data-trick', clause.trick);
@@ -5237,13 +5979,16 @@
         var target = previewEl.querySelector('.doc-highlight[data-card-index="' + cardIndex + '"]');
         if (target) {
             target.classList.add('active');
-            // Scroll into view within the scrollable preview
-            var containerTop = previewEl.scrollTop;
-            var containerHeight = previewEl.clientHeight;
-            var elTop = target.offsetTop - previewEl.offsetTop;
-            if (elTop < containerTop || elTop > containerTop + containerHeight - 40) {
-                previewEl.scrollTop = elTop - 40;
-            }
+            // Reliable scroll: use scrollIntoView with block:center within the scroll container
+            // Calculate relative position and scroll manually for container-scoped scrolling
+            var containerRect = previewEl.getBoundingClientRect();
+            var targetRect = target.getBoundingClientRect();
+            var relativeTop = targetRect.top - containerRect.top + previewEl.scrollTop;
+            var centerOffset = previewEl.clientHeight / 2 - target.clientHeight / 2;
+            previewEl.scrollTo({
+                top: Math.max(0, relativeTop - centerOffset),
+                behavior: 'smooth'
+            });
         }
     }
 
@@ -5257,11 +6002,33 @@
         var skeleton = $('skeletonCard');
         var viewport = $('cardViewport');
 
+        // Show context banner (Problem 1: emotional safety)
+        $('contextBanner').classList.remove('hidden');
+        // Show sample badge if this is a demo document
+        if (isSampleAnalysis) {
+            $('sampleBadge').classList.remove('hidden');
+        }
+
+        // Update status text before hiding skeleton
+        var skStatusTxt = $('skeletonStatusText');
+        if (skStatusTxt) skStatusTxt.textContent = 'First clause found';
+
         // Skeleton fades out, real card fades in — sidebar already visible
         skeleton.classList.add('hidden');
         viewport.classList.remove('hidden');
         resultsArea.classList.remove('hidden');
         showCardAtIndex(0);
+
+        // Safety net: if quick_done doesn't arrive within 60s of first card,
+        // treat cards as built so user can navigate to verdict
+        if (_quickDoneSafetyTimer) clearTimeout(_quickDoneSafetyTimer);
+        _quickDoneSafetyTimer = setTimeout(function() {
+            if (!quickDone && !flipCardsBuilt) {
+                console.log('[FlipSide] Safety net: quick_done not received after 60s, treating cards as built');
+                flipCardsBuilt = true;
+                updateCardNavigation();
+            }
+        }, 60000);
 
         // Pulse the first flip trigger to draw attention
         var firstTrigger = viewport.querySelector('.flip-trigger');
@@ -5272,6 +6039,111 @@
             tooltip.textContent = 'Tap to see what they\u2019re not telling you';
             firstTrigger.appendChild(tooltip);
         }
+    }
+
+    // ── Verdict teaser: extract first compelling sentence from each Opus stream ──
+    var _teaserExtracted = {};
+    var TEASER_LABELS = {
+        interactions: 'Hidden combos',
+        asymmetry: 'Power balance',
+        archaeology: 'Custom vs. standard',
+        overall: 'Big picture'
+    };
+
+    function updateVerdictTeaser(source) {
+        if (_teaserExtracted[source]) return; // Already have a teaser for this source
+        var text = opusSections[source].text;
+        if (text.length < 80) return; // Wait for enough content
+
+        // Extract first substantive sentence (skip headings, skip short lines)
+        var lines = text.split('\n');
+        var teaser = '';
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (!line || line.startsWith('#') || line.startsWith('---') || line.startsWith('**') || line.length < 30) continue;
+            // Strip markdown formatting
+            teaser = line.replace(/\*\*/g, '').replace(/\*/g, '').replace(/^[-•]\s*/, '');
+            // Truncate to ~120 chars at word boundary
+            if (teaser.length > 120) {
+                teaser = teaser.substring(0, 120).replace(/\s+\S*$/, '') + '...';
+            }
+            break;
+        }
+        if (!teaser) return;
+
+        _teaserExtracted[source] = teaser;
+
+        // Show the teaser strip
+        var teaserEl = $('verdictTeaser');
+        var teaserBody = $('verdictTeaserBody');
+        if (!teaserEl || !teaserBody) return;
+        teaserEl.classList.add('visible');
+
+        // Re-render all teasers
+        var sources = ['interactions', 'asymmetry', 'archaeology', 'overall'];
+        var html = '';
+        sources.forEach(function(src) {
+            var extracted = _teaserExtracted[src];
+            if (extracted) {
+                html += '<div class="verdict-teaser-item"><span class="teaser-label">' +
+                    escapeHtml(TEASER_LABELS[src]) + '</span><span class="teaser-text">\u201c' +
+                    escapeHtml(extracted) + '\u201d</span></div>';
+            } else if (!opusSections[src].done) {
+                html += '<div class="verdict-teaser-item locked"><span class="teaser-label">' +
+                    escapeHtml(TEASER_LABELS[src]) + '</span><span class="teaser-text">' +
+                    '<span class="pulsing-dots" style="transform:scale(0.6)"><span></span><span></span><span></span></span> analyzing\u2026</span></div>';
+            }
+        });
+        teaserBody.innerHTML = html;
+    }
+
+    // ── Tab title + notification when verdict is ready ──
+    var _originalTitle = document.title;
+
+    function onVerdictReady() {
+        // Tab title change
+        document.title = '\u2705 Your verdict is ready \u2014 FlipSide';
+
+        // Restore title when user returns to tab
+        function restoreTitle() {
+            document.title = _originalTitle;
+            document.removeEventListener('visibilitychange', onVisible);
+            window.removeEventListener('focus', restoreTitle);
+        }
+        function onVisible() {
+            if (!document.hidden) restoreTitle();
+        }
+        document.addEventListener('visibilitychange', onVisible);
+        window.addEventListener('focus', restoreTitle);
+
+        // Browser notification (if permitted)
+        if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+                var cardCount = flipCardContainer.querySelectorAll('.flip-card').length;
+                new Notification('FlipSide \u2014 Verdict Ready', {
+                    body: cardCount + ' clauses analyzed. Your expert verdict is ready to read.',
+                    icon: '/favicon.ico'
+                });
+            } catch(e) { /* notification failed, no big deal */ }
+        }
+
+        // Update the two-act strip if skeleton is still visible
+        var actsEl = $('skeletonActs');
+        if (actsEl) {
+            var act2Status = actsEl.querySelector('.skeleton-act:last-child .skeleton-act-status');
+            if (act2Status) act2Status.innerHTML = '<span style="color:var(--green-text)">\u2713 Ready</span>';
+        }
+    }
+
+    // ── Request notification permission after first flip (non-intrusive) ──
+    var _notifRequested = false;
+    function requestNotificationPermission() {
+        if (_notifRequested || !('Notification' in window) || Notification.permission !== 'default') return;
+        _notifRequested = true;
+        // Delay to not interrupt the flip experience
+        setTimeout(function() {
+            Notification.requestPermission();
+        }, 3000);
     }
 
     // ── Verdict column helpers (4-section live report) ─────────────────
@@ -5294,10 +6166,7 @@
         if (!_verdictRenderTimers[source]) {
             _verdictRenderTimers[source] = setTimeout(function() {
                 _verdictRenderTimers[source] = null;
-                // Show verdict column as soon as we get first text
-                if (!verdictCol.classList.contains('visible') && !isCompareMode && !documentNotApplicable && hasFlippedOnce) {
-                    showVerdictCol();
-                }
+                // Verdict column stays hidden — inline verdict renders from same data (Problem 3)
                 var bodyEl = $('opusBody_' + source);
                 if (!bodyEl) return;
                 var text = opusSections[source].text;
@@ -5335,6 +6204,14 @@
     function markOpusSectionDone(source) {
         var sectionEl = $('opusSection_' + source);
         if (!sectionEl) return;
+        // Gate: "synthesis" waits for all 4 experts
+        if (source === 'synthesis') {
+            var allExpertsReady = opusSections.interactions.done
+                              && opusSections.asymmetry.done
+                              && opusSections.archaeology.done
+                              && opusSections.overall.done;
+            if (!allExpertsReady) return;
+        }
         // Gate: "overall" waits for the other 3 to finish first —
         // it's a summary and shouldn't appear done before its parts.
         if (source === 'overall') {
@@ -5347,13 +6224,23 @@
             }
         }
         // When a non-overall section finishes, check if overall is waiting
-        if (source !== 'overall' && opusSections.overall.done) {
+        if (source !== 'overall' && source !== 'synthesis' && opusSections.overall.done) {
             var allPartsNow = opusSections.interactions.done
                            && opusSections.asymmetry.done
                            && opusSections.archaeology.done;
             if (allPartsNow) {
                 // Release the held-back overall section
                 _revealOpusSection('overall');
+            }
+        }
+        // When a non-synthesis section finishes, check if synthesis is waiting
+        if (source !== 'synthesis' && opusSections.synthesis.done) {
+            var allExpertsNow = opusSections.interactions.done
+                             && opusSections.asymmetry.done
+                             && opusSections.archaeology.done
+                             && opusSections.overall.done;
+            if (allExpertsNow) {
+                _revealOpusSection('synthesis');
             }
         }
         _revealOpusSection(source);
@@ -5393,20 +6280,77 @@
     }
 
     function updateVerdictButton() {
-        var allDone = getCompletedSections().length === 4;
-        if (allDone) {
-            verdictExpandBtn.innerHTML = 'Read full verdict <span class="verdict-expand-spin">\u27F3</span>';
+        var expertsDone = ['interactions','asymmetry','archaeology','overall']
+            .every(function(k) { return opusSections[k].done; });
+        var synthDone = opusSections.synthesis.done;
+
+        if (expertsDone) {
+            if (synthDone) {
+                verdictExpandBtn.innerHTML = 'Read full verdict <span class="verdict-expand-spin">\u27F3</span>';
+            } else {
+                verdictExpandBtn.innerHTML = 'Read verdict <span style="opacity:0.6">(synthesis building\u2026)</span>';
+            }
             verdictExpandBtn.classList.add('ready');
             verdictExpandBtn.style.opacity = '1';
             verdictExpandBtn.style.pointerEvents = 'auto';
             buildVerdictSummary();
         } else {
-            var count = getCompletedSections().length;
+            var count = getCompletedSections().filter(function(k) { return k !== 'synthesis'; }).length;
             verdictExpandBtn.textContent = count + ' of 4 ready';
             verdictExpandBtn.classList.remove('ready');
             verdictExpandBtn.style.opacity = '0.4';
             verdictExpandBtn.style.pointerEvents = 'none';
         }
+        updateVerdictStrip();
+    }
+
+    // ── Verdict progress strip (below card nav) ──────────────
+    function updateVerdictStrip() {
+        var strip = $('verdictProgressStrip');
+        if (!strip) return;
+        // Hide if user hasn't flipped yet or already clicked through
+        if (!hasFlippedOnce || _verdictStripRead) {
+            strip.classList.remove('visible');
+            return;
+        }
+        var experts = ['interactions','asymmetry','archaeology','overall'];
+        var doneCount = experts.filter(function(k) { return opusSections[k].done; }).length;
+        var allExpertsDone = doneCount === 4;
+        var building = $('verdictStripBuilding');
+        var ready = $('verdictStripReady');
+        var textEl = $('verdictStripText');
+        var dots = strip.querySelectorAll('.verdict-strip-dot');
+
+        // Update dot states
+        experts.forEach(function(k, i) {
+            if (dots[i]) {
+                if (opusSections[k].done) dots[i].classList.add('done');
+                else dots[i].classList.remove('done');
+            }
+        });
+
+        if (deepTextComplete || isDoneRendering) {
+            // All done — show CTA
+            building.classList.add('hidden');
+            ready.classList.remove('hidden');
+        } else if (allExpertsDone) {
+            // Experts done, synthesis still building
+            building.classList.remove('hidden');
+            ready.classList.add('hidden');
+            textEl.textContent = 'Experts done \u2014 synthesizing\u2026';
+        } else {
+            // Still building
+            building.classList.remove('hidden');
+            ready.classList.add('hidden');
+            textEl.textContent = 'Expert verdict building \u2014 ' + doneCount + ' of 4 done';
+        }
+        strip.classList.add('visible');
+    }
+
+    function dismissVerdictStrip() {
+        _verdictStripRead = true;
+        var strip = $('verdictProgressStrip');
+        if (strip) strip.classList.remove('visible');
     }
 
     function buildVerdictSummary() {
@@ -5461,6 +6405,9 @@
             var dot = document.querySelector('#opusSection_' + k + ' .opus-dot');
             if (dot) { dot.classList.remove('done'); dot.classList.add('pulsing'); }
         });
+        // Re-hide synthesis section (starts display:none until text arrives)
+        var synthReset = $('opusSection_synthesis');
+        if (synthReset) synthReset.style.display = 'none';
         var verdictStatusEl = $('verdictStatus');
         if (verdictStatusEl) {
             verdictStatusEl.innerHTML = 'Our expert is reading the small print <span class="verdict-time-pill" id="verdictCountdown">2:00</span>';
@@ -5514,22 +6461,31 @@
 
     // ── Focused reading mode state ──────────────────────────
     var _focusedSource = null; // currently focused section key or null
-    var _sectionOrder = ['interactions', 'asymmetry', 'archaeology', 'overall'];
+    var _sectionOrder = ['interactions', 'asymmetry', 'archaeology', 'overall', 'synthesis'];
     var _sectionLabels = {
         interactions: 'Cross-Clause Interactions',
         asymmetry: 'Power Asymmetry & Fair Standard',
         archaeology: 'Document Archaeology & Drafter',
-        overall: 'Overall Assessment'
+        overall: 'Overall Assessment',
+        synthesis: 'Expert Panel Synthesis'
     };
 
     function getCompletedSections() {
         return _sectionOrder.filter(function(k) {
-            // For "overall", check if all parts are done too (gating logic)
+            // "overall" waits for the other 3 experts
             if (k === 'overall') {
                 return opusSections.overall.done
                     && opusSections.interactions.done
                     && opusSections.asymmetry.done
                     && opusSections.archaeology.done;
+            }
+            // "synthesis" waits for all 4 experts
+            if (k === 'synthesis') {
+                return opusSections.synthesis.done
+                    && opusSections.interactions.done
+                    && opusSections.asymmetry.done
+                    && opusSections.archaeology.done
+                    && opusSections.overall.done;
             }
             return opusSections[k].done;
         });
@@ -5555,7 +6511,8 @@
         var completed = getCompletedSections();
         var idx = completed.indexOf(_focusedSource);
         var total = completed.length;
-        var allDone = total === 4;
+        var expertCount = completed.filter(function(k) { return k !== 'synthesis'; }).length;
+        var allDone = expertCount >= 4;
 
         // Title
         $('focusedTitle').textContent = _sectionLabels[_focusedSource] || _focusedSource;
@@ -5592,7 +6549,7 @@
                 });
             }
         } else {
-            counterEl.textContent = 'Section ' + (idx + 1) + ' \u00b7 ' + total + ' of 4 ready';
+            counterEl.textContent = 'Section ' + (idx + 1) + ' \u00b7 ' + expertCount + ' of 4 experts ready';
         }
     }
 
@@ -5637,8 +6594,9 @@
     var _verdictScrolled = false;
 
     function assembleDeepText() {
-        // Assemble deep analysis from 4 Opus accumulators
+        // Assemble deep analysis — synthesis first, then 4 expert reports
         var parts = [];
+        if (opusSections.synthesis.text.trim()) parts.push(opusSections.synthesis.text);
         if (opusSections.interactions.text.trim()) parts.push(opusSections.interactions.text);
         if (opusSections.asymmetry.text.trim()) parts.push(opusSections.asymmetry.text);
         if (opusSections.archaeology.text.trim()) parts.push(opusSections.archaeology.text);
@@ -5646,65 +6604,121 @@
         return parts.join('\n\n');
     }
 
+    // ── Plain-language section config (Problem 5) ─────────────
+    var VERDICT_SECTIONS = {
+        interactions: {
+            title: 'Hidden Combinations',
+            subtitle: 'How clauses work together against you',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M10 6.5h4M6.5 10v4M17.5 10v4M10 17.5h4"/></svg>'
+        },
+        asymmetry: {
+            title: 'Power Balance',
+            subtitle: 'Who has the upper hand, and by how much',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8l7-5 7 5"/><path d="M3 13h6l-3 7z"/><path d="M15 13h6l-3 7z"/></svg>'
+        },
+        archaeology: {
+            title: 'Custom vs. Boilerplate',
+            subtitle: 'What was deliberately written for this contract',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M8 8l6 6"/><path d="M14 8l-6 6"/></svg>'
+        },
+        overall: {
+            title: 'The Big Picture',
+            subtitle: 'Our overall verdict on this document',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><circle cx="12" cy="8" r="0.5" fill="currentColor"/></svg>'
+        },
+        synthesis: {
+            title: 'Expert Panel Synthesis',
+            subtitle: 'What the experts see when they compare notes',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><circle cx="8" cy="16" r="3"/><circle cx="16" cy="16" r="3"/><path d="M11 8h2M8 11v2M16 11v2M11 16h2"/></svg>'
+        }
+    };
+
     function revealDeepAnalysis() {
-        var section = $('deepAnalysisSection');
-        var deepText = assembleDeepText();
-        var hasDeepContent = deepText.trim().length > 0;
+        // Render inline verdict below cards (Problem 3: no more separate view)
+        var inlineVerdict = $('inlineVerdict');
+        var inlineContent = $('inlineVerdictContent');
+        var inlineProgress = $('inlineVerdictProgress');
         var isComplete = deepTextComplete || isDoneRendering;
 
         if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
 
+        inlineVerdict.classList.add('visible');
+
+        // Also show the legacy deep analysis section for tools that depend on it
+        var section = $('deepAnalysisSection');
         section.classList.remove('hidden');
-        $('cardViewport').classList.add('hidden');
+        // But keep card viewport visible! (inline verdict is below cards)
+        // $('cardViewport').classList.add('hidden'); — removed
         hideVerdictCol();
 
-        if (isComplete && hasDeepContent) {
+        // Build inline verdict sections (synthesis first)
+        var html = '';
+        var sources = ['synthesis', 'interactions', 'asymmetry', 'archaeology', 'overall'];
+        sources.forEach(function(source) {
+            var config = VERDICT_SECTIONS[source];
+            if (!config) return;
+            var text = opusSections[source].text.trim();
+            var isDone = opusSections[source].done;
+            // Skip synthesis if it has no text (e.g. not-applicable docs, or never started)
+            if (source === 'synthesis' && !text) return;
+            if (!text && !isDone) {
+                // Section not started yet — show loading placeholder
+                html += '<div class="inline-verdict-section loading" data-source="' + source + '">' +
+                    '<div class="inline-verdict-section-header">' +
+                    '<div class="inline-verdict-section-icon">' + config.icon + '</div>' +
+                    '<div><div class="inline-verdict-section-title">' + config.title + '</div>' +
+                    '<div class="inline-verdict-section-subtitle">' + config.subtitle + '</div></div>' +
+                    '</div>' +
+                    '<div class="inline-verdict-section-body"><span class="pulsing-dots"><span></span><span></span><span></span></span> Analysis in progress...</div>' +
+                    '</div>';
+                return;
+            }
+            var safeMd = text
+                .replace(/^# .+$/gm, '')
+                .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
+                .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
+                .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
+                .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
+            var rendered = safeMd2Html(safeMd);
+            rendered = styleRiskBadges(rendered);
+            rendered = styleReaderBlocks(rendered);
+            rendered = styleDrafterBlocks(rendered);
+            rendered = safeHtml(rendered);
+
+            html += '<div class="inline-verdict-section' + (isDone ? '' : ' loading') + '" data-source="' + source + '">' +
+                '<div class="inline-verdict-section-header">' +
+                '<div class="inline-verdict-section-icon">' + config.icon + '</div>' +
+                '<div><div class="inline-verdict-section-title">' + config.title + '</div>' +
+                '<div class="inline-verdict-section-subtitle">' + config.subtitle + '</div></div>' +
+                '</div>' +
+                '<div class="inline-verdict-section-body">' + rendered +
+                (isDone ? '' : '<span class="verdict-cursor"></span>') +
+                '</div></div>';
+        });
+        inlineContent.innerHTML = html;
+
+        if (isComplete) {
+            inlineProgress.classList.add('hidden');
+            // Also render into legacy deep analysis for export/tools
             renderDeepAnalysisContent();
             buildSummaryCard();
             buildPlaybookCard();
             if (!isCompareMode) counterDraftSection.classList.remove('hidden');
             if (!_verdictScrolled) {
                 _verdictScrolled = true;
-                setTimeout(function() { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+                setTimeout(function() { inlineVerdict.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
             }
             return;
         }
 
-        // Add header once
-        if (!deepAnalysisEl.previousElementSibling || !deepAnalysisEl.previousElementSibling.classList.contains('deep-analysis-header')) {
-            var header = document.createElement('div');
-            header.className = 'deep-analysis-header';
-            header.innerHTML = '<span class="section-label">Full Verdict</span>' +
-                '<span class="opus-badge">Opus 4.6 Reasoning</span>';
-            deepAnalysisEl.parentNode.insertBefore(header, deepAnalysisEl);
-        }
-
-        if (hasDeepContent) {
-            var safeMd = deepText
-                .replace(/^# .+$/gm, '')
-                .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
-                .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
-                .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
-                .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
-            var html = safeMd2Html(safeMd);
-            html = styleRiskBadges(html);
-            html = styleReaderBlocks(html);
-            html = styleDrafterBlocks(html);
-            deepAnalysisEl.innerHTML = safeHtml(html);
-        } else {
-            deepAnalysisEl.innerHTML = '';
-        }
-
-        var indicator = document.createElement('div');
-        indicator.className = 'verdict-streaming';
-        indicator.innerHTML = '<div class="pulsing-dots"><span></span><span></span><span></span></div>' +
-            '<div class="verdict-streaming-label">' +
-            (hasDeepContent ? 'Building your Full Verdict — almost there...' : 'Our expert is reading and reasoning — this takes about a minute') + '</div>';
-        deepAnalysisEl.appendChild(indicator);
+        // Show progress indicator
+        var completedCount = getCompletedSections().filter(function(k) { return k !== 'synthesis'; }).length;
+        inlineProgress.classList.remove('hidden');
+        $('inlineVerdictProgressText').textContent = completedCount + ' of 4 experts complete \u2014 building verdict\u2026';
 
         if (!_verdictScrolled) {
             _verdictScrolled = true;
-            setTimeout(function() { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+            setTimeout(function() { inlineVerdict.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
         }
 
         _verdictPollTimer = setTimeout(function() { revealDeepAnalysis(); }, 800);
@@ -5884,41 +6898,125 @@
         var cards = flipCardContainer.querySelectorAll('.flip-card');
         var total = cards.length;
         var nav = $('cardNavigation');
+        var stickyNav = $('cardNavSticky');
         if (!nav) return;
 
-        if (total === 0 || !hasFlippedOnce) { nav.classList.add('hidden'); return; }
-
-        nav.classList.remove('hidden');
-        var counter = nav.querySelector('.card-nav-counter');
-        var prevBtn = nav.querySelector('.card-nav-prev');
-        var nextBtn = nav.querySelector('.card-nav-next');
-        var nextLabel = nextBtn.querySelector('.card-nav-next-label');
-
-        counter.innerHTML = 'Clause <strong>' + (currentCardIndex + 1) + '</strong> of <strong>' + total + '</strong>';
-        prevBtn.disabled = currentCardIndex === 0;
-
-        if (currentCardIndex >= total - 1 && !quickDone) {
-            nextLabel.innerHTML = 'Analyzing next<span class="pulsing-dot"></span>';
-            nextBtn.disabled = true;
-            nextBtn.removeAttribute('data-action');
-        } else if (currentCardIndex >= total - 1 && flipCardsBuilt) {
-            // Check if deep analysis text has fully streamed
-            var opusDone = deepTextComplete || isDoneRendering;
-            if (opusDone) {
-                nextLabel.textContent = 'Full Verdict \u2192';
-            } else {
-                nextLabel.innerHTML = 'Full Verdict <span class="pulsing-dot" style="margin-left:0.3rem"></span>';
-            }
-            nextBtn.disabled = false;
-            nextBtn.setAttribute('data-action', 'assessment');
-        } else {
-            nextLabel.textContent = 'Next clause \u2192';
-            nextBtn.disabled = false;
-            nextBtn.removeAttribute('data-action');
+        if (total === 0 || !hasFlippedOnce) {
+            nav.classList.add('hidden');
+            if (stickyNav) stickyNav.classList.remove('visible');
+            return;
         }
 
+        nav.classList.remove('hidden');
+        if (stickyNav) stickyNav.classList.add('visible');
+
+        // Update both bottom nav and sticky top nav
+        var navElements = [nav];
+        if (stickyNav) navElements.push(stickyNav);
+        navElements.forEach(function(n) {
+            var counter = n.querySelector('.card-nav-counter');
+            var prevBtn = n.querySelector('.card-nav-prev');
+            var nextBtn = n.querySelector('.card-nav-next');
+            var nextLabel = nextBtn.querySelector('.card-nav-next-label');
+
+            counter.innerHTML = 'Clause <strong>' + (currentCardIndex + 1) + '</strong> of <strong>' + total + '</strong>';
+            prevBtn.disabled = currentCardIndex === 0;
+
+            if (currentCardIndex >= total - 1 && !quickDone) {
+                nextLabel.innerHTML = 'Analyzing<span class="pulsing-dot"></span>';
+                nextBtn.disabled = true;
+                nextBtn.removeAttribute('data-action');
+            } else if (currentCardIndex >= total - 1 && flipCardsBuilt) {
+                var opusDone = deepTextComplete || isDoneRendering;
+                if (opusDone) {
+                    nextLabel.textContent = 'Full Verdict \u2192';
+                } else {
+                    nextLabel.innerHTML = 'Full Verdict <span class="pulsing-dot" style="margin-left:0.3rem"></span>';
+                }
+                nextBtn.disabled = false;
+                nextBtn.setAttribute('data-action', 'assessment');
+            } else {
+                nextLabel.textContent = 'Next \u2192';
+                nextBtn.disabled = false;
+                nextBtn.removeAttribute('data-action');
+            }
+        });
+
+        // Update pips in sticky nav
+        updateCardPips(cards, total);
         // Mobile dot indicator
         updateCardDots(cards, total);
+        // Update risk summary strip when all cards built
+        if (flipCardsBuilt) updateRiskSummary(cards);
+        // Update tricks detected bar
+        updateTricksDetectedBar();
+    }
+
+    // ── Card pips in sticky nav ─────────────────────────────
+    function updateCardPips(cards, total) {
+        var pipsEl = $('cardNavPips');
+        if (!pipsEl) return;
+        // Rebuild pips if count changed
+        if (pipsEl.children.length !== total) {
+            pipsEl.innerHTML = '';
+            for (var p = 0; p < total; p++) {
+                var pip = document.createElement('span');
+                pip.className = 'card-nav-pip';
+                pip.setAttribute('data-index', p);
+                pip.setAttribute('tabindex', '0');
+                pip.setAttribute('aria-label', 'Go to clause ' + (p + 1));
+                pip.addEventListener('click', (function(idx) {
+                    return function() { showCardAtIndex(idx); };
+                })(p));
+                var risk = cards[p] ? cards[p].getAttribute('data-risk-level') : 'green';
+                if (risk) pip.classList.add('pip-' + risk);
+                pipsEl.appendChild(pip);
+            }
+        }
+        // Update active state
+        for (var p = 0; p < pipsEl.children.length; p++) {
+            pipsEl.children[p].classList.toggle('active', p === currentCardIndex);
+        }
+    }
+
+    // ── Risk summary strip (accurate counts from parsed cards) ──
+    function updateRiskSummary(cards) {
+        var strip = $('riskSummaryStrip');
+        if (!strip) return;
+        var counts = { red: 0, yellow: 0, green: 0 };
+        for (var i = 0; i < cards.length; i++) {
+            var r = cards[i].getAttribute('data-risk-level') || 'green';
+            if (counts[r] !== undefined) counts[r]++;
+        }
+        var html = '';
+        if (counts.red > 0) html += '<span class="risk-count"><span class="risk-dot risk-dot-red"></span>' + counts.red + ' concern' + (counts.red !== 1 ? 's' : '') + '</span>';
+        if (counts.yellow > 0) html += '<span class="risk-count"><span class="risk-dot risk-dot-yellow"></span>' + counts.yellow + ' watch item' + (counts.yellow !== 1 ? 's' : '') + '</span>';
+        if (counts.green > 0) html += '<span class="risk-count"><span class="risk-dot risk-dot-green"></span>' + counts.green + ' fair</span>';
+        strip.innerHTML = html;
+        strip.classList.add('visible');
+    }
+
+    // ── Tricks detected bar (collapsible, in card nav area) ──
+    function updateTricksDetectedBar() {
+        var bar = $('tricksDetectedBar');
+        var label = $('tricksDetectedLabel');
+        var pills = $('tricksDetectedPills');
+        if (!bar || !label || !pills) return;
+        var trickNames = Object.keys(_detectedTricks);
+        if (trickNames.length === 0) { bar.classList.remove('visible'); return; }
+        bar.classList.add('visible');
+        label.textContent = trickNames.length + ' trick' + (trickNames.length !== 1 ? 's' : '') + ' detected';
+        // Sort by count descending, limit to 10
+        var sorted = trickNames.sort(function(a, b) { return _detectedTricks[b] - _detectedTricks[a]; }).slice(0, 10);
+        pills.innerHTML = '';
+        sorted.forEach(function(name) {
+            var pill = document.createElement('span');
+            pill.className = 'verdict-trick-item';
+            pill.innerHTML = (TRICK_ICONS[name] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[name] + '</span>' : '') +
+                '<span class="verdict-trick-name">' + escapeHtml(name) + '</span>' +
+                (_detectedTricks[name] > 1 ? '<span class="verdict-trick-count">\u00d7' + _detectedTricks[name] + '</span>' : '');
+            pills.appendChild(pill);
+        });
     }
 
     function updateCardDots(cards, total) {
@@ -6614,8 +7712,19 @@
     // ── Verdict column expand button ─────────────────────────
     verdictExpandBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        // Only open full verdict when all 4 sections are done
-        if (getCompletedSections().length < 4 && !deepTextComplete && !isDoneRendering) return;
+        // Only open full verdict when all 4 expert sections are done
+        var expertReady = ['interactions','asymmetry','archaeology','overall']
+            .every(function(k) { return opusSections[k].done; });
+        if (!expertReady && !deepTextComplete && !isDoneRendering) return;
+        dismissVerdictStrip();
+        exitFocusedMode();
+        revealDeepAnalysis();
+    });
+
+    // ── Verdict progress strip CTA ──────────────────────────
+    $('verdictStripCta').addEventListener('click', function(e) {
+        e.stopPropagation();
+        dismissVerdictStrip();
         exitFocusedMode();
         revealDeepAnalysis();
     });
@@ -6626,9 +7735,7 @@
         $('deepAnalysisSection').classList.add('hidden');
         $('cardViewport').classList.remove('hidden');
         exitFocusedMode();
-        // Re-show verdict column if there's any Opus content
-        var hasAnyOpus = Object.keys(opusSections).some(function(k) { return opusSections[k].text.length > 0; });
-        if (hasAnyOpus || isDoneRendering || deepTextComplete) verdictCol.classList.add('visible');
+        // Inline verdict stays visible below cards (no verdict column re-show needed)
         setTimeout(function() {
             $('cardViewport').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
@@ -6672,14 +7779,18 @@
         });
     });
 
-    // ── Export HTML ───────────────────────────────────────────
+    // ── Export PDF Report (Problem 7) ───────────────────────────
     $('exportBtn').addEventListener('click', function() {
+        var btn = this;
+        if (btn.classList.contains('generating')) return;
+        btn.classList.add('generating');
+        var origText = btn.textContent;
+        btn.textContent = 'Generating PDF...';
+
         var docName = 'FlipSide Analysis';
         var meta = metadataLine.textContent;
         if (meta) docName = meta.split('Type:')[1] ? meta.split('Type:')[1].split('Drafted')[0].trim() : docName;
 
-        // Build clean export from structured data
-        var clauses = extractClausesFromResponse();
         var cards = flipCardContainer.querySelectorAll('.flip-card');
         var body = '';
 
@@ -6695,17 +7806,21 @@
             body += '</div>';
         }
 
-        // Verdict tier from summary
-        var verdictMatch = responseContent.match(/Verdict:\s*([A-Z][A-Z\s]+)/i);
-        if (verdictMatch) {
-            var tier = verdictMatch[1].trim();
-            var tColor = /DO NOT SIGN/i.test(tier) ? '#7a1a1a' : /SEEK LEGAL/i.test(tier) ? '#a83d20' : /NEGOTIATE/i.test(tier) ? '#9a6c00' : /READ THE/i.test(tier) ? '#8a7200' : '#1e6b38';
-            body += '<div class="score-summary"><span class="score-number" style="color:' + tColor + '">' + escapeHtml(tier) + '</span></div>';
-        }
+        // Risk summary
+        var riskCounts = { red: 0, yellow: 0, green: 0 };
+        cards.forEach(function(card) {
+            var r = card.getAttribute('data-risk-level') || 'green';
+            if (riskCounts[r] !== undefined) riskCounts[r]++;
+        });
+        body += '<div class="summary">';
+        if (riskCounts.red > 0) body += '<span class="risk-badge risk-red">' + riskCounts.red + ' concern' + (riskCounts.red !== 1 ? 's' : '') + '</span> ';
+        if (riskCounts.yellow > 0) body += '<span class="risk-badge risk-yellow">' + riskCounts.yellow + ' watch item' + (riskCounts.yellow !== 1 ? 's' : '') + '</span> ';
+        if (riskCounts.green > 0) body += '<span class="risk-badge risk-green">' + riskCounts.green + ' fair</span>';
+        body += '</div>';
 
-        // Clauses from flip cards
+        // Findings
         if (cards.length) {
-            body += '<h2>Clause Analysis</h2>';
+            body += '<h2>Findings</h2>';
             cards.forEach(function(card, i) {
                 var title = card.getAttribute('data-clause-title') || 'Clause ' + (i + 1);
                 var risk = card.getAttribute('data-risk-level') || '';
@@ -6713,60 +7828,75 @@
                 var trick = card.getAttribute('data-trick') || '';
                 var section = card.getAttribute('data-section-ref') || '';
 
-                var riskClass = 'risk-' + risk;
                 body += '<div class="clause"><div class="clause-header">';
-                body += '<span class="risk-badge ' + riskClass + '">' + risk.toUpperCase() + '</span>';
+                body += '<span class="risk-badge risk-' + risk + '">' + risk.toUpperCase() + '</span>';
                 if (score) body += ' <span class="clause-score">' + score + '/100</span>';
                 if (trick) body += ' <span class="clause-trick">' + escapeHtml(trick) + '</span>';
                 body += '</div>';
                 body += '<h3>' + escapeHtml(title) + '</h3>';
-                if (section) body += '<div class="clause-ref">' + escapeHtml(section) + '</div>';
+                if (section) body += '<div class="clause-ref">Source: ' + escapeHtml(section) + '</div>';
 
-                // Front: reader voice
-                var readerEl = card.querySelector('.reader-voice-text');
-                if (readerEl && readerEl.textContent.trim()) {
-                    body += '<blockquote class="reader"><strong>What a trusting reader sees:</strong> ' + escapeHtml(readerEl.textContent.trim()) + '</blockquote>';
-                }
+                // Bottom line
+                var bottomLine = card.querySelector('.back-bottom-line') || card.querySelector('.back-bottom-line-lead');
+                if (bottomLine) body += '<p class="bottom-line"><strong>Bottom line:</strong> ' + escapeHtml(bottomLine.textContent.trim()) + '</p>';
 
-                // Back: reveal, figure, example, bottom line
-                var backBody = card.querySelector('.back-body');
-                if (backBody) {
-                    var figure = card.querySelector('.back-figure');
-                    var example = card.querySelector('.back-example');
-                    var bottomLine = card.querySelector('.back-bottom-line');
-                    if (figure) body += '<div class="figure">' + escapeHtml(figure.textContent.trim()) + '</div>';
-                    if (example) body += '<p class="example">' + escapeHtml(example.textContent.trim()) + '</p>';
-                    if (bottomLine) body += '<p class="bottom-line"><strong>Bottom line:</strong> ' + escapeHtml(bottomLine.textContent.trim()) + '</p>';
-                }
+                // Figure
+                var figure = card.querySelector('.back-figure');
+                if (figure) body += '<div class="figure">' + escapeHtml(figure.textContent.trim()) + '</div>';
+
+                // Example
+                var example = card.querySelector('.back-example');
+                if (example) body += '<p class="example">' + escapeHtml(example.textContent.trim()) + '</p>';
+
                 body += '</div>';
             });
         }
 
-        // Deep analysis (Opus verdict)
+        // Expert Verdict (4 expert sections + synthesis, with plain-language headings)
         var deepText = assembleDeepText();
         if (deepText.trim()) {
             body += '<hr><h2>Expert Verdict</h2>';
-            body += '<div class="verdict">' + safeMd2Html(deepText) + '</div>';
+            var sources = ['synthesis', 'interactions', 'asymmetry', 'archaeology', 'overall'];
+            sources.forEach(function(source) {
+                var text = opusSections[source].text.trim();
+                if (!text) return;
+                var config = VERDICT_SECTIONS[source];
+                body += '<h3>' + config.title + '</h3>';
+                body += '<p style="color:#6b6860;font-size:0.85rem;margin-top:-0.3rem">' + config.subtitle + '</p>';
+                var html = safeMd2Html(text.replace(/^# .+$/gm, ''));
+                body += '<div class="verdict">' + html + '</div>';
+            });
         }
 
-        // Counter-draft
-        if (counterDraftContent.innerHTML && counterDraftContent.textContent.trim()) {
-            body += '<hr><h2>Counter-Draft Suggestions</h2>';
-            body += '<div class="verdict">' + counterDraftContent.innerHTML + '</div>';
+        // Source Text (with page numbers)
+        if (documentFullText) {
+            body += '<hr><h2>Source Text</h2>';
+            body += '<p style="color:#9c9789;font-size:0.78rem">The analysis above is based on the following extracted document text.</p>';
+            var sourceLines = escapeHtml(documentFullText).split('\n');
+            var sourceHtml = '<div class="source-text">';
+            sourceLines.forEach(function(line) {
+                var pageMatch = line.match(/^—\s*Page\s+(\d+)\s*—$/);
+                if (pageMatch) {
+                    sourceHtml += '<div class="page-marker">— Page ' + pageMatch[1] + ' —</div>';
+                } else {
+                    sourceHtml += line + '\n';
+                }
+            });
+            sourceHtml += '</div>';
+            body += sourceHtml;
         }
 
         var exportHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
             '<title>' + escapeHtml(docName) + ' \u2014 FlipSide Analysis</title>' +
             '<style>' +
-            'body{font-family:"DM Sans",system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1.5rem;color:#1a1a18;line-height:1.65}' +
+            'body{font-family:"DM Sans",system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1.5rem;color:#1a1a18;line-height:1.65;font-size:11px}' +
             'h1{font-size:1.4rem;border-bottom:2px solid #c44b28;padding-bottom:0.5rem;margin-bottom:0.5rem}' +
-            'h2{margin-top:2.5rem;font-size:1.15rem;color:#3d3b36;border-bottom:1px solid #e2ddd4;padding-bottom:0.3rem}' +
+            'h2{margin-top:2rem;font-size:1.15rem;color:#3d3b36;border-bottom:1px solid #e2ddd4;padding-bottom:0.3rem}' +
             'h3{margin-top:0.5rem;margin-bottom:0.3rem;font-size:1rem}' +
-            '.meta{margin-bottom:1.5rem;font-size:0.85rem;color:#6b6860}' +
+            '.meta{margin-bottom:1rem;font-size:0.85rem;color:#6b6860}' +
             '.meta-item{display:inline-block;margin-right:1.5rem}' +
-            '.score-summary{font-size:1.1rem;margin:1rem 0 1.5rem;padding:0.8rem 1rem;background:#faf8f4;border-radius:6px;border-left:3px solid #c44b28}' +
-            '.score-number{font-size:1.4rem;font-weight:700}.score-desc{color:#6b6860}' +
-            '.clause{margin:1.5rem 0;padding:1rem;background:#faf8f4;border-radius:6px;border:1px solid #e2ddd4}' +
+            '.summary{margin:0.8rem 0 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}' +
+            '.clause{margin:1rem 0;padding:0.8rem;background:#faf8f4;border-radius:6px;border:1px solid #e2ddd4;page-break-inside:avoid}' +
             '.clause-header{margin-bottom:0.3rem;font-size:0.82rem}' +
             '.clause-score{font-weight:700}.clause-trick{color:#6b6860;font-style:italic}' +
             '.clause-ref{font-size:0.78rem;color:#9c9789;margin-bottom:0.5rem}' +
@@ -6775,23 +7905,59 @@
             'blockquote{border-left:3px solid #c44b28;padding:0.5rem 1rem;margin:0.8rem 0;background:#fff;font-style:italic;border-radius:0 4px 4px 0}' +
             '.figure{font-size:1.1rem;font-weight:700;color:#a83d20;margin:0.5rem 0}' +
             '.example{color:#3d3b36;margin:0.3rem 0}.bottom-line{margin:0.5rem 0}' +
-            '.verdict{margin-top:0.5rem}' +
-            '.verdict h3{margin-top:1.2rem}.verdict blockquote{border-left-color:#9c9789}' +
-            'hr{border:none;border-top:1px solid #e2ddd4;margin:2rem 0}' +
-            '.footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e2ddd4;font-size:0.78rem;color:#9c9789}' +
+            '.verdict{margin-top:0.5rem}.verdict h3{margin-top:1.2rem}' +
+            '.verdict blockquote{border-left-color:#9c9789}' +
+            'hr{border:none;border-top:1px solid #e2ddd4;margin:1.5rem 0}' +
+            '.source-text{white-space:pre-wrap;font-family:monospace;font-size:0.78rem;line-height:1.5;color:#3d3b36;padding:0.8rem;background:#faf8f4;border:1px solid #e2ddd4;border-radius:6px}' +
+            '.page-marker{text-align:center;color:#9c9789;font-weight:600;margin:1rem 0;border-top:1px solid #e2ddd4;padding-top:0.5rem}' +
+            '.footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #e2ddd4;font-size:0.72rem;color:#9c9789}' +
             '</style></head><body>' +
-            '<h1>FlipSide Analysis</h1>' +
-            '<p style="font-size:1.05rem;color:#3d3b36;margin-top:-0.3rem">' + escapeHtml(docName) + '</p>' +
+            '<h1>FlipSide Analysis Report</h1>' +
+            '<p style="font-size:1rem;color:#3d3b36;margin-top:-0.3rem">' + escapeHtml(docName) + '</p>' +
+            '<p style="font-size:0.78rem;color:#9c9789">Analyzed: ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + '</p>' +
             body +
-            '<div class="footer">Generated by FlipSide \u2014 The dark side of small print.<br>Powered by Claude Opus 4.6 extended thinking. \u2022 flipside.digitaldigging.org</div>' +
+            '<div class="footer">Generated by FlipSide \u2014 The Other Side of Small Print.<br>Powered by Claude Opus 4.6. This is an AI-generated educational review, not legal advice.<br>flipside.digitaldigging.org</div>' +
             '</body></html>';
-        var blob = new Blob([exportHtml], { type: 'text/html' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = docName.replace(/[^a-z0-9]/gi, '_') + '_FlipSide.html';
-        a.click();
-        URL.revokeObjectURL(url);
+
+        // Use html2pdf.js if available, otherwise fall back to HTML download
+        if (typeof html2pdf !== 'undefined') {
+            var container = document.createElement('div');
+            container.innerHTML = exportHtml;
+            // Extract just the body content for html2pdf
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = exportHtml;
+            var bodyEl = tempDiv.querySelector('body');
+            var styleEl = tempDiv.querySelector('style');
+            var wrapper = document.createElement('div');
+            if (styleEl) wrapper.appendChild(styleEl.cloneNode(true));
+            if (bodyEl) wrapper.innerHTML += bodyEl.innerHTML;
+
+            html2pdf().set({
+                margin: [10, 10, 15, 10],
+                filename: docName.replace(/[^a-z0-9]/gi, '_') + '_FlipSide.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            }).from(wrapper).save().then(function() {
+                btn.textContent = origText;
+                btn.classList.remove('generating');
+            }).catch(function() {
+                btn.textContent = origText;
+                btn.classList.remove('generating');
+            });
+        } else {
+            // Fallback: HTML download
+            var blob = new Blob([exportHtml], { type: 'text/html' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = docName.replace(/[^a-z0-9]/gi, '_') + '_FlipSide.html';
+            a.click();
+            URL.revokeObjectURL(url);
+            btn.textContent = origText;
+            btn.classList.remove('generating');
+        }
     });
 
     // ── Email to Lawyer ─────────────────────────────────────────
