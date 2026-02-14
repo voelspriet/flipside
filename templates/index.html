@@ -572,13 +572,11 @@
 
         /* ── Sidebar profile: thumbnail banner + pills ─── */
         .sidebar-profile {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
+            display: none;  /* Doc info moved to verdict column */
         }
         .metadata-line {
             min-width: 0;
-            display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem;
+            display: flex; flex-direction: column; gap: 0.35rem;
             padding: 0.5rem 0 0;
             opacity: 0; transform: translateY(8px);
             transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
@@ -587,7 +585,7 @@
             opacity: 1; transform: translateY(0);
         }
         .meta-pill {
-            display: inline-flex; align-items: baseline; gap: 0.25rem;
+            display: flex; flex-direction: column; gap: 0.05rem;
             padding: 0;
             font-size: 0.65rem; line-height: 1.35;
             color: var(--text-body);
@@ -598,7 +596,6 @@
             font-size: 0.5rem; font-weight: 600;
             text-transform: uppercase; letter-spacing: 0.08em;
             color: var(--text-muted); white-space: nowrap;
-            flex-shrink: 0;
         }
         .meta-pill .meta-pill-value {
             white-space: normal; word-break: break-word;
@@ -724,6 +721,41 @@
         .verdict-body {
             flex: 1; overflow-y: auto; overflow-x: hidden;
             padding: 0.4rem 0.75rem 0.75rem; min-height: 0;
+        }
+        .verdict-doc-profile {
+            margin: 0 -0.75rem; padding: 0.5rem 0.75rem 0.6rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .verdict-doc-thumb {
+            width: 100%; height: 56px; border-radius: var(--radius-sm);
+            overflow: hidden; margin-bottom: 0.5rem; line-height: 0;
+        }
+        .verdict-doc-thumb img {
+            width: 100%; height: 56px; display: block;
+            object-fit: cover; object-position: top center;
+            background: #fff; opacity: 0.85;
+        }
+        .verdict-doc-icon {
+            display: flex; align-items: center; gap: 0.5rem;
+            margin-bottom: 0.4rem;
+        }
+        .verdict-doc-icon svg {
+            width: 22px; height: 22px; color: var(--accent); flex-shrink: 0;
+        }
+        .verdict-doc-icon-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-secondary);
+        }
+        .verdict-doc-meta {
+            display: flex; flex-direction: column; gap: 0.2rem;
+        }
+        .verdict-doc-meta .meta-pill {
+            font-size: 0.6rem; line-height: 1.3;
+        }
+        .verdict-doc-meta .meta-pill-label {
+            font-size: 0.47rem;
         }
         /* Standby state: waiting for deep analysis */
         .verdict-col.standby .verdict-body {
@@ -989,11 +1021,12 @@
 
         /* ── Editorial loading state ────────────────── */
         .editorial-loading {
-            margin: 1rem 0 0; padding: 0;
+            margin: 0; padding: 0;
             width: 100%;
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: var(--radius); box-shadow: var(--shadow-md);
             overflow: hidden;
+            display: flex; flex-direction: column;
         }
         .editorial-loading.woosh-in-sidebar {
             animation: wooshInSidebar 0.9s var(--ease-out-expo) both;
@@ -1023,7 +1056,7 @@
             font-size: 0.72rem; line-height: 1.6;
             color: var(--text-secondary);
             padding: 0 1rem;
-            max-height: 50vh; overflow-y: auto;
+            flex: 1; min-height: 0; overflow-y: auto;
             border-left: 2px solid var(--border);
             margin-left: 1rem; margin-right: 1rem;
             padding-left: 0.75rem;
@@ -1054,37 +1087,47 @@
         .doc-clause-marker-yellow { background: var(--yellow); }
         .doc-clause-marker-red { background: var(--red); }
         .doc-highlight.whoosh-flash {
-            animation: highlightFlash 0.6s ease-out;
+            animation: highlightFlash 1.2s ease-out;
         }
         @keyframes highlightFlash {
-            0% { background: rgba(196, 75, 40, 0.4); box-shadow: 0 0 12px rgba(196, 75, 40, 0.3); }
+            0% { background: rgba(196, 75, 40, 0.55); box-shadow: 0 0 24px rgba(196, 75, 40, 0.45), inset 0 0 8px rgba(196, 75, 40, 0.2); }
+            40% { background: rgba(196, 75, 40, 0.3); box-shadow: 0 0 12px rgba(196, 75, 40, 0.2); }
             100% { box-shadow: none; }
         }
         .clause-whoosh-ghost {
             position: fixed; z-index: 9999; pointer-events: none;
-            display: flex; align-items: center; gap: 6px;
-            padding: 4px 10px 4px 6px;
-            border-radius: 100px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.62rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 16px 8px 10px;
+            border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem; font-weight: 600;
             color: #fff; white-space: nowrap;
-            max-width: 280px; overflow: hidden;
+            max-width: 340px; overflow: hidden;
             will-change: transform, opacity;
+            border: 1px solid rgba(255,255,255,0.25);
         }
         .clause-whoosh-ghost .ghost-num {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 16px; height: 16px; border-radius: 50%;
-            background: rgba(255,255,255,0.3); font-size: 0.55rem;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(255,255,255,0.3); font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace; font-weight: 700;
             flex-shrink: 0;
         }
         .clause-whoosh-ghost .ghost-text {
             overflow: hidden; text-overflow: ellipsis;
-            font-weight: 500; opacity: 0.9;
+            font-weight: 500; font-style: italic; opacity: 0.95;
         }
-        .clause-whoosh-ghost-green { background: var(--green); }
-        .clause-whoosh-ghost-yellow { background: var(--yellow); color: #1a1a1a; }
+        .clause-whoosh-ghost-green { background: var(--green); box-shadow: 0 6px 28px rgba(45, 138, 78, 0.5); }
+        .clause-whoosh-ghost-yellow { background: var(--yellow); color: #1a1a1a; box-shadow: 0 6px 28px rgba(184, 134, 11, 0.5); }
         .clause-whoosh-ghost-yellow .ghost-num { background: rgba(0,0,0,0.15); }
-        .clause-whoosh-ghost-red { background: var(--accent); }
+        .clause-whoosh-ghost-red { background: var(--accent); box-shadow: 0 6px 28px rgba(196, 75, 40, 0.5); }
+        .card-land-flash {
+            animation: cardLandFlash 0.7s ease-out;
+        }
+        @keyframes cardLandFlash {
+            0% { box-shadow: inset 0 0 0 2px var(--accent), 0 0 24px rgba(196, 75, 40, 0.3); }
+            100% { box-shadow: none; }
+        }
         .editorial-loading-indicator {
             display: flex; align-items: center; gap: 0.75rem;
             margin: 0 1.5rem; padding: 1rem 0 1.2rem;
@@ -1136,7 +1179,7 @@
         .card-viewport { margin: 0.5rem 0 1.5rem; }
         .card-navigation {
             display: flex; align-items: center; justify-content: center;
-            gap: 1.5rem; padding: 0.5rem 0 0.75rem;
+            gap: 1.5rem; padding: 0.75rem 0 0.5rem;
         }
         .card-nav-btn {
             display: inline-flex; align-items: center; gap: 0.35rem;
@@ -1181,48 +1224,33 @@
             border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;
             box-shadow: var(--shadow-md); animation: fadeUp 0.5s ease forwards;
         }
-        .summary-top { display: flex; gap: 1.5rem; align-items: flex-start; }
-        .score-ring-container { flex-shrink: 0; }
-        .score-ring { width: 110px; height: 110px; overflow: visible; }
-        .score-ring .ring-bg { fill: none; stroke: var(--border); stroke-width: 6; }
-        .score-ring .ring-fill {
-            fill: none; stroke-width: 6; stroke-linecap: round;
-            transform: rotate(-90deg); transform-origin: center;
-            transition: stroke-dashoffset 1s ease;
+        .summary-top { display: flex; flex-direction: column; gap: 0.75rem; }
+        .verdict-tier {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; font-weight: 800;
+            letter-spacing: 0.04em; text-transform: uppercase; padding: 0.6rem 1rem;
+            border-left: 4px solid var(--border); background: var(--bg-warm);
+            line-height: 1.3;
         }
-        .score-ring .score-value {
-            font-size: 24px; font-weight: 800; fill: var(--text-primary);
-            font-family: 'DM Sans', sans-serif;
+        .verdict-tier[data-tier="sign"]      { border-left-color: var(--green); color: var(--green); }
+        .verdict-tier[data-tier="read"]      { border-left-color: #b8960c; color: #8a7200; }
+        .verdict-tier[data-tier="negotiate"] { border-left-color: var(--yellow); color: #9a6c00; }
+        .verdict-tier[data-tier="legal"]     { border-left-color: var(--red); color: var(--red); }
+        .verdict-tier[data-tier="dontsign"]  { border-left-color: #7a1a1a; color: #7a1a1a; background: #fdf0f0; }
+        .clause-strip { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 0.5rem; }
+        .clause-dot {
+            width: 10px; height: 10px; border-radius: 50%; border: none; padding: 0;
+            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+            flex-shrink: 0;
         }
-        .score-ring .score-label {
-            font-size: 9px; fill: var(--text-secondary); font-weight: 500;
-            font-family: 'DM Sans', sans-serif;
-        }
-        .score-ring-label {
-            display: block; text-align: center; font-size: 0.68rem;
-            color: var(--text-secondary); margin-top: 0.15rem;
-            line-height: 1.2; max-width: 120px;
+        .clause-dot:hover { transform: scale(1.5); box-shadow: 0 0 0 2px rgba(0,0,0,0.15); }
+        .clause-dot.dot-red    { background: var(--red); }
+        .clause-dot.dot-yellow { background: var(--yellow); }
+        .clause-dot.dot-green  { background: var(--green); }
+        .clause-strip-counts {
+            font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
         }
         .summary-meta { flex: 1; min-width: 0; }
-        .summary-title {
-            font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-        .score-bars { display: flex; flex-direction: column; gap: 0.35rem; }
-        .score-bar-row {
-            display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem;
-        }
-        .score-bar-label { width: 38px; color: var(--text-secondary); font-weight: 500; }
-        .score-bar-track {
-            flex: 1; height: 6px; background: var(--border-light);
-            border-radius: 3px; overflow: hidden;
-        }
-        .score-bar-fill {
-            height: 100%; border-radius: 3px;
-            transition: width 1s ease;
-        }
-        .score-bar-value { width: 24px; text-align: right; font-weight: 600; font-size: 0.75rem; }
-        .risk-distribution { display: none; }
         .summary-concerns {
             list-style: none; margin-top: 0.8rem; padding: 0;
             font-size: 0.82rem; color: var(--text-body);
@@ -1451,6 +1479,32 @@
             font-size: 0.7rem; font-weight: 500; color: var(--text-dim);
             text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 0.35rem;
         }
+        .front-quote-pill {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 12px; margin-bottom: 0.9rem;
+            border-radius: var(--radius-sm);
+            background: var(--bg-surface); border: 1px solid var(--border-light);
+            font-size: 0.75rem; line-height: 1.45; color: var(--text-secondary);
+            font-style: italic; overflow: hidden;
+            opacity: 0; transform: scale(0.95);
+            transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+        }
+        .front-quote-pill.revealed {
+            opacity: 1; transform: scale(1);
+        }
+        .front-quote-pill .pill-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; min-width: 20px; border-radius: 50%;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+            color: #fff; flex-shrink: 0;
+        }
+        .front-quote-pill .pill-num-green { background: var(--green); }
+        .front-quote-pill .pill-num-yellow { background: var(--yellow); color: #1a1a1a; }
+        .front-quote-pill .pill-num-red { background: var(--accent); }
+        .front-quote-pill .pill-text {
+            overflow: hidden; text-overflow: ellipsis;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
         .flip-card .clause-title {
             font-size: 1.15rem; font-weight: 700; color: var(--text-primary);
             line-height: 1.3; margin-bottom: 1rem;
@@ -1547,22 +1601,13 @@
         .skeleton-reader-short {
             height: 0.85rem; width: 60%; margin-bottom: 1.5rem;
         }
-        .skeleton-message {
-            font-size: 0.82rem; line-height: 1.6;
-            color: var(--text-muted);
-            padding: 1rem 0; margin-top: 0.5rem;
-            border-top: 1px dashed var(--border-light);
-        }
-        .skeleton-message strong {
-            color: var(--text-primary); font-weight: 600;
-        }
-        .skeleton-btn {
+        .skeleton-waiting {
             display: flex; align-items: center; justify-content: center; gap: 0.6rem;
             padding: 0.9rem 2rem;
-            background: var(--border-light);
-            border-radius: var(--radius) var(--radius) 0 0;
-            font-family: inherit; font-size: 0.85rem;
-            font-weight: 600; color: var(--text-muted);
+            border-top: 1px solid var(--border-light);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+            font-weight: 500; color: var(--text-muted);
+            letter-spacing: 0.02em;
         }
         .skeleton-pulses {
             padding: 2rem 2rem 0;
@@ -1685,6 +1730,13 @@
             border-bottom: 2px solid var(--green);
         }
         .risk-header .clause-title { margin-bottom: 0; font-size: 1.05rem; }
+        .risk-header-label {
+            display: block; width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            margin-bottom: 0.25rem; opacity: 0.6;
+        }
         .risk-badge-group {
             display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;
         }
@@ -2498,8 +2550,7 @@
             .demo-grid { grid-template-columns: repeat(2, 1fr); }
             /* Skeleton card */
             .skeleton-pulses { padding: 1.5rem 1.25rem 0; }
-            .skeleton-message { font-size: 0.78rem; }
-            .skeleton-btn { font-size: 0.78rem; }
+            .skeleton-waiting { font-size: 0.68rem; }
 
             /* Upload screen */
             .brand h1 { font-size: 2.4rem; }
@@ -2515,7 +2566,7 @@
             .doc-thumbnail { width: 100%; height: 80px; }
             .doc-thumbnail img { height: 80px; object-fit: cover; object-position: top center; }
             .metadata-line { gap: 0.2rem; }
-            .meta-pill { font-size: 0.6rem; padding: 0.15rem 0.4rem; }
+            .meta-pill { font-size: 0.6rem; padding: 0; }
             .meta-pill .meta-pill-label { font-size: 0.4rem; }
 
             /* Editorial loading / document preview */
@@ -2558,8 +2609,9 @@
             }
 
             /* Summary */
-            .summary-top { flex-direction: column; align-items: center; text-align: center; gap: 1rem; }
-            .score-ring { width: 90px; height: 90px; }
+            .verdict-tier { font-size: 1rem; }
+            .clause-dot { width: 8px; height: 8px; }
+            .clause-strip { gap: 4px; }
 
             /* Follow-up */
             .followup-input { font-size: 0.85rem; }
@@ -3026,6 +3078,24 @@
 
         <!-- Card viewport: one card at a time -->
         <div class="card-viewport hidden" id="cardViewport">
+            <!-- Skeleton card: mimics a real flip card while waiting for first clause -->
+            <div class="skeleton-card hidden" id="skeletonCard">
+                <div class="risk-header risk-header-green" style="opacity:0.5">
+                    <span class="risk-header-label" style="color:var(--green-text)">You think that</span>
+                    <div class="skeleton-pulse" style="height:1.2rem;width:70%;border-radius:6px"></div>
+                </div>
+                <div class="skeleton-pulses">
+                    <div class="skeleton-pulse skeleton-section"></div>
+                    <div class="skeleton-pulse skeleton-reader"></div>
+                    <div class="skeleton-pulse skeleton-reader-short"></div>
+                    <div class="skeleton-pulse skeleton-reader" style="width:70%"></div>
+                </div>
+                <div class="skeleton-waiting" id="skeletonMessage">
+                    <span class="pulsing-dots"><span></span><span></span><span></span></span>
+                    Waiting for first clause to be flipped
+                </div>
+            </div>
+            <div id="flipCardContainer"></div>
             <nav class="card-navigation hidden" id="cardNavigation">
                 <button class="card-nav-btn card-nav-prev" disabled>
                     <span>&larr;</span> <span>Previous</span>
@@ -3035,20 +3105,6 @@
                     <span class="card-nav-next-label">Next clause &rarr;</span>
                 </button>
             </nav>
-            <!-- Skeleton card: shown while waiting for first clause -->
-            <div class="skeleton-card hidden" id="skeletonCard">
-                <div class="skeleton-btn">
-                    <span>Reading for you...</span>
-                </div>
-                <div class="skeleton-pulses">
-                    <div class="skeleton-pulse skeleton-reassurance"></div>
-                    <div class="skeleton-pulse skeleton-section"></div>
-                    <div class="skeleton-pulse skeleton-reader"></div>
-                    <div class="skeleton-pulse skeleton-reader-short"></div>
-                    <div class="skeleton-message" id="skeletonMessage"></div>
-                </div>
-            </div>
-            <div id="flipCardContainer"></div>
             <div class="card-nav-dots" id="cardNavDots"></div>
             <div class="chapter-title" id="chapterTitle">
                 <span class="chapter-title-counter" id="chapterCounter"></span>
@@ -3099,6 +3155,12 @@
             <button class="verdict-expand-btn" id="verdictExpandBtn" style="opacity:0.4;pointer-events:none;">0 of 4 ready</button>
         </div>
         <div class="verdict-body" id="verdictBody">
+            <div class="verdict-doc-profile hidden" id="verdictDocProfile">
+                <div class="verdict-doc-thumb hidden" id="verdictDocThumb">
+                    <img id="verdictDocThumbImg" alt="Document">
+                </div>
+                <div class="verdict-doc-meta" id="verdictDocMeta"></div>
+            </div>
             <div class="verdict-invitation" id="verdictInvitation">You're invited to look over our expert's shoulder while they check claims one by one. Flip the card to find the dark side of the small print.</div>
             <div class="verdict-status" id="verdictStatus">Our expert is reading the small print <span class="verdict-time-pill" id="verdictCountdown">2:00</span></div>
             <div class="verdict-tricks hidden" id="verdictTricks">
@@ -3183,6 +3245,50 @@
     // Backward compat — emoji fallback
     var TRICK_MAP = {};
     Object.keys(TRICK_ICONS).forEach(function(k) { TRICK_MAP[k] = ''; });
+
+    // ── Document type category icons (from demo tiles) ───
+    var DOC_TYPE_ICONS = [
+        { keys: ['lease', 'rental', 'tenant', 'landlord', 'residential lease'], label: 'Lease',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"/><path d="M12 11l9-9"/><path d="M17 6l4-4"/><path d="M18.5 7.5L22 7l-3-3"/></svg>' },
+        { keys: ['insurance', 'coverage', 'policy', 'policyholder', 'underwriting'], label: 'Insurance',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' },
+        { keys: ['terms of service', 'terms of use', 'user agreement', 'privacy policy', 'tos', 'eula'], label: 'Terms of Service',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>' },
+        { keys: ['employment', 'offer letter', 'job', 'non-compete', 'noncompete', 'severance', 'work contract'], label: 'Employment',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>' },
+        { keys: ['loan', 'mortgage', 'credit', 'lending', 'promissory', 'financing'], label: 'Loan',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18V11"/><path d="M10 18V11"/><path d="M14 18V11"/><path d="M18 18V11"/><path d="M4 7h16l-8-5z"/></svg>' },
+        { keys: ['gym', 'fitness', 'membership', 'health club', 'workout'], label: 'Gym',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>' },
+        { keys: ['medical', 'patient', 'consent', 'hipaa', 'treatment', 'procedure', 'healthcare', 'hospital'], label: 'Medical',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>' },
+        { keys: ['hoa', 'homeowner association', 'bylaws', 'covenants', 'cc&r', 'community rules'], label: 'HOA',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' },
+        { keys: ['wedding', 'venue', 'event', 'catering', 'reception'], label: 'Event Venue',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4V2"/><path d="M17 4V2"/><path d="M5 4h14a2 2 0 0 1 2 2v4a7 7 0 0 1-14 0V6a2 2 0 0 1 2-2z"/></svg>' },
+        { keys: ['coupon', 'discount', 'reward', 'loyalty', 'voucher', 'promo'], label: 'Coupon',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>' },
+        { keys: ['sweepstakes', 'contest', 'giveaway', 'raffle', 'lottery', 'prize', 'official rules'], label: 'Sweepstakes',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
+        { keys: ['pet', 'adoption', 'animal', 'shelter', 'veterinary'], label: 'Pet Adoption',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="4.5" cy="9" r="2"/><circle cx="17.5" cy="9" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M12 18c-2.5 2-6 2-6-.5C6 15 9 14 12 17c3-3 6-2 6 .5 0 2.5-3.5 2.5-6 .5z"/></svg>' },
+        { keys: ['timeshare', 'vacation', 'resort', 'fractional ownership'], label: 'Timeshare',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' },
+        { keys: ['hackathon', 'waiver', 'liability waiver', 'participation', 'indemnity'], label: 'Waiver',
+          svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L9 9l-7 1 5 5-1.5 7L12 18l6.5 4L17 15l5-5-7-1z"/></svg>' }
+    ];
+
+    function detectDocIcon(typeStr) {
+        if (!typeStr) return null;
+        var lower = typeStr.toLowerCase();
+        for (var i = 0; i < DOC_TYPE_ICONS.length; i++) {
+            var cat = DOC_TYPE_ICONS[i];
+            for (var j = 0; j < cat.keys.length; j++) {
+                if (lower.indexOf(cat.keys[j]) >= 0) return cat;
+            }
+        }
+        return null;
+    }
 
     var TRICK_DESCRIPTIONS = {
         'Silent Waiver': 'Quietly surrenders your legal rights',
@@ -3993,6 +4099,8 @@
         hasFlippedOnce = false;
         cardViewTransitioned = false;
         clauseHighlightData = [];
+        _highlightsRenderedUpTo = -1;
+        _maxCardReached = 0;
         documentNotApplicable = '';
         detectedDocLanguage = '';
         $('exportLangBtn').classList.add('hidden');
@@ -4057,14 +4165,9 @@
 
         // Show flip prompt + skeleton card in center while waiting for first clause
         var skeleton = $('skeletonCard');
-        var skeletonMsg = $('skeletonMessage');
         skeleton.classList.remove('hidden');
         $('cardViewport').classList.remove('hidden');
         resultsArea.classList.remove('hidden');
-        var wordCount = documentFullText ? documentFullText.split(/\s+/).length : 0;
-        skeletonMsg.innerHTML = wordCount > 0
-            ? '<strong>' + wordCount.toLocaleString() + ' words</strong> of text. FlipSide is reading every one.'
-            : 'FlipSide is reading your document...';
 
         // Sidebar: prepare content (collapsed — expands after screen switch)
         var sidebar = $('analysisSidebar');
@@ -4078,14 +4181,21 @@
             if (documentThumbnail) {
                 thumbImg.src = 'data:image/jpeg;base64,' + documentThumbnail;
                 thumbEl.classList.remove('hidden');
+                // Also set verdict column thumbnail
+                var vThumb = $('verdictDocThumb');
+                var vThumbImg = $('verdictDocThumbImg');
+                if (vThumbImg) {
+                    vThumbImg.src = thumbImg.src;
+                    vThumb.classList.remove('hidden');
+                }
             } else {
                 thumbEl.classList.add('hidden');
             }
-            // Text preview — populate but keep hidden until first card triggers woosh
+            // Text preview — show immediately so user sees the full layout
             var loadingEl = $('editorialLoading');
             var loadingText = $('editorialLoadingText');
             loadingText.innerHTML = escapeHtml(documentFullText);
-            loadingEl.classList.add('hidden');
+            loadingEl.classList.remove('hidden');
             loadingEl.classList.remove('woosh-in-sidebar');
         } else {
             sidebar.classList.add('hidden');
@@ -4102,7 +4212,11 @@
             window.scrollTo({ top: 0 });
             // Expand sidebar after a beat — content column stays centered first
             if (hasSidebar) {
-                setTimeout(function() { layoutEl.classList.add('sidebar-visible'); }, 120);
+                setTimeout(function() {
+                    layoutEl.classList.add('sidebar-visible');
+                    // Sync sidebar height to skeleton card
+                    syncSidebarHeight(skeleton);
+                }, 120);
             }
         }, 350);
 
@@ -4415,18 +4529,20 @@
                     metadataLine.classList.add('visible');
                 });
             });
-            // Update skeleton message with drafter name
-            var drafterMatch = responseContent.match(/\*\*Drafted By\*\*[:\s]*([^\n*]+)/i);
-            var skMsg = $('skeletonMessage');
-            if (drafterMatch && skMsg) {
-                var drafter = drafterMatch[1].trim();
-                var wc = documentFullText ? documentFullText.split(/\s+/).length : 0;
-                skMsg.innerHTML = '<strong>' + (wc > 0 ? wc.toLocaleString() + ' words' : 'This document') +
-                    '.</strong> This is what ' + escapeHtml(drafter) +
-                    ' expects you to read and agree to.';
-
-                // Woosh is now triggered by transitionToCardView() when first card appears
+            // Also populate verdict column doc profile
+            var vMeta = $('verdictDocMeta');
+            var vProfile = $('verdictDocProfile');
+            if (vMeta && vProfile) {
+                // Detect document category icon from type
+                var typeMatch = responseContent.match(/\*\*Document Type\*\*[:\s]*([^\n*]+)/i);
+                var docCat = typeMatch ? detectDocIcon(typeMatch[1]) : null;
+                var iconHtml = docCat
+                    ? '<div class="verdict-doc-icon"><span class="verdict-doc-icon-svg">' + docCat.svg + '</span><span class="verdict-doc-icon-label">' + escapeHtml(docCat.label) + '</span></div>'
+                    : '';
+                vMeta.innerHTML = iconHtml + parts.join('');
+                vProfile.classList.remove('hidden');
             }
+            // Skeleton message intentionally kept empty — cards arrive fast enough
         }
     }
 
@@ -4724,7 +4840,8 @@
             }
             // Restyle skeleton as a static message (no pulse)
             skeleton.querySelectorAll('.skeleton-pulse').forEach(function(el) { el.style.display = 'none'; });
-            skeleton.querySelector('.skeleton-btn').style.display = 'none';
+            var skWait = skeleton.querySelector('.skeleton-waiting');
+            if (skWait) skWait.style.display = 'none';
             // Hide deep status and verdict column — no point showing Opus for unsuitable docs
             if (documentNotApplicable) {
                 $('deepStatus').classList.add('hidden');
@@ -4840,10 +4957,14 @@
         var frontHtml = '<div class="flip-card-front">' +
             '<span class="card-watermark">' + displayNum + '</span>' +
             '<div class="risk-header risk-header-green">' +
-            (clause.reassurance ? '<h3 class="clause-title" style="color:var(--green-text)">' + escapeHtml(clause.reassurance) + '</h3>' : '') +
+            (clause.reassurance ? '<span class="risk-header-label" style="color:var(--green-text)">You think that</span><h3 class="clause-title" style="color:var(--green-text)">' + escapeHtml(clause.reassurance) + '</h3>' : '') +
             '</div>' +
             '<div class="front-content">' +
             (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
+            (clause.quote ? '<div class="front-quote-pill" data-card-pill="' + index + '">' +
+                '<span class="pill-num pill-num-' + risk + '">' + (index + 1) + '</span>' +
+                '<span class="pill-text">\u201c' + escapeHtml(clause.quote.substring(0, 90)) + (clause.quote.length > 90 ? '\u2026' : '') + '\u201d</span>' +
+                '</div>' : '') +
             '<div class="reader-voice">' +
             '<span class="reader-voice-label">At first glance</span>' +
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
@@ -4856,11 +4977,14 @@
         // ── Back body: full reveal — quote, figure, example, bottom line ──
         var backBodyHtml = '';
 
-        // Source quote at top of card back for credibility
+        // Source quote on card back — only for green cards (red/yellow use "Find in document" link instead)
         if (clause.quote) {
-            backBodyHtml += '<div class="back-quote-label">From the document</div>' +
-                '<div class="clause-quote">' + escapeHtml(clause.quote) + '</div>' +
-                '<span class="find-in-doc" data-card-index="' + index + '">Find in document \u2192</span>';
+            if (risk === 'green') {
+                backBodyHtml += '<div class="back-quote-label">From the document</div>' +
+                    '<div class="clause-quote">' + escapeHtml(clause.quote) + '</div>';
+            } else {
+                backBodyHtml += '<span class="find-in-doc" data-card-index="' + index + '">Find in document \u2192</span>';
+            }
         }
 
         var isGreenSummary = clause.title === 'Fair Clauses Summary' || (risk === 'green' && clause.title && clause.title.indexOf('Fair Clauses') >= 0);
@@ -4905,8 +5029,10 @@
         }
 
         var backTitle = clause.reveal || clause.title;
+        var backLabel = (risk === 'green') ? 'And that\u2019s correct' : 'But in reality';
         backHtml = '<div class="flip-card-back"><div class="back-content">' +
             '<div class="risk-header risk-header-' + risk + '">' +
+            '<span class="risk-header-label">' + backLabel + '</span>' +
             '<h3 class="clause-title">' + escapeHtml(backTitle) + '</h3>' +
             '</div>' +
             '<div class="back-body">' + backBodyHtml + '</div>' +
@@ -4941,13 +5067,20 @@
     // Stores all clause highlight data; rebuilds from clean source each time
     var clauseHighlightData = [];
 
+    var _highlightsRenderedUpTo = -1;  // tracks which card index highlights are shown up to
+    var _maxCardReached = 0;  // highest card index the user has navigated to
+
     function highlightClauseInPreview(clause, cardIndex) {
         if (!clause.quote || clause.quote.length < 10) return;
         clauseHighlightData.push({ quote: clause.quote, cardIndex: cardIndex, risk: clause.risk || 'green' });
+        // Render all markers immediately as clauses arrive
         rebuildPreviewHighlights();
     }
 
     function rebuildPreviewHighlights() {
+        var totalHighlights = clauseHighlightData.length;
+        if (totalHighlights === _highlightsRenderedUpTo) return;  // no change needed
+        _highlightsRenderedUpTo = totalHighlights;
         var previewEl = $('editorialLoadingText');
         if (!previewEl || !documentFullText) return;
 
@@ -4982,7 +5115,7 @@
             return { start: origStart, end: origEnd };
         }
 
-        // Find all match positions
+        // Find match positions for all known clauses
         var matches = [];
         for (var i = 0; i < clauseHighlightData.length; i++) {
             var d = clauseHighlightData[i];
@@ -5082,6 +5215,15 @@
         previewEl.innerHTML = html;
     }
 
+    function syncSidebarHeight(cardEl) {
+        var editLoading = document.querySelector('.editorial-loading');
+        if (!editLoading || window.innerWidth <= 900) return;
+        requestAnimationFrame(function() {
+            var cardH = cardEl.getBoundingClientRect().height;
+            editLoading.style.height = Math.max(250, cardH) + 'px';
+        });
+    }
+
     function scrollPreviewToCard(cardIndex) {
         var previewEl = $('editorialLoadingText');
         if (!previewEl) return;
@@ -5114,41 +5256,23 @@
         if (statusEl) statusEl.textContent = 'Analysis in progress...';
 
         var skeleton = $('skeletonCard');
-        var loadingEl = $('editorialLoading');
         var viewport = $('cardViewport');
 
-        // Step 1: Skeleton flies left toward sidebar (0.7s animation)
-        skeleton.classList.add('fly-to-sidebar');
+        // Skeleton fades out, real card fades in — sidebar already visible
+        skeleton.classList.add('hidden');
+        viewport.classList.remove('hidden');
+        resultsArea.classList.remove('hidden');
+        showCardAtIndex(0);
 
-        // Step 2: At 300ms into the fly animation, sidebar document wooshes in from right
-        // This overlap creates the illusion of text moving from center → left
-        if (loadingEl && loadingEl.classList.contains('hidden')) {
-            setTimeout(function() {
-                loadingEl.classList.remove('hidden');
-                void loadingEl.offsetHeight;
-                loadingEl.classList.add('woosh-in-sidebar');
-                startEditorialStatusRotation();
-                console.log('[FlipSide] Sidebar woosh at T=' + (Date.now() - analysisStartTime) + 'ms');
-            }, 300);
+        // Pulse the first flip trigger to draw attention
+        var firstTrigger = viewport.querySelector('.flip-trigger');
+        if (firstTrigger) {
+            firstTrigger.classList.add('hint-pulse');
+            var tooltip = document.createElement('span');
+            tooltip.className = 'flip-hint-tooltip';
+            tooltip.textContent = 'Tap to see what they\u2019re not telling you';
+            firstTrigger.appendChild(tooltip);
         }
-
-        // Step 3: At 500ms, hide skeleton and show the real first card (prompt already visible)
-        setTimeout(function() {
-            skeleton.classList.add('hidden');
-            skeleton.classList.remove('fly-to-sidebar');
-            viewport.classList.remove('hidden');
-            resultsArea.classList.remove('hidden');
-            showCardAtIndex(0);
-            // Pulse the first flip trigger to draw attention
-            var firstTrigger = viewport.querySelector('.flip-trigger');
-            if (firstTrigger) {
-                firstTrigger.classList.add('hint-pulse');
-                var tooltip = document.createElement('span');
-                tooltip.className = 'flip-hint-tooltip';
-                tooltip.textContent = 'Tap to see what they\u2019re not telling you';
-                firstTrigger.appendChild(tooltip);
-            }
-        }, 500);
     }
 
     // ── Verdict column helpers (4-section live report) ─────────────────
@@ -5297,7 +5421,7 @@
         for (var i = 0; i < lines.length; i++) {
             var l = lines[i].trim().replace(/\*\*/g, '').replace(/\*/g, '');
             // Skip headings, scores, labels, numbered lists, empty lines
-            if (!l || l.startsWith('#') || l.startsWith('---') || /^Overall Risk/i.test(l) || /^Power Imbalance/i.test(l) || /^\d+\/100/.test(l) || /^SEVERITY/i.test(l) || /^\d+\.\s/.test(l) || /^\d+:\d+/.test(l) || l.length < 20) continue;
+            if (!l || l.startsWith('#') || l.startsWith('---') || /^Overall Risk/i.test(l) || /^Power Imbalance/i.test(l) || /^Verdict:/i.test(l) || /^\d+\/100/.test(l) || /^SEVERITY/i.test(l) || /^\d+\.\s/.test(l) || /^\d+:\d+/.test(l) || l.length < 20) continue;
             conclusion = l;
             break;
         }
@@ -5311,6 +5435,13 @@
         hideVerdictCol();
         exitFocusedMode();
         verdictCol.classList.remove('standby', 'thinking', 'writing', 'ready', 'collapsed');
+        // Reset doc profile in verdict
+        var vProfile = $('verdictDocProfile');
+        if (vProfile) vProfile.classList.add('hidden');
+        var vMeta = $('verdictDocMeta');
+        if (vMeta) vMeta.innerHTML = '';
+        var vThumb = $('verdictDocThumb');
+        if (vThumb) vThumb.classList.add('hidden');
         verdictTitle.textContent = 'Expert report';
         verdictExpandBtn.textContent = '0 of 4 ready';
         verdictExpandBtn.classList.remove('ready');
@@ -5588,13 +5719,27 @@
         );
     }
 
-    // ── Clause whoosh: animate ghost pill from sidebar highlight → card ──
+    // ── Clause whoosh: ghost pill flies from sidebar highlight → pill on card ──
     function whooshClauseToCard(cardIndex, cardEl) {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            // Still reveal the pill, just without animation
+            var pillNoAnim = cardEl.querySelector('.front-quote-pill[data-card-pill="' + cardIndex + '"]');
+            if (pillNoAnim) pillNoAnim.classList.add('revealed');
+            return;
+        }
         var previewEl = $('editorialLoadingText');
         if (!previewEl) return;
         var highlight = previewEl.querySelector('.doc-highlight[data-card-index="' + cardIndex + '"]');
-        if (!highlight) return;
+
+        // Target: the quote pill on the card front
+        var pill = cardEl.querySelector('.front-quote-pill[data-card-pill="' + cardIndex + '"]');
+        if (!pill) return;
+
+        // If no sidebar highlight found, just reveal the pill directly
+        if (!highlight) {
+            pill.classList.add('revealed');
+            return;
+        }
 
         // Flash the sidebar highlight
         highlight.classList.remove('whoosh-flash');
@@ -5602,35 +5747,44 @@
         highlight.classList.add('whoosh-flash');
 
         var risk = (cardEl.getAttribute('data-risk-level') || 'green');
-        var marker = highlight.querySelector('.doc-clause-marker');
-        var sourceRect = (marker || highlight).getBoundingClientRect();
+        var sourceRect = highlight.getBoundingClientRect();
+        var pillRect = pill.getBoundingClientRect();
 
-        // Target: the section-ref area at top of card, or the card title
-        var landing = cardEl.querySelector('.clause-section-ref') || cardEl.querySelector('.clause-title');
-        if (!landing) return;
-        var targetRect = landing.getBoundingClientRect();
-
-        // Build ghost pill
-        var ghost = document.createElement('span');
+        // Build ghost — matches pill styling
+        var ghost = document.createElement('div');
         ghost.className = 'clause-whoosh-ghost clause-whoosh-ghost-' + risk;
         var num = cardIndex + 1;
-        var snippet = (cardEl.getAttribute('data-clause-title') || '').substring(0, 30);
-        ghost.innerHTML = '<span class="ghost-num">' + num + '</span><span class="ghost-text">' + escapeHtml(snippet) + '</span>';
+        var quote = (cardEl.getAttribute('data-quote') || '').substring(0, 50);
+        if (quote.length >= 49) quote += '\u2026';
+        ghost.innerHTML = '<span class="ghost-num">' + num + '</span><span class="ghost-text">\u201c' + escapeHtml(quote) + '\u201d</span>';
         document.body.appendChild(ghost);
 
-        // Position at source
-        ghost.style.left = sourceRect.left + 'px';
-        ghost.style.top = sourceRect.top + 'px';
+        // Position at sidebar highlight center
+        var gw = ghost.offsetWidth;
+        var gh = ghost.offsetHeight;
+        var srcX = sourceRect.left + sourceRect.width / 2 - gw / 2;
+        var srcY = sourceRect.top + sourceRect.height / 2 - gh / 2;
+        ghost.style.left = srcX + 'px';
+        ghost.style.top = srcY + 'px';
 
-        // Animate to target
-        var dx = targetRect.left - sourceRect.left;
-        var dy = targetRect.top - sourceRect.top;
+        // Fly to the pill
+        var dx = pillRect.left + pillRect.width / 2 - gw / 2 - srcX;
+        var dy = pillRect.top + pillRect.height / 2 - gh / 2 - srcY;
+        var midX = dx * 0.5;
+        var midY = Math.min(dy * 0.3, dy - 40);  // arc upward
+
         ghost.animate([
-            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-            { transform: 'translate(' + (dx * 0.5) + 'px, ' + (dy * 0.3) + 'px) scale(1.15)', opacity: 1, offset: 0.4 },
-            { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0.85)', opacity: 0 }
-        ], { duration: 550, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' })
-        .onfinish = function() { ghost.remove(); };
+            { transform: 'translate(0, 0) scale(0.9)', opacity: 0.6 },
+            { transform: 'translate(0, 0) scale(1.08)', opacity: 1, offset: 0.08 },
+            { transform: 'translate(' + midX + 'px, ' + midY + 'px) scale(1.12)', opacity: 1, offset: 0.45 },
+            { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(1)', opacity: 1, offset: 0.82 },
+            { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0.97)', opacity: 0 }
+        ], { duration: 900, easing: 'ease-in-out', fill: 'forwards' })
+        .onfinish = function() {
+            ghost.remove();
+            // Reveal the pill — ghost "deposited" the quote into the card
+            pill.classList.add('revealed');
+        };
     }
 
     function showCardAtIndex(index) {
@@ -5638,6 +5792,7 @@
         if (index < 0 || index >= cards.length) return;
 
         currentCardIndex = index;
+        if (index > _maxCardReached) _maxCardReached = index;
         // Restore side columns when navigating (un-flips the card)
         var layout = flipCardContainer.closest('.analysis-layout');
         if (layout) layout.classList.remove('layout-flipped');
@@ -5663,19 +5818,27 @@
             setTimeout(function() { scoreBarFill.style.width = targetWidth + '%'; }, 100);
         }
 
-        // Scroll document preview to matching clause
+        // Refresh highlights and scroll to current card
+        rebuildPreviewHighlights();
         scrollPreviewToCard(index);
 
-        // Whoosh ghost from sidebar to card on first appearance
+        // Whoosh ghost from sidebar to card on first appearance (desktop)
         if (isFirstAppearance && window.innerWidth > 900) {
             // Small delay so card is visible and positioned before we read rects
-            setTimeout(function() { whooshClauseToCard(index, visibleCard); }, 120);
+            setTimeout(function() { whooshClauseToCard(index, visibleCard); }, 150);
+        } else {
+            // Revisited card or mobile — just ensure pill is visible
+            var pill = visibleCard.querySelector('.front-quote-pill');
+            if (pill && !pill.classList.contains('revealed')) pill.classList.add('revealed');
         }
 
         // Update chapter title — persistent editorial voice
         updateChapterTitle(index, cards.length, visibleCard);
 
         updateCardNavigation();
+
+        // Sync sidebar height to match the visible card
+        syncSidebarHeight(visibleCard);
     }
 
     var chapterPhrases = [
@@ -6152,22 +6315,43 @@
     // ── Summary card builder ──────────────────────────────────
     function buildSummaryCard() {
         var text = assembleDeepText() || responseContent;
-        var scoreMatch = text.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
-        if (!scoreMatch) return;
-        var score = parseInt(scoreMatch[1]);
 
-        var piiMatch = text.match(/Power Imbalance Index[:\s]*(\d+)\/100/i);
-        var piiScore = piiMatch ? parseInt(piiMatch[1]) : null;
+        // ── Parse verdict tier from Opus output ──
+        var VERDICT_TIERS = {
+            'SIGN WITH CONFIDENCE':      { tier: 'sign',      label: 'Sign with Confidence' },
+            'READ THE FLAGGED CLAUSES':   { tier: 'read',      label: 'Read the Flagged Clauses' },
+            'NEGOTIATE BEFORE SIGNING':   { tier: 'negotiate', label: 'Negotiate Before Signing' },
+            'SEEK LEGAL REVIEW':          { tier: 'legal',     label: 'Seek Legal Review' },
+            'DO NOT SIGN':                { tier: 'dontsign',  label: 'Do Not Sign' }
+        };
 
-        // Liberal parsing: accepts "0 Green · 2 Yellow · 8 Red" or "[0] Green · [2] Yellow · [8] Red"
-        var distMatch = text.match(/\[?(\d+)\]?\s*Green\s*[·•\u00B7\u2022\-–—|,]\s*\[?(\d+)\]?\s*Yellow\s*[·•\u00B7\u2022\-–—|,]\s*\[?(\d+)\]?\s*Red/i);
-        var greenCount = 0, yellowCount = 0, redCount = 0;
-        if (distMatch) {
-            greenCount = parseInt(distMatch[1]);
-            yellowCount = parseInt(distMatch[2]);
-            redCount = parseInt(distMatch[3]);
+        var verdictMatch = text.match(/Verdict:\s*([A-Z][A-Z\s]+)/i);
+        var verdictRaw = verdictMatch ? verdictMatch[1].trim().toUpperCase() : '';
+        var verdict = null;
+
+        // Try exact match first, then prefix match
+        Object.keys(VERDICT_TIERS).forEach(function(key) {
+            if (!verdict && verdictRaw.indexOf(key) === 0) verdict = VERDICT_TIERS[key];
+        });
+
+        // ── Fallback: derive from clause distribution ──
+        var clauses = extractClausesFromResponse();
+        var counts = { red: 0, yellow: 0, green: 0 };
+        clauses.forEach(function(c) { if (counts[c.level] !== undefined) counts[c.level]++; });
+        var total = counts.red + counts.yellow + counts.green;
+
+        if (!verdict && total > 0) {
+            var redPct = counts.red / total;
+            var yellowPct = counts.yellow / total;
+            if (redPct >= 0.5) verdict = VERDICT_TIERS['SEEK LEGAL REVIEW'];
+            else if (redPct >= 0.3 || yellowPct >= 0.5) verdict = VERDICT_TIERS['NEGOTIATE BEFORE SIGNING'];
+            else if (counts.red > 0) verdict = VERDICT_TIERS['READ THE FLAGGED CLAUSES'];
+            else verdict = VERDICT_TIERS['SIGN WITH CONFIDENCE'];
         }
 
+        if (!verdict) return;
+
+        // ── Parse top concerns ──
         var concerns = [];
         var assessmentStart = text.indexOf('Overall Assessment');
         var assessmentText = assessmentStart >= 0 ? text.substring(assessmentStart) : text;
@@ -6179,54 +6363,65 @@
             });
         }
 
-        var scoreColor = score > 65 ? 'var(--red)' : score > 35 ? 'var(--yellow)' : 'var(--green)';
-        // Extract context-aware severity label from model output (after the score)
-        // Format: "Overall Risk Score: 74/100 — Serious risk — seek professional legal review"
-        var severityMatch = text.match(/Overall Risk Score[:\s]*\d+\/100[^—\-\n]*(?:—|[-–])\s*([^\n]+)/i);
-        var scoreLabel = severityMatch ? severityMatch[1].trim().replace(/\*+/g, '') : (
-            score > 80 ? 'seek legal review' : score > 65 ? 'high risk' : score > 40 ? 'moderate risk' : 'low risk'
-        );
-        // Truncate label for display below circle
-        if (scoreLabel.length > 40) scoreLabel = scoreLabel.substring(0, 38) + '\u2026';
-        var piiColor = piiScore > 65 ? 'var(--red)' : piiScore > 35 ? 'var(--yellow)' : 'var(--green)';
-        var circumference = 2 * Math.PI * 42;
-        var offset = circumference * (1 - score / 100);
-
+        // ── Render verdict card ──
         var h = '<div class="summary-card"><div class="summary-top">';
-        h += '<div class="score-ring-container"><svg class="score-ring" viewBox="0 0 100 100">';
-        h += '<circle class="ring-bg" cx="50" cy="50" r="42"/>';
-        h += '<circle class="ring-fill" cx="50" cy="50" r="42" stroke="' + scoreColor + '" stroke-dasharray="' + circumference.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '"/>';
-        h += '<text class="score-value" x="50" y="50" text-anchor="middle" dy="0.35em">' + score + '</text>';
-        h += '</svg><span class="score-ring-label">' + escapeHtml(scoreLabel) + '</span></div>';
+        h += '<div class="verdict-tier" data-tier="' + verdict.tier + '">' + escapeHtml(verdict.label) + '</div>';
 
-        h += '<div class="summary-meta"><div class="summary-title">Document Risk Assessment</div>';
-        h += '<div class="score-bars">';
-        h += '<div class="score-bar-row"><span class="score-bar-label" title="How much this document can hurt you">Risk</span>';
-        h += '<div class="score-bar-track"><div class="score-bar-fill" style="width:' + score + '%;background:' + scoreColor + '"></div></div>';
-        h += '<span class="score-bar-value">' + score + '</span></div>';
-        if (piiScore !== null) {
-            h += '<div class="score-bar-row"><span class="score-bar-label" title="How little you can do about it">Power</span>';
-            h += '<div class="score-bar-track"><div class="score-bar-fill" style="width:' + piiScore + '%;background:' + piiColor + '"></div></div>';
-            h += '<span class="score-bar-value">' + piiScore + '</span></div>';
-        }
-        h += '</div>';
-        h += '<div style="display:flex;gap:1rem;font-size:0.7rem;color:var(--text-muted);margin-top:0.25rem">';
-        h += '<span>Risk = how much it can hurt you</span>';
-        if (piiScore !== null) h += '<span>Power = how little you can do about it</span>';
-        h += '</div>';
-
-        // Risk distribution dots removed
-
-        if (concerns.length) {
-            h += '<ul class="summary-concerns">';
-            concerns.forEach(function(c) {
-                h += '<li><strong>' + escapeHtml(c.title) + '</strong> — ' + escapeHtml(c.desc) + '</li>';
+        // Clause dot strip — sorted: red first, then yellow, then green
+        if (total > 0) {
+            var sortedClauses = clauses.slice().sort(function(a, b) {
+                var order = { red: 0, yellow: 1, green: 2 };
+                return (order[a.level] || 2) - (order[b.level] || 2);
             });
-            h += '</ul>';
+            h += '<div class="clause-strip">';
+            sortedClauses.forEach(function(c, i) {
+                var dotClass = 'dot-' + (c.level || 'green');
+                var title = c.title || ('Clause ' + (i + 1));
+                h += '<button class="clause-dot ' + dotClass + '" data-clause-index="' + i + '" title="' + escapeHtml(title) + '"></button>';
+            });
+            h += '</div>';
+            // Counts label
+            var parts = [];
+            if (counts.red > 0)    parts.push(counts.red + ' concern' + (counts.red > 1 ? 's' : ''));
+            if (counts.yellow > 0) parts.push(counts.yellow + ' watch');
+            if (counts.green > 0)  parts.push(counts.green + ' fair');
+            h += '<div class="clause-strip-counts">' + parts.join(' · ') + '</div>';
         }
-        h += '</div></div></div>';
+
+        // Top concerns
+        if (concerns.length) {
+            h += '<div class="summary-meta"><ul class="summary-concerns">';
+            concerns.forEach(function(c, i) {
+                h += '<li><strong>' + (i + 1) + '. ' + escapeHtml(c.title) + '</strong> — ' + escapeHtml(c.desc) + '</li>';
+            });
+            h += '</ul></div>';
+        }
+        h += '</div></div>';
 
         summaryContainer.innerHTML = h;
+
+        // Clause dot click → navigate to that card
+        summaryContainer.querySelectorAll('.clause-dot').forEach(function(dot) {
+            dot.addEventListener('click', function() {
+                var idx = parseInt(dot.getAttribute('data-clause-index'));
+                // Dots are sorted red→yellow→green, map back to original card order
+                var sorted = clauses.slice().sort(function(a, b) {
+                    var order = { red: 0, yellow: 1, green: 2 };
+                    return (order[a.level] || 2) - (order[b.level] || 2);
+                });
+                var targetTitle = sorted[idx] ? sorted[idx].title : '';
+                // Find the original card index by title match
+                var allCards = flipCardContainer.querySelectorAll('.flip-card');
+                for (var ci = 0; ci < allCards.length; ci++) {
+                    if (allCards[ci].getAttribute('data-clause-title') === targetTitle) {
+                        showCardAtIndex(ci);
+                        return;
+                    }
+                }
+                // Fallback: navigate to the nth card
+                if (idx < allCards.length) showCardAtIndex(idx);
+            });
+        });
 
         // "Message the Company" button — between summary and playbook
         var drafterMatch = responseContent.match(/\*\*Drafted By\*\*[:\s]*([^\n*]+)/i);
@@ -6247,14 +6442,14 @@
                 btn.classList.add('generating');
                 btn.innerHTML = '<span class="pulsing-dots"><span></span><span></span><span></span></span> Drafting your message...';
 
-                var clauses = extractClausesFromResponse();
-                var topConcerns = clauses
-                    .filter(function(c) { return c.riskLevel === 'RED' || c.score >= 60; })
-                    .sort(function(a, b) { return (b.score || 0) - (a.score || 0); })
+                var msgClauses = extractClausesFromResponse();
+                var topConcerns = msgClauses
+                    .filter(function(c) { return c.level === 'red' || c.level === 'yellow'; })
+                    .sort(function(a, b) { var o = { red: 0, yellow: 1 }; return (o[a.level] || 2) - (o[b.level] || 2); })
                     .slice(0, 5);
 
                 var concernsList = topConcerns.map(function(c) {
-                    return '- ' + c.title + ' (Score: ' + (c.score || '?') + '/100, Trick: ' + (c.trick || 'unknown') + '): ' + (c.bottomLine || c.reveal || '');
+                    return '- ' + c.title + ' (Trick: ' + (c.trick || 'unknown') + '): ' + (c.bottomLine || c.reveal || '');
                 }).join('\n');
 
                 var roleMatch = responseContent.match(/\*\*Your Role\*\*[:\s]*([^\n*]+)/i);
@@ -6264,7 +6459,7 @@
 
                 var prompt = 'Write a professional, firm but polite message from ' + userRole +
                     ' to ' + companyName + ' about their ' + docType + '.\n\n' +
-                    'Risk Score: ' + score + '/100. Power Imbalance: ' + (piiScore || '?') + '/100.\n\n' +
+                    'Verdict: ' + verdict.label + '. Clause breakdown: ' + counts.red + ' concerns, ' + counts.yellow + ' watch, ' + counts.green + ' fair.\n\n' +
                     'Top concerns found by analysis:\n' + concernsList + '\n\n' +
                     'The message should:\n' +
                     '1. State that the sender has had the ' + docType + ' independently analyzed\n' +
@@ -6494,13 +6689,12 @@
             body += '</div>';
         }
 
-        // Overall score from summary
-        var scoreMatch = responseContent.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
-        if (scoreMatch) {
-            var s = parseInt(scoreMatch[1]);
-            var sLabel = s > 80 ? 'High risk' : s > 65 ? 'Elevated risk' : s > 40 ? 'Moderate risk' : 'Low risk';
-            var sColor = s > 65 ? '#a83d20' : s > 35 ? '#8a6508' : '#1e6b38';
-            body += '<div class="score-summary"><span class="score-number" style="color:' + sColor + '">' + s + '/100</span> <span class="score-desc">' + sLabel + '</span></div>';
+        // Verdict tier from summary
+        var verdictMatch = responseContent.match(/Verdict:\s*([A-Z][A-Z\s]+)/i);
+        if (verdictMatch) {
+            var tier = verdictMatch[1].trim();
+            var tColor = /DO NOT SIGN/i.test(tier) ? '#7a1a1a' : /SEEK LEGAL/i.test(tier) ? '#a83d20' : /NEGOTIATE/i.test(tier) ? '#9a6c00' : /READ THE/i.test(tier) ? '#8a7200' : '#1e6b38';
+            body += '<div class="score-summary"><span class="score-number" style="color:' + tColor + '">' + escapeHtml(tier) + '</span></div>';
         }
 
         // Clauses from flip cards
@@ -6600,9 +6794,9 @@
         var meta = metadataLine.textContent;
         if (meta) docName = meta.split('Type:')[1] ? meta.split('Type:')[1].split('Drafted')[0].trim() : docName;
 
-        // Extract risk score
-        var scoreMatch = responseContent.match(/Overall Risk Score[:\s]*(\d+)\/100/i);
-        var score = scoreMatch ? scoreMatch[1] : '?';
+        // Extract verdict tier
+        var verdictMatch = responseContent.match(/Verdict:\s*([A-Z][A-Z\s]+)/i);
+        var verdictTier = verdictMatch ? verdictMatch[1].trim() : 'Analysis Complete';
 
         // Extract top 3 concerns from summary card data
         var concerns = [];
@@ -6616,11 +6810,11 @@
             });
         }
 
-        var subject = 'FlipSide Analysis — ' + docName + ' (Risk: ' + score + '/100)';
+        var subject = 'FlipSide Analysis — ' + docName + ' (' + verdictTier + ')';
         var body = 'Hi,\n\n' +
             'I ran an AI analysis on a document I received and wanted to share the key findings with you.\n\n' +
             'Document: ' + docName + '\n' +
-            'Risk Score: ' + score + '/100\n\n';
+            'Verdict: ' + verdictTier + '\n\n';
         if (concerns.length) {
             body += 'Top concerns:\n';
             concerns.forEach(function(c, i) { body += (i + 1) + '. ' + c + '\n'; });

@@ -1866,18 +1866,20 @@ Only for non-English documents.
 
 ## Overall Assessment
 
-**Overall Risk Score: [0-100]/100** — [CONTEXT-AWARE severity label — see tiers below]
+**Verdict: [TIER]**
 
-**Power Imbalance Index: [0-100]/100** — How little you can do about it.
+Choose EXACTLY ONE tier — the tier name must appear verbatim after "Verdict:":
+- SIGN WITH CONFIDENCE — Standard fair terms, no red flags, typical boilerplate
+- READ THE FLAGGED CLAUSES — Some issues worth knowing about, but manageable
+- NEGOTIATE BEFORE SIGNING — Significant imbalance, pushback needed on key terms
+- SEEK LEGAL REVIEW — Document designed to exploit, professional review essential
+- DO NOT SIGN — Unconscionable terms, illegal clauses, or rights-destroying language
 
-SEVERITY TIERS — choose the label that fits the ACTUAL stakes, not just the number:
-- 0-30: "Low risk — standard terms" (typical boilerplate, no red flags)
-- 31-55: "Moderate risk — review flagged clauses" (some problematic terms, fixable)
-- 56-75: "High risk — negotiate before signing" (significant imbalance, pushback needed)
-- 76-90: "Serious risk — seek professional legal review" (document designed to exploit)
-- 91-100: "Do not sign — [reason]" (unconscionable, illegal, or rights-destroying)
-
-CRITICAL: If the document touches fundamental rights (constitutional protections, whistleblower rights, parliamentary immunity, medical consent, employment non-competes that restrict livelihood), ELEVATE the severity language regardless of score.
+Selection guidance:
+- Look at the SEVERITY of the worst clauses, not just the count
+- A single unconscionable clause can warrant DO NOT SIGN even if everything else is green
+- If the document touches fundamental rights (constitutional protections, whistleblower rights, medical consent, employment non-competes that restrict livelihood), ELEVATE the tier
+- When in doubt between two tiers, choose the more protective one
 
 ### Top 3 Concerns
 1. **[Title]** — [one sentence]
