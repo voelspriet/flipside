@@ -935,3 +935,73 @@ All 9 problems were implemented in a single session (~490 net lines added to `in
 **Why a fact-checker's lens matters**: FlipSide's entire premise is "we find the numbers they hope you won't check." If the tool itself publishes internally inconsistent numbers, the premise collapses. Fix #2 (FIGURE/EXAMPLE consistency) is particularly important — it's a prompt-level instruction that prevents the model from rounding differently in headlines vs calculations. A tool that claims to expose math tricks cannot make math mistakes.
 
 **Key insight**: QC for an AI product has three layers — code (what the frontend shows), prompts (what the model outputs), and design (how labels compete for attention). Most bugs are found in code. The hardest bugs live in prompts, because they're non-deterministic and only appear on certain inputs. The FIGURE/EXAMPLE inconsistency would never show up in a code review — it only appears when a specific document triggers different rounding in two model fields.
+
+---
+
+## Decision 25: Summon Three Expert Agents to Solve One Problem
+
+**Date**: 2026-02-15
+**Context**: The verdict takes ~35-40 seconds to appear. The user asked: "Is there any technique to show the final verdict faster without suffering quality?" Instead of a single analysis pass, three parallel Opus 4.6 agents were launched simultaneously — each with a different professional lens — to attack the same question from three angles.
+
+**The strategy**: Spawn three Task agents in parallel, each role-prompted as a different expert:
+
+1. **Parallel Threading Expert** — studies `_run_parallel_5thread()`, worker function, thread coordination, SSE event loop. Looks for concurrency bottlenecks, wasted sequential time, connection reuse opportunities.
+2. **Experienced Backend Coder** — studies the Anthropic SDK usage, token budgets, prompt sizes, caching configuration. Looks for API-level optimizations, over-provisioned resources, missed SDK features.
+3. **Creative UX Designer** — studies the frontend gating logic, verdict button states, progressive disclosure patterns. Looks for ways to make the same wall-clock time *feel* faster through perceived performance techniques.
+
+All three agents read the actual codebase (not summaries) and produced specific, line-numbered recommendations.
+
+**What they found — the convergence**:
+
+All three experts independently discovered the same critical insight: **the codebase has consolidated from 4 Opus threads to 1** (`OPUS_SOURCES = {'overall'}`). The old `build_interactions_prompt`, `build_asymmetry_prompt`, `build_archaeology_prompt` are dead code. MEMORY.md was outdated.
+
+All three agreed on the #1 recommendation: **progressive tag rendering**. The Opus verdict streams tags in order (`[VERDICT_TIER]` → `[THE_MAIN_THING]` → ... → `[FLAGGED_CLAIMS]`). The core answer arrives within ~10-15 seconds of Opus starting. But the frontend waits for `overall_done` (~35-40s) before showing anything. Showing tags as they close would make the effective wait ~15 seconds — zero backend changes, zero quality loss.
+
+**The full recommendations ranked by impact**:
+
+| # | Recommendation | Source(s) | Impact | Effort |
+|---|---------------|-----------|--------|--------|
+| 1 | Progressive tag rendering — show verdict sections as each `[/TAG]` closes | All 3 | **15-20s perceived** | Medium (frontend) |
+| 2 | Reduce `verdict_max` from 80,000 → 16,000 — tighter budget = faster adaptive thinking | Coder | **5-15s real** | 1 line |
+| 3 | Flash verdict from card data — show risk histogram + worst clause while Opus runs | Creative | **Available at 12s** | Low (frontend) |
+| 4 | Two-phase button — "Preview verdict" at core tags, "Full verdict" at completion | Threading + Creative | **15s earlier access** | Low |
+| 5 | Shared `anthropic.Anthropic()` client — currently created 6× per analysis | Coder | **0.5-3s** | 10 lines |
+| 6 | Wait for prescan before Opus — pass claims_summary as "cheat sheet" | Coder | **3-8s thinking** | 15 lines |
+| 7 | Thinking progress indicator — "Expert reasoning... 12K tokens" | Creative | **Perceived 30-40%** | Low |
+| 8 | Cache document text in system prompt blocks | Coder | **2-4s on follow-ups** | 20 lines |
+
+**The creative ideas that went further**:
+
+- **"The verdict builds itself"** — make the verdict a living document that streams visibly, not a locked door that opens. The user watches it being written instead of staring at "Verdict building..."
+- **"Invert the loading mental model"** — today: "The verdict is locked. Wait for it." Proposed: "The verdict is here. It's getting smarter." Show a rough verdict from cards at 12s, upgrade it as Opus tags arrive.
+- **Card-driven verdict drip** — as the user flips each card, update a running "verdict preview" in the nav area. "3 clauses reviewed — 2 aggressive, 1 standard." Card flipping feels like it *contributes* to the verdict.
+- **"Unlock" gamification** — "Flip 3 cards to unlock your verdict." The user attributes the wait to their own pace rather than the system.
+
+**What this pattern reveals about agent collaboration**:
+
+The three agents didn't just produce three reports — they produced a **convergence map**. When a threading expert, a backend coder, and a UX designer all independently identify the same bottleneck (frontend gating on `overall_done`), the diagnosis is high-confidence. When they each propose solutions from their domain (concurrency: progressive events; code: reduce `max_tokens`; UX: two-phase button), the combined solution space is richer than any single expert could produce.
+
+The coder found things the others missed (80K token budget signaling, 6× client instantiation, SDK caching). The creative found things the others missed (gamification, inverted mental model, card-driven drip). The threading expert found things the others missed (pre-verdict during upload, connection pooling). No single agent had the complete picture.
+
+**Why three parallel agents beat one sequential analysis**:
+
+1. **Role prompting creates genuine diversity** — the threading expert literally reads different code sections than the UX designer. They explore different files, grep for different patterns, build different mental models.
+2. **Parallel execution saves wall time** — three 3-minute analyses in parallel = 3 minutes. Three sequential = 9 minutes. Same total tokens, 3× faster.
+3. **Convergence validates findings** — when all three independently flag the same issue, it's not a fluke. Divergence reveals blind spots — ideas that only one expert saw.
+4. **The human gets a decision menu, not a monologue** — instead of one long analysis with embedded trade-offs, the human gets three focused perspectives with a clear overlap zone.
+
+**When to use this pattern**:
+
+- When the problem spans multiple domains (architecture + code + UX + cost)
+- When you want high-confidence recommendations (convergence across independent analyses)
+- When the solution space is large and you want creative diversity (role prompting generates genuinely different ideas)
+- When wall-clock time matters and the analyses are independent (parallel = 3× faster than sequential)
+
+**When NOT to use this pattern**:
+
+- For single-domain problems where one expert suffices
+- When the analyses have dependencies (expert B needs expert A's output)
+- For simple questions where the answer is obvious from reading the code
+- When token budget is constrained (three Opus agents ≈ $0.50-1.00)
+
+**Key insight**: The most powerful use of parallel agents isn't doing the same thing faster — it's doing *different things simultaneously* and looking for convergence. Three experts who agree on the diagnosis give you confidence. Three experts who each find unique solutions give you options. The combination gives you both.

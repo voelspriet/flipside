@@ -1474,7 +1474,18 @@ For multi-product documents (coupon books, product bundles): specify WHICH produ
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
-[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts. FORBIDDEN words/patterns: "waiv" (any form), "surrender," "legal," "rights," "recourse," "argue," "dispute," "sole discretion," "no cap," "no limit," "unlimited," "adds up," "that's $X," "signing away," "give up," "lose my," "forfeit," question marks expressing concern. The reader has ZERO legal literacy — they don't know what a waiver IS. Always end with breezy certainty, never with analysis.]
+[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts.
+
+ABSOLUTELY FORBIDDEN words/patterns — if ANY appear in your READER output, STOP and REWRITE that entire field:
+"waiv" / "waiving" / "waiver" / "waive", "surrender", "legal" (including "legal fees", "legal costs"), "rights", "recourse", "no recourse", "argue", "dispute", "sole discretion", "liable", "liability", "indemnif" (any form), "perpetual", "irrevocable", "jurisdiction", "clause", "provision", "stipulate", "binding", "enforceable", "forfeit", "signing away", "give up", "lose my", "no cap", "no limit", "unlimited", "adds up", "that's $X", question marks expressing concern, bullet-point lists.
+
+REPLACEMENTS the reader would actually use:
+- Instead of "legal fees" → "their costs" or "whatever they spend"
+- Instead of "binding" → "official" or "for real"
+- Instead of "clause" → "part" or "section" or just describe the topic
+- Instead of "rights" → "my stuff" or just skip it entirely
+
+The reader has ZERO legal literacy — they don't know what a waiver IS, what "indemnification" means, or what "perpetual license" implies. They talk like a normal person: "sounds fine," "makes sense," "no big deal," "whatever." Always end with breezy certainty, never with analysis.]
 
 [HONEY]: [OPTIONAL — only if this clause uses warm, friendly, or reassuring language immediately before or around a punitive/restrictive term. Quote the exact honey phrase from the document, then → the sting it masks. If the clause is purely neutral/technical with no emotional framing, omit this field entirely.]
 
@@ -1524,7 +1535,7 @@ After all RED and YELLOW cards, add exactly ONE final block:
 ---
 ### Fair Clauses Summary
 [REASSURANCE]: These clauses are what they promise
-[READER]: [List each fair clause by section ref and one-line summary]
+[READER]: [List each fair clause in everyday language — "the part about timing is fine," "the cancellation thing is totally normal." Same gullible voice, same forbidden words apply. NO legal jargon.]
 [TEASER]: These are actually what they look like.
 [REVEAL]: These clauses are genuinely what they promise.
 [GREEN] · Score: 10/100 · Trick: None
@@ -1549,7 +1560,11 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 13. If the document has NO terms or obligations (e.g. a recipe, novel, news article), output ONLY the Document Profile with **Not Applicable**: [1-sentence explanation]. Do NOT output any clauses.
 14. GREEN clauses: Score 0-30, Trick: None. YELLOW/RED clauses MUST have a trick from the 18 categories above — NEVER leave it blank or write "N/A"
 15. The risk line format is MANDATORY for every clause: [LEVEL] · Score: [N]/100 · Trick: [CATEGORY] — all three parts, always
-16. [FIGURE] and [EXAMPLE] must be mathematically consistent — the headline number in [FIGURE] MUST be derivable from the step-by-step calculation in [EXAMPLE]. Write [EXAMPLE] first in your head, THEN extract the summary number for [FIGURE]. Never round differently between the two"""
+16. [FIGURE] and [EXAMPLE] must be mathematically consistent — the headline number in [FIGURE] MUST be derivable from the step-by-step calculation in [EXAMPLE]. Write [EXAMPLE] first in your head, THEN extract the summary number for [FIGURE]. Never round differently between the two
+17. MERGE OVERLAPPING CLAUSES — MANDATORY: Before outputting ANY card, check: does this cover the same RIGHT or RISK as a card you already output? If YES, do NOT create a separate card — merge it into the earlier card's section reference. This especially applies to: (a) multiple IP/license grants from different sections, (b) multiple liability waivers, (c) clauses from the SAME named section. Two cards must NEVER reference the same section name. Each card must reveal something the user hasn't seen yet.
+18. TEASER VARIETY: Each [TEASER] must use a DIFFERENT rhetorical angle. NEVER repeat the same keyword (e.g., "forever") in more than 2 teasers. Vary: question vs statement, time-based vs money-based vs rights-based, personal vs systemic.
+19. EXAMPLE VARIETY: Do NOT repeat "you have no recourse" or "you cannot" as the conclusion of every [EXAMPLE]. Each example must end with a DIFFERENT concrete consequence — a dollar amount, a missed deadline, a specific scenario. The phrase "no recourse" may appear at most ONCE across all cards.
+20. CLAUSE ORDERING: As you output clauses, avoid long runs of the same risk level. If you have multiple RED and YELLOW clauses to output, INTERLEAVE them — output a RED, then a YELLOW, then a RED, etc. If you must output consecutive RED cards, vary the TRICK TYPE so they feel distinct, not repetitive. Never output more than 3 RED cards in a row without a YELLOW break."""
 
 
 def build_clause_id_prompt():
@@ -1613,7 +1628,18 @@ For multi-product documents (coupon books, product bundles): specify WHICH produ
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
-[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts. FORBIDDEN words/patterns: "waiv" (any form), "surrender," "legal," "rights," "recourse," "argue," "dispute," "sole discretion," "no cap," "no limit," "unlimited," "adds up," "that's $X," "signing away," "give up," "lose my," "forfeit," question marks expressing concern. The reader has ZERO legal literacy — they don't know what a waiver IS. Always end with breezy certainty, never with analysis.]
+[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts.
+
+ABSOLUTELY FORBIDDEN words/patterns — if ANY appear in your READER output, STOP and REWRITE that entire field:
+"waiv" / "waiving" / "waiver" / "waive", "surrender", "legal" (including "legal fees", "legal costs"), "rights", "recourse", "no recourse", "argue", "dispute", "sole discretion", "liable", "liability", "indemnif" (any form), "perpetual", "irrevocable", "jurisdiction", "clause", "provision", "stipulate", "binding", "enforceable", "forfeit", "signing away", "give up", "lose my", "no cap", "no limit", "unlimited", "adds up", "that's $X", question marks expressing concern, bullet-point lists.
+
+REPLACEMENTS the reader would actually use:
+- Instead of "legal fees" → "their costs" or "whatever they spend"
+- Instead of "binding" → "official" or "for real"
+- Instead of "clause" → "part" or "section" or just describe the topic
+- Instead of "rights" → "my stuff" or just skip it entirely
+
+The reader has ZERO legal literacy — they don't know what a waiver IS, what "indemnification" means, or what "perpetual license" implies. They talk like a normal person: "sounds fine," "makes sense," "no big deal," "whatever." Always end with breezy certainty, never with analysis.]
 
 [HONEY]: [OPTIONAL — only if this clause uses warm, friendly, or reassuring language immediately before or around a punitive/restrictive term. Quote the exact honey phrase from the document, then → the sting it masks. If the clause is purely neutral/technical with no emotional framing, omit this field entirely.]
 
@@ -1686,7 +1712,7 @@ Use EXACTLY this format:
 
 [REASSURANCE]: These clauses are what they promise
 
-[READER]: [List each fair clause by section ref and one-line summary]
+[READER]: [List each fair clause in everyday language — "the part about timing is fine," "the cancellation thing is totally normal." Same gullible voice, same forbidden words apply. NO legal jargon.]
 
 [TEASER]: These are actually what they look like.
 
@@ -2038,10 +2064,12 @@ Example: "This is a 12-month residential lease between you and GreenTree Propert
 [/WHAT_IS_THIS]
 
 [SHOULD_YOU_WORRY]
-One sentence. Calibrated to actual severity. NOT always alarming.
-For a clean document: "This is a standard agreement with typical protections."
-For a conditional risk: "If you only enter: low risk. If you WIN: read on."
-For a bad document: "This contract has serious problems you need to address before signing."
+One sentence. MUST match the actual severity of the document — count the red flags.
+- If most clauses are fair (0-2 red): "This is a standard agreement with typical protections."
+- If conditional risk: "If you only enter: low risk. If you WIN: read on."
+- If 3-5 red clauses: "Several clauses need your attention before signing."
+- If 6+ red clauses: "This document has significant one-sided terms you should understand."
+NEVER say "low risk" or "fairly standard" if the document has 3+ red clauses. Count them.
 [/SHOULD_YOU_WORRY]
 
 [THE_MAIN_THING]
@@ -2097,6 +2125,9 @@ For fair documents: "No unusual actions needed."
 List EVERY flagged (RED/YELLOW) clause. For EACH one, output exactly:
 - **Clause title (section reference)** — ONE sentence: what this means for YOU, the consumer. Concrete consequence.
 
+IMPORTANT: The user has ALREADY read the flip cards. Do NOT repeat what the cards say.
+Each summary must add a NEW angle — the cross-clause implication, the hidden escalation path, or the jurisdiction-specific concern. Think: "What would I tell someone who already read the cards?"
+
 Order by risk score (highest first). Include ALL flagged clauses — do not skip any.
 If pre-analyzed claims are provided after the document text, use those as your source and cover every one.
 If no pre-analyzed claims are available, identify them yourself from the document.
@@ -2128,8 +2159,11 @@ Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, 
 - [THE_MAIN_THING] is the heart of the report. Get this right.
 - NEVER use legal jargon in the output. Write like you're texting a friend.
 - Calibrate severity: a fair document should say "you're fine." Don't invent problems.
+- BUT if there are many red flags, DO NOT downplay. Match your tone to actual risk.
 - Bold only dollar amounts and time limits — nothing else.
 - Do NOT repeat information across sections. Each tag has ONE job.
+- [SHOULD_YOU_WORRY] must match [VERDICT_TIER]. If tier is "NEGOTIATE BEFORE SIGNING," don't say "risk is low."
+- [FLAGGED_CLAIMS] adds CROSS-CLAUSE insight, not card summaries. The user already has the cards.
 - Use your full extended thinking budget — thorough thinking, concise output.
 """
 
@@ -2413,7 +2447,7 @@ def analyze(doc_id):
                 claims_summary = _build_claims_summary(ps, pc)
 
         # ── Start Opus verdict at t=0 — enriched with card data if available ──
-        verdict_max = max(deep_max_tokens, 80000)
+        verdict_max = 32000  # Enough for adaptive thinking + all 11 tags (FLAGGED_CLAIMS can be long)
         opus_user = deep_user_content
         if claims_summary:
             if isinstance(opus_user, list):
