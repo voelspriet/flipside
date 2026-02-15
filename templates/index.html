@@ -2203,10 +2203,10 @@
                 border-radius: 12px;
             }
         }
-        /* Phases + status + expert mind fade out during woosh */
+        /* Phases + status + briefing fade out during woosh */
         .skeleton-card.wooshing .skeleton-status,
         .skeleton-card.wooshing .investigation-phases,
-        .skeleton-card.wooshing .expert-mind {
+        .skeleton-card.wooshing .expert-briefing {
             animation: fadeOutQuick 0.3s ease-out forwards;
         }
         @keyframes fadeOutQuick {
@@ -2342,202 +2342,135 @@
         .investigation-phase.active .phase-status { color: var(--accent); }
         .investigation-phase.done .phase-status { color: var(--green-text); }
 
-        /* ── Expert Mind: live Opus 4.6 reasoning ── */
-        @property --glow-angle {
-            syntax: '<angle>';
-            initial-value: 0deg;
-            inherits: false;
-        }
-        .expert-mind {
+        /* ── Expert Briefing: narrated AI progress ── */
+        .expert-briefing {
             width: 100%;
             margin-top: 1rem;
-            border-radius: var(--radius);
-            background: var(--bg-thinking);
-            overflow: hidden;
-            position: relative;
             opacity: 0;
             transform: translateY(8px);
             transition: opacity 0.5s ease, transform 0.5s var(--ease-out-expo);
         }
-        .expert-mind.visible {
+        .expert-briefing.visible {
             opacity: 1;
             transform: translateY(0);
         }
-        /* Animated border glow when actively receiving thoughts */
-        .expert-mind.active::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
+        /* Narration: one sentence at a time */
+        .briefing-narration {
+            min-height: 3.2rem;
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
             border-radius: var(--radius);
-            padding: 1px;
-            background: conic-gradient(from var(--glow-angle),
-                transparent 0%, rgba(196, 75, 40, 0.4) 10%, transparent 20%, transparent 100%);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            z-index: 0;
-            animation: expertGlow 3s linear infinite;
-        }
-        @keyframes expertGlow {
-            to { --glow-angle: 360deg; }
-        }
-        .expert-mind-inner {
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
             position: relative;
-            z-index: 1;
-            background: var(--bg-thinking);
-            border-radius: var(--radius);
+            overflow: hidden;
         }
-        .expert-mind-header {
+        .briefing-sentence {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            line-height: 1.55;
+            color: var(--text-body);
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.4s ease, transform 0.4s var(--ease-out-expo);
+        }
+        .briefing-sentence.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .briefing-sentence.fading {
+            opacity: 0.3;
+            transform: translateY(-4px);
+        }
+        /* Two-track indicators */
+        .briefing-tracks {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+        .briefing-track {
+            flex: 1;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0.65rem 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            gap: 0.6rem;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
         }
-        .expert-mind-identity {
-            display: flex;
-            align-items: center;
-            gap: 0.55rem;
-        }
-        .expert-mind-avatar {
-            width: 28px;
-            height: 28px;
+        .track-indicator {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: rgba(196, 75, 40, 0.15);
+            flex-shrink: 0;
+        }
+        .track-indicator.readers {
+            background: var(--accent);
+            animation: trackPulse 1.5s ease infinite;
+        }
+        .track-indicator.readers.done {
+            background: var(--green);
+            animation: none;
+        }
+        .track-indicator.expert {
+            background: var(--accent);
+            animation: trackPulse 0.9s ease infinite;
+        }
+        .track-indicator.expert.done {
+            background: var(--green);
+            animation: none;
+        }
+        @keyframes trackPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.85); }
+        }
+        .track-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .track-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            letter-spacing: 0.04em;
+        }
+        .track-detail {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .track-detail .accent { color: var(--accent); font-weight: 500; }
+        /* Depth counter */
+        .briefing-depth {
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            color: var(--accent);
-        }
-        .expert-mind-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 0.1rem;
-        }
-        .expert-mind-name {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem;
-            font-weight: 600;
-            color: rgba(255,255,255,0.85);
-            letter-spacing: 0.05em;
-        }
-        .expert-mind-role {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.52rem;
-            color: rgba(255,255,255,0.35);
-        }
-        .expert-mind-badge {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.5rem;
-            font-weight: 500;
-            color: var(--accent);
-            letter-spacing: 0.04em;
-            padding: 0.2rem 0.5rem;
-            border: 1px solid rgba(196, 75, 40, 0.25);
-            border-radius: 100px;
-            opacity: 0.7;
-        }
-        /* Thinking stream area */
-        .expert-mind-stream {
-            height: 150px;
-            overflow: hidden;
-            padding: 0.8rem 1rem 0.6rem;
-            position: relative;
-        }
-        .expert-mind-stream::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2.5rem;
-            background: linear-gradient(to bottom, var(--bg-thinking), transparent);
-            z-index: 1;
-            pointer-events: none;
-        }
-        .expert-mind-text {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.72rem;
-            line-height: 1.7;
-            color: rgba(255,255,255,0.5);
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        .expert-mind-cursor {
-            display: inline-block;
-            width: 2px;
-            height: 0.9em;
-            background: var(--accent);
-            vertical-align: text-bottom;
-            margin-left: 1px;
-            animation: cursorPulse 0.9s ease infinite;
-        }
-        @keyframes cursorPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.15; }
-        }
-        .expert-mind-waiting {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.68rem;
-            font-style: italic;
-            color: rgba(255,255,255,0.25);
-        }
-        /* Footer: workers + token counter */
-        .expert-mind-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.45rem 1rem;
-            border-top: 1px solid rgba(255,255,255,0.06);
-        }
-        .expert-mind-workers {
-            display: flex;
-            align-items: center;
             gap: 0.5rem;
-        }
-        .expert-mind-workers-label {
+            margin-top: 0.5rem;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.5rem;
-            color: rgba(255,255,255,0.3);
+            font-size: 0.52rem;
+            color: var(--text-dim);
             letter-spacing: 0.04em;
         }
-        .worker-dots {
-            display: flex;
-            gap: 3px;
-        }
-        .worker-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.12);
-            transition: background 0.5s ease, box-shadow 0.5s ease;
-        }
-        .worker-dot.active {
-            background: var(--accent);
-            box-shadow: 0 0 6px rgba(196, 75, 40, 0.4);
-            animation: workerPulse 1.2s ease infinite;
-        }
-        .worker-dot.done {
-            background: var(--green);
-            box-shadow: none;
-            animation: none;
-        }
-        @keyframes workerPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.35; }
-        }
-        .expert-mind-tokens {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.5rem;
+        .briefing-depth .depth-count {
             color: var(--accent);
-            letter-spacing: 0.03em;
-            opacity: 0.7;
+            font-weight: 600;
         }
-        /* Compress investigation phases when expert mind is showing */
+        /* Compress investigation phases when briefing is showing */
         .skeleton-card .investigation-phases.compressed {
             margin-top: 0.5rem;
-            opacity: 0.5;
-            transform: scale(0.95);
-            transition: opacity 0.4s ease, transform 0.4s ease, margin 0.4s ease;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease;
         }
 
         /* Verdict teaser strip — live Opus findings as they arrive */
@@ -4274,36 +4207,28 @@
                     </div>
                 </div>
 
-                <!-- Expert Mind: live Opus 4.6 reasoning during loading -->
-                <div class="expert-mind" id="expertMind">
-                    <div class="expert-mind-inner">
-                        <div class="expert-mind-header">
-                            <div class="expert-mind-identity">
-                                <div class="expert-mind-avatar">
-                                    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="10" cy="7" r="4"/>
-                                        <path d="M3 18c0-4 3.5-7 7-7s7 3 7 7"/>
-                                    </svg>
-                                </div>
-                                <div class="expert-mind-meta">
-                                    <span class="expert-mind-name">Opus 4.6 Expert</span>
-                                    <span class="expert-mind-role">Reasoning through your document</span>
-                                </div>
+                <!-- Expert Briefing: narrated AI progress during loading -->
+                <div class="expert-briefing" id="expertBriefing">
+                    <div class="briefing-narration">
+                        <span class="briefing-sentence visible" id="briefingSentence">Reading your document from start to finish</span>
+                    </div>
+                    <div class="briefing-tracks">
+                        <div class="briefing-track">
+                            <span class="track-indicator readers" id="trackReaders"></span>
+                            <div class="track-info">
+                                <div class="track-label">Clause readers</div>
+                                <div class="track-detail" id="trackReadersDetail">Scanning for key clauses</div>
                             </div>
-                            <span class="expert-mind-badge" id="expertMindBadge">thinking</span>
                         </div>
-                        <div class="expert-mind-stream" id="expertMindStream">
-                            <span class="expert-mind-waiting" id="expertMindWaiting">Preparing expert analysis&hellip;</span>
-                            <span class="expert-mind-text" id="expertMindText"></span><span class="expert-mind-cursor" id="expertMindCursor"></span>
-                        </div>
-                        <div class="expert-mind-footer">
-                            <div class="expert-mind-workers" id="expertMindWorkers">
-                                <span class="expert-mind-workers-label">Haiku readers</span>
-                                <div class="worker-dots" id="workerDots"></div>
+                        <div class="briefing-track">
+                            <span class="track-indicator expert" id="trackExpert"></span>
+                            <div class="track-info">
+                                <div class="track-label">Expert verdict</div>
+                                <div class="track-detail" id="trackExpertDetail">Starting deep analysis</div>
                             </div>
-                            <span class="expert-mind-tokens" id="expertMindTokens"></span>
                         </div>
                     </div>
+                    <div class="briefing-depth" id="briefingDepth"></div>
                 </div>
 
                 <div class="skeleton-waiting hidden" id="skeletonMessage"></div>
@@ -5723,6 +5648,12 @@
                     setInvestPhase(1, 'done', '\u2713 Done');
                     setInvestPhase(2, 'done', '\u2713 ' + qdCardCount + ' clause' + (qdCardCount !== 1 ? 's' : '') + ' found');
                     setInvestPhase(3, 'active', '<span class="pulsing-dots" style="transform:scale(0.6)"><span></span><span></span><span></span></span> Working...');
+                    // Mark readers track as done
+                    var readersInd = $('trackReaders');
+                    if (readersInd) readersInd.classList.add('done');
+                    var readersDetail = $('trackReadersDetail');
+                    if (readersDetail) readersDetail.textContent = qdCardCount + ' clauses analyzed';
+                    showBriefingSentence('All clauses scanned \u2014 expert is finalizing the verdict');
                     // Show "cards ready" pill if verdict was auto-revealed
                     if (_verdictAutoRevealed && !isCompareMode) {
                         var crCardCount = flipCardContainer.querySelectorAll('.flip-card').length;
@@ -5761,15 +5692,13 @@
                         var finalTokens = Math.round(_opusThinkingText.length / 4);
                         thinkLabel.textContent = 'Expert thinking (' + finalTokens.toLocaleString() + ' tokens) \u2713';
                     }
-                    // Expert mind: mark thinking complete
-                    var emBadge = $('expertMindBadge');
-                    if (emBadge) emBadge.textContent = 'verdict ready';
-                    var emPanel = $('expertMind');
-                    if (emPanel) emPanel.classList.remove('active');
-                    var emCursor = $('expertMindCursor');
-                    if (emCursor) emCursor.style.display = 'none';
-                    var emRoleEl = emPanel ? emPanel.querySelector('.expert-mind-role') : null;
-                    if (emRoleEl) emRoleEl.textContent = 'Analysis complete';
+                    // Expert briefing: mark verdict complete
+                    var expertInd = $('trackExpert');
+                    if (expertInd) expertInd.classList.add('done');
+                    var expertDetail = $('trackExpertDetail');
+                    if (expertDetail) expertDetail.textContent = 'Verdict ready';
+                    showBriefingSentence('Expert verdict is ready');
+                    if (_briefingTimer) { clearInterval(_briefingTimer); _briefingTimer = null; }
                     break;
 
                 case 'done':
@@ -7151,109 +7080,164 @@
         updateExpertMind(text, tokens);
     }
 
-    // ── Expert Mind panel (inside skeleton loading screen) ──
-    var _expertMindRevealed = false;
-    var _expertMindCharWindow = 800; // Show last N chars for "glimpsing" effect
+    // ── Expert Briefing: narrated AI progress ──
+    var _briefingRevealed = false;
+    var _briefingTimer = null;
+    var _briefingScriptIdx = 0;
+    var _lastKeywordMatch = '';
+    var _briefingStartTime = 0;
+    var _workerDotsReady = 0;
+
+    // Keyword-to-plain-English mapping for Opus thinking text
+    var THINKING_TRANSLATIONS = [
+        { pattern: /indemnif/i, text: 'Checking who pays if something goes wrong' },
+        { pattern: /terminat/i, text: 'Looking at how either side can walk away' },
+        { pattern: /liabil/i, text: 'Examining how much they\'re willing to be responsible for' },
+        { pattern: /arbitrat/i, text: 'Checking where disputes get settled' },
+        { pattern: /auto.?renew/i, text: 'Investigating whether this renews without asking you' },
+        { pattern: /force majeure/i, text: 'Examining what happens in emergencies' },
+        { pattern: /intellectual property|copyright|license grant/i, text: 'Looking at who owns what you create' },
+        { pattern: /confidential/i, text: 'Reviewing what you can and can\'t share' },
+        { pattern: /non.?compete/i, text: 'Checking restrictions on your future options' },
+        { pattern: /penalty|penalt/i, text: 'Calculating the real cost of breaking this deal' },
+        { pattern: /late fee|late payment/i, text: 'Adding up what delays could cost you' },
+        { pattern: /waiv/i, text: 'Examining what protections you might be giving up' },
+        { pattern: /jurisdict|governing law/i, text: 'Checking which laws apply if there\'s a problem' },
+        { pattern: /modif|amend/i, text: 'Seeing if they can change the terms on you' },
+        { pattern: /privacy|personal data/i, text: 'Reviewing how your information gets handled' },
+        { pattern: /assign/i, text: 'Checking if they can hand this deal to someone else' },
+        { pattern: /cross.?referenc|interact/i, text: 'Connecting clauses that affect each other' },
+        { pattern: /power|asymmetr|imbalanc/i, text: 'Weighing how power is shared in this deal' },
+        { pattern: /compound|accumul/i, text: 'Calculating how costs add up over time' },
+        { pattern: /cancel/i, text: 'Checking the cancellation rules and what they cost you' },
+        { pattern: /insur|coverage/i, text: 'Looking at what\'s covered and what\'s not' },
+        { pattern: /rent|deposit|security/i, text: 'Examining the financial terms and what you risk' },
+        { pattern: /exclusiv|sole/i, text: 'Checking if one side holds all the cards' },
+        { pattern: /dispute|resolut/i, text: 'Looking at what happens if you disagree' },
+    ];
+
+    // Time-based fallback narration script
+    var NARRATION_SCRIPT = [
+        'Reading your document from start to finish',
+        'Parallel readers are examining individual clauses',
+        'Building a mental model of the entire agreement',
+        'Cross-checking how different sections interact',
+        'Mapping the power dynamics between the two parties',
+        'Weighing what matters most for you',
+        'Identifying patterns across all the fine print',
+        'Almost there \u2014 assembling your results',
+    ];
 
     function updateExpertMind(newText, tokenCount) {
-        var panel = $('expertMind');
+        var panel = $('expertBriefing');
         var skeleton = $('skeletonCard');
         if (!panel || !skeleton || skeleton.classList.contains('hidden') || isCompareMode) return;
 
-        // Reveal expert mind on first thinking content
-        if (!_expertMindRevealed) {
-            _expertMindRevealed = true;
-            panel.classList.add('visible', 'active');
-            // Hide the "waiting" text
-            var waiting = $('expertMindWaiting');
-            if (waiting) waiting.style.display = 'none';
-            // Compress investigation phases
+        // Reveal briefing on first thinking content
+        if (!_briefingRevealed) {
+            _briefingRevealed = true;
+            _briefingStartTime = Date.now();
+            panel.classList.add('visible');
+            // Compress investigation phases (hide them)
             var phases = $('skeletonActs');
             if (phases) phases.classList.add('compressed');
+            // Start time-based narration rotation
+            _briefingScriptIdx = 0;
+            _briefingTimer = setInterval(advanceBriefingNarration, 4000);
         }
 
-        // Update stream text — show trailing window for "glimpse" effect
-        var textEl = $('expertMindText');
-        if (textEl) {
-            var fullText = _opusThinkingText;
-            // Show only the last N characters with word-boundary trim
-            if (fullText.length > _expertMindCharWindow) {
-                var trimmed = fullText.slice(-_expertMindCharWindow);
-                // Find first space to avoid cutting mid-word
-                var firstSpace = trimmed.indexOf(' ');
-                if (firstSpace > 0 && firstSpace < 60) {
-                    trimmed = trimmed.slice(firstSpace + 1);
-                }
-                textEl.textContent = trimmed;
+        // Try to extract a keyword-driven insight from the new thinking text
+        tryKeywordNarration(newText);
+
+        // Update depth counter
+        var angles = Math.round(tokenCount / 90);
+        var depthEl = $('briefingDepth');
+        if (depthEl && angles > 0) {
+            depthEl.innerHTML = '<span class="depth-count">' + angles + '</span> angles considered';
+        }
+
+        // Update expert track detail
+        var expertDetail = $('trackExpertDetail');
+        if (expertDetail) {
+            if (tokenCount > 800) {
+                expertDetail.innerHTML = '<span class="accent">' + tokenCount.toLocaleString() + '</span> tokens of reasoning';
             } else {
-                textEl.textContent = fullText;
+                expertDetail.textContent = 'Deep analysis in progress';
             }
-            // Auto-scroll the stream to bottom
-            var stream = $('expertMindStream');
-            if (stream) stream.scrollTop = stream.scrollHeight;
         }
+    }
 
-        // Update token counter
-        var tokensEl = $('expertMindTokens');
-        if (tokensEl) {
-            tokensEl.textContent = tokenCount.toLocaleString() + ' tokens';
+    function tryKeywordNarration(newText) {
+        for (var i = 0; i < THINKING_TRANSLATIONS.length; i++) {
+            var t = THINKING_TRANSLATIONS[i];
+            if (t.pattern.test(newText) && t.text !== _lastKeywordMatch) {
+                _lastKeywordMatch = t.text;
+                showBriefingSentence(t.text);
+                // Reset the timer so we don't immediately overwrite with a script sentence
+                if (_briefingTimer) { clearInterval(_briefingTimer); }
+                _briefingTimer = setInterval(advanceBriefingNarration, 4000);
+                return;
+            }
         }
+    }
+
+    function advanceBriefingNarration() {
+        _briefingScriptIdx++;
+        if (_briefingScriptIdx < NARRATION_SCRIPT.length) {
+            showBriefingSentence(NARRATION_SCRIPT[_briefingScriptIdx]);
+        }
+    }
+
+    function showBriefingSentence(text) {
+        var el = $('briefingSentence');
+        if (!el) return;
+        // Fade out current
+        el.classList.remove('visible');
+        el.classList.add('fading');
+        setTimeout(function() {
+            el.textContent = text;
+            el.classList.remove('fading');
+            el.classList.add('visible');
+        }, 300);
     }
 
     function resetExpertMind() {
-        _expertMindRevealed = false;
-        var panel = $('expertMind');
-        if (panel) {
-            panel.classList.remove('visible', 'active');
+        _briefingRevealed = false;
+        _briefingScriptIdx = 0;
+        _lastKeywordMatch = '';
+        _workerDotsReady = 0;
+        if (_briefingTimer) { clearInterval(_briefingTimer); _briefingTimer = null; }
+        var panel = $('expertBriefing');
+        if (panel) panel.classList.remove('visible');
+        var sentence = $('briefingSentence');
+        if (sentence) {
+            sentence.textContent = NARRATION_SCRIPT[0];
+            sentence.classList.add('visible');
+            sentence.classList.remove('fading');
         }
-        var textEl = $('expertMindText');
-        if (textEl) textEl.textContent = '';
-        var waiting = $('expertMindWaiting');
-        if (waiting) waiting.style.display = '';
-        var tokensEl = $('expertMindTokens');
-        if (tokensEl) tokensEl.textContent = '';
         var phases = $('skeletonActs');
         if (phases) phases.classList.remove('compressed');
-        // Clear worker dots
-        var dots = $('workerDots');
-        if (dots) dots.innerHTML = '';
-        var wLabel = $('expertMindWorkers');
-        if (wLabel) {
-            var lbl = wLabel.querySelector('.expert-mind-workers-label');
-            if (lbl) lbl.textContent = 'Haiku readers';
-        }
+        var depthEl = $('briefingDepth');
+        if (depthEl) depthEl.innerHTML = '';
+        var readersDetail = $('trackReadersDetail');
+        if (readersDetail) readersDetail.textContent = 'Scanning for key clauses';
+        var expertDetail = $('trackExpertDetail');
+        if (expertDetail) expertDetail.textContent = 'Starting deep analysis';
+        var readersInd = $('trackReaders');
+        if (readersInd) readersInd.classList.remove('done');
+        var expertInd = $('trackExpert');
+        if (expertInd) expertInd.classList.remove('done');
     }
 
-    var _workerDotCount = 0;
-    var _workerDotsReady = 0;
-
     function initWorkerDots(count) {
-        _workerDotCount = count;
-        _workerDotsReady = 0;
-        var container = $('workerDots');
-        if (!container) return;
-        container.innerHTML = '';
-        for (var i = 0; i < count; i++) {
-            var dot = document.createElement('span');
-            dot.className = 'worker-dot active';
-            container.appendChild(dot);
-        }
+        // No-op: worker dots replaced by track indicators
     }
 
     function markWorkerDone() {
         _workerDotsReady++;
-        var container = $('workerDots');
-        if (!container) return;
-        var dots = container.querySelectorAll('.worker-dot');
-        // Mark next dot as done (left to right)
-        if (_workerDotsReady <= dots.length) {
-            dots[_workerDotsReady - 1].classList.remove('active');
-            dots[_workerDotsReady - 1].classList.add('done');
-        }
-        // Update label
-        var lbl = container.parentNode.querySelector('.expert-mind-workers-label');
-        if (lbl) {
-            lbl.textContent = _workerDotsReady + ' clause' + (_workerDotsReady !== 1 ? 's' : '') + ' found';
+        var detail = $('trackReadersDetail');
+        if (detail) {
+            detail.textContent = _workerDotsReady + ' clause' + (_workerDotsReady !== 1 ? 's' : '') + ' analyzed';
         }
     }
 
