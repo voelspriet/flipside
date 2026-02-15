@@ -1545,7 +1545,7 @@ Confidence: HIGH — Standard fair language
 This is the ONLY green card allowed. Any clause that is obviously fair must go here, not as a separate card.
 
 ## RULES
-1. Output each clause immediately — do NOT wait to analyze all clauses before outputting
+1. PLANNING STEP (mandatory): Before outputting any cards, first list the clause sections you will cover as a brief numbered list with risk levels. During this step: (a) merge any sections that cover the same risk, (b) interleave RED/YELLOW so no more than 3 consecutive REDs, (c) ensure each section name appears only ONCE. Then output the Document Profile, then the cards in your planned order.
 2. Every clause MUST end with --- on its own line
 3. Every clause MUST have ALL fields: title, [REASSURANCE], quote, [READER], [TEASER], [REVEAL], risk+score+trick, confidence, bottom line, small print, should read, [FIGURE], [EXAMPLE]. [HONEY] is OPTIONAL
 4. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
@@ -2029,6 +2029,188 @@ For each major section, one word: **Boilerplate** or **Custom**. Then 1-2 senten
 """
 
 
+def build_scenario_prompt():
+    """Deep dive: Worst-case scenario simulation. Narrative timeline."""
+    return """You are a senior attorney who tells stories. Given a document, narrate a realistic worst-case scenario using the document's ACTUAL terms, figures, and deadlines.
+
+## LANGUAGE RULE
+ALWAYS respond in ENGLISH regardless of the document's language.
+
+## OUTPUT FORMAT
+
+## What Could Happen
+
+Pick the trigger that a reasonable person would MOST LIKELY experience (missed payment, illness, schedule conflict, minor damage, late notice, job change, etc.) — not a contrived edge case.
+
+Tell it as a story. Use second person ("you").
+
+**Month 1 — [Trigger Event]:** [What happens. Reference actual clause figures and section names.]
+**Month 2 — [Escalation]:** [How other clauses activate. Show the math with the document's real numbers.]
+**Month 3 — [Compound Effect]:** [The situation you're now locked into. Which clauses chain together.]
+[Continue 3-6 months — stop when the scenario reaches its conclusion.]
+
+**Total exposure after [N] months: $[figure] [or concrete non-financial consequence]**
+
+---
+
+## What You Could Do Before Signing
+
+[2-3 bullet points: specific actions the reader could take BEFORE signing to protect against this scenario. Be concrete — reference specific clauses to negotiate or remove.]
+
+## RULES
+- Use the document's OWN numbers — do not invent figures
+- Pick the MOST LIKELY trigger, not the most dramatic
+- Show how clauses compound — reference specific sections by name
+- Keep it concrete and narrative — this is a story about someone's life, not a legal brief
+- The math must be correct — add up fees, penalties, and compounding costs accurately
+- Use your full extended thinking budget to trace every clause chain
+- Realism is what makes it hit"""
+
+
+def build_walkaway_prompt():
+    """Deep dive: Maximum financial exposure calculation."""
+    return """You are a senior attorney and forensic accountant. Calculate the MAXIMUM FINANCIAL EXPOSURE for the reader if every penalty, fee, and obligation in this document is enforced to its worst case.
+
+## LANGUAGE RULE
+ALWAYS respond in ENGLISH regardless of the document's language.
+
+## OUTPUT FORMAT
+
+[WALKAWAY_NUMBER]
+$XX,XXX
+[/WALKAWAY_NUMBER]
+
+[WALKAWAY_CONTEXT]
+One sentence: what this number means in plain English. Example: "If everything goes wrong and every clause is enforced against you, you could owe up to $23,450 over the life of this agreement."
+[/WALKAWAY_CONTEXT]
+
+[WALKAWAY_BREAKDOWN]
+For each financial exposure, one line:
+- [Description]: $[amount] ([Section reference]) — [brief explanation of how this could be triggered]
+
+List ALL sources: deposits at risk, penalty fees, early termination costs, late fees (compounded over full term), liability caps (or lack thereof), insurance requirements, damage assessments, legal fee obligations, interest charges, automatic renewals.
+
+Order from largest to smallest.
+[/WALKAWAY_BREAKDOWN]
+
+[WALKAWAY_COMPARISON]
+How does this compare to what's typical?
+- Typical total exposure for a [document type] in [jurisdiction or "this category"]: ~$[amount]
+- This document's exposure is [lower/comparable/higher/much higher] than typical
+- The biggest outlier: [which specific exposure is furthest from the norm and by how much]
+[/WALKAWAY_COMPARISON]
+
+[WALKAWAY_ASSUMPTIONS]
+Key assumptions behind this calculation (1-3 bullet points):
+- Term length assumed: [X months/years]
+- [Any other assumptions that significantly affect the total]
+[/WALKAWAY_ASSUMPTIONS]
+
+## RULES
+- Use the document's OWN numbers — do not invent figures
+- If a clause has no cap ("unlimited liability"), flag it explicitly and estimate a realistic worst case
+- Compound where appropriate: late fees × months, interest on unpaid balances, etc.
+- The TOTAL must equal the sum of the breakdown items — verify your math
+- Be conservative but honest — don't inflate to scare, don't minimize to comfort
+- Use your full extended thinking budget for the arithmetic
+- If the document has no financial terms (e.g., a privacy policy), say so clearly"""
+
+
+def build_combinations_prompt():
+    """Deep dive: Cross-clause compound traps."""
+    return """You are a senior attorney specializing in cross-clause analysis. Find clause COMBINATIONS that create compound risks invisible when reading each clause alone.
+
+## LANGUAGE RULE
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting, keep original language with English translation in parentheses.
+
+## OUTPUT FORMAT
+
+## Hidden Combinations
+
+For each dangerous combination (find 3-5):
+
+### [Human-friendly title — something you'd text to a friend]
+
+**Clause A** ([Section name/number]):
+> [Quote the exact text from the first clause]
+
+**Clause B** ([Section name/number]):
+> [Quote the exact text from the second clause]
+
+**Read separately:** [One sentence — what each clause appears to mean on its own. Innocent-sounding.]
+
+**Read together:** [One sentence — what they ACTUALLY do when combined. The trap. Concrete, with numbers if possible.]
+
+**Severity:** [Standard / Aggressive / Unusual]
+
+**What to do:** [One concrete action the reader can take about THIS specific combination]
+
+---
+
+[Repeat for each combination]
+
+## The Compound Effect
+
+[2-3 sentences summarizing the overall pattern. Do any combinations chain together into a triple or quadruple trap? Is there a central clause that appears in multiple combinations — a "hub" that connects many traps?]
+
+## RULES
+- Every combination MUST quote verbatim text from BOTH clauses — this is non-negotiable
+- The title must be plain language a friend would understand — NO legal jargon
+- Focus on combinations the reader would NEVER notice reading linearly
+- Prioritize combinations with financial consequences or rights forfeiture
+- "Read separately" should sound reassuring; "Read together" should be the gut punch
+- Use your full extended thinking budget to systematically check clause pairs
+- Be thorough — connect clauses that are far apart in the document"""
+
+
+def build_playbook_prompt():
+    """Deep dive: Negotiation strategy with theory-of-mind about the drafter."""
+    return """You are a senior negotiation strategist. Analyze this document and produce a practical negotiation playbook for the reader — what to push on, what to mention, what to skip.
+
+## LANGUAGE RULE
+ALWAYS respond in ENGLISH regardless of the document's language.
+
+## OUTPUT FORMAT
+
+## Negotiation Playbook
+
+### About the Other Side
+[2-3 sentences profiling the drafter's priorities based on the document's structure. What do they care about most? What's boilerplate they won't fight for? What was custom-added — revealing their real priorities?]
+
+### Push Hard on These
+[They'll likely bend — these are reasonable asks that cost them little]
+
+For each (2-4 items):
+- **[Clause/issue name]** ([Section ref]): [What to ask for, in one sentence]. *Why they'll bend:* [One sentence — why this is a reasonable concession for them.]
+
+### Mention These
+[Signals you read the fine print — builds negotiating credibility]
+
+For each (2-3 items):
+- **[Clause/issue name]** ([Section ref]): [What to say about it, in one sentence]. *Why it matters:* [One sentence.]
+
+### Don't Waste Capital On
+[They won't budge — these are core to their business model]
+
+For each (1-3 items):
+- **[Clause/issue name]** ([Section ref]): [Why this is non-negotiable for them, in one sentence.]
+
+### Your Opening Move
+[The single best first thing to bring up in the conversation — and how to phrase it. 2-3 sentences. Written as dialogue: "I'd like to discuss Section X — specifically the [issue]. Would you be open to [specific change]?"]
+
+### Ready-to-Send Message
+[A complete, ready-to-copy email or message to the other party. Professional but firm. References specific sections. 4-6 sentences. Starts with "Dear [Company/Landlord/Employer],"]
+
+## RULES
+- Be specific to THIS document — no generic negotiation advice
+- "Push hard" items must be genuinely negotiable — don't set the reader up to fail
+- "Don't waste capital" must be honest — if everything is negotiable, say so
+- The drafter profile should predict BEHAVIOR, not just describe document structure
+- The ready-to-send message must be polished enough to actually send
+- Use your full extended thinking budget to model the drafter's incentives
+- Theory of mind: reason about WHY each clause exists, not just WHAT it says"""
+
+
 def build_verdict_prompt(has_images=False):
     """Single Opus verdict thread: one-screen report for normal people.
     Covers cross-clause interactions, power balance, drafter profile, and overall assessment
@@ -2465,6 +2647,9 @@ def analyze(doc_id):
         )
         t_opus.start()
 
+        # ── Deep dives removed from parallel pipeline ──
+        # Now on-demand via /deepdive/<doc_id>/<type> endpoint
+
         # ── FAST PATH: pre-generated cards already available (non-blocking) ──
         if precards_event and precards_event.is_set():
             prescan = doc.get('_prescan')
@@ -2778,6 +2963,9 @@ def analyze(doc_id):
                     elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
                         yield sse(f'{source}_thinking', delta.thinking)
 
+        # ── Save verdict for follow-up & deep dives ──
+        doc['_verdict_text'] = thread_texts.get('overall', '')
+
         # ── Final done event ──
         yield sse('done', json.dumps({
             'quick_seconds': timings.get('scan', 0),
@@ -3009,6 +3197,9 @@ def analyze(doc_id):
                     elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
                         yield sse(f'{source}_thinking', delta.thinking)
 
+        # ── Save verdict for follow-up & deep dives ──
+        doc['_verdict_text'] = thread_texts.get('overall', '')
+
         # ── Final done event ──
         yield sse('done', json.dumps({
             'quick_seconds': timings.get('scan', timings.get('quick', 0)),
@@ -3147,6 +3338,9 @@ def analyze(doc_id):
                     elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
                         yield sse('synthesis_thinking', delta.thinking)
 
+        # ── Save verdict for follow-up & deep dives ──
+        doc['_verdict_text'] = thread_texts.get('overall', '')
+
         # ── Final done event ──
         yield sse('done', json.dumps({
             'quick_seconds': timings.get('quick', 0),
@@ -3205,7 +3399,7 @@ def analyze(doc_id):
             print(f'[stream] Error: {e}')
             yield sse('error', 'An internal error occurred. Please try again.')
         finally:
-            # Keep document for follow-up questions
+            # Keep document + analysis results for follow-up & deep dives
             if doc_id in documents:
                 documents[doc_id]['analyzed'] = True
 
@@ -3221,19 +3415,192 @@ def analyze(doc_id):
 
 
 def build_followup_prompt():
-    """Short system prompt for follow-up questions about an analyzed document."""
-    return """You are a senior attorney who has just finished analyzing a document. The user has a follow-up question about it.
+    """System prompt for follow-up questions with tool use."""
+    return """You are a senior attorney who has just finished analyzing a document. The user has a follow-up question. You have tools to search the document and retrieve your previous analysis.
+
+## YOUR TOOLS
+- **search_document**: Search the document text for specific terms, clauses, or language. Use this to find relevant sections before answering.
+- **get_clause_analysis**: Retrieve the flip card analysis (risk score, trick, figure, bottom line) for a specific clause number. Use this to reference your prior analysis.
+- **get_verdict_summary**: Retrieve your overall verdict. Use this for big-picture context.
+
+## HOW TO WORK
+1. First, use search_document to find the relevant parts of the document
+2. Then, use get_clause_analysis to retrieve your prior analysis of those clauses
+3. Finally, synthesize your answer referencing specific clauses and figures
 
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses.
 
 ## RULES
+- ALWAYS use your tools before answering — search the document, don't guess from memory
 - Answer the specific question asked — do not repeat the full analysis
-- Reference specific clauses, sections, or language from the document when relevant
+- Reference specific clauses, sections, and dollar figures from the document
 - If the question asks about something not in the document, say so clearly
 - Be direct, concrete, and practical — write for a non-lawyer audience
-- If the question involves legal risk, reference the relevant trick category and risk level
 - Keep your answer focused — typically 2-5 paragraphs unless the question demands more"""
+
+
+# ── On-demand deep dive endpoint ──────────────────────────────────
+DEEP_DIVE_PROMPTS = {
+    'scenario': (build_scenario_prompt, 16000),
+    'walkaway': (build_walkaway_prompt, 12000),
+    'combinations': (build_combinations_prompt, 16000),
+    'playbook': (build_playbook_prompt, 16000),
+}
+
+
+@app.route('/deepdive/<doc_id>/<dive_type>')
+def deepdive(doc_id, dive_type):
+    if doc_id not in documents:
+        return jsonify({'error': 'Document not found.'}), 404
+    if dive_type not in DEEP_DIVE_PROMPTS:
+        return jsonify({'error': f'Unknown dive type: {dive_type}'}), 400
+
+    doc = documents[doc_id]
+    prompt_fn, max_tokens = DEEP_DIVE_PROMPTS[dive_type]
+
+    def sse(event_type, content=''):
+        payload = json.dumps({'type': event_type, 'content': content})
+        return f"data: {payload}\n\n"
+
+    def generate():
+        try:
+            client = anthropic.Anthropic()
+            user_msg = (
+                "---BEGIN DOCUMENT---\n\n"
+                f"{doc['text']}\n\n"
+                "---END DOCUMENT---"
+            )
+            yield sse('phase', 'thinking')
+            t0 = time.time()
+            stream = client.messages.create(
+                model=MODEL,
+                max_tokens=max_tokens,
+                thinking={'type': 'adaptive'},
+                system=[{
+                    'type': 'text',
+                    'text': prompt_fn(),
+                    'cache_control': {'type': 'ephemeral'},
+                }],
+                messages=[{'role': 'user', 'content': user_msg}],
+                stream=True,
+            )
+            try:
+                for event in stream:
+                    if event.type == 'content_block_delta':
+                        if event.delta.type == 'thinking_delta':
+                            yield sse('thinking', event.delta.thinking)
+                        elif event.delta.type == 'text_delta':
+                            yield sse('text', event.delta.text)
+                    elif event.type == 'message_stop':
+                        elapsed = round(time.time() - t0, 1)
+                        yield sse('done', json.dumps({'seconds': elapsed}))
+            finally:
+                stream.close()
+        except anthropic.APIError as e:
+            yield sse('error', f'API error: {e.message}')
+        except Exception as e:
+            print(f'[deepdive] {dive_type} error: {e}')
+            yield sse('error', 'An internal error occurred.')
+
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive',
+        },
+    )
+
+
+# ── Tool definitions for follow-up agent ──────────────────────────
+ASK_TOOLS = [
+    {
+        "name": "search_document",
+        "description": "Search the uploaded document for paragraphs matching a query. Returns matching excerpts with surrounding context. Use this to find specific clauses, terms, or language relevant to the user's question.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Search term — a keyword, phrase, or topic to find in the document"
+                }
+            },
+            "required": ["query"]
+        }
+    },
+    {
+        "name": "get_clause_analysis",
+        "description": "Retrieve FlipSide's flip card analysis for a specific clause by number. Returns the full card: risk score, trick classification, reassurance (front), reveal (back), figure, example, and bottom line.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "clause_number": {
+                    "type": "integer",
+                    "description": "The clause number (1-based) to retrieve analysis for"
+                }
+            },
+            "required": ["clause_number"]
+        }
+    },
+    {
+        "name": "get_verdict_summary",
+        "description": "Retrieve FlipSide's overall expert verdict — tier, main risk, power ratio, jurisdiction, and key findings. Use this to understand the big picture before diving into specifics.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    }
+]
+
+
+def _execute_tool(tool_name, tool_input, doc):
+    """Execute a tool call and return the result string."""
+    if tool_name == 'search_document':
+        query = tool_input.get('query', '').lower()
+        words = [w for w in query.split() if len(w) > 2]
+        text = doc.get('text', '')
+        paragraphs = text.split('\n\n')
+        # Score paragraphs by number of matching words
+        scored = []
+        for i, para in enumerate(paragraphs):
+            para_lower = para.lower()
+            # Exact phrase match scores highest
+            if query in para_lower:
+                score = len(words) + 1
+            else:
+                score = sum(1 for w in words if w in para_lower)
+            if score > 0:
+                scored.append((score, i, para))
+        scored.sort(key=lambda x: -x[0])
+        matches = []
+        for score, i, para in scored[:5]:
+            start = max(0, i - 1)
+            end = min(len(paragraphs), i + 2)
+            context = '\n\n'.join(paragraphs[start:end])
+            matches.append(context)
+        if matches:
+            return f"Found {len(matches)} matching section(s):\n\n" + \
+                   "\n\n---\n\n".join(matches)
+        return f"No sections found matching '{tool_input.get('query', '')}'."
+
+    elif tool_name == 'get_clause_analysis':
+        clause_num = tool_input.get('clause_number', 0)
+        precards = doc.get('_precards', {})
+        cards = precards.get('cards', [])
+        if 1 <= clause_num <= len(cards):
+            return cards[clause_num - 1]
+        return f"Clause {clause_num} not found. This document has {len(cards)} clauses."
+
+    elif tool_name == 'get_verdict_summary':
+        verdict = doc.get('_verdict_text', '')
+        if verdict:
+            return verdict
+        return "Verdict not available yet — analysis may still be in progress."
+
+    return f"Unknown tool: {tool_name}"
 
 
 @app.route('/ask/<doc_id>', methods=['POST'])
@@ -3255,41 +3622,73 @@ def ask(doc_id):
     def generate():
         try:
             client = anthropic.Anthropic()
-            user_msg = (
-                "Here is the document:\n\n"
-                "---BEGIN DOCUMENT---\n\n"
-                f"{doc['text']}\n\n"
-                "---END DOCUMENT---\n\n"
-                f"Question: {question}"
-            )
+            system_prompt = build_followup_prompt()
+            messages = [{'role': 'user', 'content': question}]
+            max_rounds = 6  # Safety limit on tool-use loops
+
             yield sse('phase', 'thinking')
-            stream = client.messages.create(
-                model=MODEL,
-                max_tokens=16000,
-                thinking={'type': 'adaptive'},
-                system=[{
-                    'type': 'text',
-                    'text': build_followup_prompt(),
-                    'cache_control': {'type': 'ephemeral'},
-                }],
-                messages=[{'role': 'user', 'content': user_msg}],
-                stream=True,
-            )
-            try:
-                for event in stream:
-                    if event.type == 'content_block_delta':
-                        if event.delta.type == 'thinking_delta':
-                            yield sse('thinking', event.delta.thinking)
-                        elif event.delta.type == 'text_delta':
-                            yield sse('text', event.delta.text)
-                    elif event.type == 'message_stop':
-                        yield sse('done')
-            finally:
-                stream.close()
+
+            for _round in range(max_rounds):
+                # ── Call Opus with tools ──
+                response = client.messages.create(
+                    model=MODEL,
+                    max_tokens=16000,
+                    thinking={'type': 'adaptive'},
+                    system=[{
+                        'type': 'text',
+                        'text': system_prompt,
+                        'cache_control': {'type': 'ephemeral'},
+                    }],
+                    tools=ASK_TOOLS,
+                    messages=messages,
+                )
+
+                # ── Process response blocks ──
+                tool_calls = []
+                for block in response.content:
+                    if block.type == 'thinking':
+                        yield sse('thinking', block.thinking)
+                    elif block.type == 'text':
+                        yield sse('text', block.text)
+                    elif block.type == 'tool_use':
+                        tool_calls.append(block)
+                        yield sse('tool_call', json.dumps({
+                            'tool': block.name,
+                            'input': block.input
+                        }))
+
+                # ── If no tool calls, we're done ──
+                if response.stop_reason == 'end_turn' or not tool_calls:
+                    yield sse('done')
+                    return
+
+                # ── Execute tools and continue ──
+                tool_results = []
+                for tc in tool_calls:
+                    result = _execute_tool(tc.name, tc.input, doc)
+                    tool_results.append({
+                        'type': 'tool_result',
+                        'tool_use_id': tc.id,
+                        'content': result
+                    })
+                    # Tell frontend what we found
+                    summary = result[:200] + '...' if len(result) > 200 else result
+                    yield sse('tool_result', json.dumps({
+                        'tool': tc.name,
+                        'summary': summary
+                    }))
+
+                # ── Add assistant response + tool results to conversation ──
+                messages.append({'role': 'assistant', 'content': response.content})
+                messages.append({'role': 'user', 'content': tool_results})
+
+            # Exhausted rounds
+            yield sse('done')
+
         except anthropic.APIError as e:
             yield sse('error', f'API error: {e.message}')
         except Exception as e:
-            print(f'[stream] Error: {e}')
+            print(f'[ask] Error: {e}')
             yield sse('error', 'An internal error occurred. Please try again.')
 
     return Response(

@@ -211,7 +211,7 @@ The existing "perspective flip" was a text fade between two paragraphs. The huma
 
 The human's key insight: "I like to show how the person who came up with the clause had a very specific reason to have this clause, sometimes with an intention of making more money. So maybe we should show the thinking process of user that flips into the thinking process of the person who made the clauses."
 
-**Method used**: Meta-prompting pattern (Entry 1, confirmed by Cat Wu at AMA). Instead of jumping to implementation, a concept assessment prompt was written first, then executed. The prompt analyzed: drafter intent taxonomy, YOU→THEY contrast architecture, three-layer information flow, visualization challenge, streaming compatibility, and what could go wrong. This was then cross-referenced against all hackathon documents and jury criteria (Demo 30%, Impact 25%, Opus 4.6 Use 25%, Depth 20%).
+**Method used**: Meta-prompting pattern (Entry 1, mentioned by Cat Wu at AMA). Instead of jumping to implementation, a concept assessment prompt was written first, then executed. The prompt analyzed: drafter intent taxonomy, YOU→THEY contrast architecture, three-layer information flow, visualization challenge, streaming compatibility, and what could go wrong. This was then cross-referenced against all hackathon documents and jury criteria (Demo 30%, Impact 25%, Opus 4.6 Use 25%, Depth 20%).
 
 The assessment concluded: the flip IS the product. Not decoration on a report — the experience of seeing your naive reading physically transform into the drafter's calculated reasoning. Green clauses (safe) don't flip — their absence of flip IS the signal.
 

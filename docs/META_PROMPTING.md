@@ -116,3 +116,5 @@ By asking Claude to show its plan before executing, I demonstrated three things:
 ---
 
 <sub>Claude Hackathon 2026 • Meta-Prompting Case Study • Generated during the hackathon build process</sub>
+
+<sub>Full analysis with 7 real cases, 30 agent-tested comparisons, and the self-reflection hypothesis: [meta-prompting-strategy.md](../meta-prompting-strategy.md)</sub>

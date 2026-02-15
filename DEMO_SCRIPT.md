@@ -74,33 +74,45 @@
 
 ---
 
-### SCENE 5 — The Expert Verdict (1:40–2:10)
+### SCENE 5 — The Expert Verdict (1:40–2:05)
 
-**Screen**: The verdict column on the right. Sections turning green.
+**Screen**: Scroll to the inline verdict below the cards.
 
 **Narration**:
-> "While you're browsing cards, four Opus 4.6 threads are building the expert verdict in parallel. Cross-clause interactions — risks you can't see reading one clause at a time. Power asymmetry — who has the obligations, who has the exits. Document archaeology — which clauses are boilerplate and which were custom-drafted. And an overall assessment where Opus actually reviews its own analysis for blind spots."
+> "While you browse cards, Opus 4.6 builds the expert verdict. One screen: verdict tier, the main risk, power ratio — their rights vs. yours — and jurisdiction. Everything a lawyer would tell you, in thirty seconds."
 
-**Action**: Click on a completed (green) section to open the focused reading panel. Scroll briefly. Show the ←→ navigation. Click "← Back" to return.
+**Action**: Scroll through the verdict briefly. Point to the tier badge, the power ratio, the "one action." Then point to the Go Deeper buttons.
 
-> "Each section appears as it completes. Click to read. Navigate between them. When all four are done — the full verdict is ready."
+> "And if you want more — four on-demand deep dives. Click one, Opus analyzes on the spot."
+
+**Action**: Click "Walk-Away Number." Show the pulsing dots → then the hero number streaming in (e.g., "$23,450").
+
+> "Your maximum financial exposure. One click."
 
 ---
 
-### SCENE 6 — Take Action (2:10–2:40)
+### SCENE 6 — Ask FlipSide: The Agent Moment (2:05–2:40)
 
-**Screen**: Click "Read full verdict →". Show the deep analysis briefly. Then scroll to the action buttons.
+**Screen**: Scroll to the "Ask a follow-up question" input below the verdict.
 
 **Narration**:
-> "But FlipSide doesn't stop at analysis. You can ask follow-up questions — 'What happens if I'm three months late on rent?' And Opus traces the answer through every relevant clause."
+> "Now here's where Opus 4.6 really shines. I can ask it anything about this lease — and watch it work."
 
-**Action**: (If time allows, type a quick follow-up question and show streaming response. Otherwise, just point to the button.)
+**Action**: Type: **"What happens if I'm 3 months late on rent?"** — press Enter.
 
-> "Or — message the company."
+**Narration** (while the agent runs — read what appears on screen):
+> "Watch. It's searching the document... found the late fee clause and the termination clause. Now it's pulling up its own prior analysis of those clauses..."
 
-**Action**: Click "Message the Company" (or "Draft a message"). Show the letter streaming in.
+**Action**: Let the tool call indicators appear on screen:
+- 🔍 Searching document for "late payment"...
+- 📄 Reading clause analysis #1...
+- 📄 Reading clause analysis #4...
+Then the answer streams in with the $12,300 breakdown table.
 
-> "One click. A professional letter citing the specific clauses. Copy it. Email it. You don't need a lawyer to ask the right questions — you just need to see what the other side wrote."
+**Narration** (after answer appears):
+> "Twelve thousand three hundred dollars. The late fees alone exceed the unpaid rent. That's not a generic AI answer — Opus searched the document, retrieved its own analysis, and did the math. Three tool calls, one answer. That's an agent."
+
+**Action**: Let the answer sit for 2-3 seconds so judges can read the table.
 
 ---
 
@@ -128,8 +140,8 @@
 | 2. Upload | 20s | Show samples, click lease, "I don't write code" |
 | 3. First Card | 30s | Front → flip → back. The core mechanic. Let it breathe. |
 | 4. Browse | 25s | 2-3 cards, show calibration (not all red) |
-| 5. Verdict | 30s | 4 Opus threads, focused reading, navigation |
-| 6. Action | 30s | Follow-up question + Message the Company |
+| 5. Verdict | 25s | One-screen verdict + click Walk-Away Number |
+| 6. Ask FlipSide | 35s | **THE MONEY SHOT**: type question → watch agent search → $12,300 answer |
 | 7. Close | 20s | "Everyone deserves to see the other side" |
 | **Total** | **3:00** | |
 
@@ -137,9 +149,12 @@
 
 ## Tips
 
-- **The flip is the money shot.** Don't rush it. Let the card sit on the front for 3 seconds. Let the audience read the "I'd think" text. Then flip. Silence during the animation is more powerful than narration.
-- **Use the lease**, not insurance. Everyone has signed a lease. The late fee cascade is viscerally relatable. "$4,100 in penalties if you're two days late" is the kind of number that makes people gasp.
+- **The flip is the money shot #1.** Don't rush it. Let the card sit on the front for 3 seconds. Let the audience read the "I'd think" text. Then flip. Silence during the animation is more powerful than narration.
+- **The agent is money shot #2.** When the tool calls appear ("Searching document..." → "Reading clause analysis..."), let them breathe. The judges need to SEE that Opus is using tools autonomously, not just generating text. The $12,300 answer with the breakdown table is the payoff.
+- **Use the lease**, not insurance. Everyone has signed a lease. The late fee cascade is viscerally relatable. "$12,300 in total exposure" is the kind of number that makes people gasp.
 - **Show green cards.** A tool that says everything is dangerous loses credibility. When you show a green card ("Confirmed: fair as written"), it proves the tool is calibrated.
 - **The "I don't write code" line** is your differentiator. You're not a developer demoing a tech project. You're a journalist who built something people need — using Claude as the builder. That story is the hackathon story.
 - **Don't demo the countdown timer or tricks panel.** They fill wait time in live use but slow down a scripted video. The edit can skip the 12-second wait entirely.
+- **Pre-run the analysis before recording.** Start recording AFTER the lease is already analyzed (cards + verdict visible). This saves 15-20 seconds of dead time. You can show the upload screen at the beginning for context, then cut to the already-analyzed lease.
+- **Pre-type the question.** Have "What happens if I'm 3 months late on rent?" ready to paste or pre-typed. Don't waste video time on typing.
 - **One take is fine.** Loom records screen + voice together. You can do multiple takes and pick the best one. The judges want authenticity, not production value.

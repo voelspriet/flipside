@@ -119,4 +119,4 @@ The underlying principle is always the same: **don't take yourself as the measur
 
 ---
 
-<sub>This exchange was unscripted and occurred in real-time during the Claude Hackathon 2026. It is reproduced verbatim with only typos corrected.</sub>
+<sub>This exchange was unscripted and occurred in real-time during the Claude Hackathon 2026. It is reproduced verbatim with only typos corrected. This case is analyzed in [meta-prompting-strategy.md](../meta-prompting-strategy.md) (Case 5).</sub>

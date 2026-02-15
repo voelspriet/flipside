@@ -134,7 +134,7 @@ Language rule added to all prompts: respond in the same language as the document
 First user test revealed `claude-opus-4-6-20250219` (dated model ID) returned 404. Fixed to alias `claude-opus-4-6`. Also discovered `thinking.type: 'enabled'` is deprecated for Opus 4.6 — switched to `thinking.type: 'adaptive'`, which lets the model decide when and how deeply to think based on prompt complexity.
 
 **Entry 29 — The Meta-Prompting Discovery (Cat Wu AMA)**
-During the hackathon AMA, asked Cat Wu (Product Lead, Claude Code co-creator) about meta-prompting: why does "generate a prompt for X" then "execute it" consistently outperform directly asking "do X"? Cat confirmed the effect is real but the exact mechanism isn't fully understood. The observation: the two-step approach forces the model to separate planning from execution — it reasons about what makes a good analysis before actually analyzing. FlipSide's entire architecture is a productized version of this discovery.
+During the hackathon AMA, asked Cat Wu (Product Lead, Claude Code co-creator) about meta-prompting: why does "generate a prompt for X" then "execute it" consistently outperform directly asking "do X"? Cat mentioned the effect is known but the exact mechanism isn't fully understood internally. Our hypothesis: the two-step approach forces the model to reflect on *the task itself* (what makes a good analysis, what biases to avoid) rather than just reflecting on *what the user wants* (which is what plan mode does). We validated this with 30 agent-tested comparisons and 7 documented before/after cases — see [meta-prompting-strategy.md](meta-prompting-strategy.md). FlipSide's entire architecture is a productized version of this discovery.
 
 ---
 
@@ -424,20 +424,52 @@ At 222 pages (~167K tokens), Opus 4.6 caught a cross-clause interaction between 
 
 **Conclusion:** We could not find the failure point for Opus 4.6 cross-clause reasoning within the 200K context window. At ~167K tokens (the largest document that fits with system prompt), reasoning quality was indistinguishable from a 25-clause document. The practical bottleneck for long documents is not Opus's reasoning but Haiku's output token budget — addressable by increasing `quick_max` or implementing chunked card generation.
 
+**Entry 77 — Expert Scrutiny via Playwright: QC the LLM Output Quality**
+Used Playwright to capture FlipSide's full LLM output (all 13 flip cards + verdict) from a real analysis run, then fed the complete capture to two parallel Opus 4.6 expert agents — a GUI/UX expert and a narrative/prompt expert — who independently reviewed the output for quality issues.
+
+**48 combined findings** across severity levels. Two were false positives (wrong Playwright DOM selector: `.back-bottom-line` vs `.back-bottom-line-lead`; textContent concatenation artifact for "The lure" label). The remaining 46 real findings triggered three rounds of prompt iteration:
+
+| Round | Changes | Issues remaining |
+|-------|---------|-----------------|
+| 1 | Expanded forbidden words, added Rules 17-20, verdict calibration tiers, green card regex fix | 8 |
+| 2 | "ABSOLUTELY FORBIDDEN" emphasis, replacement vocabulary, INTERLEAVE rule | 7 |
+| 3 | Planning step in Rule 1 (list sections before outputting), explicit replacements, gullible voice template | 6 (3 mild) |
+
+**Key prompt additions:**
+- Rule 1 → mandatory planning step: list clause sections, merge overlaps, interleave severity, THEN output cards
+- Rule 17: Merge overlapping clauses (same right/risk = one card)
+- Rule 18: Teaser variety (different rhetorical angles, no keyword repetition)
+- Rule 19: Example variety ("no recourse" max once across all cards)
+- Rule 20: Clause ordering (interleave RED/YELLOW, max 3 consecutive REDs)
+- Verdict `[SHOULD_YOU_WORRY]` calibration tiers based on red-flag count
+- Reader voice forbidden words expanded to ~30 terms with explicit replacement vocabulary
+
+**LLM compliance plateau:** Reader voice forbidden-word compliance improved from pervasive violations to ~80-90% across 3 rounds — diminishing returns on prompt engineering. Documented as Decision 26 in strategy.md.
+
+**Entry 78 — Live Thinking Narration + Card Nav Cleanup**
+Replaced canned capability ticker messages ("PERSPECTIVE SHIFT", "LONG-CONTEXT RETRIEVAL") with live sentences extracted from the Opus thinking stream. `narrateFromThinking(chunk)` accumulates text, splits on sentence boundaries, strips bullet points/markdown/LLM prefixes, deduplicates, and pushes to the header capability ticker via `showCapTickerNarration()` with a "THINKING" label. Rate-limited to 3.5s between updates. Zero extra API calls — the thinking stream is free narration material.
+
+Simultaneously cleaned up the card nav area — removed three elements that now live exclusively inside the verdict card:
+- **Risk summary strip** (`#riskSummaryStrip`): concern/watch/fair counts with colored dots — now rendered at very top of `renderOneScreenVerdict()` by counting `data-risk-level` attributes from flip card DOM
+- **Tricks detected bar** (`#tricksDetectedBar` + `#tricksDetectedPills`): removed from DOM entirely — trick pills with SVG icons rendered inside verdict below risk summary
+- **Thinking viewer + toggle** (`#thinkingViewer`, `#thinkingToggle`): removed from DOM — narration only in header ticker
+
+Also locked "Go Deeper" buttons (`.locked` class: 45% opacity, `cursor: not-allowed`) until `deepTextComplete` — prevents users from starting Opus deep dives before the verdict is ready. Auto-unlock on `overall_done`.
+
 ---
 
 ### Current State
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 2,615 | Backend: Flask, SSE, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, 8 prompts, dynamic token budget, suitability gate, 14 sample docs |
-| `templates/index.html` | 6,470 | Card-first frontend: instant flip cards, focused verdict reading mode, live tricks panel, verdict summary, clean export, home button, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav tabs, live counters, DOMPurify |
+| `app.py` | 3,968 | Backend: Flask, SSE, parallel processing, vision, tool use, follow-up, prompt caching, dynamic token budget, suitability gate, 14 sample docs |
+| `templates/index.html` | 10,119 | Card-first frontend: instant flip cards, live thinking narration, verdict with risk summary + tricks + locked depth buttons, clean export, confidence badges, follow-up UI, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
 | `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
 | `docs/` | 18 documents | Methodology, decisions, failures, corrections |
-| `HACKATHON_LOG.md` | This file | 76 entries, complete process timeline |
+| `HACKATHON_LOG.md` | This file | 78 entries, complete process timeline |
 | `README.md` | Product description + 14 Opus capabilities + meta-prompting discovery |
 
 ---
@@ -487,15 +519,15 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (2,615 lines) | Flask backend: 8 prompts, 5-thread parallel (Haiku + 4× Opus), vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
-| `templates/index.html` (6,470 lines) | Card-first frontend: instant flip cards, verdict summary, clean export, home button, live tricks panel, FAQ + Fair Clause, message-the-company, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
+| `app.py` (3,569 lines) | Flask backend: prompts, parallel processing, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
+| `templates/index.html` (9,587 lines) | Card-first frontend: instant flip cards, verdict summary, clean export, home button, live tricks panel, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
 | `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| This file | 76 entries, complete process timeline |
+| This file | 77 entries, complete process timeline |
 
 ## 14 Opus 4.6 Capabilities Used
 

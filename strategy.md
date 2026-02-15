@@ -166,7 +166,7 @@
 - For bug fixes with clear symptoms
 - When time pressure requires building to learn (prototype → assess → iterate is faster than assess → build)
 
-**Relationship to other strategies**: This is the meta-prompting pattern (Entry 1, confirmed by Cat Wu) applied to product design. The screenshot strategy (Decision 1) and Playwright strategy (Decision 2) are for debugging. This strategy is for deciding what to build.
+**Relationship to other strategies**: This is the meta-prompting pattern (Entry 1, mentioned by Cat Wu during AMA) applied to product design. The screenshot strategy (Decision 1) and Playwright strategy (Decision 2) are for debugging. This strategy is for deciding what to build. Full analysis with 7 real cases and 30 agent-tested comparisons: [meta-prompting-strategy.md](meta-prompting-strategy.md).
 
 **Key insight**: The builder's instinct when they can't visualize something is to start coding. The better instinct is to write a prompt that forces the visualization to become explicit — then execute it, cross-reference it, and only build what survives scrutiny.
 
@@ -1005,3 +1005,150 @@ The coder found things the others missed (80K token budget signaling, 6× client
 - When token budget is constrained (three Opus agents ≈ $0.50-1.00)
 
 **Key insight**: The most powerful use of parallel agents isn't doing the same thing faster — it's doing *different things simultaneously* and looking for convergence. Three experts who agree on the diagnosis give you confidence. Three experts who each find unique solutions give you options. The combination gives you both.
+
+---
+
+## Decision 26: Expert Scrutiny via Playwright — QC the LLM Output Quality
+
+**Date**: 2026-02-15
+**Context**: The product generates 13+ flip cards and a full verdict for each document. But nobody had systematically read ALL the generated content as a quality reviewer would — checking for tone consistency, forbidden word violations, card-to-card duplication, teaser variety, verdict-card contradiction, and narrative fatigue. The user said: "Scrutinize the logic of the tool by semantically looking at tone, voice, narrative, double info, conflicting info, boring parts."
+
+### The Strategy
+
+Three-phase QC pipeline:
+
+1. **Playwright capture** — Automated browser script loads the app, triggers analysis on a sample document, waits for full completion, extracts ALL card data (front + back) and verdict content using correct DOM selectors. Output: 30K chars of structured text.
+
+2. **Dual-expert review** — Two parallel Opus 4.6 agents analyze the captured output simultaneously:
+   - **GUI/UX Expert**: Layout, information hierarchy, redundancy, dead elements, visual consistency
+   - **Narrative/Editorial Expert**: Voice consistency, forbidden word compliance, card-to-card variety, emotional pacing, verdict calibration
+
+3. **Prompt-level fixes** — Expert findings translated into concrete prompt engineering changes, validated by re-running the Playwright capture.
+
+### What the Experts Found (48 combined findings)
+
+**False positives (2)**: "Empty bottom line" was a wrong Playwright selector (`.back-bottom-line` vs `.back-bottom-line-lead` for non-green cards). "Duplicated lure label" was a textContent concatenation artifact.
+
+**Real prompt issues (10 high-priority)**:
+1. Reader voice using forbidden words ("waiving" in Card 6, "liable" in Card 5) — FORBIDDEN list existed but LLM ignored it
+2. Cards 1-2 near-duplicates (same IP licensing section from different angles)
+3. Six consecutive RED cards without relief (alarm fatigue)
+4. "No recourse" repeated as the conclusion of 6+ examples
+5. First three teasers all used "forever" as the hook
+6. Verdict "Should you worry: risk is low" with 11 RED cards (contradiction)
+7. FLAGGED_CLAIMS section repeated card content verbatim (no synthesis)
+8. Card 11 reader voice was a bullet list, not a narrative character
+9. Green summary card reader used legal jargon
+10. Green card bottom line didn't parse (regex missing `$` in lookahead)
+
+### The Fixes (3 rounds of prompt iteration)
+
+**Round 1 — Prompt changes:**
+- Expanded READER forbidden words from ~15 to ~30, added explicit replacement suggestions
+- Added Rule 17 (merge overlapping clauses), Rule 18 (teaser variety), Rule 19 (example variety), Rule 20 (severity interleaving)
+- Strengthened SHOULD_YOU_WORRY with calibration tiers based on red-flag count
+- Added FLAGGED_CLAIMS instruction: "The user already read the cards. Add a NEW angle."
+- Fixed green card bottom line regex: added `|$` to lookahead
+
+**Round 2 — Results:**
+- Reader voice: 11/13 clean (from pervasive violations)
+- Teaser variety: "Good variety" (from "forever" 3×)
+- Verdict: "Several clauses need attention" (from "risk is low")
+- Bottom lines: 12/13 present (from 0/13 via wrong selector)
+- "No recourse": 1 occurrence (from 6+)
+
+**Round 3 — Final tuning:**
+- Replaced Rule 1 ("output immediately") with planning step that lists clause sections before outputting cards — enables merge/interleave decisions
+- Added explicit replacement vocabulary for common forbidden words ("legal fees" → "their costs")
+- Updated green card reader template to use gullible voice instead of legal listing
+
+**Validation test results (3 rounds):**
+
+| Metric | Before | Round 1 | Round 2 | Round 3 |
+|--------|--------|---------|---------|---------|
+| Reader voice violations | Pervasive | 3/13 | 3/13 | 3/13 (mild) |
+| "No recourse" repetition | 6+ | 2 | 1 | 1 |
+| Teaser variety | "forever" 3× | Overused "happens" | Clean | Clean |
+| Bottom lines rendered | 0/13 (wrong selector) | 12/13 | 12/13 | 12/13 |
+| Verdict contradicts cards | Yes | No | No | No |
+| Same-section duplicates | 2 pairs | 1 pair | 1 pair | 1 pair |
+| Max RED streak | 6 | 5 | 5 | 5 |
+
+### Why This Pattern Works
+
+**The Playwright-as-fact-checker loop**: The model generates output → Playwright captures it in a real browser → expert agents analyze the capture → findings become prompt fixes → Playwright re-captures to validate. This is automated QC for generative AI output — the model reviews its own product through an objective intermediary.
+
+**Dual-expert divergence reveals different bugs**: The GUI expert found information hierarchy issues (5 competing labels on card back) while the narrative expert found voice consistency issues (reader using "waiving"). Neither would catch both. The overlap zone (both flagged verdict contradiction) provides high-confidence diagnosis.
+
+**False positives matter**: 2 of the 48 findings were wrong — caused by incorrect Playwright selectors, not actual bugs. Without systematic investigation, these would have triggered unnecessary code changes. The first step of any QC fix should be: "Is this actually broken, or is the test wrong?"
+
+**Prompt engineering has diminishing returns**: Reader voice violations dropped from pervasive to 3/13 in Round 1, then stayed at 3/13 through Rounds 2-3. The remaining violations are mild ("legal" as a common word, "binding" in a factual context). LLM compliance with negative constraints (forbidden word lists) plateaus around 80-90%. The last 10% would require post-processing, not more prompt iterations.
+
+**Planning step vs streaming trade-off**: Adding a planning step (Rule 1) delays the first card by ~2-3 seconds but eliminates near-duplicate cards and enables severity interleaving. Worth it for output quality — users don't notice 2 seconds but do notice redundant cards.
+
+### When to Use This Pattern
+
+- After the product works but before submission — QC the generative output, not just the code
+- When LLM output is user-facing and voice/tone consistency matters
+- When you suspect the model's output has systematic patterns (repetition, contradiction) that a single test run wouldn't catch
+- When your test infrastructure uses DOM selectors — verify the selectors against the actual rendering code first
+
+**Key insight**: The hardest bugs in AI products live in the gap between "the code works" and "the output is good." Code review catches code bugs. Prompt review catches prompt bugs. But output review — systematically reading what the model actually produces for real inputs — catches quality bugs that neither code nor prompt review can find. Playwright + parallel expert agents automates this third layer of QC.
+
+## Decision 27: Live Thinking Narration + Layout Reorder
+
+**Date**: 2026-02-15
+
+### Problem
+
+Two issues converged:
+
+1. **Dead narration**: The expert briefing panel showed canned messages ("Building a mental model of the entire agreement") rotating on a 4-second timer, plus keyword-triggered translations ("Checking who pays if something goes wrong"). None reflected what Opus was actually reasoning about the user's specific document. Meanwhile, the real thinking stream arrived via `overall_thinking` SSE events but was hidden in a developer panel.
+
+2. **Wrong layout order**: The inline verdict (full expert analysis + Go Deeper buttons) sat *above* the flip cards in DOM order. Users had to scroll past a wall of verdict text to reach the cards — the core product. The expert briefing panel swooshed to below the cards after loading, burying live narration at the bottom. Header boilerplate (capability ticker, status rotation) kept rotating after the verdict was ready because only the `done` event (all threads complete, including synthesis) cleaned them up.
+
+### Solution: Three-Part Fix
+
+**Part A — Live narration in header ticker** (zero extra API calls):
+
+Replace canned `NARRATION_SCRIPT` timer + `THINKING_TRANSLATIONS` keyword matching + `OPUS_MESSAGES`/`HAIKU_MESSAGES` capability rotation with `narrateFromThinking(chunk)`:
+- Accumulates thinking text in a sentence buffer
+- Splits on sentence boundaries (`. ` / `! ` / `? ` / newline)
+- Strips bullets, markdown, ALL-CAPS headers, LLM self-talk prefixes ("Hmm", "Let me", "I notice")
+- Rate-limits to 3.5s between updates, deduplicates by 40-char prefix
+- Pushes to `showCapTickerNarration()` — replaces canned capability ticker with "THINKING" label + real sentence
+- Also pushes to `showBriefingSentence()` for loading screen phase
+
+Result: header shows "THINKING The non-compete restricts working anywhere in North America for 24 months" instead of "PERSPECTIVE SHIFT Adopting drafter's viewpoint to find hidden".
+
+Note: initial scoring-based approach (`scoreSentence()` with threshold >= 2) produced zero visible narration — common Opus prefixes like "Hmm" got -3 penalty, pushing most sentences below threshold. Simplified to: just pick the latest complete sentence, strip formatting, show it.
+
+**Part B — Card nav cleanup** (DOM removals):
+
+Removed three elements from card nav that now live exclusively inside the verdict:
+
+| Element | Before | After |
+|---------|--------|-------|
+| Risk summary strip | Between card nav and cards | Top of `renderOneScreenVerdict()` — counts from `data-risk-level` attrs |
+| Tricks detected bar + pills | Between risk summary and cards | Inside verdict, below risk summary, above tier badge |
+| Thinking viewer + toggle | Below card nav | Removed entirely — narration only in header ticker |
+| Narration in verdict strip | `showVerdictStripNarration()` wrote to `#verdictStripText` | Deleted — strip shows only "Verdict building…" / "Your Expert Verdict is Ready" |
+
+**Part C — Depth button gating**:
+
+"Go Deeper" buttons render with `.locked` class (45% opacity, `cursor: not-allowed`) until `deepTextComplete || isDoneRendering`. Click handler returns early when locked. Auto-unlock on `overall_done`.
+
+### Why This Ordering
+
+The new visual stack (top to bottom after loading):
+1. **Header ticker** — live thinking narration ("THINKING" + document-specific sentence)
+2. **Sticky nav** — clause pips, prev/next, verdict progress strip only
+3. **Flip cards** — the core product, nothing between nav and cards
+4. **Inline verdict** — risk summary → tricks → tier badge → sections → locked depth buttons
+5. **Go Deeper buttons** — unlock when verdict ready
+
+Principle: **cards are the product**. The card nav area is navigation-only — no analysis data between nav and cards. Risk summary, tricks, and thinking all moved to their proper homes (verdict card + header ticker).
+
+### Key Insight
+
+The thinking stream is free narration material — Opus already generates document-specific reasoning as part of its analysis. The only cost is extraction (regex + cleanup heuristics), which is ~0ms per chunk. Canned messages required maintenance and never matched the user's document. Live narration turns a generic loading screen into a document-specific experience with zero additional API cost.

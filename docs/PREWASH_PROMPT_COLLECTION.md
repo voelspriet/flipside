@@ -290,3 +290,5 @@ Every cleaned prompt eliminates adjectives, specifies who the user is by role, d
 ---
 
 <sub>Compiled from the Claude Hackathon 2026 session. All prompts are real or faithfully reconstructed from the documents that produced them. The Prewash Method was developed by Henk van Ess.</sub>
+
+<sub>Full analysis with the self-reflection hypothesis and 30 agent-tested comparisons: [meta-prompting-strategy.md](../meta-prompting-strategy.md)</sub>

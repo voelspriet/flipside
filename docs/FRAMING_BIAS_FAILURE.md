@@ -93,4 +93,4 @@ This is, ironically, the exact problem that "Think Like a Document" solves.
 
 ---
 
-<sub>Documented during the Claude Hackathon 2026. Third instance in a series of three bias failures, all caught by the human.</sub>
+<sub>Documented during the Claude Hackathon 2026. Third instance in a series of three bias failures, all caught by the human. This case is analyzed in [meta-prompting-strategy.md](../meta-prompting-strategy.md) (Case 4).</sub>

@@ -105,13 +105,137 @@ Every instruction required inferring the technical intent from non-technical lan
 
 ---
 
-## 6. Long-Context Retrieval Across Code
+## 6. Visual Vocabulary — How a Non-Coder Directs Code Changes
+
+**The problem:** You can SEE the element you want to change, but you don't know what it's called in code. You can't say "move the `#dropZone`" if you've never opened the HTML.
+
+**The method:** Screenshot → Element Map → Precise Instructions.
+
+**Step 1: Show, don't describe.** Take a screenshot and ask Claude Code "how do you call each element?" Claude maps every visible element to its CSS class or ID:
+
+| What you see | What Claude calls it |
+|---|---|
+| "FlipSide" (big title) | `.brand h1` |
+| *"The dark side of small print."* | `.tagline` |
+| *"Upload any contract..."* | `.brand-explain` |
+| White card containing the upload area | `.upload-container` |
+| Dashed box with "Drop a document here" | `#dropZone` / `.drop-zone` |
+| "Drop a document here" | `.dz-title` |
+| "or click to browse" | `.hint` |
+| "PDF · DOCX · TXT" | `.filetypes` |
+| Link row (Paste text / URL / Compare / FAQ) | `.upload-links` |
+| Green-bordered disclaimer at bottom | `.disclaimer` |
+
+**Same method, different screen — the investigation/loading state:**
+
+| What you see | What Claude calls it |
+|---|---|
+| "CloudVault Terms of Service (Sample)" (title) | `#docTitleHero` / `#docTitleText` |
+| White scrollable document preview | `#editorialLoading` / `.editorial-loading` |
+| Document text inside preview | `#editorialLoadingText` / `.editorial-loading-text` |
+| Magnifying glass scanning animation | `.investigation-loupe` (positioned by JS) |
+| "••• Reading the fine print" (animated dots + status) | `.editorial-loading-indicator` → `.pulsing-dots` + `#editorialLoadingStatus` |
+| Rust-bordered narration ("Looking at how either side can walk away") | `#briefingSentence` / `.briefing-sentence` inside `#expertBriefing` |
+| Two-track progress area | `.briefing-tracks` |
+| "Clause readers" card with red dot | `.briefing-track` → `#trackReaders` (dot) + `.track-label` + `#trackReadersDetail` |
+| "Expert verdict" card with red dot | `.briefing-track` → `#trackExpert` (dot) + `.track-label` + `#trackExpertDetail` |
+| "2 angles considered" | `#briefingDepth` / `.briefing-depth` (computed: `tokenCount / 90`) |
+
+The narration line is dynamic — `THINKING_TRANSLATIONS` pattern-matches Opus thinking tokens (e.g., `/terminat/i` → "Looking at how either side can walk away") and translates model reasoning into plain language in real time.
+
+**Step 2: Use the names.** Now you can give precise instructions:
+- "Move the `.disclaimer` above the `.upload-container`"
+- "Show a preview image inside the `.drop-zone`"
+- "Hide the `.tagline` on mobile"
+- "Change the `.brand-explain` text"
+
+**Why it works:** The screenshot IS the specification. No ambiguity about which element you mean. No "the thing at the bottom" or "that grey box." Claude reads the screenshot, maps the visual layout to the DOM, and from that point forward you share a vocabulary.
+
+**More sophisticated uses in this project:**
+- "Show the image in the grey box" → Claude knows `.upload-container` has the white/cream card styling
+- "Show image in `.drop-zone`" → targeting a specific nested element by name learned from a previous screenshot round
+- Screenshot + "why is there a gap between these two?" → Claude measures the CSS margins/padding on the exact elements visible
+- Screenshot + "this takes too long" → Claude traces the visual state to the code that controls when it transitions (not a CSS question — an architecture question)
+
+**The progression:** The project started with imprecise instructions ("never show anlyze complete hre" + screenshot) and evolved into a systematic workflow: screenshot first, get the vocabulary, then direct changes precisely. The screenshot replaced the IDE for a non-coder — instead of right-clicking "Inspect Element," you just show Claude what you see.
+
+**Cross-screen animation — swooshing elements between two screenshots:**
+
+The most sophisticated use of visual vocabulary is directing animations *between* screens. The user showed two screenshots and said "keep the briefing info, swoosh it into the card nav":
+
+| Image 12 (briefing/loading state) | Image 13 (card view) | Animation |
+|---|---|---|
+| `.briefing-track` "Clause readers" | `#cardNavPips` (clause pip dots) | Track ghost flies to pips area, scales down, fades |
+| `.briefing-track` "Expert verdict" | `#verdictProgressStrip` (verdict building bar) | Track ghost flies to verdict strip, scales down, fades |
+| `.briefing-sentence` (narration) | *(no target — decorative)* | Floats up 40px, elegant fade out |
+| `#briefingDepth` ("N angles considered") | *(no target — decorative)* | Shrinks to 70%, fades out |
+
+This produced `swooshBriefingToCardNav()` — a FLIP animation that captures source rects from Image 12's DOM, creates fixed-position ghost clones, switches to Image 13's DOM, measures target rects, then animates ghosts from source → target using the Web Animations API. The instruction pattern: "keep [Image A element], swoosh it into [Image B element]" → map elements across screenshots → FLIP animation between the two states.
+
+---
+
+## 7. Long-Context Retrieval Across Code
 
 **The benchmark:** Opus 4.6 scores **76%** on MRCR v2 8-needle 1M (long-context retrieval), vs Sonnet 4.5's **18.5%**. Anthropic calls this "a qualitative shift in how much context a model can actually use."
 
 **What happened in FlipSide:** The streaming pipeline change required connecting code at line 85 (`_prescan_document` Phase 1), line 115 (`card_worker`), line 2409 (`_card_pipeline`), line 2692 (`_run_parallel_streaming`), and line 5868 (`transitionToCardView` in the frontend). These are spread across 8,800 lines of code in two files. The model had to hold all five locations in context simultaneously to ensure the Queue bridge, event types, and completion signals were consistent.
 
 This is the code equivalent of Anthropic's needle-in-a-haystack test: finding and connecting specific code patterns separated by thousands of lines, where a mismatch at any point causes silent failure.
+
+---
+
+## 8. Tool Use Agent — Opus as Decision-Maker, Not Just Text Generator
+
+**The benchmark:** Opus 4.6 supports native tool use — the model autonomously decides which tools to call, when, and how to combine results. Combined with its BigLaw Bench 90.2% score and extended thinking, this makes it capable of genuine agent behavior: reasoning about what information it needs before retrieving it.
+
+**What happened in FlipSide:** The "Ask FlipSide" follow-up feature gives Opus three tools:
+
+| Tool | What it does |
+|---|---|
+| `search_document(query)` | Full-text search through the uploaded document |
+| `get_clause_analysis(n)` | Retrieve FlipSide's flip card analysis for clause N |
+| `get_verdict_summary()` | Retrieve the overall expert verdict |
+
+When a user asks "What happens if I'm 3 months late on rent?", Opus doesn't receive the full document — it receives only the question. Then it reasons:
+
+1. "Let me search for 'late payment'" → calls `search_document` → finds clauses 1 and 4
+2. "Let me also check 'termination' and 'grace period'" → two more parallel searches
+3. "Clause 1 looks relevant. Let me read my prior analysis." → calls `get_clause_analysis(1)`
+4. "Clause 4 too." → calls `get_clause_analysis(4)`
+5. Synthesizes: "$12,300 total — $6,750 in uncapped late fees on $5,550 in rent. Fees exceed the debt."
+
+The answer includes a formatted table, cross-clause interaction analysis, and actionable negotiation advice — all derived from tool-retrieved evidence, not from the model trying to hold 40 pages in context.
+
+**The strategic choice: tool use vs. context dump.** The old follow-up endpoint sent the entire document plus all analysis to Opus in one prompt. The new version sends just the question and lets Opus decide what to retrieve. Three advantages:
+
+1. **Better answers**: Opus retrieves its own card analyses, which contain risk scores, trick classifications, and dollar figures it calculated during the main analysis. The follow-up answer references this structured data, not raw document text.
+2. **Visible reasoning**: The user sees "Searching document for 'late payment'..." → "Reading clause analysis #1..." in real time. Transparency builds trust.
+3. **Shorter context = focused output**: Instead of processing 50,000 tokens of document, Opus processes ~5,000 tokens of relevant excerpts. The answer is tighter.
+
+**The parallel tool calls**: Opus called `search_document` three times and `get_clause_analysis` twice — all in two rounds. The Anthropic API supports parallel tool use: the model returns multiple `tool_use` blocks in one response. Opus reasons about ALL the information it needs upfront, not one query at a time. This is the same pattern as a senior attorney who, upon hearing a question, immediately thinks "I need to check the penalty clause, the termination clause, and the cure period" — not "let me check one thing, then think about what else I need."
+
+**Why Opus 4.6:** The quality of tool use depends on three things: (1) knowing which tools to call (requires understanding the question deeply), (2) crafting good search queries (requires understanding legal concepts), and (3) synthesizing results across multiple tool returns into a coherent answer (requires extended reasoning). GPT-4o tends to over-search (calling every tool for every question) or under-search (missing relevant clauses). Opus 4.6 is calibrated — it searches strategically based on the question's legal implications.
+
+---
+
+## 9. On-Demand Architecture — The Product Decision That Required a System Rethink
+
+**What happened in FlipSide:** The original architecture ran 4 parallel Opus deep dives (Scenario, Walkaway, Combinations, Playbook) automatically from t=0 alongside the verdict. Maximum parallelism. But it created UX problems: the verdict finished first, the user started reading, then deep dives completed at different times — scroll jumps, layout shifts, panels appearing while reading.
+
+**The pivot:** Remove all 4 parallel threads. Make each deep dive on-demand — triggered by a single button click. The pipeline simplified from 6 parallel Opus threads to 1 (verdict only), with deep dives running independently via a new `/deepdive/` endpoint.
+
+**What Opus 4.6 had to do:**
+1. Remove `_launch_deep_dives()` and the threading coordination from `run_parallel()`
+2. Change `OPUS_SOURCES` from `{'overall', 'scenario', 'walkaway', 'combinations', 'playbook'}` to `{'overall'}` in all 3 event loop functions
+3. Add verdict text persistence (`doc['_verdict_text']`) for follow-up queries
+4. Build a new self-contained SSE endpoint that runs one Opus call per click
+5. Rewrite the frontend depth buttons from "wait for completion" to "click to start"
+6. Add the Ask FlipSide tool-use agent as a new feature
+7. Keep everything else — cards, verdict, streaming, editorial loading — working
+
+This was a simultaneous backend simplification (remove 4 threads + event handlers) and feature addition (new endpoint + tool-use agent + frontend UI), touching both files across hundreds of lines. The model held the full 13,829-line codebase in context while making coordinated changes to the event loop, thread management, SSE protocol, and frontend state management.
+
+**Why this matters for 4.6:** The pivot wasn't "change a function." It was "rethink the architecture: remove parallelism, add on-demand, add tool use, keep everything else working." That requires understanding the entire system — thread timing, event loops, frontend state, SSE protocol — and making surgical changes across all of it simultaneously. This is Terminal-Bench 65.4% in action: sustained multi-step reasoning across a large codebase under changing requirements.
 
 ---
 
@@ -125,6 +249,7 @@ The difference shows up in:
 - **Thread safety reasoning** across 5 concurrent threads sharing mutable state
 - **Self-correction** that caught security issues, dead code, and race conditions
 - **Intent inference** from non-technical, typo-filled instructions
+- **Visual vocabulary** — reading screenshots and establishing shared element names with a non-coder
 
 Opus 4.6 didn't write better functions. It built a better system — and rebuilt it 7 times as the design evolved — while maintaining consistency across 12,500 lines and understanding a non-coder's intent from three misspelled words and a screenshot.
 
