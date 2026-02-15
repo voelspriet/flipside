@@ -980,7 +980,7 @@
             display: inline-flex; align-items: center; gap: 0.35rem;
             padding: 0.3rem 0.6rem;
             background: var(--bg-warm); border: 1px solid var(--border);
-            border-radius: 100px; cursor: default;
+            border-radius: 100px; cursor: pointer;
             transition: border-color 0.2s ease, background 0.2s ease;
             position: relative;
         }
@@ -1000,20 +1000,23 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.65rem; color: var(--text-muted); font-weight: 600;
         }
-        .verdict-trick-tooltip {
-            display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
+        .verdict-trick-desc {
+            display: none; position: absolute;
+            top: calc(100% + 6px); left: 0;
             background: var(--text-primary); color: #fff;
-            font-family: 'DM Sans', sans-serif; font-size: 0.75rem; line-height: 1.4;
-            padding: 0.4rem 0.7rem; border-radius: 6px;
-            white-space: normal; width: max-content; max-width: 220px;
-            pointer-events: none; z-index: 100;
+            font-family: 'DM Sans', sans-serif; font-size: 0.72rem; line-height: 1.4;
+            padding: 0.35rem 0.65rem; border-radius: 6px;
+            white-space: nowrap; pointer-events: none;
+            z-index: 100;
         }
-        .verdict-trick-tooltip::after {
-            content: ''; position: absolute; top: 100%; left: 1rem;
+        .verdict-trick-desc::before {
+            content: ''; position: absolute; bottom: 100%; left: 1rem;
             border: 5px solid transparent;
-            border-top-color: var(--text-primary);
+            border-bottom-color: var(--text-primary);
         }
-        .verdict-trick-item:hover .verdict-trick-tooltip { display: block; }
+        .verdict-trick-item.show-desc .verdict-trick-desc {
+            display: block;
+        }
         /* Smaller icons in compact contexts */
         .trick-label .verdict-trick-icon,
         .trick-footnote .verdict-trick-icon,
@@ -1114,6 +1117,7 @@
         .editorial-loading-text {
             font-size: 0.72rem; line-height: 1.6;
             color: var(--text-secondary);
+            opacity: 0.12;
             padding: 0 1rem;
             flex: 1; min-height: 0; overflow-y: auto;
             border-left: 2px solid var(--border);
@@ -1122,6 +1126,10 @@
             scroll-behavior: smooth;
             text-align: justify;
             hyphens: auto;
+            transition: opacity 0.4s ease;
+        }
+        .editorial-loading-text.has-active-highlight {
+            opacity: 1;
         }
         .editorial-loading-text::-webkit-scrollbar { width: 3px; }
         .editorial-loading-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -1384,12 +1392,11 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.6rem; font-weight: 700;
             letter-spacing: 0.03em;
-            animation: verdictCtaPulse 2.5s ease-in-out infinite;
+            transition: box-shadow 0.3s ease;
         }
-        #verdictStripPeek .verdict-strip-cta { animation: none; }
-        @keyframes verdictCtaPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(196,75,40,0.3); }
-            50% { box-shadow: 0 0 0 6px rgba(196,75,40,0); }
+        #verdictStripReady .verdict-strip-cta:hover,
+        #verdictStripPeek .verdict-strip-cta:hover {
+            box-shadow: 0 0 0 4px rgba(196,75,40,0.15);
         }
 
         /* ── Thinking viewer (opt-in, inside verdict strip) ── */
@@ -1671,6 +1678,24 @@
             background: var(--text-muted);
         }
 
+        /* "Still building" footer — visible while Opus is streaming */
+        .verdict-building-footer {
+            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+            padding: 1.2rem 1rem; margin: 1rem 0 2rem;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-surface);
+        }
+        .verdict-building-footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+        .verdict-building-footer .pulsing-dots span {
+            background: var(--text-muted);
+        }
+
         /* One-screen verdict card */
         .verdict-onescreen {
             padding: 1.75rem; margin-bottom: 1.5rem;
@@ -1817,6 +1842,10 @@
         .verdict-section-pill:hover {
             background: var(--bg-warm); border-color: var(--text-secondary);
             color: var(--text-primary);
+        }
+        .verdict-section-pill.pending {
+            border-style: dashed; opacity: 0.5;
+            cursor: default;
         }
 
         /* Additional risks layer */
@@ -2953,8 +2982,43 @@
 
         /* Back content */
         .back-content { padding: 0; }
-        /* Section ref + quote pill in back-body inherit front-content styles */
-        .back-body .front-quote-pill { opacity: 1; transform: scale(1); }
+
+        /* Utility row: "The lure" + "Find in document" on one line */
+        .back-utility-row {
+            display: flex; align-items: center; gap: 1.2rem;
+            margin-top: 0.3rem; padding-top: 0.3rem;
+            border-top: 1px solid var(--border-light);
+        }
+        .back-honey-toggle {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            cursor: pointer; padding: 0.2rem 0;
+        }
+        .back-honey-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            color: var(--text-muted);
+        }
+        .back-honey-toggle:hover .back-honey-label { color: var(--text-secondary); }
+        .back-honey-chevron {
+            font-size: 0.5rem; color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+        .back-honey-toggle.expanded .back-honey-chevron {
+            transform: rotate(90deg);
+        }
+        .back-honey-body {
+            display: none; margin: 0.2rem 0 0;
+            padding: 0.35rem 0.6rem;
+            background: rgba(196,75,40,0.06);
+            border-left: 2px solid var(--accent);
+            font-size: 0.72rem; line-height: 1.45;
+            color: var(--text-secondary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+        .back-honey-body.visible {
+            display: block;
+        }
         .risk-header {
             padding: 1.25rem 2rem; display: flex; align-items: center;
             justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
@@ -3199,11 +3263,11 @@
         /* Flip-back trigger */
         .flip-back-trigger {
             display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-            width: 100%; padding: 0.9rem 2rem; background: none; border: none;
+            width: 100%; padding: 0.9rem 1rem; background: none; border: none;
             border-top: 1px solid var(--border-light); cursor: pointer;
             font-family: inherit; font-size: 0.8rem; font-weight: 600;
             color: var(--text-muted); transition: all var(--transition);
-            position: relative; overflow: hidden;
+            position: relative; white-space: nowrap;
         }
         .flip-back-trigger::before {
             content: ''; position: absolute; inset: 0;
@@ -4081,7 +4145,7 @@
         <div class="brand fade-up">
             <h1>FlipSide</h1>
             <div class="tagline">The dark side of small print.</div>
-            <p class="brand-explain">Upload any contract, lease, or terms of service &mdash; and see what the other side isn&rsquo;t telling you.</p>
+            <p class="brand-explain">Gym memberships. Sweepstakes rules. Pet adoptions. Insurance claims. The same 18 tricks that $800/hour attorneys find in corporate deals &mdash; hiding in the documents nobody reviews.</p>
         </div>
 
         <div class="upload-card fade-up fade-up-d1">
@@ -4208,15 +4272,12 @@
 
         <div class="faq-section" id="faq-how">
             <h3>How does it work?</h3>
-            <p>FlipSide runs <strong>five AI threads in parallel</strong> the moment you upload:</p>
+            <p>FlipSide runs <strong>two AI models in parallel</strong> the moment you upload:</p>
             <ul>
-                <li><strong>Thread 1 — Card Scan</strong> (Claude Haiku 4.5): Reads every clause and generates flip cards with front and back in ~12 seconds. This is what appears first.</li>
-                <li><strong>Thread 2 — Cross-Clause Interactions</strong> (Claude Opus 4.6): Finds risks you can't see reading one clause at a time — where clauses combine to create compound effects.</li>
-                <li><strong>Thread 3 — Power Asymmetry</strong> (Claude Opus 4.6): Counts who holds the rights, who carries the obligations, and calculates the power ratio.</li>
-                <li><strong>Thread 4 — Document Archaeology</strong> (Claude Opus 4.6): Identifies which clauses are standard boilerplate and which were custom-drafted for strategic advantage.</li>
-                <li><strong>Thread 5 — Overall Assessment</strong> (Claude Opus 4.6): Synthesizes everything into a verdict, profiles the drafter, and reviews its own analysis for blind spots.</li>
+                <li><strong>Flip Cards</strong> (Claude Haiku 4.5): Pre-scans your document, then launches parallel workers that generate full flip cards &mdash; front and back &mdash; in ~8 seconds.</li>
+                <li><strong>Expert Verdict</strong> (Claude Opus 4.6): Builds a one-screen verdict from t=0 &mdash; verdict tier, main risk, power ratio, jurisdiction detection, risks, and a self-reviewed checklist.</li>
             </ul>
-            <p>Cards appear fast. The expert verdict builds in the background. You can start flipping cards while Opus is still thinking.</p>
+            <p>Cards appear in seconds. The expert verdict builds in the background. You can start flipping cards while Opus is still thinking. When the verdict is ready, four <strong>Go Deeper</strong> buttons unlock &mdash; each one fires a dedicated Opus 4.6 analysis on demand.</p>
         </div>
 
         <hr class="faq-divider">
@@ -4274,9 +4335,9 @@
 
         <div class="faq-section" id="faq-who">
             <h3>Who built this?</h3>
-            <p><strong>Henk van Ess</strong> — an internationally recognized OSINT (Open Source Intelligence) expert, journalist trainer, and tool builder based in the Netherlands. Assessor for the International Fact-Checking Network (IFCN) and European Fact-Checking Standards Network (EFCSN). Early Bellingcat contributor. Author of a CHI 2026 peer-reviewed paper on the "Think Like a Document" methodology.</p>
-            <p><strong>He does not write code.</strong> Every line of FlipSide — 2,615 lines of Python backend and 6,145 lines of frontend — was built through conversation with Claude Opus 4.6 in one weekend. The prompts were the product. The AI was the builder.</p>
-            <p>Previous open-source tools: <a href="https://imagewhisperer.online" target="_blank" rel="noopener" style="color:var(--accent)">ImageWhisperer</a>, SearchWhisperer, AI Whisperer.</p>
+            <p><strong>Henk van Ess</strong> finds the story in public data. An internationally recognized expert in AI-powered digital research and open-source intelligence (OSINT), his methods are sought after by Pulitzer winners, NGOs, research firms, and law enforcement. Assessor for the International Fact-Checking Network (IFCN) and its European counterpart EFCSN. Early Bellingcat contributor. Author of multiple books on internet research. CHI 2026 peer-reviewed paper on &ldquo;Think Like a Document.&rdquo; 10,000+ newsletter subscribers from BBC, NYT, Reuters, Europol, Harvard, MIT, NATO.</p>
+            <p><strong>He does not write code.</strong> Every line of FlipSide &mdash; 3,975 lines of Python backend and 10,319 lines of frontend &mdash; was built through conversation with Claude Opus 4.6 in one weekend. The prompts were the product. The AI was the builder.</p>
+            <p>Previous open-source tools: <a href="https://imagewhisperer.online" target="_blank" rel="noopener" style="color:var(--accent)">ImageWhisperer</a>, SearchWhisperer, AI Whisperer. Newsletter: <a href="https://digitaldigging.substack.com" target="_blank" rel="noopener" style="color:var(--accent)">Digital Digging</a>.</p>
         </div>
 
         <hr class="faq-divider">
@@ -4435,7 +4496,7 @@
                         <button class="verdict-strip-cta verdict-strip-peek" id="verdictStripPeekCta">Peek &rarr;</button>
                     </div>
                     <div id="verdictStripReady" class="hidden">
-                        <span>Your Expert Verdict is Ready</span>
+                        <span>Expert verdict ready</span>
                         <button class="verdict-strip-cta" id="verdictStripCta">Read it &rarr;</button>
                     </div>
                 </div>
@@ -5026,7 +5087,7 @@
             var cards = flipCardContainer.querySelectorAll('.flip-card');
             if (currentCardIndex >= cards.length - 1) {
                 // Last card — go to verdict
-                revealDeepAnalysis();
+                revealDeepAnalysis(true);
                 dismissVerdictStrip();
                 exitFocusedMode();
             } else {
@@ -5055,7 +5116,7 @@
         var navNext = e.target.closest('.card-nav-next');
         if (navNext && !navNext.disabled) {
             if (navNext.getAttribute('data-action') === 'assessment') {
-                revealDeepAnalysis();
+                revealDeepAnalysis(true);
             } else {
                 showCardAtIndex(currentCardIndex + 1);
             }
@@ -5632,8 +5693,9 @@
         quickDone = false;
         isDoneRendering = false;
         deepTextComplete = false;
-        _verdictScrolled = false;
         _verdictStripRead = false;
+        _currentStripState = 'building';
+        _pendingStripState = null;
         _renderedVerdictTags = {};
         _flashVerdictShown = false;
         _coreVerdictReady = false;
@@ -5871,7 +5933,7 @@
                 _verdictAutoRevealed = true;
                 var skStatusTxt = $('skeletonStatusText');
                 if (skStatusTxt) skStatusTxt.textContent = 'Cards building \u2014 showing verdict';
-                revealDeepAnalysis();
+                revealDeepAnalysis(true);
             }
         }, 10000);
 
@@ -6741,44 +6803,43 @@
         }
 
         if (!isGreenSummary) {
-            if (clause.honey) {
-                backBodyHtml += '<div class="back-honey" style="margin:0.6rem 0;padding:0.5rem 0.7rem;' +
-                    'background:rgba(196,75,40,0.06);border-left:2px solid var(--accent);' +
-                    'font-size:0.78rem;color:var(--text-secondary);border-radius:0 var(--radius-sm) var(--radius-sm) 0">' +
-                    '<span style="font-weight:600;color:var(--accent);font-family:\'JetBrains Mono\',monospace;font-size:0.68rem;' +
-                    'letter-spacing:0.04em;text-transform:uppercase">The lure</span><br>' +
-                    escapeHtml(clause.honey) + '</div>';
-            }
-
+            // Bottom line comes right after figure + example (punchline position)
             if (clause.bottomLine) {
                 backBodyHtml += '<div class="back-bottom-line">' +
                     escapeHtml(clause.bottomLine) + '</div>';
+            }
+
+            // Utility row: "The lure" toggle + "Find in document" on one line
+            var hasHoney = !!clause.honey;
+            var hasQuote = !!clause.quote;
+            if (hasHoney || hasQuote) {
+                backBodyHtml += '<div class="back-utility-row">';
+                if (hasHoney) {
+                    backBodyHtml += '<span class="back-honey-toggle" onclick="this.classList.toggle(\'expanded\');this.parentElement.nextElementSibling.classList.toggle(\'visible\')">' +
+                        '<span class="back-honey-label">The lure</span>' +
+                        '<span class="back-honey-chevron">\u25B6</span>' +
+                        '</span>';
+                }
+                if (hasQuote) {
+                    backBodyHtml += '<span class="find-in-doc" data-card-index="' + index + '">Find in document</span>';
+                }
+                backBodyHtml += '</div>';
+                if (hasHoney) {
+                    backBodyHtml += '<div class="back-honey-body">' +
+                        escapeHtml(clause.honey) + '</div>';
+                }
             }
         }
 
         var backTitle = clause.teaser || clause.reveal || clause.title;
         var backLabel = (risk === 'green') ? 'And that\u2019s correct' : 'What the fine print actually says';
-        // Risk header first, then section ref + quote — same layout as front (header → content)
+        // Risk header → straight to analysis (no section ref, no quote — user can flip back or use Find in Document)
         var backInnerHtml = '';
         backInnerHtml += '<div class="risk-header risk-header-' + risk + '">' +
             '<span class="risk-header-label">' + backLabel + '</span>' +
             '<h3 class="clause-title">' + escapeHtml(backTitle) + '</h3>' +
             '</div>';
-        // Section ref + quote inside back-body (same position as front-content)
-        var persistentHtml = '';
-        if (clause.section || clause.quote) {
-            persistentHtml =
-                (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
-                (clause.quote ? '<div class="front-quote-pill revealed" style="margin-bottom:0.9rem">' +
-                    '<span class="pill-num pill-num-' + risk + '">' + (index + 1) + '</span>' +
-                    '<span class="pill-text">\u201c' + escapeHtml(clause.quote) + '\u201d</span>' +
-                    '</div>' : '');
-        }
-        backInnerHtml += '<div class="back-body">' + persistentHtml + backBodyHtml + '</div>';
-        // "Find in document" at the bottom for non-green cards
-        if (clause.quote && risk !== 'green') {
-            backInnerHtml += '<span class="find-in-doc" data-card-index="' + index + '" style="display:block;margin:0.5rem 1.75rem 0">Find in document</span>';
-        }
+        backInnerHtml += '<div class="back-body">' + backBodyHtml + '</div>';
         // Trick chip + flip back
         backInnerHtml += '<div class="back-footer">';
         if (clause.trick) {
@@ -6984,10 +7045,11 @@
             highlights[i].classList.remove('active');
         }
 
-        // Activate the matching highlight
+        // Activate the matching highlight and reveal the text
         var target = previewEl.querySelector('.doc-highlight[data-card-index="' + cardIndex + '"]');
         if (target) {
             target.classList.add('active');
+            previewEl.classList.add('has-active-highlight');
             // Reliable scroll: use scrollIntoView with block:center within the scroll container
             // Calculate relative position and scroll manually for container-scoped scrolling
             var containerRect = previewEl.getBoundingClientRect();
@@ -7304,6 +7366,9 @@
     }
 
     // ── Verdict progress strip (below card nav) ──────────────
+    var _currentStripState = 'building';
+    var _pendingStripState = null;
+
     function updateVerdictStrip() {
         var strip = $('verdictProgressStrip');
         if (!strip) return;
@@ -7312,29 +7377,47 @@
             strip.classList.remove('visible');
             return;
         }
+
+        // Determine target state
+        var targetState = 'building';
+        if (deepTextComplete || isDoneRendering) targetState = 'ready';
+        else if (_coreVerdictReady) targetState = 'peek';
+
+        // Defer upgrades when user is reading a flipped card (mid-flip)
+        var layout = document.querySelector('.analysis-layout');
+        var isFlipped = layout && layout.classList.contains('layout-flipped');
+        if (isFlipped && targetState !== _currentStripState && targetState !== 'building') {
+            _pendingStripState = targetState;
+            strip.classList.add('visible');
+            return;
+        }
+
+        _applyStripState(targetState);
+        strip.classList.add('visible');
+    }
+
+    function _applyStripState(state) {
         var building = $('verdictStripBuilding');
         var peek = $('verdictStripPeek');
         var ready = $('verdictStripReady');
         var textEl = $('verdictStripText');
 
-        if (deepTextComplete || isDoneRendering) {
-            // Done — full verdict ready
+        if (state === 'ready') {
             building.classList.add('hidden');
             peek.classList.add('hidden');
             ready.classList.remove('hidden');
-        } else if (_coreVerdictReady) {
-            // Core tags arrived — allow peek with honest label
+        } else if (state === 'peek') {
             building.classList.add('hidden');
             peek.classList.remove('hidden');
             ready.classList.add('hidden');
         } else {
-            // Still building
             building.classList.remove('hidden');
             peek.classList.add('hidden');
             ready.classList.add('hidden');
-            textEl.textContent = 'Expert analyzing\u2026';
+            if (textEl) textEl.textContent = 'Expert analyzing\u2026';
         }
-        strip.classList.add('visible');
+        _currentStripState = state;
+        _pendingStripState = null;
     }
 
     function dismissVerdictStrip() {
@@ -7664,7 +7747,7 @@
             if (icon) html += '<span class="verdict-trick-icon">' + icon + '</span>';
             html += '<span class="verdict-trick-name">' + escapeHtml(trick) + '</span>';
             if (count > 1) html += '<span class="verdict-trick-count">\u00d7' + count + '</span>';
-            if (desc) html += '<span class="verdict-trick-tooltip">' + escapeHtml(desc) + '</span>';
+            if (desc) html += '<span class="verdict-trick-desc">' + escapeHtml(desc) + '</span>';
             html += '</span>';
         });
         list.innerHTML = html;
@@ -7737,7 +7820,7 @@
             if (readAllLink) {
                 readAllLink.addEventListener('click', function() {
                     exitFocusedMode();
-                    revealDeepAnalysis();
+                    revealDeepAnalysis(true);
                 });
             }
         } else {
@@ -7783,7 +7866,7 @@
 
     // ── Reveal full verdict (progressive — streams as it builds) ──────
     var _verdictPollTimer = null;
-    var _verdictScrolled = false;
+    // _verdictScrolled removed — scroll is now intent-driven via userInitiated param
 
     function assembleDeepText() {
         return opusSections.overall.text || '';
@@ -7816,10 +7899,12 @@
                 revealDeepAnalysis();
             }
         }
-        // If user is already viewing the verdict, live-update it
+        // If user is already viewing the verdict, live-update it (preserving expanded sections)
         var inlineContent = $('inlineVerdictContent');
         if (inlineContent && $('inlineVerdict').classList.contains('visible') && _coreVerdictReady) {
+            _saveVerdictLayerState();
             inlineContent.innerHTML = renderOneScreenVerdict(text);
+            _restoreVerdictLayerState();
         }
     }
 
@@ -7947,6 +8032,30 @@
         return '';
     }
 
+    // Track which verdict layers the user has expanded (persists across re-renders)
+    var _expandedVerdictLayers = {};
+
+    function _saveVerdictLayerState() {
+        var layers = document.querySelectorAll('.verdict-layer');
+        for (var i = 0; i < layers.length; i++) {
+            var id = layers[i].id;
+            if (id) _expandedVerdictLayers[id] = !layers[i].classList.contains('collapsed');
+        }
+        // Also save honey toggle state
+        var honeyToggles = document.querySelectorAll('.back-honey-toggle.expanded');
+        _expandedVerdictLayers._honeyCount = honeyToggles.length;
+    }
+
+    function _restoreVerdictLayerState() {
+        for (var id in _expandedVerdictLayers) {
+            if (id.charAt(0) === '_') continue;
+            var el = document.getElementById(id);
+            if (el && _expandedVerdictLayers[id]) {
+                el.classList.remove('collapsed');
+            }
+        }
+    }
+
     function renderOneScreenVerdict(text) {
         var tier = parseTag(text, 'VERDICT_TIER').toUpperCase().trim();
         var whatIsThis = parseTag(text, 'WHAT_IS_THIS');
@@ -8014,6 +8123,8 @@
                 if (TRICK_ICONS[name]) html += '<span class="verdict-trick-icon">' + TRICK_ICONS[name] + '</span>';
                 html += '<span class="verdict-trick-name">' + escapeHtml(name) + '</span>';
                 if (_detectedTricks[name] > 1) html += '<span class="verdict-trick-count">\u00d7' + _detectedTricks[name] + '</span>';
+                var tDesc = TRICK_DESCRIPTIONS[name] || '';
+                if (tDesc) html += '<span class="verdict-trick-desc">' + escapeHtml(tDesc) + '</span>';
                 html += '</span>';
             });
             html += '</div></div>';
@@ -8032,14 +8143,14 @@
 
         // ── What is this ──
         if (whatIsThis) {
-            html += '<div class="verdict-what-is-this">' + escapeHtml(whatIsThis) + '</div>';
+            html += '<div class="verdict-what-is-this">' + safeMd2Html(whatIsThis) + '</div>';
         } else if (isStreaming) {
             html += skeleton('Summary');
         }
 
         // ── Should you worry ──
         if (shouldYouWorry) {
-            html += '<div class="verdict-should-worry">' + escapeHtml(shouldYouWorry) + '</div>';
+            html += '<div class="verdict-should-worry">' + safeMd2Html(shouldYouWorry) + '</div>';
         } else if (isStreaming) {
             html += skeleton('Assessment');
         }
@@ -8058,7 +8169,7 @@
         if (oneAction) {
             html += '<div class="verdict-one-action">';
             html += '<div class="verdict-one-action-label">What to do</div>';
-            html += '<div class="verdict-one-action-text">' + escapeHtml(oneAction) + '</div>';
+            html += '<div class="verdict-one-action-text">' + safeMd2Html(oneAction) + '</div>';
             html += '</div>';
         } else if (isStreaming) {
             html += skeleton('What to do');
@@ -8080,9 +8191,18 @@
 
         html += '</div>'; // .verdict-onescreen
 
+        // ── "Still building" bar — right after verdict card so user sees it immediately ──
+        if (isStreaming) {
+            html += '<div class="verdict-building-footer">';
+            html += '<span class="pulsing-dots"><span></span><span></span><span></span></span>';
+            html += '<span class="verdict-building-footer-text">Verdict still building — more sections arriving</span>';
+            html += '</div>';
+        }
+
         // ── Section index: preview what's below ──
         var sectionPills = [];
         if (risks) sectionPills.push({ label: 'Risks', id: 'verdictLayerRisks' });
+        else if (isStreaming) sectionPills.push({ label: 'Risks', id: '', pending: true });
         if (flaggedClaims && !/no clauses were flagged/i.test(flaggedClaims)) {
             var fc = flaggedClaims.split('\n').filter(function(l) { return /^[-*\d]/.test(l.trim()); }).length;
             sectionPills.push({ label: fc + ' flagged', id: 'verdictLayerClaims' });
@@ -8090,6 +8210,8 @@
         if (checklist) {
             var cc = (checklist.match(/^[-*] /gm) || []).length;
             sectionPills.push({ label: 'Checklist (' + cc + ')', id: 'verdictLayerChecklist' });
+        } else if (isStreaming) {
+            sectionPills.push({ label: 'Checklist', id: '', pending: true });
         }
         if (colophon) sectionPills.push({ label: 'About', id: 'verdictLayerColophon' });
         if (deepTextComplete || isDoneRendering) sectionPills.push({ label: 'Ask a question', id: 'askFlipsideSection' });
@@ -8099,7 +8221,11 @@
             html += '<div class="verdict-sections-index">';
             html += '<span class="verdict-sections-label">Below</span>';
             sectionPills.forEach(function(p) {
-                html += '<span class="verdict-section-pill" data-scroll-to="' + p.id + '">' + p.label + '</span>';
+                if (p.pending) {
+                    html += '<span class="verdict-section-pill pending">' + p.label + '\u2026</span>';
+                } else {
+                    html += '<span class="verdict-section-pill" data-scroll-to="' + p.id + '">' + p.label + '</span>';
+                }
             });
             html += '</div>';
         }
@@ -8489,7 +8615,7 @@
         }
     });
 
-    function revealDeepAnalysis() {
+    function revealDeepAnalysis(userInitiated) {
         var inlineVerdict = $('inlineVerdict');
         var inlineContent = $('inlineVerdictContent');
         var inlineProgress = $('inlineVerdictProgress');
@@ -8519,8 +8645,10 @@
             // Remove stale deep-analysis-header if it exists
             var staleHeader = deepAnalysisEl.previousElementSibling;
             if (staleHeader && staleHeader.classList.contains('deep-analysis-header')) staleHeader.remove();
-            // One-screen verdict from single Opus thread
+            // One-screen verdict from single Opus thread (preserve expanded sections)
+            _saveVerdictLayerState();
             inlineContent.innerHTML = renderOneScreenVerdict(text);
+            _restoreVerdictLayerState();
         } else if (text.trim()) {
             // Legacy fallback: raw markdown — show deep analysis section
             section.classList.remove('hidden');
@@ -8550,8 +8678,7 @@
                 buildPlaybookCard();
                 if (!isCompareMode) counterDraftSection.classList.remove('hidden');
             }
-            if (!_verdictScrolled) {
-                _verdictScrolled = true;
+            if (userInitiated) {
                 setTimeout(function() { inlineVerdict.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
             }
             return;
@@ -8564,12 +8691,11 @@
             $('inlineVerdictProgressText').textContent = 'Expert verdict building\u2026';
         }
 
-        if (!_verdictScrolled) {
-            _verdictScrolled = true;
+        if (userInitiated) {
             setTimeout(function() { inlineVerdict.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
         }
 
-        _verdictPollTimer = setTimeout(function() { revealDeepAnalysis(); }, 800);
+        _verdictPollTimer = setTimeout(function() { revealDeepAnalysis(false); }, 800);
     }
 
     // ── Show one card, hide rest, update nav ─────────────────
@@ -8659,6 +8785,10 @@
         // Restore side columns when navigating (un-flips the card)
         var layout = flipCardContainer.closest('.analysis-layout');
         if (layout) layout.classList.remove('layout-flipped');
+        // Flush deferred verdict strip state (user is between cards — safe to update)
+        if (_pendingStripState) {
+            _applyStripState(_pendingStripState);
+        }
         var isFirstAppearance = false;
         for (var i = 0; i < cards.length; i++) {
             if (i === index) {
@@ -9577,13 +9707,26 @@
         });
     }
 
+    // ── Trick pill click: toggle description tooltip ────────
+    document.addEventListener('click', function(e) {
+        var trickItem = e.target.closest('.verdict-trick-item');
+        // Close all other open tooltips
+        document.querySelectorAll('.verdict-trick-item.show-desc').forEach(function(el) {
+            if (el !== trickItem) el.classList.remove('show-desc');
+        });
+        if (trickItem && trickItem.querySelector('.verdict-trick-desc')) {
+            trickItem.classList.toggle('show-desc');
+            e.stopPropagation();
+        }
+    });
+
     // ── Verdict column expand button ─────────────────────────
     verdictExpandBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         if (!opusSections.overall.done && !deepTextComplete && !isDoneRendering && !_coreVerdictReady) return;
         dismissVerdictStrip();
         exitFocusedMode();
-        revealDeepAnalysis();
+        revealDeepAnalysis(true);
     });
 
     // ── Thinking viewer toggle ─────────────────────────────
@@ -9595,13 +9738,13 @@
         e.stopPropagation();
         dismissVerdictStrip();
         exitFocusedMode();
-        revealDeepAnalysis();
+        revealDeepAnalysis(true);
     });
     $('verdictStripPeekCta').addEventListener('click', function(e) {
         e.stopPropagation();
         dismissVerdictStrip();
         exitFocusedMode();
-        revealDeepAnalysis();
+        revealDeepAnalysis(true);
     });
 
     // ── Section index pills: scroll to target section ──────────
@@ -9735,6 +9878,27 @@
         if (riskCounts.green > 0) body += '<span class="risk-badge risk-green">' + riskCounts.green + ' fair</span>';
         body += '</div>';
 
+        // Tricks Detected
+        var trickKeys = Object.keys(_detectedTricks);
+        if (trickKeys.length > 0) {
+            var sortedTricks = trickKeys.sort(function(a, b) { return _detectedTricks[b] - _detectedTricks[a]; });
+            body += '<h2>' + sortedTricks.length + ' Tricks Detected</h2>';
+            body += '<div class="tricks-grid">';
+            sortedTricks.forEach(function(trick) {
+                var desc = TRICK_DESCRIPTIONS[trick] || '';
+                var count = _detectedTricks[trick];
+                var icon = TRICK_ICONS[trick] || '';
+                body += '<div class="trick-card">';
+                if (icon) body += '<span class="trick-card-icon">' + icon + '</span>';
+                body += '<span class="trick-card-name">' + escapeHtml(trick);
+                if (count > 1) body += ' <span class="trick-card-count">\u00d7' + count + '</span>';
+                body += '</span>';
+                if (desc) body += '<span class="trick-card-desc">' + escapeHtml(desc) + '</span>';
+                body += '</div>';
+            });
+            body += '</div>';
+        }
+
         // Findings
         if (cards.length) {
             body += '<h2>Findings</h2>';
@@ -9822,6 +9986,13 @@
             'hr{border:none;border-top:1px solid #e2ddd4;margin:1.5rem 0}' +
             '.source-text{white-space:pre-wrap;font-family:monospace;font-size:0.78rem;line-height:1.5;color:#3d3b36;padding:0.8rem;background:#faf8f4;border:1px solid #e2ddd4;border-radius:6px}' +
             '.page-marker{text-align:center;color:#9c9789;font-weight:600;margin:1rem 0;border-top:1px solid #e2ddd4;padding-top:0.5rem}' +
+            '.tricks-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.5rem 0 1rem}' +
+            '.trick-card{display:flex;align-items:center;gap:0.4rem;padding:0.35rem 0.65rem;background:#faf8f4;border:1px solid #e2ddd4;border-radius:100px;font-size:0.78rem;page-break-inside:avoid}' +
+            '.trick-card-icon{width:14px;height:14px;flex-shrink:0;color:#6b6860;display:inline-flex}' +
+            '.trick-card-icon svg{width:100%;height:100%}' +
+            '.trick-card-name{font-weight:600;color:#3d3b36;white-space:nowrap}' +
+            '.trick-card-count{font-size:0.68rem;color:#9c9789}' +
+            '.trick-card-desc{color:#6b6860;font-size:0.72rem;border-left:1px solid #e2ddd4;padding-left:0.5rem;margin-left:0.2rem}' +
             '.footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #e2ddd4;font-size:0.72rem;color:#9c9789}' +
             '</style></head><body>' +
             '<h1>FlipSide Analysis Report</h1>' +
