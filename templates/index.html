@@ -2103,7 +2103,7 @@
             color: var(--text-muted);
         }
 
-        /* Skeleton — ghost card that looks like a real card being built */
+        /* ── Investigation loading screen ── */
         .skeleton-card {
             display: flex;
             flex-direction: column;
@@ -2111,83 +2111,90 @@
             padding: 1.5rem 0 1rem;
             transition: none;
         }
-        .skeleton-card.fly-to-sidebar {
-            animation: flyToSidebar 0.7s var(--ease-out-expo) both;
+        /* Woosh: investigation doc flies into sidebar */
+        .investigation-doc.woosh-to-sidebar {
+            animation: wooshDocToSidebar 0.7s var(--ease-out-expo) forwards;
             pointer-events: none;
         }
-        @keyframes flyToSidebar {
-            0% { opacity: 1; transform: translateX(0) scale(1); }
-            100% { opacity: 0; transform: translateX(-40%) scale(0.6); }
+        @keyframes wooshDocToSidebar {
+            0% {
+                transform: scale(1) translateX(0);
+                opacity: 1;
+                border-radius: var(--radius);
+            }
+            100% {
+                transform: scale(0.3) translateX(-140%);
+                opacity: 0;
+                border-radius: 12px;
+            }
+        }
+        /* Phases + status fade out during woosh */
+        .skeleton-card.wooshing .skeleton-status,
+        .skeleton-card.wooshing .investigation-phases {
+            animation: fadeOutQuick 0.3s ease-out forwards;
+        }
+        @keyframes fadeOutQuick {
+            to { opacity: 0; transform: translateY(8px); }
         }
 
-        /* Ghost flip card — the hero element */
-        .ghost-flip-card {
+        /* Document being scanned — real text with loupe */
+        .investigation-doc {
+            position: relative;
             width: 100%;
+            height: 280px;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             box-shadow: var(--shadow-md);
             overflow: hidden;
         }
-        .ghost-header {
-            padding: 0.85rem 1.5rem;
-            background: var(--green-bg);
-            border-bottom: 1px solid var(--green-border);
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        .ghost-bar {
-            height: 8px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, var(--green-border) 25%, rgba(92,141,105,0.3) 50%, var(--green-border) 75%);
-            background-size: 200% 100%;
-            animation: skeletonShimmer 2s ease-in-out infinite;
-        }
-        .ghost-bar.w70 { width: 70%; }
-        .ghost-bar.w50 { width: 50%; }
-        .ghost-body {
-            padding: 1.25rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-        .ghost-line {
-            height: 7px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, var(--bg-surface) 25%, var(--border-light) 50%, var(--bg-surface) 75%);
-            background-size: 200% 100%;
-            animation: skeletonShimmer 2s ease-in-out infinite;
-        }
-        .ghost-line.w90 { width: 90%; }
-        .ghost-line.w75 { width: 75%; }
-        .ghost-line.w60 { width: 60%; }
-        .ghost-line:nth-child(2) { animation-delay: 0.15s; }
-        .ghost-line:nth-child(3) { animation-delay: 0.3s; }
-        .ghost-line:nth-child(4) { animation-delay: 0.45s; }
-        .ghost-footer {
-            padding: 0.75rem 1.5rem;
-            border-top: 1px solid var(--border-light);
-            display: flex;
-            justify-content: center;
-        }
-        .ghost-footer .ghost-bar {
-            width: 40%;
-            height: 7px;
-            background: linear-gradient(90deg, rgba(196,75,40,0.08) 25%, rgba(196,75,40,0.18) 50%, rgba(196,75,40,0.08) 75%);
-            background-size: 200% 100%;
-        }
-        @keyframes skeletonShimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+
+        /* Real document text — auto-scrolls to simulate reading */
+        .investigation-text {
+            padding: 1.2rem 1.5rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.68rem;
+            line-height: 1.65;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
-        /* Status below ghost card */
+        /* Top/bottom fade masks */
+        .investigation-doc::before,
+        .investigation-doc::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0;
+            height: 2.5rem;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .investigation-doc::before {
+            top: 0;
+            background: linear-gradient(to bottom, var(--bg-card), transparent);
+        }
+        .investigation-doc::after {
+            bottom: 0;
+            background: linear-gradient(to top, var(--bg-card), transparent);
+        }
+
+        /* The scanning loupe — positioned by JS to follow text scroll */
+        .investigation-loupe {
+            position: absolute;
+            top: 40%;
+            left: 17px;
+            z-index: 2;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 16px rgba(196,75,40,0.15));
+        }
+
+        /* Status below the document */
         .skeleton-status {
             display: flex;
             align-items: center;
             gap: 0.6rem;
-            margin-top: 1rem;
+            margin-top: 1.25rem;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.72rem;
             font-weight: 600;
@@ -2195,57 +2202,69 @@
             color: var(--text-secondary);
         }
 
-        /* Two-act progress strip — "more is coming" */
-        .skeleton-acts {
+        /* Three investigation phases */
+        .investigation-phases {
             display: flex;
-            align-items: stretch;
-            margin-top: 1rem;
+            flex-direction: column;
             width: 100%;
+            margin-top: 1rem;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
-            font-family: 'JetBrains Mono', monospace;
         }
-        .skeleton-act {
-            flex: 1;
-            padding: 0.65rem 0.85rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-        }
-        .skeleton-act:first-child {
-            background: rgba(196, 75, 40, 0.05);
-            border-right: 1px solid var(--border);
-        }
-        .skeleton-act-label {
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            font-size: 0.5rem;
-            color: var(--text-dim);
-        }
-        .skeleton-act:first-child .skeleton-act-label { color: var(--accent); }
-        .skeleton-act-title {
-            font-weight: 600;
-            color: var(--text-heading);
-            font-size: 0.65rem;
-        }
-        .skeleton-act-desc {
-            color: var(--text-muted);
-            font-size: 0.55rem;
-            line-height: 1.4;
-            font-family: 'DM Sans', sans-serif;
-        }
-        .skeleton-act-status {
+
+        .investigation-phase {
             display: flex;
             align-items: center;
-            gap: 0.35rem;
-            margin-top: 0.15rem;
-            font-size: 0.52rem;
-            font-weight: 600;
+            gap: 0.75rem;
+            padding: 0.55rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            opacity: 0.35;
+            transition: opacity 0.4s ease, background 0.4s ease;
         }
-        .skeleton-act:first-child .skeleton-act-status { color: var(--accent); }
-        .skeleton-act:last-child .skeleton-act-status { color: var(--text-dim); }
+        .investigation-phase:last-child { border-bottom: none; }
+        .investigation-phase.active {
+            opacity: 1;
+            background: rgba(196, 75, 40, 0.04);
+        }
+        .investigation-phase.done {
+            opacity: 0.7;
+            background: transparent;
+        }
+
+        .phase-icon {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            transition: color 0.3s ease;
+        }
+        .investigation-phase.active .phase-icon { color: var(--accent); }
+        .investigation-phase.done .phase-icon { color: var(--green-text); }
+
+        .phase-info { flex: 1; min-width: 0; }
+        .phase-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            letter-spacing: 0.03em;
+        }
+        .phase-status {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.58rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: color 0.3s ease;
+        }
+        .investigation-phase.active .phase-status { color: var(--accent); }
+        .investigation-phase.done .phase-status { color: var(--green-text); }
 
         /* Verdict teaser strip — live Opus findings as they arrive */
         .verdict-teaser {
@@ -2321,6 +2340,40 @@
             color: #664d03;
             text-align: center;
             font-weight: 500;
+        }
+
+        /* ── Cards ready pill (auto-reveal → cards arrived notification) ── */
+        .cards-ready-pill {
+            position: sticky;
+            top: 80px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin: 0.75rem auto;
+            padding: 0.5rem 1.2rem;
+            width: fit-content;
+            background: var(--rust-accent, #c44b28);
+            color: #fff;
+            border-radius: 100px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(196,75,40,0.25);
+            animation: pill-pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .cards-ready-pill:hover {
+            transform: scale(1.04);
+            box-shadow: 0 4px 16px rgba(196,75,40,0.35);
+        }
+        .cards-ready-pill.hidden { display: none; }
+        .cards-ready-icon { font-size: 1rem; }
+        .cards-ready-arrow { font-size: 0.9rem; opacity: 0.8; }
+        @keyframes pill-pop-in {
+            0% { transform: scale(0.8) translateY(8px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
         }
 
         /* ── Rejection screen (document not applicable) ── */
@@ -3307,10 +3360,10 @@
         @media (max-width: 600px) {
             /* Sample docs: 2 columns on small screens */
             .demo-grid { grid-template-columns: repeat(2, 1fr); }
-            /* Skeleton loading */
+            /* Investigation loading */
             .skeleton-card { padding: 1rem 0.5rem 0.75rem; }
-            .skeleton-acts { flex-direction: column; }
-            .skeleton-act:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+            .investigation-doc { height: 180px; }
+            .investigation-text { font-size: 0.6rem; padding: 0.8rem 1rem; }
             .verdict-teaser-item { flex-direction: column; gap: 0.2rem; }
 
             /* Upload screen */
@@ -3882,58 +3935,74 @@
                 <span class="tricks-detected-chevron">&#9660;</span>
             </div>
             <div class="tricks-detected-pills" id="tricksDetectedPills"></div>
-            <!-- Skeleton: ghost card + two-act strip while waiting for first clause -->
+            <!-- Investigation loading screen — loupe scanning document -->
             <div class="skeleton-card hidden" id="skeletonCard">
-                <!-- Ghost flip card — looks like a real card being assembled -->
-                <div class="ghost-flip-card">
-                    <div class="ghost-header">
-                        <div class="ghost-bar w70"></div>
-                        <div class="ghost-bar w50"></div>
-                    </div>
-                    <div class="ghost-body">
-                        <div class="ghost-line w90"></div>
-                        <div class="ghost-line w75"></div>
-                        <div class="ghost-line w90"></div>
-                        <div class="ghost-line w60"></div>
-                    </div>
-                    <div class="ghost-footer">
-                        <div class="ghost-bar"></div>
+                <!-- Document with real text + scanning loupe -->
+                <div class="investigation-doc">
+                    <div class="investigation-text" id="investigationText"></div>
+                    <!-- Animated loupe -->
+                    <div class="investigation-loupe">
+                        <svg viewBox="0 0 56 56" width="56" height="56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="22" cy="22" r="15" stroke="#c44b28" stroke-width="2.5" fill="rgba(196,75,40,0.05)"/>
+                            <circle cx="22" cy="22" r="10" stroke="rgba(196,75,40,0.12)" stroke-width="0.5" fill="none"/>
+                            <line x1="33" y1="33" x2="48" y2="48" stroke="#c44b28" stroke-width="3.5" stroke-linecap="round"/>
+                        </svg>
                     </div>
                 </div>
 
                 <!-- Status -->
                 <div class="skeleton-status">
                     <span class="pulsing-dots"><span></span><span></span><span></span></span>
-                    <span id="skeletonStatusText">Building your first card</span>
+                    <span id="skeletonStatusText">Reading the fine print</span>
                 </div>
 
-                <!-- Two-act strip: tells users what's coming -->
-                <div class="skeleton-acts" id="skeletonActs">
-                    <div class="skeleton-act">
-                        <div class="skeleton-act-label">Now</div>
-                        <div class="skeleton-act-title">Flip Cards</div>
-                        <div class="skeleton-act-desc">Individual clauses — flip to see what's hidden</div>
-                        <div class="skeleton-act-status"><span class="pulsing-dots" style="transform:scale(0.7)"><span></span><span></span><span></span></span> Building...</div>
+                <!-- Three investigation phases -->
+                <div class="investigation-phases" id="skeletonActs">
+                    <div class="investigation-phase active" id="investPhase1">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/>
+                                <circle cx="10" cy="10" r="3"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <div class="phase-title">Reading the fine print</div>
+                            <div class="phase-status" id="investPhase1Status"><span class="pulsing-dots" style="transform:scale(0.6)"><span></span><span></span><span></span></span> Scanning...</div>
+                        </div>
                     </div>
-                    <div class="skeleton-act">
-                        <div class="skeleton-act-label">~2 min</div>
-                        <div class="skeleton-act-title">Expert Verdict</div>
-                        <div class="skeleton-act-desc">How clauses work together, who has the power, what was custom-written</div>
-                        <div class="skeleton-act-status"><span class="pulsing-dots" style="transform:scale(0.7)"><span></span><span></span><span></span></span> Expert working...</div>
+                    <div class="investigation-phase active" id="investPhase2">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="9" height="13" rx="1.5"/>
+                                <rect x="9" y="3" width="9" height="13" rx="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <div class="phase-title">Flipping to the dark side</div>
+                            <div class="phase-status" id="investPhase2Status"><span class="pulsing-dots" style="transform:scale(0.6)"><span></span><span></span><span></span></span> Scanning...</div>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Verdict teaser — appears as Opus finds things -->
-                <div class="verdict-teaser" id="verdictTeaser">
-                    <div class="verdict-teaser-header">
-                        <span class="pulsing-dots" style="transform:scale(0.7)"><span></span><span></span><span></span></span>
-                        Live from your expert
+                    <div class="investigation-phase active" id="investPhase3">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 2L3 5.5v4.5c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V5.5L10 2z"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <div class="phase-title">Expert panel convening</div>
+                            <div class="phase-status" id="investPhase3Status"><span class="pulsing-dots" style="transform:scale(0.6)"><span></span><span></span><span></span></span> ~2 min</div>
+                        </div>
                     </div>
-                    <div class="verdict-teaser-body" id="verdictTeaserBody"></div>
                 </div>
 
                 <div class="skeleton-waiting hidden" id="skeletonMessage"></div>
                 <div class="ocr-banner hidden" id="ocrBanner">Scanned document detected &mdash; OCR extraction used, may take a bit longer</div>
+            </div>
+            <!-- Cards ready pill: appears when cards arrive after verdict was auto-revealed -->
+            <div class="cards-ready-pill hidden" id="cardsReadyPill">
+                <span class="cards-ready-icon">&#x2728;</span>
+                <span id="cardsReadyText">Cards ready</span>
+                <span class="cards-ready-arrow">&rarr;</span>
             </div>
             <div id="flipCardContainer" aria-live="polite" aria-relevant="additions"></div>
             <nav class="card-navigation hidden" id="cardNavigation" aria-label="Clause card navigation">
@@ -4202,6 +4271,8 @@
     var isSampleAnalysis = false;  // Whether current analysis is from a sample document
     var _quickDoneSafetyTimer = null;  // Safety net: treat cards as built if quick_done is delayed
     var _verdictStripRead = false;  // Whether user has clicked through to verdict (hides strip)
+    var _autoRevealTimer = null;   // 10s timer: auto-show verdict if no cards yet
+    var _verdictAutoRevealed = false; // Whether verdict was auto-revealed (cards hadn't arrived)
 
     // ── Elements ──────────────────────────────────────────────
     var $ = function(id) { return document.getElementById(id); };
@@ -5099,9 +5170,12 @@
         $('inlineVerdict').classList.remove('visible');
         $('inlineVerdictContent').innerHTML = '';
         $('inlineVerdictProgress').classList.add('hidden');
+        $('cardsReadyPill').classList.add('hidden');
         _detectedTricks = {};
         _teaserExtracted = {};
         if (_quickDoneSafetyTimer) { clearTimeout(_quickDoneSafetyTimer); _quickDoneSafetyTimer = null; }
+        if (_autoRevealTimer) { clearTimeout(_autoRevealTimer); _autoRevealTimer = null; }
+        _verdictAutoRevealed = false;
         document.title = _originalTitle;
 
         // Document title hero — bridges visual weight from upload screen
@@ -5114,25 +5188,40 @@
             heroEl.classList.remove('hidden');
         }
 
-        // Show ghost card skeleton while waiting for first clause
+        // Show investigation loading screen while waiting for first clause
         var skeleton = $('skeletonCard');
         skeleton.classList.remove('hidden');
-        // Restore elements (may have been hidden by "no cards" fallback)
-        var ghostCard = skeleton.querySelector('.ghost-flip-card');
-        if (ghostCard) ghostCard.style.display = '';
-        var actsEl = skeleton.querySelector('.skeleton-acts');
-        if (actsEl) actsEl.style.display = '';
+        // Restore elements (may have been hidden by "no cards" fallback or woosh)
+        skeleton.classList.remove('wooshing');
+        var investigationDoc = skeleton.querySelector('.investigation-doc');
+        if (investigationDoc) {
+            investigationDoc.style.display = '';
+            investigationDoc.classList.remove('woosh-to-sidebar');
+        }
+        var phasesEl = skeleton.querySelector('.investigation-phases');
+        if (phasesEl) phasesEl.style.display = '';
         var statusElSk = skeleton.querySelector('.skeleton-status');
         if (statusElSk) statusElSk.style.display = '';
         var skMsg = $('skeletonMessage');
         if (skMsg) { skMsg.classList.add('hidden'); skMsg.innerHTML = ''; }
-        // Reset verdict teaser
-        var teaser = $('verdictTeaser');
-        if (teaser) { teaser.classList.remove('visible'); }
-        var teaserBody = $('verdictTeaserBody');
-        if (teaserBody) teaserBody.innerHTML = '';
+        // Reset investigation phases
+        var phase1 = $('investPhase1'), phase2 = $('investPhase2'), phase3 = $('investPhase3');
+        if (phase1) { phase1.className = 'investigation-phase active'; }
+        if (phase2) { phase2.className = 'investigation-phase active'; }
+        if (phase3) { phase3.className = 'investigation-phase active'; }
+        var _pulsingSmall = '<span class="pulsing-dots" style="transform:scale(0.6)"><span></span><span></span><span></span></span> ';
+        var p1s = $('investPhase1Status'), p2s = $('investPhase2Status'), p3s = $('investPhase3Status');
+        if (p1s) p1s.innerHTML = _pulsingSmall + 'Scanning...';
+        if (p2s) p2s.innerHTML = _pulsingSmall + 'Scanning...';
+        if (p3s) p3s.innerHTML = _pulsingSmall + '~2 min';
         var skStatusTxt = $('skeletonStatusText');
-        if (skStatusTxt) skStatusTxt.textContent = 'Building your first card';
+        if (skStatusTxt) skStatusTxt.textContent = 'Reading the fine print';
+        // Populate investigation document text with real content
+        var investTextEl = $('investigationText');
+        if (investTextEl) {
+            investTextEl.textContent = documentFullText || '';
+            investTextEl.style.transform = 'translateY(0)';
+        }
         var ocrBanner = $('ocrBanner');
         if (ocrBanner) ocrBanner.classList.toggle('hidden', !documentOcrUsed);
         $('cardViewport').classList.remove('hidden');
@@ -5179,14 +5268,10 @@
             uploadScreen.classList.remove('exiting');
             analysisScreen.classList.remove('hidden');
             window.scrollTo({ top: 0 });
-            // Expand sidebar after a beat — content column stays centered first
-            if (hasSidebar) {
-                setTimeout(function() {
-                    layoutEl.classList.add('sidebar-visible');
-                    // Sync sidebar height to skeleton card
-                    syncSidebarHeight(skeleton);
-                }, 120);
-            }
+            // Start scroll AFTER analysis screen is visible (scrollHeight needs layout)
+            startInvestigationScroll();
+            // Sidebar stays hidden during investigation loading screen
+            // — revealed in transitionToCardView() when first card arrives
         }, 350);
 
         // Start elapsed timer
@@ -5205,6 +5290,20 @@
     // ── SSE streaming ─────────────────────────────────────────
     function connectStream(docId) {
         eventSource = new EventSource(BASE_URL + '/analyze/' + docId);
+
+        // ── Auto-reveal: if no cards after 10s, show verdict early ──
+        if (_autoRevealTimer) clearTimeout(_autoRevealTimer);
+        _autoRevealTimer = setTimeout(function() {
+            _autoRevealTimer = null;
+            // Only trigger if cards haven't arrived yet and Opus has content
+            if (!cardViewTransitioned && !flipCardsBuilt && opusSections.overall.text.length > 50) {
+                console.log('[FlipSide] Auto-reveal: no cards after 10s, showing verdict');
+                _verdictAutoRevealed = true;
+                var skStatusTxt = $('skeletonStatusText');
+                if (skStatusTxt) skStatusTxt.textContent = 'Cards building \u2014 showing verdict';
+                revealDeepAnalysis();
+            }
+        }, 10000);
 
         eventSource.onmessage = function(e) {
             var msg;
@@ -5268,12 +5367,16 @@
                         statusText.textContent = 'Cards ready — Opus expert report building...';
                         startStatusRotation('deep');
                         startCapTicker(OPUS_MESSAGES);
+                        // Phase 1 done once Haiku hands off to card extraction
+                        setInvestPhase(1, 'done', '\u2713 Done');
+                        setInvestPhase(2, 'active', '<span class="pulsing-dots" style="transform:scale(0.6)"><span></span><span></span><span></span></span> Building cards...');
                     }
                     break;
 
                 case 'quick_done':
                     quickDone = true;
                     if (_quickDoneSafetyTimer) { clearTimeout(_quickDoneSafetyTimer); _quickDoneSafetyTimer = null; }
+                    if (_autoRevealTimer) { clearTimeout(_autoRevealTimer); _autoRevealTimer = null; }
                     var qdData = {};
                     try { qdData = JSON.parse(msg.content); } catch(e) {}
                     var qdSec = qdData.seconds ? qdData.seconds.toFixed(1) + 's' : '';
@@ -5288,6 +5391,19 @@
                     }
                     // Always update nav — ensures Next button exits "Analyzing" state
                     updateCardNavigation();
+                    // Update investigation phases: cards done, expert working
+                    var qdCardCount = flipCardContainer.querySelectorAll('.flip-card').length;
+                    setInvestPhase(1, 'done', '\u2713 Done');
+                    setInvestPhase(2, 'done', '\u2713 ' + qdCardCount + ' clause' + (qdCardCount !== 1 ? 's' : '') + ' found');
+                    setInvestPhase(3, 'active', '<span class="pulsing-dots" style="transform:scale(0.6)"><span></span><span></span><span></span></span> Working...');
+                    // Show "cards ready" pill if verdict was auto-revealed
+                    if (_verdictAutoRevealed && !isCompareMode) {
+                        var crCardCount = flipCardContainer.querySelectorAll('.flip-card').length;
+                        if (crCardCount > 0) {
+                            $('cardsReadyText').textContent = crCardCount + ' card' + (crCardCount !== 1 ? 's' : '') + ' ready';
+                            $('cardsReadyPill').classList.remove('hidden');
+                        }
+                    }
                     break;
 
                 // ── Single Opus verdict thread events ──
@@ -5337,10 +5453,8 @@
                     }
                     statusText.textContent = timingStr;
 
-                    var sidebarStatus = $('editorialLoadingStatus');
-                    if (sidebarStatus) sidebarStatus.textContent = 'Analysis complete';
-                    var dots = $('editorialLoading') && $('editorialLoading').querySelector('.pulsing-dots');
-                    if (dots) dots.style.display = 'none';
+                    var sidebarIndicator = $('editorialLoading') ? $('editorialLoading').querySelector('.editorial-loading-indicator') : null;
+                    if (sidebarIndicator) sidebarIndicator.style.display = 'none';
 
                     $('copyAllBtn').classList.remove('hidden');
                     $('exportBtn').classList.remove('hidden');
@@ -5750,6 +5864,9 @@
                 statusText.textContent = 'Scanning clauses\u2026';
                 var sidebarStatus = $('editorialLoadingStatus');
                 if (sidebarStatus) sidebarStatus.textContent = 'Scanning clauses\u2026';
+                // Update investigation phase 2 with live count
+                var liveCount = flipCardContainer.querySelectorAll('.flip-card').length;
+                setInvestPhase(2, 'active', liveCount + ' clause' + (liveCount !== 1 ? 's' : '') + ' found...');
             }
         }
         parsedClauseCount = Math.max(parsedClauseCount, segments.length - 1);
@@ -6282,29 +6399,140 @@
         }
     }
 
+    // ── Investigation phase updater ────────────────────────────
+    function setInvestPhase(num, state, statusHtml) {
+        var el = $('investPhase' + num);
+        if (!el) return;
+        el.className = 'investigation-phase' + (state ? ' ' + state : '');
+        var statusEl = $('investPhase' + num + 'Status');
+        if (statusEl && statusHtml) statusEl.innerHTML = statusHtml;
+    }
+
+    // ── Investigation text auto-scroll ──────────────────────
+    var _investScrollTimer = null;
+    var _investScrollY = 0;
+    function startInvestigationScroll() {
+        stopInvestigationScroll();
+        var el = $('investigationText');
+        if (!el || !el.textContent.trim()) return;
+        _investScrollY = 0;
+        el.style.transform = 'translateY(0)';
+        var loupeEl = document.querySelector('.investigation-loupe');
+        var docEl = document.querySelector('.investigation-doc');
+        // Compute pixel bounds: loupe glass center (22px from SVG left) stays over text
+        var docW = docEl ? docEl.clientWidth : 700;
+        var pad = 24; // ~1.5rem text padding
+        var glassR = 15; // glass circle radius in SVG
+        var glassOffset = 22; // glass center x within 56px SVG
+        var minLeft = pad - glassOffset + glassR; // glass left edge at text left
+        var maxLeft = docW - pad - glassOffset - glassR; // glass right edge at text right
+        var range = maxLeft - minLeft;
+        // Reading sweep: 5s drift right, 0.5s snap left = 5.5s cycle
+        var ticksSweep = 100; // 5s right drift
+        var ticksReturn = 10; // 0.5s snap back
+        var ticksTotal = ticksSweep + ticksReturn;
+        // Narrow range: loupe stays within inner 70% of text width
+        var innerPad = range * 0.15;
+        var sweepMin = minLeft + innerPad;
+        var sweepMax = maxLeft - innerPad;
+        var sweepRange = sweepMax - sweepMin;
+        var tick = 0;
+        _investScrollTimer = setInterval(function() {
+            _investScrollY -= 1;
+            el.style.transform = 'translateY(' + _investScrollY + 'px)';
+            // Loupe: slow steady drift right, quick snap left
+            tick++;
+            var pos = tick % ticksTotal;
+            var px;
+            if (pos < ticksSweep) {
+                // Drift right — ease-in-out for natural reading
+                var t = pos / ticksSweep;
+                t = t * t * (3 - 2 * t); // smoothstep
+                px = sweepMin + t * sweepRange;
+            } else {
+                // Quick snap back to left
+                var r = (pos - ticksSweep) / ticksReturn;
+                px = sweepMax - r * sweepRange;
+            }
+            if (loupeEl) loupeEl.style.left = px + 'px';
+            if (Math.abs(_investScrollY) > el.scrollHeight) {
+                clearInterval(_investScrollTimer);
+                _investScrollTimer = null;
+            }
+        }, 50);
+    }
+    function stopInvestigationScroll() {
+        if (_investScrollTimer) { clearInterval(_investScrollTimer); _investScrollTimer = null; }
+    }
+
     // ── Transition from editorial loading to card view ────────
     function transitionToCardView() {
         cardViewTransitioned = true;
+        if (_autoRevealTimer) { clearTimeout(_autoRevealTimer); _autoRevealTimer = null; }
         stopEditorialStatusRotation();
         var statusEl = $('editorialLoadingStatus');
         if (statusEl) statusEl.textContent = 'Analysis in progress...';
+
+        // If verdict was auto-revealed, don't rip user away from it.
+        // Show "cards ready" pill instead — user clicks when ready.
+        if (_verdictAutoRevealed) {
+            var crCount = flipCardContainer.querySelectorAll('.flip-card').length;
+            if (crCount > 0) {
+                $('cardsReadyText').textContent = crCount + ' card' + (crCount !== 1 ? 's' : '') + ' ready';
+                $('cardsReadyPill').classList.remove('hidden');
+            }
+            return;
+        }
 
         var skeleton = $('skeletonCard');
         var viewport = $('cardViewport');
 
         // Show context banner (Problem 1: emotional safety)
-        // Show educational review pill above title
         $('eduReviewPill').classList.remove('hidden');
 
-        // Update status text before hiding skeleton
+        // Update investigation phases
         var skStatusTxt = $('skeletonStatusText');
-        if (skStatusTxt) skStatusTxt.textContent = 'First clause found';
+        if (skStatusTxt) skStatusTxt.textContent = 'Clause found';
+        setInvestPhase(1, 'done', '\u2713 Done');
+        setInvestPhase(2, 'done', '\u2713 Cards ready');
 
-        // Skeleton fades out, real card fades in — sidebar already visible
-        skeleton.classList.add('hidden');
-        viewport.classList.remove('hidden');
-        resultsArea.classList.remove('hidden');
-        showCardAtIndex(0);
+        // Stop investigation text scroll
+        stopInvestigationScroll();
+
+        // ── Woosh: investigation doc flies into sidebar ──
+        var investigationDoc = skeleton.querySelector('.investigation-doc');
+        var hasSidebar = documentFullText && !isCompareMode;
+        if (investigationDoc && hasSidebar) {
+            // Phase 1: fade out phases/status, woosh the document
+            skeleton.classList.add('wooshing');
+            investigationDoc.classList.add('woosh-to-sidebar');
+
+            // Phase 2: after woosh, reveal sidebar + first card
+            setTimeout(function() {
+                skeleton.classList.add('hidden');
+                skeleton.classList.remove('wooshing');
+                investigationDoc.classList.remove('woosh-to-sidebar');
+                viewport.classList.remove('hidden');
+                resultsArea.classList.remove('hidden');
+                showCardAtIndex(0);
+
+                // Sidebar slides in with woosh-in animation
+                var layoutEl = document.querySelector('.analysis-layout');
+                if (layoutEl) {
+                    layoutEl.classList.add('sidebar-visible');
+                    var loadingEl = $('editorialLoading');
+                    if (loadingEl) loadingEl.classList.add('woosh-in-sidebar');
+                    var visCard = flipCardContainer.querySelector('.flip-card');
+                    if (visCard) syncSidebarHeight(visCard);
+                }
+            }, 650);
+        } else {
+            // No sidebar (compare mode) — instant transition
+            skeleton.classList.add('hidden');
+            viewport.classList.remove('hidden');
+            resultsArea.classList.remove('hidden');
+            showCardAtIndex(0);
+        }
 
         // Safety net: if quick_done doesn't arrive within 60s of first card,
         // treat cards as built so user can navigate to verdict
@@ -6365,12 +6593,8 @@
             } catch(e) { /* notification failed, no big deal */ }
         }
 
-        // Update the two-act strip if skeleton is still visible
-        var actsEl = $('skeletonActs');
-        if (actsEl) {
-            var act2Status = actsEl.querySelector('.skeleton-act:last-child .skeleton-act-status');
-            if (act2Status) act2Status.innerHTML = '<span style="color:var(--green-text)">\u2713 Ready</span>';
-        }
+        // Update investigation phase 3 — expert is done
+        setInvestPhase(3, 'done', '\u2713 Ready');
     }
 
     // ── Request notification permission after first flip (non-intrusive) ──
@@ -8073,6 +8297,23 @@
         $('cardViewport').classList.remove('hidden');
         exitFocusedMode();
         // Inline verdict stays visible below cards (no verdict column re-show needed)
+        setTimeout(function() {
+            $('cardViewport').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+    });
+
+    // ── Cards ready pill click → jump to first card ──────────
+    $('cardsReadyPill').addEventListener('click', function() {
+        $('cardsReadyPill').classList.add('hidden');
+        _verdictAutoRevealed = false;
+        // Hide inline verdict, show card viewport
+        $('inlineVerdict').classList.remove('visible');
+        if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
+        var skeleton = $('skeletonCard');
+        if (skeleton) skeleton.classList.add('hidden');
+        $('cardViewport').classList.remove('hidden');
+        $('eduReviewPill').classList.remove('hidden');
+        showCardAtIndex(0);
         setTimeout(function() {
             $('cardViewport').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
