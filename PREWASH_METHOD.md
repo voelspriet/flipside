@@ -185,6 +185,31 @@ Every architecture decision traces to a principle. The pre-scan IS the prewash. 
 
 ---
 
+## Why Not Use the Built-in Skills?
+
+Claude Code ships with skills designed to automate common tasks. FlipSide was built without most of them.
+
+| Available skill | What it does | Why it wasn't used |
+|---|---|---|
+| `/frontend-design` | Generates production-grade UI from a specification | FlipSide's UI evolved through 82 commits of conversation. The flip card required 15+ iterations on the READER voice alone — each reviewed, adjusted, re-tested. A one-shot generation can't do that. |
+| `/code-review` | Reviews pull requests | No PRs. Single-person hackathon on main branch. Every change was reviewed in conversation before committing — the prompt was reviewed before code was written. |
+| `/security-review` | Audits code for vulnerabilities | Would have been useful. Didn't use it — oversight, not principle. XSS defense (DOMPurify) was added when the risk was spotted in conversation. |
+| Agent Teams | Coordinates multiple Claude sessions in parallel | The parallelism in FlipSide runs inside the product (Haiku card workers + Opus verdict), not inside the development process. |
+
+The pattern: these skills automate execution. The Prewash Method audits framing.
+
+The `/frontend-design` skill would have produced professional code for a prompt that said "find unfair clauses." The output would look good. But "unfair" is a concept word — maps don't contain the word "map." The skill doesn't catch that. Only reading the prompt does.
+
+| Risk | Best approach |
+|---|---|
+| Will the code work? (execution risk) | Skills — automate the known |
+| Are we analyzing the right thing? (framing risk) | Prewash — audit the instructions |
+| Are we building the right thing? (scope risk) | Plan Mode — surface options |
+
+FlipSide's prompts are framing-sensitive. The difference between "find unfair clauses" and "find clauses where one party can terminate but the other cannot" determines whether the analysis catches the trick or misses it. That's a vocabulary problem — the same problem The Google Code solves. No skill catches it.
+
+---
+
 Van Ess says: "I don't write code. I never have. Every line of FlipSide was built through conversation with Claude Opus 4.6. But the thinking — the method that shaped every prompt, every architecture decision, every UI choice — that comes from 20 years of teaching people to find what's hidden in plain sight."
 
 > The Google Code was never about Google. The Prewash Method was never about prompts. Both teach the same thing: the intelligence comes from you, not from the machine.

@@ -1050,6 +1050,11 @@
         .layout-flipped .verdict-col:hover {
             opacity: 1;
         }
+        /* Hide sticky nav buttons when card is flipped — bottom Next takes over */
+        .layout-flipped .card-nav-sticky .card-nav-btn {
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
 
         /* verdict-col mobile handling moved to unified mobile block below */
 
@@ -1359,11 +1364,20 @@
         @keyframes verdictDotPulse {
             0%, 100% { opacity: 0.4; } 50% { opacity: 1; }
         }
+        #verdictStripPeek {
+            display: flex; align-items: center; gap: 0.6rem;
+            color: var(--text-secondary); font-weight: 600;
+            font-size: 0.68rem;
+        }
+        #verdictStripPeek .verdict-strip-peek {
+            background: rgba(196,75,40,0.7); animation: none;
+        }
         #verdictStripReady {
             display: flex; align-items: center; gap: 0.6rem;
             color: var(--accent); font-weight: 700;
         }
-        #verdictStripReady .verdict-strip-cta {
+        #verdictStripReady .verdict-strip-cta,
+        #verdictStripPeek .verdict-strip-cta {
             padding: 0.3rem 0.7rem; border-radius: 100px;
             background: var(--accent); color: #fff;
             border: none; cursor: pointer;
@@ -1372,6 +1386,7 @@
             letter-spacing: 0.03em;
             animation: verdictCtaPulse 2.5s ease-in-out infinite;
         }
+        #verdictStripPeek .verdict-strip-cta { animation: none; }
         @keyframes verdictCtaPulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(196,75,40,0.3); }
             50% { box-shadow: 0 0 0 6px rgba(196,75,40,0); }
@@ -1638,6 +1653,24 @@
         }
         .verdict-colophon-body p { margin: 0.3rem 0; }
 
+        /* Verdict skeleton placeholders (peek state) */
+        .verdict-skeleton {
+            padding: 0.7rem 1rem; margin-bottom: 0.75rem;
+            background: var(--bg-surface); border-radius: var(--radius-sm);
+            border: 1px dashed var(--border);
+            display: flex; align-items: center; gap: 0.6rem;
+            opacity: 0.6;
+        }
+        .verdict-skeleton-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+        .verdict-skeleton .pulsing-dots span {
+            background: var(--text-muted);
+        }
+
         /* One-screen verdict card */
         .verdict-onescreen {
             padding: 1.75rem; margin-bottom: 1.5rem;
@@ -1714,14 +1747,14 @@
         .verdict-main-thing-text p { margin: 0.3rem 0; }
         .verdict-one-action {
             padding: 0.9rem 1.1rem; margin-bottom: 1rem;
-            background: rgba(45,138,78,0.04); border-left: 3px solid var(--green);
+            background: rgba(75,100,130,0.05); border-left: 3px solid #4b6482;
             border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
         }
         .verdict-one-action-label {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.58rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: 0.08em;
-            color: var(--green); margin-bottom: 0.4rem;
+            color: #4b6482; margin-bottom: 0.4rem;
         }
         .verdict-one-action-text {
             font-size: 0.88rem; line-height: 1.55; color: var(--text-body);
@@ -1736,8 +1769,8 @@
         }
         .verdict-jurisdiction {
             margin-top: 0.75rem; padding: 0.75rem 1rem;
-            background: rgba(45,138,78,0.03);
-            border: 1px solid var(--green-border);
+            background: rgba(75,100,130,0.04);
+            border: 1px solid rgba(75,100,130,0.2);
             border-radius: var(--radius-sm);
         }
         .verdict-jurisdiction.jurisdiction-warnings {
@@ -1759,6 +1792,32 @@
             font-size: 0.82rem; line-height: 1.6; color: var(--text-body);
         }
         .verdict-jurisdiction-details p { margin: 0.3rem 0; }
+
+        /* Section index — "keep reading" pills below verdict card */
+        .verdict-sections-index {
+            display: flex; flex-wrap: wrap; align-items: center;
+            gap: 0.4rem; padding: 0.75rem 0; margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .verdict-sections-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted); margin-right: 0.2rem;
+        }
+        .verdict-section-pill {
+            padding: 0.2rem 0.55rem; border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem; font-weight: 600;
+            color: var(--text-secondary); background: var(--bg-surface);
+            border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .verdict-section-pill:hover {
+            background: var(--bg-warm); border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
 
         /* Additional risks layer */
         .verdict-layer-risks { margin-bottom: 1.5rem; }
@@ -2331,19 +2390,7 @@
         .reader-voice-text {
             font-size: 0.95rem; line-height: 1.6; color: var(--text-body);
         }
-        .reader-voice-clause {
-            margin-top: 0.6rem; padding-top: 0.5rem;
-            border-top: 1px dashed rgba(45,138,78,0.2);
-            font-size: 0.78rem; line-height: 1.55; color: var(--text-secondary);
-            font-style: italic;
-        }
-        .reader-voice-clause-label {
-            display: block; font-style: normal;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.5rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.06em;
-            color: var(--text-dim); margin-bottom: 0.25rem;
-        }
+        /* .reader-voice-clause removed — quote now only at top */
         .reader-voice-en {
             font-size: 0.78rem; line-height: 1.5; color: var(--text-muted);
             font-style: italic; margin-top: 0.4rem;
@@ -2437,19 +2484,20 @@
             background: linear-gradient(to top, var(--bg-card), transparent);
         }
 
-        /* The scanning loupe — CSS animation for 60fps smoothness */
-        @keyframes loupe-scan {
-            from { left: 12%; }
-            to   { left: 72%; }
+        /* The scanning loupe — stays fixed while text scrolls beneath */
+        @keyframes loupe-breathe {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50%      { transform: translateX(-50%) scale(1.08); }
         }
         .investigation-loupe {
             position: absolute;
-            top: 40%;
-            left: 12%;
+            top: 32%;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 2;
             pointer-events: none;
             filter: drop-shadow(0 4px 16px rgba(196,75,40,0.15));
-            animation: loupe-scan 4s ease-in-out infinite alternate;
+            animation: loupe-breathe 3s ease-in-out infinite;
         }
 
         /* Status below the document */
@@ -2844,18 +2892,12 @@
             position: relative;
         }
         .flip-hint-tooltip {
-            position: absolute; bottom: calc(100% + 8px); left: 50%;
-            transform: translateX(-50%); white-space: nowrap;
+            display: inline-block; margin-left: 0.5rem;
             background: var(--text-primary); color: var(--bg-main);
             font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
             font-weight: 600; padding: 0.35rem 0.75rem;
             border-radius: 100px; pointer-events: none;
             opacity: 0; animation: tooltipFadeIn 0.4s ease 1.5s forwards;
-        }
-        .flip-hint-tooltip::after {
-            content: ''; position: absolute; top: 100%; left: 50%;
-            transform: translateX(-50%);
-            border: 5px solid transparent; border-top-color: var(--text-primary);
         }
         @keyframes tooltipFadeIn {
             to { opacity: 1; }
@@ -2887,12 +2929,12 @@
         }
         .flip-card-front { position: relative; overflow: hidden; }
 
-        /* Card teaser — tension line above flip trigger */
-        .card-teaser {
-            padding: 0.5rem 2rem 0;
-            font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
-            font-style: italic; color: var(--text-muted);
-            text-align: center; line-height: 1.4;
+        /* Card teaser — now the opening line on the back */
+        .back-teaser {
+            font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+            font-weight: 600; line-height: 1.5;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
         }
 
         /* Chapter title — editorial voice below cards (anchors the card) */
@@ -2911,6 +2953,8 @@
 
         /* Back content */
         .back-content { padding: 0; }
+        /* Section ref + quote pill in back-body inherit front-content styles */
+        .back-body .front-quote-pill { opacity: 1; transform: scale(1); }
         .risk-header {
             padding: 1.25rem 2rem; display: flex; align-items: center;
             justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
@@ -3172,6 +3216,29 @@
             transition: transform 0.4s var(--ease-out-expo);
         }
         .flip-back-trigger:hover .flip-back-arrow { transform: translateX(-4px); }
+
+        /* Bottom Next button (inside card back footer) */
+        .card-bottom-next {
+            display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+            padding: 0.9rem 1.5rem; background: none; border: none;
+            border-left: 1px solid var(--border-light);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+            text-transform: uppercase; color: var(--accent);
+            cursor: pointer; transition: all var(--transition);
+            position: relative; overflow: hidden; white-space: nowrap;
+        }
+        .card-bottom-next::before {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(196,75,40,0.05); opacity: 0; transition: opacity var(--transition);
+        }
+        .card-bottom-next:hover::before { opacity: 1; }
+        .card-bottom-next:hover { color: var(--text-primary); }
+        .card-bottom-next-arrow {
+            display: inline-block; font-size: 0.9rem;
+            transition: transform 0.4s var(--ease-out-expo);
+        }
+        .card-bottom-next:hover .card-bottom-next-arrow { transform: translateX(4px); }
 
         /* (clause-nav removed — replaced by .card-navigation) */
 
@@ -3502,7 +3569,12 @@
             .card-nav-sticky {
                 position: sticky; top: 50px;
                 border-radius: var(--radius-sm);
-                padding: 0.4rem 0.6rem;
+                padding: 0.35rem 0.5rem;
+                gap: 0.4rem;
+            }
+            .card-nav-sticky .card-nav-btn {
+                padding: 0.25rem 0.4rem;
+                min-width: 40px; min-height: 40px;
             }
             /* sample-badge removed */
             .inline-verdict-section { padding: 1rem; }
@@ -3568,15 +3640,27 @@
                 padding-bottom: 64px !important;
             }
 
-            /* Phase 3: Dot indicator for card navigation */
-            .card-nav-btn { display: none; }
-            .card-nav-counter { display: none; }
+            /* Phase 3: Mobile card navigation — compact arrows + dots */
+            .card-nav-btn {
+                min-width: 44px; min-height: 44px;
+                padding: 0.3rem 0.5rem;
+                font-size: 0.82rem;
+                border-radius: 8px;
+            }
+            /* Hide "Prev" text, show only ← arrow */
+            .card-nav-prev span:last-child { display: none; }
+            /* Next button: shorter labels on mobile */
+            .card-nav-counter {
+                font-size: 0.62rem;
+            }
+            /* Hide desktop pips on mobile (dots below replace them) */
+            .card-nav-pips { display: none; }
             .card-nav-dots {
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 gap: 6px;
-                padding: 0.75rem 0;
+                padding: 0.4rem 0;
             }
             .card-nav-dot {
                 width: 8px;
@@ -3601,11 +3685,10 @@
                 gap: 0.25rem;
             }
 
-            /* Phase 4: Compact sidebar strip */
+            /* Phase 4: Compact sidebar strip — scrolls away on mobile so card nav can stick */
             .analysis-sidebar {
-                position: sticky !important;
-                top: 50px;
-                z-index: 50;
+                position: relative !important;
+                z-index: 10;
                 border-bottom: 1px solid var(--border);
                 background: var(--bg-cream);
                 padding: 0;
@@ -3722,6 +3805,32 @@
                 color: var(--text-primary);
             }
             .header-overflow-menu button.hidden { display: none; }
+
+            /* Phase 6: Mobile usability */
+            /* Verdict strip CTAs: bigger touch targets */
+            .verdict-strip-cta {
+                min-height: 36px !important;
+                padding: 0.4rem 0.9rem !important;
+                font-size: 0.65rem !important;
+            }
+            .verdict-progress-strip {
+                padding: 0.5rem 0.6rem 0.4rem;
+            }
+            /* Inline verdict: tighter on mobile */
+            .verdict-onescreen { padding: 1.25rem; }
+            .verdict-tier-badge { font-size: 0.68rem; }
+            .verdict-what-is-this { font-size: 0.95rem; }
+            .verdict-should-worry { font-size: 0.82rem; }
+            .verdict-main-thing { padding: 0.9rem 1rem; }
+            .verdict-main-thing-text { font-size: 0.85rem; }
+            .verdict-one-action { padding: 0.75rem 0.9rem; }
+            .verdict-one-action-text { font-size: 0.82rem; }
+            .verdict-depth-btn { min-height: 48px; }
+            /* Ask FlipSide: bigger input on mobile */
+            .ask-flipside-input { font-size: 0.9rem; min-height: 44px; }
+            .ask-flipside-btn { min-width: 44px; min-height: 44px; }
+            /* Skeleton placeholders: tighter */
+            .verdict-skeleton { padding: 0.5rem 0.75rem; }
         }
 
         /* Bottom sheet dark mode audit */
@@ -3794,7 +3903,7 @@
             .reader-voice-text { font-size: 0.84rem; }
             .flip-trigger { padding: 0.75rem 1.25rem; font-size: 0.68rem; }
             .card-watermark { font-size: 5rem; right: 0.8rem; }
-            .card-teaser { padding: 0.4rem 1.25rem 0; font-size: 0.78rem; }
+            .back-teaser { font-size: 0.88rem; }
             .chapter-title-text { font-size: 1rem; }
 
             /* Card back */
@@ -3805,11 +3914,12 @@
             .drafter-voice { padding: 0.75rem 0.9rem; font-size: 0.82rem; }
             .bottom-line { padding: 0.7rem 0.9rem; font-size: 0.78rem; }
             .flip-back-trigger { padding: 0.7rem 1.25rem; font-size: 0.75rem; }
+            .card-bottom-next { padding: 0.7rem 1rem; font-size: 0.68rem; min-height: 44px; }
 
             /* Card navigation */
             .card-navigation { gap: 0.75rem; padding: 1rem 0; }
-            .card-nav-btn { padding: 0.45rem 0.8rem; font-size: 0.75rem; }
-            .card-nav-counter { font-size: 0.7rem; }
+            .card-nav-btn { padding: 0.25rem 0.4rem; font-size: 0.72rem; min-width: 38px; min-height: 38px; }
+            .card-nav-counter { font-size: 0.6rem; }
 
             /* Deep analysis cards */
             .clause-card, .cross-clause-card, .playbook-card, .assessment-card {
@@ -3844,7 +3954,9 @@
             .front-content { padding: 1rem 1rem 0; }
             .risk-header { padding: 0.75rem 1rem; }
             .card-navigation { gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
-            .card-nav-btn { padding: 0.4rem 0.6rem; font-size: 0.7rem; }
+            .card-nav-btn { padding: 0.2rem 0.35rem; font-size: 0.68rem; min-width: 36px; min-height: 36px; }
+            .card-nav-sticky { padding: 0.25rem 0.35rem; gap: 0.3rem; }
+            .card-nav-counter { font-size: 0.55rem; }
             .clause-reassurance { font-size: 0.95rem; }
         }
 
@@ -4316,7 +4428,11 @@
                 <div class="verdict-progress-strip" id="verdictProgressStrip">
                     <div id="verdictStripBuilding">
                         <span class="pulsing-dots" style="margin-right:8px"><span></span><span></span><span></span></span>
-                        <span id="verdictStripText">Verdict building&hellip;</span>
+                        <span id="verdictStripText">Expert analyzing&hellip;</span>
+                    </div>
+                    <div id="verdictStripPeek" class="hidden">
+                        <span>Verdict forming&hellip;</span>
+                        <button class="verdict-strip-cta verdict-strip-peek" id="verdictStripPeekCta">Peek &rarr;</button>
                     </div>
                     <div id="verdictStripReady" class="hidden">
                         <span>Your Expert Verdict is Ready</span>
@@ -4332,7 +4448,7 @@
                     <div class="investigation-text" id="investigationText"></div>
                     <!-- Animated loupe -->
                     <div class="investigation-loupe">
-                        <svg viewBox="0 0 56 56" width="56" height="56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg viewBox="0 0 56 56" width="88" height="88" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="22" cy="22" r="15" stroke="#c44b28" stroke-width="2.5" fill="rgba(196,75,40,0.05)"/>
                             <circle cx="22" cy="22" r="10" stroke="rgba(196,75,40,0.12)" stroke-width="0.5" fill="none"/>
                             <line x1="33" y1="33" x2="48" y2="48" stroke="#c44b28" stroke-width="3.5" stroke-linecap="round"/>
@@ -4437,7 +4553,7 @@
             <!-- Inline verdict section (below cards — revealed when verdict is ready) -->
             <div class="inline-verdict" id="inlineVerdict">
                 <div class="inline-verdict-divider">
-                    <span class="inline-verdict-divider-text">Full Expert Verdict</span>
+                    <span class="inline-verdict-divider-text" id="verdictDividerText">Full Expert Verdict</span>
                 </div>
                 <div id="inlineVerdictContent"></div>
                 <div class="inline-verdict-progress hidden" id="inlineVerdictProgress">
@@ -4445,10 +4561,7 @@
                     <span id="inlineVerdictProgressText">Expert analysis in progress...</span>
                 </div>
             </div>
-            <div class="deep-status hidden" id="deepStatus">
-                <span class="pulsing-dots"><span></span><span></span><span></span></span>
-                <span id="deepStatusText">Opus 4.6 is building your Full Verdict...</span>
-            </div>
+            <!-- deep-status removed — status shown in header ticker + status pill -->
         </div>
 
         <!-- Results: summary + deep analysis (compare mode uses resultsContent) -->
@@ -4905,6 +5018,19 @@
                 // Restore side columns
                 var layout = card.closest('.analysis-layout');
                 if (layout) layout.classList.remove('layout-flipped');
+            }
+            return;
+        }
+        var bottomNext = e.target.closest('.card-bottom-next');
+        if (bottomNext) {
+            var cards = flipCardContainer.querySelectorAll('.flip-card');
+            if (currentCardIndex >= cards.length - 1) {
+                // Last card — go to verdict
+                revealDeepAnalysis();
+                dismissVerdictStrip();
+                exitFocusedMode();
+            } else {
+                showCardAtIndex(currentCardIndex + 1);
             }
             return;
         }
@@ -5550,8 +5676,9 @@
             vStrip.classList.remove('visible');
             vStrip.querySelectorAll('.verdict-strip-dot').forEach(function(d) { d.classList.remove('done'); });
             $('verdictStripBuilding').classList.remove('hidden');
+            $('verdictStripPeek').classList.add('hidden');
             $('verdictStripReady').classList.add('hidden');
-            $('verdictStripText').textContent = 'Expert verdict building\u2026';
+            $('verdictStripText').textContent = 'Expert analyzing\u2026';
         }
 
         // Reset UI
@@ -5595,7 +5722,7 @@
         resultsArea.classList.add('hidden');
         $('cardViewport').classList.add('hidden');
         $('cardNavigation').classList.add('hidden');
-        $('deepStatus').classList.add('hidden');
+        var _ds2 = $('deepStatus'); if (_ds2) _ds2.classList.add('hidden');
         $('copyAllBtn').classList.add('hidden');
         $('exportBtn').classList.add('hidden');
         $('emailLawyerBtn').classList.add('hidden');
@@ -5826,7 +5953,7 @@
                     statusText.textContent = 'Cards ready' + (qdSec ? ' (' + qdSec + ')' : '') + ' \u2014 Expert report building...';
                     startStatusRotation('deep');
                     stopEditorialStatusRotation();
-                    $('deepStatus').classList.remove('hidden');
+                    var _ds = $('deepStatus'); if (_ds) _ds.classList.remove('hidden');
                     if (!isCompareMode) {
                         finalClauseSweep();
                         buildFilterChips();
@@ -5885,6 +6012,7 @@
                     onVerdictReady();
                     // Unlock depth buttons
                     document.querySelectorAll('.verdict-depth-btn.locked').forEach(function(b) { b.classList.remove('locked'); });
+                    var askSec = document.querySelector('.ask-flipside-section.hidden'); if (askSec) askSec.classList.remove('hidden');
                     // Update thinking label to final state
                     var thinkLabel = $('thinkingToggleLabel');
                     if (thinkLabel && _opusThinkingText) {
@@ -5910,7 +6038,7 @@
                     stopStatusRotation();
                     stopEditorialStatusRotation();
                     if (thinkingCharCount > 0) showCapStats();
-                    $('deepStatus').classList.add('hidden');
+                    var _ds2 = $('deepStatus'); if (_ds2) _ds2.classList.add('hidden');
                     // Re-show model badge now that analysis is complete
                     var doneBadge = document.querySelector('.model-badge');
                     if (doneBadge) doneBadge.classList.remove('hidden');
@@ -5959,6 +6087,7 @@
                         });
                         deepTextComplete = true;
                         document.querySelectorAll('.verdict-depth-btn.locked').forEach(function(b) { b.classList.remove('locked'); });
+                        var askSec2 = document.querySelector('.ask-flipside-section.hidden'); if (askSec2) askSec2.classList.remove('hidden');
                         verdictTitle.textContent = 'Your verdict is ready';
                         updateVerdictButton();
                         // Update all depth button states (safety net)
@@ -6399,7 +6528,7 @@
             $('eduReviewPill').classList.add('hidden');
             var ocrEl = $('ocrBanner');
             if (ocrEl) ocrEl.classList.add('hidden');
-            $('deepStatus').classList.add('hidden');
+            var _ds2 = $('deepStatus'); if (_ds2) _ds2.classList.add('hidden');
             hideVerdictCol();
             stopVerdictCountdown();
             var heroEl2 = $('docTitleHero');
@@ -6579,26 +6708,13 @@
             '<div class="reader-voice">' +
             '<span class="reader-voice-label">At first glance</span>' +
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
-            (clause.quote ? '<div class="reader-voice-clause"><span class="reader-voice-clause-label">Full clause</span>' + escapeHtml(clause.quote) + '</div>' : '') +
             '</div>' +
             '</div>' +
-            (clause.teaser ? '<div class="card-teaser">' + escapeHtml(clause.teaser) + '</div>' : '') +
-            '<div class="card-teaser-label" style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;padding:0.5rem 2rem 0">What the fine print actually says</div>' +
             '<button class="flip-trigger" aria-label="Flip card to reveal hidden clause details"><span class="flip-trigger-cta">Flip it!</span> <span>See what this really means</span><span class="flip-trigger-arrow" style="margin-left:0.4rem">&rsaquo;</span></button>' +
             '</div>';
 
-        // ── Back body: full reveal — quote, figure, example, bottom line ──
+        // ── Back body: full reveal — teaser headline, figure, example, bottom line ──
         var backBodyHtml = '';
-
-        // Source quote on card back — only for green cards (red/yellow use "Find in document" link instead)
-        if (clause.quote) {
-            if (risk === 'green') {
-                backBodyHtml += '<div class="back-quote-label">From the document</div>' +
-                    '<div class="clause-quote">' + escapeHtml(clause.quote) + '</div>';
-            } else {
-                backBodyHtml += '<span class="find-in-doc" data-card-index="' + index + '">Find in document</span>';
-            }
-        }
 
         var isGreenSummary = clause.title === 'Fair Clauses Summary' || (risk === 'green' && clause.title && clause.title.indexOf('Fair Clauses') >= 0);
         var backHtml;
@@ -6611,7 +6727,6 @@
                 escapeHtml(clause.bottomLine || 'These clauses do what they say.') +
                 '</div></div>';
         } else if (clause.figure || clause.exampleNarrative) {
-            backBodyHtml += '<div class="back-meaning-label">What does this mean for you</div>';
             if (clause.figure) {
                 backBodyHtml += '<div class="back-figure back-figure-' + risk + '">' +
                     escapeHtml(clause.figure) + '</div>';
@@ -6641,25 +6756,29 @@
             }
         }
 
-        var backTitle = clause.reveal || clause.title;
-        var backLabel = (risk === 'green') ? 'And that\u2019s correct' : 'But in reality';
-        // Build back with bottom line first for softer reveal, then risk header + details
+        var backTitle = clause.teaser || clause.reveal || clause.title;
+        var backLabel = (risk === 'green') ? 'And that\u2019s correct' : 'What the fine print actually says';
+        // Risk header first, then section ref + quote — same layout as front (header → content)
         var backInnerHtml = '';
-        // Lead with bottom line (calm context) for non-green cards
-        if (risk !== 'green' && clause.bottomLine) {
-            backInnerHtml += '<div class="back-bottom-line-lead" style="padding:1rem 1.75rem 0.5rem;font-size:0.88rem;line-height:1.55;color:var(--text-secondary)">' +
-                escapeHtml(clause.bottomLine) + '</div>';
-        }
         backInnerHtml += '<div class="risk-header risk-header-' + risk + '">' +
             '<span class="risk-header-label">' + backLabel + '</span>' +
             '<h3 class="clause-title">' + escapeHtml(backTitle) + '</h3>' +
             '</div>';
-        // Remove the duplicate bottom line from backBodyHtml since we showed it first
-        var adjustedBackBody = backBodyHtml;
-        if (risk !== 'green' && clause.bottomLine) {
-            adjustedBackBody = adjustedBackBody.replace(/<div class="back-bottom-line">[\s\S]*?<\/div>/, '');
+        // Section ref + quote inside back-body (same position as front-content)
+        var persistentHtml = '';
+        if (clause.section || clause.quote) {
+            persistentHtml =
+                (clause.section ? '<div class="clause-section-ref">' + escapeHtml(clause.section) + '</div>' : '') +
+                (clause.quote ? '<div class="front-quote-pill revealed" style="margin-bottom:0.9rem">' +
+                    '<span class="pill-num pill-num-' + risk + '">' + (index + 1) + '</span>' +
+                    '<span class="pill-text">\u201c' + escapeHtml(clause.quote) + '\u201d</span>' +
+                    '</div>' : '');
         }
-        backInnerHtml += '<div class="back-body">' + adjustedBackBody + '</div>';
+        backInnerHtml += '<div class="back-body">' + persistentHtml + backBodyHtml + '</div>';
+        // "Find in document" at the bottom for non-green cards
+        if (clause.quote && risk !== 'green') {
+            backInnerHtml += '<span class="find-in-doc" data-card-index="' + index + '" style="display:block;margin:0.5rem 1.75rem 0">Find in document</span>';
+        }
         // Trick chip + flip back
         backInnerHtml += '<div class="back-footer">';
         if (clause.trick) {
@@ -6667,6 +6786,7 @@
                 (TRICK_ICONS[clause.trick] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[clause.trick] + '</span> ' : '') + escapeHtml(clause.trick) + '</span>';
         }
         backInnerHtml += '<button class="flip-back-trigger" aria-label="Flip card back to front"><span class="flip-back-arrow">&larr;</span><span>Flip back</span></button>';
+        backInnerHtml += '<button class="card-bottom-next" aria-label="Next clause"><span>Next</span> <span class="card-bottom-next-arrow">&rarr;</span></button>';
         backInnerHtml += '</div>';
         backHtml = '<div class="flip-card-back"><div class="back-content">' + backInnerHtml + '</div></div>';
 
@@ -6899,7 +7019,7 @@
         if (!el || !el.textContent.trim()) return;
         _investScrollY = 0;
         el.style.transform = 'translateY(0)';
-        // Loupe is now pure CSS animation (60fps) — JS only scrolls the text
+        // Loupe stays fixed — JS only scrolls the text beneath it
         _investScrollTimer = setInterval(function() {
             _investScrollY -= 1;
             el.style.transform = 'translateY(' + _investScrollY + 'px)';
@@ -7193,22 +7313,26 @@
             return;
         }
         var building = $('verdictStripBuilding');
+        var peek = $('verdictStripPeek');
         var ready = $('verdictStripReady');
         var textEl = $('verdictStripText');
 
         if (deepTextComplete || isDoneRendering) {
-            // Done — show CTA
+            // Done — full verdict ready
             building.classList.add('hidden');
+            peek.classList.add('hidden');
             ready.classList.remove('hidden');
         } else if (_coreVerdictReady) {
-            // Core verdict available early
+            // Core tags arrived — allow peek with honest label
             building.classList.add('hidden');
-            ready.classList.remove('hidden');
+            peek.classList.remove('hidden');
+            ready.classList.add('hidden');
         } else {
             // Still building
             building.classList.remove('hidden');
+            peek.classList.add('hidden');
             ready.classList.add('hidden');
-            textEl.textContent = 'Expert verdict building\u2026';
+            textEl.textContent = 'Expert analyzing\u2026';
         }
         strip.classList.add('visible');
     }
@@ -7838,6 +7962,12 @@
 
         var tc = TIER_CONFIG[tier] || TIER_CONFIG['READ THE FLAGGED CLAUSES'];
 
+        // Skeleton placeholders for sections not yet arrived during streaming
+        var isStreaming = !opusSections.overall.done && !deepTextComplete && !isDoneRendering;
+        function skeleton(label) {
+            return '<div class="verdict-skeleton"><span class="verdict-skeleton-label">' + label + '</span><span class="pulsing-dots"><span></span><span></span><span></span></span></div>';
+        }
+
         // Pre-build jurisdiction HTML — render early if it contains warnings
         var jurisdictionHtml = '';
         var jurisdictionHasWarnings = false;
@@ -7903,11 +8033,15 @@
         // ── What is this ──
         if (whatIsThis) {
             html += '<div class="verdict-what-is-this">' + escapeHtml(whatIsThis) + '</div>';
+        } else if (isStreaming) {
+            html += skeleton('Summary');
         }
 
         // ── Should you worry ──
         if (shouldYouWorry) {
             html += '<div class="verdict-should-worry">' + escapeHtml(shouldYouWorry) + '</div>';
+        } else if (isStreaming) {
+            html += skeleton('Assessment');
         }
 
         // ── The main thing ──
@@ -7916,6 +8050,8 @@
             html += '<div class="verdict-main-thing-label">The main thing</div>';
             html += '<div class="verdict-main-thing-text">' + safeMd2Html(theMainThing) + '</div>';
             html += '</div>';
+        } else if (isStreaming) {
+            html += skeleton('The main thing');
         }
 
         // ── One action ──
@@ -7924,23 +8060,53 @@
             html += '<div class="verdict-one-action-label">What to do</div>';
             html += '<div class="verdict-one-action-text">' + escapeHtml(oneAction) + '</div>';
             html += '</div>';
+        } else if (isStreaming) {
+            html += skeleton('What to do');
         }
 
         // ── Power ratio ──
         if (powerRatio) {
             html += '<div class="verdict-power-ratio">' + escapeHtml(powerRatio) + '</div>';
+        } else if (isStreaming) {
+            html += skeleton('Power ratio');
         }
 
         // ── Jurisdiction normal position (when no warnings) ──
         if (!jurisdictionHasWarnings && jurisdictionHtml) {
             html += jurisdictionHtml;
+        } else if (isStreaming && !jurisdictionHasWarnings && !jurisdictionHtml) {
+            html += skeleton('Jurisdiction');
         }
 
         html += '</div>'; // .verdict-onescreen
 
+        // ── Section index: preview what's below ──
+        var sectionPills = [];
+        if (risks) sectionPills.push({ label: 'Risks', id: 'verdictLayerRisks' });
+        if (flaggedClaims && !/no clauses were flagged/i.test(flaggedClaims)) {
+            var fc = flaggedClaims.split('\n').filter(function(l) { return /^[-*\d]/.test(l.trim()); }).length;
+            sectionPills.push({ label: fc + ' flagged', id: 'verdictLayerClaims' });
+        }
+        if (checklist) {
+            var cc = (checklist.match(/^[-*] /gm) || []).length;
+            sectionPills.push({ label: 'Checklist (' + cc + ')', id: 'verdictLayerChecklist' });
+        }
+        if (colophon) sectionPills.push({ label: 'About', id: 'verdictLayerColophon' });
+        if (deepTextComplete || isDoneRendering) sectionPills.push({ label: 'Ask a question', id: 'askFlipsideSection' });
+        sectionPills.push({ label: 'Go deeper', id: 'verdictDepthButtons' });
+
+        if (sectionPills.length > 0) {
+            html += '<div class="verdict-sections-index">';
+            html += '<span class="verdict-sections-label">Below</span>';
+            sectionPills.forEach(function(p) {
+                html += '<span class="verdict-section-pill" data-scroll-to="' + p.id + '">' + p.label + '</span>';
+            });
+            html += '</div>';
+        }
+
         // ── Collapsible: Additional risks ──
         if (risks) {
-            html += '<div class="verdict-layer verdict-layer-risks collapsed">';
+            html += '<div class="verdict-layer verdict-layer-risks collapsed" id="verdictLayerRisks">';
             html += '<div class="verdict-layer-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
             html += '<span class="verdict-layer-title">Additional risks</span>';
             html += '<span class="verdict-layer-chevron">\u25BC</span></div>';
@@ -7959,7 +8125,7 @@
         if (flaggedClaims && !/no clauses were flagged/i.test(flaggedClaims)) {
             var claimLines = flaggedClaims.split('\n').filter(function(l) { return l.trim(); });
             var claimCount = claimLines.filter(function(l) { return /^[-*\d]/.test(l.trim()); }).length;
-            html += '<div class="verdict-layer verdict-layer-claims">';
+            html += '<div class="verdict-layer verdict-layer-claims collapsed" id="verdictLayerClaims">';
             html += '<div class="verdict-layer-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
             html += '<span class="verdict-layer-title">All flagged clauses (' + claimCount + ')</span>';
             html += '<span class="verdict-layer-chevron">\u25BC</span></div>';
@@ -7975,7 +8141,7 @@
 
         // ── Collapsible: Checklist ──
         if (checklist) {
-            html += '<div class="verdict-layer verdict-layer-checklist collapsed">';
+            html += '<div class="verdict-layer verdict-layer-checklist collapsed" id="verdictLayerChecklist">';
             html += '<div class="verdict-layer-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
             var itemCount = (checklist.match(/^[-*] /gm) || []).length;
             html += '<span class="verdict-layer-title">Your checklist (' + itemCount + ' items)</span>';
@@ -7995,7 +8161,7 @@
 
         // ── Collapsible: About this analysis ──
         if (colophon) {
-            html += '<div class="verdict-layer verdict-layer-colophon collapsed">';
+            html += '<div class="verdict-layer verdict-layer-colophon collapsed" id="verdictLayerColophon">';
             html += '<div class="verdict-layer-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">';
             html += '<span class="verdict-layer-title">About this analysis</span>';
             html += '<span class="verdict-layer-chevron">\u25BC</span></div>';
@@ -8004,8 +8170,18 @@
             html += '</div></div>';
         }
 
+        // ── Ask FlipSide: follow-up question (hidden until verdict ready) ──
+        html += '<div class="ask-flipside-section' + (deepTextComplete || isDoneRendering ? '' : ' hidden') + '" id="askFlipsideSection">';
+        html += '<div class="ask-flipside-label">Ask a follow-up question</div>';
+        html += '<div class="ask-flipside-input-row">';
+        html += '<input type="text" class="ask-flipside-input" id="askFlipsideInput" placeholder="What happens if I\u2019m 3 months late on rent?" />';
+        html += '<button class="ask-flipside-btn" id="askFlipsideBtn">\u2192</button>';
+        html += '</div>';
+        html += '<div class="ask-flipside-result" id="askFlipsideResult"></div>';
+        html += '</div>';
+
         // ── 4 Go Deeper buttons (on-demand — click to start Opus 4.6) ──
-        html += '<div class="verdict-depth-buttons">';
+        html += '<div class="verdict-depth-buttons" id="verdictDepthButtons">';
         html += '<div class="verdict-depth-label">Go deeper &mdash; powered by Opus 4.6</div>';
         var depthOptions = [
             { key: 'scenario', icon: '\uD83C\uDFAC', title: 'What Could Happen', desc: 'Worst-case scenario simulation' },
@@ -8029,16 +8205,6 @@
             html += '</button>';
             html += '<div class="depth-result-panel" id="depthPanel_' + opt.key + '"></div>';
         });
-        html += '</div>';
-
-        // ── Ask FlipSide: follow-up question with tool use ──
-        html += '<div class="ask-flipside-section">';
-        html += '<div class="ask-flipside-label">Ask a follow-up question</div>';
-        html += '<div class="ask-flipside-input-row">';
-        html += '<input type="text" class="ask-flipside-input" id="askFlipsideInput" placeholder="What happens if I\u2019m 3 months late on rent?" />';
-        html += '<button class="ask-flipside-btn" id="askFlipsideBtn">\u2192</button>';
-        html += '</div>';
-        html += '<div class="ask-flipside-result" id="askFlipsideResult"></div>';
         html += '</div>';
 
         return html;
@@ -8334,6 +8500,12 @@
         inlineVerdict.classList.add('visible');
         hideVerdictCol();
 
+        // Update divider label based on completion state
+        var dividerText = $('verdictDividerText');
+        if (dividerText) {
+            dividerText.textContent = isComplete ? 'Full Expert Verdict' : 'Full Expert Verdict is still building';
+        }
+
         var text = opusSections.overall.text || '';
         var section = $('deepAnalysisSection');
 
@@ -8521,6 +8693,17 @@
             // Revisited card or mobile — just ensure pill is visible
             var pill = visibleCard.querySelector('.front-quote-pill');
             if (pill && !pill.classList.contains('revealed')) pill.classList.add('revealed');
+        }
+
+        // Update bottom-next button label on current card
+        var bottomNextBtn = visibleCard.querySelector('.card-bottom-next');
+        if (bottomNextBtn) {
+            var isLast = index >= cards.length - 1 && flipCardsBuilt;
+            if (isLast) {
+                bottomNextBtn.innerHTML = '<span>Full Verdict</span> <span class="card-bottom-next-arrow">&rarr;</span>';
+            } else {
+                bottomNextBtn.innerHTML = '<span>Next</span> <span class="card-bottom-next-arrow">&rarr;</span>';
+            }
         }
 
         // Update chapter title — persistent editorial voice
@@ -9407,12 +9590,34 @@
     var _thinkToggleEl = $('thinkingToggle');
     if (_thinkToggleEl) _thinkToggleEl.addEventListener('click', toggleThinkingViewer);
 
-    // ── Verdict progress strip CTA ──────────────────────────
+    // ── Verdict progress strip CTAs ──────────────────────────
     $('verdictStripCta').addEventListener('click', function(e) {
         e.stopPropagation();
         dismissVerdictStrip();
         exitFocusedMode();
         revealDeepAnalysis();
+    });
+    $('verdictStripPeekCta').addEventListener('click', function(e) {
+        e.stopPropagation();
+        dismissVerdictStrip();
+        exitFocusedMode();
+        revealDeepAnalysis();
+    });
+
+    // ── Section index pills: scroll to target section ──────────
+    document.addEventListener('click', function(e) {
+        var pill = e.target.closest('.verdict-section-pill');
+        if (!pill) return;
+        var targetId = pill.getAttribute('data-scroll-to');
+        if (!targetId) return;
+        var target = document.getElementById(targetId);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Auto-expand if it's a collapsed section
+            if (target.classList.contains('collapsed')) {
+                target.classList.remove('collapsed');
+            }
+        }
     });
 
     // ── Back to cards button (from verdict view) ──────────────
@@ -9628,16 +9833,12 @@
 
         // Use html2pdf.js if available, otherwise fall back to HTML download
         if (typeof html2pdf !== 'undefined') {
-            var container = document.createElement('div');
-            container.innerHTML = exportHtml;
-            // Extract just the body content for html2pdf
-            var tempDiv = document.createElement('div');
-            tempDiv.innerHTML = exportHtml;
-            var bodyEl = tempDiv.querySelector('body');
-            var styleEl = tempDiv.querySelector('style');
+            // Parse the full HTML doc properly (innerHTML on a div strips <html>/<body> tags)
+            var parsed = new DOMParser().parseFromString(exportHtml, 'text/html');
             var wrapper = document.createElement('div');
+            var styleEl = parsed.querySelector('style');
             if (styleEl) wrapper.appendChild(styleEl.cloneNode(true));
-            if (bodyEl) wrapper.innerHTML += bodyEl.innerHTML;
+            wrapper.innerHTML += parsed.body.innerHTML;
 
             html2pdf().set({
                 margin: [10, 10, 15, 10],

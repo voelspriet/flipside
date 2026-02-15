@@ -1569,10 +1569,13 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 
 def build_clause_id_prompt():
     """Phase 1: Lightweight identification scan. Minimal output for speed."""
-    return """You are a contract analyst. Quickly scan this document and identify the most significant clauses that a consumer should worry about.
+    return """You are a contract analyst. Quickly scan this document and identify clauses where rights, obligations, or financial exposure are asymmetric — where one party bears disproportionate risk, where penalties cascade, where discretion is one-sided, or where definitions alter plain-English meaning.
 
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language.
+
+## PLANNING STEP (mandatory)
+Before outputting anything, mentally list all sections of the document and classify each as: symmetric (both parties equal), asymmetric (one party favored), or neutral (procedural/administrative). Then select the most asymmetric clauses for detailed output.
 
 ## OUTPUT FORMAT
 
@@ -1598,7 +1601,7 @@ GREEN_CLAUSES: [Section ref]: [one-line description]; [Section ref]: [one-line d
 Silent Waiver, Burden Shift, Time Trap, Escape Hatch, Moving Target, Forced Arena, Phantom Protection, Cascade Clause, Sole Discretion, Liability Cap, Reverse Shield, Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, Ghost Standard
 
 ## RULES
-1. Maximum 12 RED/YELLOW clauses — pick the highest-impact ones
+1. Maximum 12 RED/YELLOW clauses — pick those with the greatest financial exposure, rights forfeiture, or power asymmetry
 2. Output in order of severity (worst first)
 3. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
 4. If the document has NO terms or obligations (e.g. a recipe, novel, news article), output ONLY the Document Profile followed by: **Not Applicable**: [1-sentence explanation]
@@ -1690,6 +1693,7 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 7. Confidence: HIGH = clear language; MEDIUM = some ambiguity; LOW = multiple interpretations
 8. Do NOT output --- separators or any text outside the card format
 9. YELLOW/RED clauses MUST have a trick from the 18 categories above — NEVER leave it blank or write "N/A"
+10. [FIGURE] and [EXAMPLE] must be mathematically consistent — the headline number in [FIGURE] MUST be derivable from the step-by-step calculation in [EXAMPLE]. Write [EXAMPLE] first in your head, THEN extract the summary number for [FIGURE]. Never round differently between the two.
 
 ## DOCUMENT:
 
@@ -2034,7 +2038,7 @@ def build_scenario_prompt():
     return """You are a senior attorney who tells stories. Given a document, narrate a realistic worst-case scenario using the document's ACTUAL terms, figures, and deadlines.
 
 ## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ## OUTPUT FORMAT
 
@@ -2064,6 +2068,7 @@ Tell it as a story. Use second person ("you").
 - Keep it concrete and narrative — this is a story about someone's life, not a legal brief
 - The math must be correct — add up fees, penalties, and compounding costs accurately
 - Use your full extended thinking budget to trace every clause chain
+- Self-check: verify the total exposure equals the sum of all individual fees, penalties, and costs in the timeline. If any number doesn't trace back to a specific clause, remove it
 - Realism is what makes it hit"""
 
 
@@ -2072,7 +2077,7 @@ def build_walkaway_prompt():
     return """You are a senior attorney and forensic accountant. Calculate the MAXIMUM FINANCIAL EXPOSURE for the reader if every penalty, fee, and obligation in this document is enforced to its worst case.
 
 ## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ## OUTPUT FORMAT
 
@@ -2160,7 +2165,8 @@ For each dangerous combination (find 3-5):
 - Prioritize combinations with financial consequences or rights forfeiture
 - "Read separately" should sound reassuring; "Read together" should be the gut punch
 - Use your full extended thinking budget to systematically check clause pairs
-- Be thorough — connect clauses that are far apart in the document"""
+- Be thorough — connect clauses that are far apart in the document
+- Self-check: for each combination, verify that the quoted clause text actually supports the compound effect you describe. If the "Read together" consequence doesn't follow from the two quotes, revise or remove it"""
 
 
 def build_playbook_prompt():
@@ -2168,7 +2174,7 @@ def build_playbook_prompt():
     return """You are a senior negotiation strategist. Analyze this document and produce a practical negotiation playbook for the reader — what to push on, what to mention, what to skip.
 
 ## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ## OUTPUT FORMAT
 
@@ -2208,7 +2214,8 @@ For each (1-3 items):
 - The drafter profile should predict BEHAVIOR, not just describe document structure
 - The ready-to-send message must be polished enough to actually send
 - Use your full extended thinking budget to model the drafter's incentives
-- Theory of mind: reason about WHY each clause exists, not just WHAT it says"""
+- Theory of mind: reason about WHY each clause exists, not just WHAT it says
+- Self-check: verify that each "Push hard" item is actually supported by the clause text, and that the drafter profile is consistent with the document structure. If "they'll bend" doesn't follow from the drafter's incentives, move it to "Mention" or remove it"""
 
 
 def build_verdict_prompt(has_images=False):
@@ -2355,7 +2362,7 @@ def build_synthesis_prompt():
     return """You are the SYNTHESIS CHAIR of a 4-expert panel that just analyzed a legal document. You have access to ALL four expert reports. Your job: produce a unified synthesis that NO individual expert could write alone.
 
 ## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language.
+ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document or expert reports, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
 
 ## YOUR 4 VOICES — output ALL four sections in this exact order:
 

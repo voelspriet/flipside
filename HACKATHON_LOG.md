@@ -462,8 +462,8 @@ Also locked "Go Deeper" buttons (`.locked` class: 45% opacity, `cursor: not-allo
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 3,968 | Backend: Flask, SSE, parallel processing, vision, tool use, follow-up, prompt caching, dynamic token budget, suitability gate, 14 sample docs |
-| `templates/index.html` | 10,119 | Card-first frontend: instant flip cards, live thinking narration, verdict with risk summary + tricks + locked depth buttons, clean export, confidence badges, follow-up UI, DOMPurify |
+| `app.py` | 3,975 | Backend: Flask, SSE, parallel processing, vision, tool use, follow-up, prompt caching, dynamic token budget, suitability gate, 14 sample docs |
+| `templates/index.html` | 10,319 | Card-first frontend: instant flip cards, live thinking narration, one-screen verdict with risk summary + tricks + 4 Go Deeper buttons, clean export, confidence badges, follow-up UI, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
@@ -519,33 +519,33 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (3,569 lines) | Flask backend: prompts, parallel processing, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
-| `templates/index.html` (9,587 lines) | Card-first frontend: instant flip cards, verdict summary, clean export, home button, live tricks panel, confidence badges, follow-up UI, tool handlers, prefix-aware paths, page nav, DOMPurify |
+| `app.py` (3,975 lines) | Flask backend: prompts, parallel processing, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
+| `templates/index.html` (10,319 lines) | Card-first frontend: instant flip cards, one-screen verdict, 4 Go Deeper buttons, live thinking narration, clean export, confidence badges, follow-up UI with tool calls, DOMPurify |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
 | `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
-| This file | 77 entries, complete process timeline |
+| This file | 78 entries, complete process timeline |
 
 ## 14 Opus 4.6 Capabilities Used
 
 | # | Capability | Visible in product |
 |---|-----------|-------------------|
-| 1 | Extended thinking (compound reasoning) | 4 parallel Opus threads: interactions, asymmetry, archaeology, overall |
-| 2 | Perspective adoption | Villain voice in interactions ("YOUR MOVE"), drafter profiling in archaeology |
+| 1 | Extended thinking (adaptive) | Single Opus verdict thread with adaptive thinking — model decides reasoning depth per document |
+| 2 | Perspective adoption | Gullible reader voice on card fronts, drafter's perspective on card backs + villain voice in deep dives |
 | 3 | Vision / multimodal | PDF page images → visual formatting tricks detected (font size, buried placement) |
-| 4 | Tool use | `assess_risk` + `flag_interaction` structured tool calls |
-| 5 | Multi-turn follow-up | "Ask about this document" after analysis |
+| 4 | Tool use | Follow-up Q&A: `search_document`, `get_clause_analysis`, `get_verdict_summary` tools |
+| 5 | Multi-turn follow-up | "Ask about this document" — Opus traces answers through all relevant clauses |
 | 6 | Confidence calibration | HIGH/MEDIUM/LOW badges with explicit reasoning chains |
-| 7 | Self-correction | Quality Check in overall thread — reviews own analysis for false positives and blind spots |
-| 8 | Counterfactual generation | Fair Standard Comparison: "This document says / A fair version would say" |
-| 9 | Stylistic deduction | Document archaeology: boilerplate vs custom, drafter profile from writing patterns |
-| 10 | Split-model parallel | Haiku 4.5 (instant full cards) + 4× Opus 4.6 (expert verdict threads) |
+| 7 | Self-correction | Quality Check in verdict colophon — reviews own analysis for false positives and blind spots |
+| 8 | Counterfactual generation | Power ratio + on-demand counter-draft rewrites unfair clauses |
+| 9 | Stylistic deduction | Drafter profile in verdict + on-demand "Hidden Combinations" deep dive |
+| 10 | Split-model parallel | Haiku 4.5 (instant full cards) + 1 Opus 4.6 (one-screen verdict) + 4 on-demand Opus deep dives |
 | 11 | Prompt caching | System prompts cached for 90% cost reduction |
 | 12 | Long-context retrieval | Cross-clause interaction detection across full documents (no truncation) |
-| 13 | Low over-refusals | Villain voice sustains adversarial role-play without self-censoring |
+| 13 | Low over-refusals | Gullible reader, villain voice, drafter perspective — all sustained without self-censoring |
 | 14 | English-only + download in language | All output in English (universal access); download full report translated to document's original language |
 
 ## What Remains
@@ -553,7 +553,7 @@ The first four are the same error at different scales: **the AI uses itself as t
 - Demo video (3 minutes, scripted narrative) — script ready (DEMO_SCRIPT.md)
 - ~~100-200 word summary~~ Done (173 words)
 - ~~Update README.md to match current state~~ Done
-- ~~Reduce perceived Opus wait time~~ Addressed: invitation text, 2-min countdown, live tricks panel, verdict summary, focused reading mode
+- ~~Reduce perceived Opus wait time~~ Addressed: verdict progress strip, live thinking narration (Expert Mind), 10s auto-reveal, one-screen verdict
 - ~~Save Report broken (SVG dump)~~ Fixed: clean HTML export from structured data
 - ~~Non-applicable docs show verdict~~ Fixed: verdict column hides
 

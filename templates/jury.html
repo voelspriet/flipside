@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlipSide Jury — The dark side of hackathon submissions</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #f7f5f0;
+    --bg-card: #ffffff;
+    --bg-surface: #f0ede6;
+    --text-body: #2c2a25;
+    --text-secondary: #7a7568;
+    --text-muted: #a09a8c;
+    --rust: #c44b28;
+    --green: #2d8a4e;
+    --yellow: #b8860b;
+    --blue: #4b6482;
+    --border: #e5e0d5;
+    --border-light: #ece8df;
+    --radius: 12px;
+    --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-body);
+    min-height: 100vh;
+}
+
+/* ── Header ──────────────────────────────── */
+.jury-header {
+    padding: 1.2rem 2rem;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.jury-logo {
+    font-size: 1.3rem; font-weight: 700;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.jury-logo-flip { color: var(--rust); }
+.jury-logo-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted);
+    background: var(--bg-surface);
+    padding: 0.2rem 0.6rem; border-radius: 100px;
+}
+.jury-stats {
+    display: flex; gap: 1.5rem; align-items: center;
+}
+.jury-stat {
+    text-align: center;
+}
+.jury-stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem; font-weight: 700;
+}
+.jury-stat-label {
+    font-size: 0.55rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* ── Layout ──────────────────────────────── */
+.jury-layout {
+    display: flex; max-width: 1400px; margin: 0 auto;
+    min-height: calc(100vh - 60px);
+}
+.jury-sidebar {
+    width: 340px; border-right: 1px solid var(--border);
+    background: var(--bg-card); overflow-y: auto;
+    max-height: calc(100vh - 60px);
+}
+.jury-main {
+    flex: 1; padding: 1.5rem 2rem; overflow-y: auto;
+    max-height: calc(100vh - 60px);
+}
+
+/* ── Submission list ─────────────────────── */
+.sidebar-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted); padding: 1rem 1rem 0.5rem;
+}
+.submission-item {
+    padding: 0.8rem 1rem; cursor: pointer;
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.15s;
+    display: flex; gap: 0.7rem; align-items: center;
+}
+.submission-item:hover { background: var(--bg-surface); }
+.submission-item.active {
+    background: rgba(196,75,40,0.06);
+    border-left: 3px solid var(--rust);
+}
+.submission-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    color: var(--text-muted); min-width: 1.5rem;
+}
+.submission-info { flex: 1; }
+.submission-name {
+    font-size: 0.82rem; font-weight: 600; line-height: 1.3;
+}
+.submission-team {
+    font-size: 0.65rem; color: var(--text-secondary);
+}
+.submission-badges {
+    display: flex; gap: 0.3rem; margin-top: 0.25rem;
+}
+.submission-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.48rem; font-weight: 600;
+    padding: 0.1rem 0.35rem; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 0.03em;
+}
+.badge-track { background: rgba(75,100,130,0.1); color: var(--blue); }
+.badge-trick { background: rgba(196,75,40,0.1); color: var(--rust); }
+.submission-score-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 700;
+    min-width: 2.2rem; text-align: center;
+    padding: 0.2rem 0.4rem; border-radius: var(--radius-sm);
+}
+.score-high { background: rgba(45,138,78,0.12); color: var(--green); }
+.score-mid { background: rgba(184,134,11,0.12); color: var(--yellow); }
+.score-low { background: rgba(196,75,40,0.12); color: var(--rust); }
+
+/* ── Detail view ─────────────────────────── */
+.detail-empty {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 60vh; color: var(--text-muted);
+    text-align: center;
+}
+.detail-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+.detail-empty-text { font-size: 0.9rem; }
+
+.detail-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+.detail-title { font-size: 1.4rem; font-weight: 700; }
+.detail-team {
+    font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem;
+}
+.detail-verdict-tier {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    padding: 0.3rem 0.8rem; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.tier-top6 { background: rgba(45,138,78,0.12); color: var(--green); border: 1px solid rgba(45,138,78,0.25); }
+.tier-strong { background: rgba(75,100,130,0.1); color: var(--blue); border: 1px solid rgba(75,100,130,0.2); }
+.tier-mid { background: rgba(184,134,11,0.1); color: var(--yellow); border: 1px solid rgba(184,134,11,0.2); }
+.tier-weak { background: rgba(196,75,40,0.08); color: var(--rust); border: 1px solid rgba(196,75,40,0.15); }
+
+/* ── Flip card ───────────────────────────── */
+.flip-section { margin-bottom: 1.5rem; }
+.flip-card-jury {
+    background: var(--bg-card); border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden;
+    cursor: pointer; transition: box-shadow 0.2s;
+}
+.flip-card-jury:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.flip-front-jury {
+    transition: opacity 0.3s, max-height 0.4s;
+}
+.flip-front-bar {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid rgba(45,138,78,0.12);
+}
+.flip-front-reassurance {
+    font-size: 0.95rem; font-weight: 600; color: #2e7d32;
+}
+.flip-front-body { padding: 1rem 1.2rem; }
+.flip-front-reader {
+    font-size: 0.82rem; line-height: 1.6; color: var(--text-secondary);
+    font-style: italic;
+}
+.flip-front-trigger {
+    margin-top: 0.8rem; font-size: 0.7rem; font-weight: 600;
+    color: var(--rust); cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+}
+.flip-back-jury {
+    display: none; padding: 1.2rem;
+    border-top: 3px solid var(--rust);
+    background: rgba(196,75,40,0.02);
+}
+.flip-card-jury.flipped .flip-front-jury { opacity: 0.15; max-height: 60px; overflow: hidden; }
+.flip-card-jury.flipped .flip-back-jury { display: block; }
+.flip-back-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--rust); margin-bottom: 0.5rem;
+}
+.flip-back-reveal {
+    font-size: 0.88rem; line-height: 1.6; margin-bottom: 0.8rem;
+}
+.flip-back-figure {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem; font-weight: 700; color: var(--rust);
+    margin-bottom: 0.6rem;
+}
+.trick-chip {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.52rem; font-weight: 600;
+    padding: 0.15rem 0.5rem; border-radius: 100px;
+    background: rgba(196,75,40,0.08); color: var(--rust);
+    text-transform: uppercase; letter-spacing: 0.03em;
+}
+
+/* ── Scoring panel ───────────────────────── */
+.scoring-panel {
+    background: var(--bg-card); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+.scoring-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted); margin-bottom: 1rem;
+}
+.scoring-row {
+    display: flex; align-items: center; gap: 0.8rem;
+    margin-bottom: 0.7rem;
+}
+.scoring-label {
+    font-size: 0.75rem; font-weight: 600; min-width: 120px;
+}
+.scoring-weight {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; color: var(--text-muted);
+    min-width: 30px;
+}
+.scoring-slider {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 6px; border-radius: 3px;
+    background: var(--border);
+    outline: none; cursor: pointer;
+}
+.scoring-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--rust); cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.scoring-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; font-weight: 700;
+    min-width: 1.5rem; text-align: right;
+}
+.scoring-total {
+    display: flex; justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem; padding-top: 0.8rem;
+    border-top: 2px solid var(--border);
+}
+.scoring-total-label {
+    font-size: 0.85rem; font-weight: 700;
+}
+.scoring-total-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem; font-weight: 700;
+}
+.scoring-actions {
+    display: flex; gap: 0.5rem; margin-top: 1rem;
+}
+.btn-score {
+    flex: 1; padding: 0.6rem 1rem;
+    border: none; border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+}
+.btn-score-submit {
+    background: var(--rust); color: white;
+}
+.btn-score-submit:hover { background: #a83d20; }
+.btn-score-skip {
+    background: var(--bg-surface); color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+.btn-score-skip:hover { background: var(--border-light); }
+
+/* ── Tricks detected ─────────────────────── */
+.tricks-panel {
+    background: var(--bg-card); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+}
+.tricks-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted); margin-bottom: 0.6rem;
+}
+.trick-row {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-light);
+}
+.trick-row:last-child { border-bottom: none; }
+.trick-icon { font-size: 1rem; min-width: 1.2rem; text-align: center; }
+.trick-name {
+    font-size: 0.75rem; font-weight: 600;
+}
+.trick-desc {
+    font-size: 0.68rem; color: var(--text-secondary); line-height: 1.4;
+}
+
+/* ── Fun elements ────────────────────────── */
+.ai-note {
+    font-size: 0.62rem; color: var(--text-muted);
+    font-style: italic; text-align: center;
+    margin-top: 2rem; padding: 1rem;
+    border-top: 1px solid var(--border-light);
+}
+
+/* ── Notification toast ──────────────────── */
+.toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--text-body); color: var(--bg);
+    padding: 0.8rem 1.2rem; border-radius: var(--radius-sm);
+    font-size: 0.8rem; font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 100;
+}
+.toast.visible { transform: translateY(0); opacity: 1; }
+
+/* ── Responsive ──────────────────────────── */
+@media (max-width: 900px) {
+    .jury-layout { flex-direction: column; }
+    .jury-sidebar { width: 100%; max-height: 40vh; }
+    .jury-main { max-height: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="jury-header">
+    <div class="jury-logo">
+        <span class="jury-logo-flip">Flip</span>Side<span style="font-weight:400;color:var(--text-secondary);margin-left:0.3rem">Jury</span>
+        <span class="jury-logo-sub">Hackathon Edition</span>
+    </div>
+    <div class="jury-stats">
+        <div class="jury-stat">
+            <div class="jury-stat-num" id="reviewedCount">0</div>
+            <div class="jury-stat-label">Reviewed</div>
+        </div>
+        <div class="jury-stat">
+            <div class="jury-stat-num">500</div>
+            <div class="jury-stat-label">Submissions</div>
+        </div>
+        <div class="jury-stat">
+            <div class="jury-stat-num">6</div>
+            <div class="jury-stat-label">Finalists</div>
+        </div>
+        <div class="jury-stat">
+            <div class="jury-stat-num" style="color:var(--rust)">17h</div>
+            <div class="jury-stat-label">Until Finals</div>
+        </div>
+    </div>
+</header>
+
+<div class="jury-layout">
+    <!-- Sidebar: submission list -->
+    <aside class="jury-sidebar">
+        <div class="sidebar-title">Submissions — sorted by FlipSide Risk Score</div>
+        <div id="submissionList"></div>
+    </aside>
+
+    <!-- Main: detail view -->
+    <main class="jury-main" id="mainPanel">
+        <div class="detail-empty" id="emptyState">
+            <div class="detail-empty-icon">&#x1F50D;</div>
+            <div class="detail-empty-text">
+                Click a submission to FlipSide it.<br>
+                <span style="font-size:0.72rem;color:var(--text-muted)">We read their README so you don't have to.</span>
+            </div>
+        </div>
+        <div id="detailView" style="display:none"></div>
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Submission Trick Taxonomy (the hackathon version) ──
+var TRICKS = {
+    'Demo Dazzle': { icon: '✨', desc: 'The video is more polished than the product. Cinematic transitions, dramatic music, carefully curated scenarios that avoid every edge case.' },
+    'README Inflation': { icon: '📜', desc: 'README has 14 architecture diagrams and a "What\'s Next" section longer than the codebase. The code itself is 200 lines.' },
+    'Capability Name-Drop': { icon: '📋', desc: 'Claims to use 14 Opus 4.6 features. Actually uses one: "messages.create()". The README lists every benchmark score from the announcement.' },
+    'The Happy Path': { icon: '🛤️', desc: 'Demo shows the ONE scenario that works. Deviate by one word and you get a 500 error. Don\'t try the second sample document.' },
+    'Buzzword Bingo': { icon: '🎰', desc: 'Every sentence contains "agentic", "multi-modal", and "enterprise-grade". The app is a to-do list with an LLM call.' },
+    'Screenshot Theater': { icon: '🎭', desc: 'Video shows "live demo" but if you look closely, the cursor never actually clicks anything. It\'s a slideshow.' },
+    'The Pivot Trail': { icon: '🔄', desc: 'Git history shows 8 completely different apps in 6 days. Final README describes an app that doesn\'t match any of them.' },
+    'Solo Myth': { icon: '🦸', desc: '"Built entirely by one person in a weekend." Git log shows 847 Claude Code commits and 3 different coding styles.' },
+    'Scope Moonshot': { icon: '🚀', desc: 'Claims to "replace all lawyers" or "solve healthcare." The demo analyzes one PDF and sometimes gets the summary right.' },
+    'The Orphan Repo': { icon: '👻', desc: 'Last commit was 4 days ago. README says "coming soon" in 6 places. Dependencies haven\'t been installed since Wednesday.' }
+};
+
+// ── Mock Submissions ──
+var submissions = [
+    {
+        id: 1, name: 'FlipSide', team: 'Henk van Ess (solo)', track: 'Break Barriers',
+        score: 91, tier: 'top6', tierLabel: 'Top 6 Material',
+        tricks: [],
+        front: {
+            reassurance: 'A thorough contract analysis tool with comprehensive documentation',
+            reader: 'I\'d think: OK another legal AI tool, there are dozens of these. Probably just sends a PDF to Claude and shows the response. Nice README though — wait, is that a flip card? Let me just try one sample...'
+        },
+        back: {
+            reveal: 'This is not a document summarizer. It\'s a perspective engine. The flip card mechanic forces the jury to experience the product\'s core insight — you can\'t understand what you agreed to until you see it from the other side. And the jury just proved it by flipping this card.',
+            figure: '14 Opus 4.6 capabilities documented with receipts',
+            trick: null
+        },
+        tricksDetected: [],
+        scorePrefill: { demo: 9, impact: 9, opus: 10, depth: 9 }
+    },
+    {
+        id: 2, name: 'AgentSwarm', team: 'Team Nexus (2)', track: 'Build Tool',
+        score: 78, tier: 'strong', tierLabel: 'Strong Contender',
+        tricks: ['Capability Name-Drop', 'Buzzword Bingo'],
+        front: {
+            reassurance: 'Enterprise-grade multi-agent orchestration platform with agentic workflows',
+            reader: 'I\'d think: Wow, "enterprise-grade"! And "multi-agent orchestration" sounds incredibly powerful. They must have built something that coordinates dozens of AI agents working together. The architecture diagram has so many arrows!'
+        },
+        back: {
+            reveal: 'Two API calls in sequence. The first one summarizes, the second one expands. The "orchestration" is a for-loop. The architecture diagram has 12 boxes connected by 23 arrows — but the actual code is 340 lines in one file. The word "agentic" appears 31 times in the README and zero times in the code.',
+            figure: '31 uses of "agentic" in README, 0 in code',
+            trick: 'Capability Name-Drop'
+        },
+        tricksDetected: ['Capability Name-Drop', 'Buzzword Bingo'],
+        scorePrefill: { demo: 8, impact: 7, opus: 6, depth: 7 }
+    },
+    {
+        id: 3, name: 'MedScan AI', team: 'Dr. Chen + Raj (2)', track: 'Amplify Judgment',
+        score: 84, tier: 'strong', tierLabel: 'Strong Contender',
+        tricks: ['The Happy Path'],
+        front: {
+            reassurance: 'AI-powered medical image analysis that catches what doctors miss',
+            reader: 'I\'d think: This could save lives! The demo shows it catching a tumor that was missed on initial review. Medical AI is exactly the kind of high-impact application that wins hackathons.'
+        },
+        back: {
+            reveal: 'The demo uses 3 carefully selected X-rays where Opus gets it right. The team knows — but doesn\'t show — that it hallucinates on 40% of edge cases. The "catches what doctors miss" claim is based on one cherry-picked example. Real medical AI requires FDA approval, validation studies, and years of testing. The hackathon version is a proof-of-concept wearing a lab coat.',
+            figure: '3 curated examples, 0 edge case testing shown',
+            trick: 'The Happy Path'
+        },
+        tricksDetected: ['The Happy Path', 'Scope Moonshot'],
+        scorePrefill: { demo: 9, impact: 8, opus: 7, depth: 7 }
+    },
+    {
+        id: 4, name: 'CodeWhisperer++', team: 'Anonymous Dev (solo)', track: 'Build Tool',
+        score: 45, tier: 'weak', tierLabel: 'Needs Work',
+        tricks: ['README Inflation', 'The Orphan Repo'],
+        front: {
+            reassurance: 'The next generation of AI-powered code review with revolutionary architecture',
+            reader: 'I\'d think: Wow, the README has a 5-phase pipeline diagram, a comparison table with 8 competitors, and a "Future Roadmap" section. This person has really thought this through!'
+        },
+        back: {
+            reveal: 'The README is 4,200 words. The entire application is 87 lines of Python that sends code to Claude and prints the response. The "5-phase pipeline" is: read file, call API, print output, done (phase 5 is "future work"). Last commit was 4 days ago. The dependency list includes TensorFlow, which is imported but never used.',
+            figure: '4,200-word README, 87-line app',
+            trick: 'README Inflation'
+        },
+        tricksDetected: ['README Inflation', 'The Orphan Repo', 'Scope Moonshot'],
+        scorePrefill: { demo: 4, impact: 5, opus: 3, depth: 3 }
+    },
+    {
+        id: 5, name: 'LegalEagle', team: 'Sarah & Mike (2)', track: 'Break Barriers',
+        score: 72, tier: 'mid', tierLabel: 'Solid Entry',
+        tricks: ['Demo Dazzle'],
+        front: {
+            reassurance: 'Beautiful, cinematic contract analysis with stunning UI animations',
+            reader: 'I\'d think: This demo video is GORGEOUS. The transitions, the typography, the way clauses slide in with particle effects. This must be an incredibly well-built product.'
+        },
+        back: {
+            reveal: 'The 3-minute video has more After Effects than code. Behind the animations is a basic Claude API wrapper that outputs markdown. The "live demo" portion is 12 seconds long and shows one pre-loaded result. The README has more screenshots than the app has features. 90% of the development time went into the video.',
+            figure: '12 seconds of actual live demo in a 3-minute video',
+            trick: 'Demo Dazzle'
+        },
+        tricksDetected: ['Demo Dazzle', 'Screenshot Theater'],
+        scorePrefill: { demo: 8, impact: 6, opus: 5, depth: 5 }
+    },
+    {
+        id: 6, name: 'ThinkDeep', team: 'Aria Nakamura (solo)', track: 'Amplify Judgment',
+        score: 86, tier: 'top6', tierLabel: 'Top 6 Material',
+        tricks: [],
+        front: {
+            reassurance: 'A research assistant that traces reasoning chains across 50+ papers',
+            reader: 'I\'d think: Another research tool? There are so many of these. Probably just RAG with a chatbot interface. Let me skim the README and move on...'
+        },
+        back: {
+            reveal: 'Don\'t skim this one. The 1M context window isn\'t just mentioned — it\'s load-tested with 847K tokens of actual papers. The tool found a contradiction between two papers that 14 human reviewers missed (documented with screenshots). Solo developer, clean git history showing daily iteration, and the README matches the actual codebase. No tricks detected.',
+            figure: '847K tokens loaded, 1 novel research finding',
+            trick: null
+        },
+        tricksDetected: [],
+        scorePrefill: { demo: 8, impact: 9, opus: 9, depth: 9 }
+    },
+    {
+        id: 7, name: 'PromptCraft Pro', team: 'Team Velocity (2)', track: 'Build Tool',
+        score: 58, tier: 'mid', tierLabel: 'Solid Entry',
+        tricks: ['Solo Myth', 'The Pivot Trail'],
+        front: {
+            reassurance: 'Built entirely by two people from scratch during the hackathon',
+            reader: 'I\'d think: Impressive dedication! They built this whole thing in just 6 days. The commit history must show incredible productivity.'
+        },
+        back: {
+            reveal: 'Git log shows 1,247 commits in 6 days — that\'s one commit every 7 minutes, 24 hours a day. First 400 commits are a recipe app. Commits 401-800 are a fitness tracker. Final 447 commits are the prompt tool. Three completely different `package.json` files. "From scratch during the hackathon" is technically true. From scratch three times.',
+            figure: '1,247 commits, 3 completely different apps',
+            trick: 'The Pivot Trail'
+        },
+        tricksDetected: ['Solo Myth', 'The Pivot Trail'],
+        scorePrefill: { demo: 6, impact: 5, opus: 5, depth: 5 }
+    },
+    {
+        id: 8, name: 'VisionBoard AI', team: 'James Liu (solo)', track: 'Build Tool',
+        score: 67, tier: 'mid', tierLabel: 'Solid Entry',
+        tricks: ['Screenshot Theater'],
+        front: {
+            reassurance: 'Live AI-powered design tool that generates and iterates on visual layouts in real-time',
+            reader: 'I\'d think: A design tool that uses AI to generate layouts? And it works in real-time? The demo shows such smooth interactions — click, generate, iterate. This feels really polished.'
+        },
+        back: {
+            reveal: 'Watch the demo again at 0.5x speed. The cursor movements are suspiciously smooth — no hesitation, no misclicks, no loading spinners. At 1:34, the "Generate" button produces a result in 0.2 seconds. Opus 4.6 is fast, but not THAT fast. The "live demo" is a screen recording played at 2x speed with pre-cached results. The actual generation time is 45 seconds per layout.',
+            figure: '0.2s shown vs 45s actual generation time',
+            trick: 'Screenshot Theater'
+        },
+        tricksDetected: ['Screenshot Theater', 'The Happy Path'],
+        scorePrefill: { demo: 7, impact: 6, opus: 5, depth: 6 }
+    }
+];
+
+// ── Render sidebar ──
+var listEl = document.getElementById('submissionList');
+var reviewed = new Set();
+
+function renderList() {
+    var sorted = submissions.slice().sort(function(a, b) { return b.score - a.score; });
+    listEl.innerHTML = '';
+    sorted.forEach(function(s, i) {
+        var scoreClass = s.score >= 85 ? 'score-high' : s.score >= 65 ? 'score-mid' : 'score-low';
+        var badges = '<span class="submission-badge badge-track">' + s.track + '</span>';
+        s.tricksDetected.forEach(function(t) {
+            badges += ' <span class="submission-badge badge-trick">' + t + '</span>';
+        });
+        var div = document.createElement('div');
+        div.className = 'submission-item' + (selectedId === s.id ? ' active' : '');
+        div.innerHTML =
+            '<span class="submission-rank">#' + (i + 1) + '</span>' +
+            '<div class="submission-info">' +
+                '<div class="submission-name">' + (reviewed.has(s.id) ? '✓ ' : '') + s.name + '</div>' +
+                '<div class="submission-team">' + s.team + '</div>' +
+                '<div class="submission-badges">' + badges + '</div>' +
+            '</div>' +
+            '<span class="submission-score-pill ' + scoreClass + '">' + s.score + '</span>';
+        div.onclick = function() { selectSubmission(s.id); };
+        listEl.appendChild(div);
+    });
+}
+
+// ── Select submission ──
+var selectedId = null;
+
+function selectSubmission(id) {
+    selectedId = id;
+    var s = submissions.find(function(x) { return x.id === id; });
+    if (!s) return;
+
+    document.getElementById('emptyState').style.display = 'none';
+    var view = document.getElementById('detailView');
+    view.style.display = 'block';
+
+    var tierClass = 'tier-' + s.tier;
+    var tricksHtml = '';
+    if (s.tricksDetected.length > 0) {
+        tricksHtml = '<div class="tricks-panel"><div class="tricks-title">Tricks Detected — ' + s.tricksDetected.length + ' found</div>';
+        s.tricksDetected.forEach(function(t) {
+            var tr = TRICKS[t];
+            tricksHtml += '<div class="trick-row">' +
+                '<span class="trick-icon">' + (tr ? tr.icon : '⚠️') + '</span>' +
+                '<div><div class="trick-name">' + t + '</div>' +
+                '<div class="trick-desc">' + (tr ? tr.desc : '') + '</div></div></div>';
+        });
+        tricksHtml += '</div>';
+    } else {
+        tricksHtml = '<div class="tricks-panel"><div class="tricks-title">Tricks Detected</div>' +
+            '<div style="font-size:0.78rem;color:var(--green);padding:0.3rem 0">✓ No tricks detected. This submission appears genuine.</div></div>';
+    }
+
+    view.innerHTML =
+        '<div class="detail-header">' +
+            '<div><div class="detail-title">' + s.name + '</div>' +
+            '<div class="detail-team">' + s.team + ' · ' + s.track + '</div></div>' +
+            '<span class="detail-verdict-tier ' + tierClass + '">' + s.tierLabel + '</span>' +
+        '</div>' +
+
+        '<div class="flip-section">' +
+            '<div class="flip-card-jury" id="flipCard" onclick="this.classList.toggle(\'flipped\')">' +
+                '<div class="flip-front-jury">' +
+                    '<div class="flip-front-bar">' +
+                        '<div class="flip-front-reassurance">"' + s.front.reassurance + '"</div>' +
+                    '</div>' +
+                    '<div class="flip-front-body">' +
+                        '<div class="flip-front-reader">' + s.front.reader + '</div>' +
+                        '<div class="flip-front-trigger">See what the jury should notice ›</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="flip-back-jury">' +
+                    '<div class="flip-back-label">What FlipSide Found</div>' +
+                    (s.back.figure ? '<div class="flip-back-figure">' + s.back.figure + '</div>' : '') +
+                    '<div class="flip-back-reveal">' + s.back.reveal + '</div>' +
+                    (s.back.trick ? '<span class="trick-chip">' + s.back.trick + '</span>' : '<span class="trick-chip" style="background:rgba(45,138,78,0.08);color:var(--green)">No tricks</span>') +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+
+        tricksHtml +
+
+        '<div class="scoring-panel">' +
+            '<div class="scoring-title">Your Score</div>' +
+            '<div class="scoring-row">' +
+                '<span class="scoring-label">Demo</span>' +
+                '<span class="scoring-weight">30%</span>' +
+                '<input type="range" class="scoring-slider" min="1" max="10" value="' + s.scorePrefill.demo + '" id="sliderDemo" oninput="updateScore()">' +
+                '<span class="scoring-value" id="valDemo">' + s.scorePrefill.demo + '</span>' +
+            '</div>' +
+            '<div class="scoring-row">' +
+                '<span class="scoring-label">Impact</span>' +
+                '<span class="scoring-weight">25%</span>' +
+                '<input type="range" class="scoring-slider" min="1" max="10" value="' + s.scorePrefill.impact + '" id="sliderImpact" oninput="updateScore()">' +
+                '<span class="scoring-value" id="valImpact">' + s.scorePrefill.impact + '</span>' +
+            '</div>' +
+            '<div class="scoring-row">' +
+                '<span class="scoring-label">Opus 4.6 Use</span>' +
+                '<span class="scoring-weight">25%</span>' +
+                '<input type="range" class="scoring-slider" min="1" max="10" value="' + s.scorePrefill.opus + '" id="sliderOpus" oninput="updateScore()">' +
+                '<span class="scoring-value" id="valOpus">' + s.scorePrefill.opus + '</span>' +
+            '</div>' +
+            '<div class="scoring-row">' +
+                '<span class="scoring-label">Depth</span>' +
+                '<span class="scoring-weight">20%</span>' +
+                '<input type="range" class="scoring-slider" min="1" max="10" value="' + s.scorePrefill.depth + '" id="sliderDepth" oninput="updateScore()">' +
+                '<span class="scoring-value" id="valDepth">' + s.scorePrefill.depth + '</span>' +
+            '</div>' +
+            '<div class="scoring-total">' +
+                '<span class="scoring-total-label">Weighted Total</span>' +
+                '<span class="scoring-total-value" id="totalScore">0</span>' +
+            '</div>' +
+            '<div class="scoring-actions">' +
+                '<button class="btn-score btn-score-skip" onclick="skipSubmission()">Skip →</button>' +
+                '<button class="btn-score btn-score-submit" onclick="submitScore()">Submit Score & Next →</button>' +
+            '</div>' +
+        '</div>' +
+
+        '<div class="ai-note">' +
+            'FlipSide Jury uses the same "Think Like a Document" methodology on hackathon submissions.<br>' +
+            'The submission is the document. The contestant is the drafter. You are the reader.<br>' +
+            '<strong>Now flip the card.</strong>' +
+        '</div>';
+
+    updateScore();
+    renderList();
+}
+
+function updateScore() {
+    var d = parseInt(document.getElementById('sliderDemo').value);
+    var i = parseInt(document.getElementById('sliderImpact').value);
+    var o = parseInt(document.getElementById('sliderOpus').value);
+    var x = parseInt(document.getElementById('sliderDepth').value);
+    document.getElementById('valDemo').textContent = d;
+    document.getElementById('valImpact').textContent = i;
+    document.getElementById('valOpus').textContent = o;
+    document.getElementById('valDepth').textContent = x;
+    var total = ((d * 0.30 + i * 0.25 + o * 0.25 + x * 0.20) * 10).toFixed(0);
+    document.getElementById('totalScore').textContent = total;
+    var el = document.getElementById('totalScore');
+    el.style.color = total >= 85 ? 'var(--green)' : total >= 65 ? 'var(--yellow)' : 'var(--rust)';
+}
+
+function submitScore() {
+    reviewed.add(selectedId);
+    document.getElementById('reviewedCount').textContent = reviewed.size;
+    showToast('Score submitted for ' + submissions.find(function(s) { return s.id === selectedId; }).name + ' ✓');
+    nextSubmission();
+}
+
+function skipSubmission() {
+    showToast('Skipped — moving to next');
+    nextSubmission();
+}
+
+function nextSubmission() {
+    var sorted = submissions.slice().sort(function(a, b) { return b.score - a.score; });
+    var idx = sorted.findIndex(function(s) { return s.id === selectedId; });
+    var next = sorted[(idx + 1) % sorted.length];
+    setTimeout(function() { selectSubmission(next.id); }, 300);
+}
+
+function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('visible');
+    setTimeout(function() { t.classList.remove('visible'); }, 2000);
+}
+
+// ── Init ──
+renderList();
+</script>
+</body>
+</html>

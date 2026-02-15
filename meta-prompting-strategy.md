@@ -22,47 +22,44 @@ After applying this pattern across 82 commits and 15+ documented cases, we have 
 ### Approach A: Direct Action
 > "Fix the flicker bug."
 
-The model thinks: *How do I fix this?* → jumps to execution using its training-weighted default interpretation of "fix." You get whatever the model's average approach produces. **Fast. No overhead. Often good enough for simple tasks.**
+**What you see:** The model immediately edits code. It picks an approach, writes a patch, runs it. You see the output. You don't see why it chose that approach over alternatives, what it assumed about the architecture, or what it didn't consider. **Fast. No overhead. Often good enough for simple tasks.**
 
 ### Approach B: Plan Mode
 > `/plan` → "Let's plan how to fix the flicker bug."
 
-The model thinks: *What does the user want?* → reflects on the user's goals, explores the codebase, presents options ("Option A: patch the animation. Option B: rewrite the component"), asks for approval. This is **user-facing reflection** — the model reasons about your wishes. **Useful for scoping ambiguous tasks and prevents building the wrong thing entirely.**
+**What you see:** The model explores the codebase, then presents options: "Option A: patch the animation. Option B: rewrite the component." You pick one. It executes. You controlled the *direction* — but the model chose which options to show you, and the framing of each option was its own. **Useful for scoping ambiguous tasks and prevents building the wrong thing entirely.**
 
 ### Approach C: Meta-Prompt
 > "Write me a prompt for a GUI specialist to diagnose and fix this flicker bug."
 
-The model thinks: *What does good bug diagnosis look like? What would a GUI specialist need to know? What are the diagnostic steps? What constitutes a correct fix?* → produces a detailed, structured prompt that defines quality criteria BEFORE any execution happens. This is **task-facing reflection** — the model reasons about the task itself.
+**What you see:** A detailed, structured prompt — quality criteria, diagnostic steps, what "fixed" means, what to check. You read it. You find the biases. You adjust. Then you say "execute." You controlled the *instructions*, not just the direction. **The framing is visible before any code is written.**
 
 ---
 
-## Why Meta-Prompting Wins: The Self-Reflection Hypothesis
+## Why Meta-Prompting Wins: Observable Differences
 
-Here's the key difference:
+We don't know what happens inside the model. We observe inputs and outputs. Here's what we observed across 82 commits:
 
-| | What the model reflects on | Direction of reasoning |
-|---|---|---|
-| **Direct Action** | Nothing — it just executes | Intent → Output |
-| **Plan Mode** | The user's wishes | Intent → User Goals → Options → Approval → Output |
-| **Meta-Prompt** | The task itself — what quality looks like | Intent → Task Requirements → Quality Criteria → Blueprint → Approval → Output |
+| | What the user controls | What the user sees before execution | What's invisible |
+|---|---|---|---|
+| **Direct Action** | The instruction | Nothing — only the output | Everything: which approach, what assumptions, what was ignored |
+| **Plan Mode** | Which option to pick | A menu of options | Why those options and not others. The framing of each option |
+| **Meta-Prompt** | The prompt itself — word by word | The full reasoning framework | Nothing — the prompt IS the framework |
 
-**Plan mode makes the model think about YOU.** It asks: "What do you want? Here are some options. Which do you prefer?" The model becomes a waiter presenting a menu.
+The observable difference: meta-prompting produces an artifact you can read and edit before execution. Direct Action and Plan Mode don't.
 
-**Meta-prompting makes the model think about ITSELF.** It asks: "What would a good prompt for this task look like? What are the requirements? What would an expert need?" The model becomes an architect designing a blueprint.
+This matters because:
 
-The difference matters because:
+1. **Biases become visible.** When Claude wrote "Be brutally honest" in a research prompt (Case 2), Van Ess could see the negative priming and strip it. In Direct Action, the same bias would have been embedded invisibly in the output.
 
-1. **Self-reflection produces deeper task analysis.** When you ask "write a prompt for analyzing this contract," the model must reason about what makes contract analysis good — the dimensions, the criteria, the structure, the potential pitfalls. This meta-level reasoning happens BEFORE any analysis begins, creating a framework that guides execution.
+2. **The blueprint is transferable.** The 250-line flicker bug prompt (Case 3) could be handed to any developer or any Claude session. Three prior Direct Action patches couldn't be reused because they were patches to a wrong architecture — not specifications for a correct one.
 
-2. **Plan mode produces shallower option-surfacing in certain cases.** When the main risk is ambiguous scope, plan mode is genuinely useful — it prevents building the wrong thing. But when the main risk is *framing* (what approach to use, what biases to avoid, what dimensions to cover), plan mode maps your intent to implementation options without questioning whether those options capture the task's actual complexity.
-
-3. **The blueprint is reviewable.** A meta-prompt produces a visible artifact — the prompt itself — that you can read, critique, and reshape before execution. Plan mode produces a list of options you approve or reject. The meta-prompt gives you control over the *instructions*, not just the *direction*.
+3. **The framing is auditable.** When the pre-scan prompt said "clauses that a consumer should worry about" (Case 8), the concept word "worry" was visible in the prompt text. In Direct Action, the model's internal concept of "worry" would have filtered clauses invisibly — you'd see the output but never know why certain clauses were included or excluded.
 
 ### The Invisible Prompt Problem
 
-Every time you give an AI a direct instruction, it writes an invisible prompt for itself. "Analyze this contract" becomes an internal framework the model constructs on the fly — choosing what to focus on, what format to use, what depth to pursue. You never see this framework. You only see the output.
+Every time you give an AI a direct instruction, there is an invisible step between your words and the output. "Analyze this contract" produces analysis — but the criteria, the focus, the depth, the format were all decided somewhere you can't see. You only see the result.
 
-Meta-prompting makes the invisible prompt visible. You see exactly what the model was going to do, and you can fix it before it runs.
 
 ---
 
@@ -324,22 +321,68 @@ Note: "Bias Awareness" and "Reusability" structurally favor meta-prompting — w
 
 ---
 
-## The Three Levels of Reflection
+## What You Can Observe at Each Level
 
 ```
-Direct Action:     "Do X"           → Model reflects on NOTHING      → Executes from defaults
-Plan Mode:         "Plan X"         → Model reflects on USER WISHES  → Presents options
-Meta-Prompt:       "Write prompt    → Model reflects on TASK ITSELF  → Produces blueprint
+Direct Action:     "Do X"           → You see: output only              → Framing invisible
+Plan Mode:         "Plan X"         → You see: a menu of options         → Option framing invisible
+Meta-Prompt:       "Write prompt    → You see: the full instructions     → Nothing invisible
                     for X"
 ```
 
-The meta-prompt forces one additional level of abstraction. The model must reason about:
-- What are the quality criteria for this task?
-- What would an expert need to know?
-- What structure produces the best output?
-- What biases might contaminate the result?
+Each level makes one more thing visible. Direct Action hides everything. Plan Mode shows you the options but hides how they were framed. Meta-prompting shows you the instructions themselves — the words that will drive the execution.
 
-The first three questions can sometimes arise in plan mode. The fourth — bias awareness — consistently does not. That's because plan mode asks "what does the user want?" (taking the user's framing as given), while meta-prompting asks "what would a good prompt look like?" (examining the framing itself).
+The observable consequence: bias awareness. In 8 documented cases, the meta-prompt produced a visible artifact that contained biases the user could catch and strip before execution. In Direct Action and Plan Mode, those same biases would have been embedded in the output with no way to trace them back to a specific word in a specific instruction.
+
+---
+
+### Case 8: The Prewash Audits Itself
+
+**The question:** Do FlipSide's own prompts follow the principles they claim to implement?
+
+The Prewash Prompt Collection documents 7 principles: Concept Gap, Drafter/Reader dual perspective, No Subjective Terms, Automated Prewash, Depth Beyond Summary, Source Language, and Verification. We audited all 11 prompt functions in `app.py` against these 7 principles — 77 checks total.
+
+**What the audit found:**
+
+| Principle | Pass | Partial | **Fail** |
+|-----------|------|---------|----------|
+| Concept Gap | 5 | 3 | **3** |
+| Drafter/Reader | 4 | 3 | **2** |
+| No Subjective Terms | 7 | 3 | 1 |
+| The Prewash (planning step) | 3 | 0 | **7** |
+| Depth Beyond Summary | **11** | 0 | 0 |
+| Source Language | 6 | 3 | **2** |
+| Verify | 3 | 3 | **5** |
+
+**The critical finding: the primary code path was weaker than the fallback.**
+
+The fallback prompt (`build_card_scan_prompt`) had Rule 16: "The headline number in FIGURE must be derivable from the step-by-step calculation in EXAMPLE." This verification rule — documented as a core feature of FlipSide — was completely absent from `build_single_card_system()`, the prompt that actually generates cards in the parallel architecture. The rule existed only in the code path that almost never runs.
+
+This happened because the system evolved: the original monolithic prompt accumulated quality rules over time, but when the architecture was split into pre-scan + parallel cards, not all rules migrated.
+
+**The concept gap violation was in the concept gap detector.**
+
+The pre-scan prompt — the one that decides which clauses get analyzed — opened with: *"identify the most significant clauses that a consumer should worry about."* The word "worry" is exactly the kind of concept word the Prewash Method says to avoid. The model decides what's "worrisome" using its own internal concept, instead of searching for structural patterns (asymmetric rights, cascading penalties, one-sided discretion). Every downstream card depends on this filter.
+
+**The prewash didn't prewash itself.**
+
+The fallback path had a mandatory planning step (Rule 1: "Before outputting any cards, first list the clause sections you will cover"). The pre-scan — the automated prewash that the documentation describes as the core innovation — had no planning step at all. The prewash principle was implemented everywhere except in the prewash.
+
+**What was fixed:**
+
+| Issue | Before | After |
+|-------|--------|-------|
+| FIGURE/EXAMPLE verification | Only in fallback path | Added to `build_single_card_system()` Rule 10 |
+| Pre-scan concept gap | "clauses that a consumer should worry about" | "clauses where rights, obligations, or financial exposure are asymmetric" |
+| Pre-scan planning step | None | "Before outputting anything, classify each section as symmetric, asymmetric, or neutral" |
+| Translation rule | Missing from 4 deep dive prompts | Added to scenario, walkaway, playbook, synthesis |
+| Verification steps | Only in walkaway | Added self-check rules to scenario, combinations, playbook |
+
+**Why this matters for meta-prompting:**
+
+This is the meta-prompting pattern applied recursively. The Prewash Method says: *don't trust the first answer — read the prompt before executing.* The audit applied that rule to the prompts themselves. The documentation described principles. The code partially implemented them. The gap between description and implementation is the same concept gap The Google Code identifies between what you think you searched for and what's actually in the document.
+
+Direct Action would never have caught this. You'd run the prompts and get plausible output — cards with figures and examples that *look* consistent but have no rule enforcing consistency. Plan Mode would have surfaced options ("should we audit the prompts?") but wouldn't have produced the 77-cell scorecard. The meta-prompting approach — "check every prompt against every principle" — forced systematic coverage.
 
 ---
 
@@ -355,6 +398,51 @@ FlipSide's entire architecture is a productized meta-prompt. The system prompt t
 Every document upload executes against this pre-built reasoning framework. The user never sees the meta-prompt — they just see better results. The system prompt IS the blueprint that a meta-prompt would have produced, permanently installed.
 
 This is the connection between meta-prompting as a *builder technique* and meta-prompting as a *product architecture*. The finding isn't "AI helping AI" — it's that **the best way to build an AI product is to design the reasoning framework before the model sees any data.**
+
+---
+
+## What Claude Code Offers — and What We Didn't Use
+
+Claude Code ships with a deep stack of built-in capabilities. FlipSide was built using some of them heavily, ignored others deliberately, and the reasoning maps directly to the meta-prompting thesis.
+
+### What we used
+
+| Capability | How it was used |
+|---|---|
+| **Direct Action** | ~70% of all interactions. Typo fixes, CSS tweaks, git commits, one-liner edits. When the instruction IS the specification, meta-prompting is overhead. |
+| **Plan Mode** (`/plan`) | Scoping ambiguous features — "should the verdict be a column or inline?" Useful when the risk is building the wrong thing. Used 4–5 times across the build. |
+| **Subagents** (Task tool) | Parallel research — exploring the codebase, auditing prompts against principles, reading documentation. The 77-cell audit (Case 8) ran as a single Explore subagent. |
+| **Bash tool** | Git operations, syntax checking, server restarts. The standard CLI workflow. |
+| **Checkpointing** | Every file edit snapshotted. Used `Esc+Esc` to rewind when a change broke the streaming pipeline. |
+| **Hooks** | `SessionStart` hook for output style configuration. `UserPromptSubmit` hooks for context injection. |
+| **Extended thinking** | Always on. Opus 4.6 with adaptive thinking budget — the model decides how much to reason. Critical for the verdict and deep dive prompts. |
+| **/compact** | Context management across long sessions. The hackathon ran 5-day continuous sessions that would have exhausted the context window without compaction. |
+
+### What we didn't use — and why
+
+| Capability | Why not |
+|---|---|
+| **`/frontend-design` skill** | This skill generates "distinctive, production-grade frontend interfaces with high design quality." FlipSide's UI was built through 82 commits of iterative conversation — each component (flip cards, verdict, nav, loading states) evolved through feedback cycles where Van Ess reviewed output and adjusted. The skill produces a one-shot design from a specification. Meta-prompting produces a design that evolves through conversation. The flip card UI required 15+ iterations on the READER voice alone — not a single-pass generation problem. |
+| **`/code-review` skill** | No pull requests to review. Single-person hackathon, building on main. Every change was reviewed in conversation before committing. The meta-prompting approach makes code review continuous rather than post-hoc — you review the *prompt* (the blueprint) before it generates code, not the code after it's written. |
+| **`/security-review` skill** | Would have been useful. Didn't use it — oversight, not a deliberate choice. XSS defense (DOMPurify) was added through direct conversation when the risk was identified. |
+| **Agent Teams** | Experimental feature for coordinating multiple Claude Code sessions in parallel. Overkill for a single-person build. The parallel architecture runs inside the *product* (Haiku workers + Opus verdict), not inside the *development process*. |
+| **Custom subagents** (`.claude/agents/`) | Could have created a "prompt auditor" subagent that checks every prompt against the 7 principles automatically. Didn't think of it until Case 8. In retrospect, this would have caught the FIGURE/EXAMPLE gap earlier — a meta-prompting failure. |
+
+### The pattern
+
+The capabilities we skipped share a trait: they **automate execution without auditing the framing.** The `/frontend-design` skill takes your specification and produces code. `/code-review` takes your code and produces feedback. Both assume the framing is correct.
+
+Meta-prompting inserts a step before execution: *is the framing itself correct?* The pre-scan "worry about" violation (Case 8) is exactly this — the skill would have generated a beautiful UI for a prompt that was using concept words instead of structural language. The output would look professional. The underlying analysis would be weaker.
+
+This is not an argument against skills. It's an argument for when to use them:
+
+| Risk profile | Best approach |
+|---|---|
+| Execution risk (will the code work?) | Skills, Direct Action — automate the known |
+| Framing risk (are we analyzing the right thing?) | Meta-prompting — audit the invisible prompt |
+| Scope risk (are we building the right thing?) | Plan Mode — surface options before committing |
+
+FlipSide's prompts are framing-sensitive. The difference between "find unfair clauses" and "find clauses where one party can terminate but the other cannot" is the difference between concept words and structural language. No skill catches that distinction. Only reading the prompt does.
 
 ---
 
@@ -382,6 +470,7 @@ The full evidence trail across the project:
 | [strategy.md](strategy.md) | Decisions 1, 2, 4, 5, 23, 25: repeated applications across the build |
 | [HACKATHON_LOG.md](HACKATHON_LOG.md) | Entries 1, 5, 6, 7, 19, 29, 33: timeline of the pattern's evolution |
 | [flip-card-rewrite-prompt.md](flip-card-rewrite-prompt.md) | The 250-line architecture prompt that replaced a fourth round of patches |
+| [PREWASH_PROMPT_COLLECTION.md](PREWASH_PROMPT_COLLECTION.md) | 7 principles mapped to prompt functions — the audit baseline |
 | [README.md](README.md) | Lines 147–159: canonical explanation |
 
 ---
@@ -389,5 +478,5 @@ The full evidence trail across the project:
 ## Sources
 
 - Cat Wu, Product Lead and co-creator of Claude Code — mentioned the pattern during hackathon AMA (Feb 2026)
-- FlipSide hackathon build: 82 commits, 7 documented cases with before/after evidence, 30 agent-tested comparisons
+- FlipSide hackathon build: 82 commits, 8 documented cases with before/after evidence, 30 agent-tested comparisons
 - The Prewash Method — Henk van Ess, developed during Claude Hackathon 2026
