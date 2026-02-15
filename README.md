@@ -43,15 +43,15 @@ No document handy? Pick a life moment:
 | <img src="static/thumb_sweepstakes.jpg" width="20"> **Trip of a Lifetime** | Sweepstakes official rules (real Coca-Cola) | Accepting the prize grants perpetual, worldwide rights to your name, likeness, and story — with no compensation |
 | <img src="static/tile_hackathon.jpg" width="20"> **The Hackathon** | Event waiver we all signed (real) | You grant a perpetual, irrevocable license to all your Materials — code, ideas, feedback — with no confidentiality obligation |
 
-Plus: **paste text directly**, **compare two documents** side by side, or upload your own PDF, DOCX, or TXT.
+Plus: **paste text directly**, **paste a URL**, **compare two documents** side by side, or upload your own PDF, DOCX, or TXT.
 
 ---
 
 ### The Four Steps
 
-1. **Upload** — Drag in a PDF, DOCX, paste text, or pick a sample. FlipSide handles everything from a one-page gym contract to a 40-page insurance policy.
+1. **Upload** — Drag in a PDF, DOCX, paste text, paste a URL, or pick a sample. FlipSide handles everything from a one-page gym contract to a 40-page insurance policy.
 
-2. **Browse flip cards** — Cards appear one at a time within seconds. Each card is a clause with two sides:
+2. **Browse flip cards** — The first card appears in **~8 seconds** (streaming pipeline — see Architecture). Each card is a clause with two sides:
 
    * **Front**: A calm green header with a reassurance headline ("Your flexible payment timeline") followed by the reader's gullible first impression. This is how the drafter WANTS you to feel. Navigation is hidden until you flip your first card — forcing the core mechanic.
    * **Back**: What the drafter intended — risk score, trick classification, the key figure in bold ("$4,100 in penalties"), a concrete scenario, and bottom-line action. The sidebar dims to 35% opacity to spotlight the reveal.
@@ -60,12 +60,14 @@ Plus: **paste text directly**, **compare two documents** side by side, or upload
    * **Document preview**: Sidebar shows the full text with numbered clause markers (①②③) that highlight as you navigate cards
    * All output in English regardless of document language. Download the full report translated to the document's original language.
 
-3. **Read the Expert Verdict** — While you browse cards, 4 parallel Opus 4.6 threads build the expert verdict in the right column:
+3. **Read the Expert Verdict** — While you browse cards, Opus 4.6 builds a one-screen verdict covering:
 
-   * **Cross-clause interactions** — compound risks invisible when reading clause by clause, with villain voice and YOUR MOVE actions
-   * **Power Asymmetry & Fair Standard** — obligation count per party, power ratio, how the worst clauses compare to industry norms
-   * **Document Archaeology & Drafter Profile** — boilerplate vs. custom clauses, who drafted this and what it signals
-   * **Overall Assessment** — risk score, methodology disclosure, quality check where Opus reviews its own analysis for blind spots
+   * **Verdict Tier** — one of five levels from "Sign with Confidence" to "Do Not Sign"
+   * **The Main Thing** — the single worst risk with concrete consequences and clause references
+   * **Power Ratio** — their rights vs. your rights, counted from the document
+   * **Jurisdiction** — auto-detected with local law violations flagged (illegal vs. merely unfair)
+   * **Risks & Checklist** — additional risks + chronological action items
+   * If cards haven't arrived after 10 seconds, the verdict **auto-reveals** so you're never staring at a blank screen
 
 4. **Take action** — After the verdict:
 
@@ -105,7 +107,7 @@ FlipSide uses more Opus 4.6 capabilities than any single feature would require �
 
 | # | Opus 4.6 Feature | Used? | What the user does | What Opus 4.6 does |
 | --- | --- | --- | --- | --- |
-| 1 | **Adaptive thinking** | Yes | Uploads a document and waits ~15–60s for the expert verdict to fill in. Each of the 4 verdict sections arrives independently — some faster, some slower, depending on complexity. | Each Opus thread runs with `thinking: {type: 'adaptive'}`, meaning the model autonomously decides how many reasoning tokens to spend. A straightforward boilerplate section gets a quick pass; a complex cross-clause interaction gets deep chain-of-thought. The user never configures this — Opus allocates its own thinking budget per thread. |
+| 1 | **Adaptive thinking** | Yes | Uploads a document and sees the Opus verdict stream in ~30–60s. The model spends more reasoning on complex cross-clause interactions and less on straightforward sections. | The Opus verdict thread runs with `thinking: {type: 'adaptive'}`, meaning the model autonomously decides how many reasoning tokens to spend. A standard document gets a quick pass; a document with hidden cross-clause traps gets deep chain-of-thought. The user never configures this — Opus allocates its own thinking budget. |
 | 2 | **Long-context retrieval** | Yes | Uploads a long document (tested up to 222 pages / ~167K tokens). Sees cross-clause interactions flagged in the verdict — e.g., "Clause 3 + Clause 297 create a compound trap." | The full document text is sent to all 4 Opus threads. The interactions prompt (`build_interactions_prompt`) explicitly instructs: "Find clause COMBINATIONS that create compound risks invisible when reading linearly" and "Use your full extended thinking budget to reason across the entire document." Opus must hold the entire document in context and connect clauses that may be hundreds of pages apart. Tested with 9 synthetic documents up to 300 clauses — 36/36 planted traps caught including §3↔§297 (distance 294 clauses). |
 | 3 | **Low over-refusals** | Yes | Reads the "bad intentions" voice in the Cross-Clause Interactions section — adversarial role-play where the analysis adopts the drafter's perspective. Example: *"The math does the work. Two weeks late once and you'll never catch up."* | The interactions prompt instructs Opus to write a "bad intentions" block for every flagged interaction: deliberately adversarial, exaggerated, adopting the drafter's voice. Previous models would self-censor, add disclaimers, or refuse. Opus 4.6 fully commits to the perspective flip — the core product mechanic. The prompt states: "The bad intentions voice is deliberately adversarial and exaggerated — the user expects this framing." |
 | 4 | **Depth presets** | Yes | Chooses Quick / Standard / Deep analysis depth before uploading. Quick produces shorter output; Deep produces exhaustive analysis. | Three presets control `max_tokens` per API call: Quick (16K), Standard (32K), Deep (64K). This gives Opus more or less room to work. *Note: Architecture is ready to map these to Opus 4.6's native `effort` parameter (Quick→medium, Standard→high, Deep→max) when SDK support lands — currently a one-line change away.* |
@@ -114,7 +116,7 @@ FlipSide uses more Opus 4.6 capabilities than any single feature would require �
 | 7 | **Structured output via prompts** | Yes | Sees consistently structured flip cards with risk scores, trick types (from a taxonomy of 18), confidence levels, figures, and examples — every clause in the same format. | Rather than using formal tool definitions, FlipSide achieves structured output through detailed prompt engineering. The card scan prompt specifies an exact output format with tagged fields (`[REASSURANCE]`, `[REVEAL]`, `Score:`, `Trick:`, etc.) and a constrained vocabulary of 18 trick types. The frontend parses these fields with regex. *The original plan included `assess_risk` and `flag_interaction` tool schemas, but prompt-based structuring proved more reliable for streaming.* |
 | 8 | **Confidence calibration** | Yes | Each clause includes a Confidence level (HIGH / MEDIUM / LOW) with a one-line reasoning chain, generated by the model per defined criteria. | The card scan prompt instructs: "Confidence: HIGH = clear language, MEDIUM = some ambiguity, LOW = multiple interpretations." The model outputs `Confidence: [level] — [reason]` per clause. Additionally, Opus thread 4 (overall assessment) produces an "Adjusted Confidence" after its self-review step. The frontend parses these values; CSS for color-coded confidence badges is defined but the rendering step is not yet wired up — the data is captured for future display. |
 | 9 | **Self-correction** | Yes | Reads the "Quality Check" at the end of the Overall Assessment — where the analysis reviews itself for false positives and blind spots before the user acts on it. | Opus thread 4 (`build_overall_prompt`) includes a dedicated Quality Check section that instructs: "Possible False Positives: Any standard language incorrectly flagged? Possible Blind Spots: Missing protections, undefined terms, untraced references? Consistency Check: Similar language scored differently?" followed by an adjusted confidence level. The prompt rule states: "Be genuinely self-critical. Users trust uncertainty over false certainty." This runs as part of Opus's single output pass for the overall assessment. |
-| 10 | **Split-model parallel** | Yes | Sees flip cards appear within ~12 seconds, then the expert verdict fills in section by section over ~15–60 seconds. Cards are browsable immediately while the deeper analysis streams in. | 5 threads launch simultaneously at t=0: one Haiku 4.5 thread (fast cards, no thinking, ~12s) + four Opus 4.6 threads (expert verdict with adaptive thinking). Haiku uses `claude-haiku-4-5` for speed; Opus uses `claude-opus-4-6` for depth. Each model does what it does best — Haiku for instant structured output, Opus for cross-clause reasoning, power analysis, archaeological deduction, and self-correction. |
+| 10 | **Split-model parallel** | Yes | First flip card appears in ~8 seconds; Opus verdict streams from t=0 and auto-reveals at 10s if cards haven't arrived. Cards trickle in as each parallel worker finishes. | Stream-first pipeline: Phase 1 (Haiku) streams clause identification — card workers launch the moment each `CLAUSE:` line arrives, overlapping identification with generation. N parallel Haiku workers build cards simultaneously while a single Opus 4.6 thread builds the verdict. Cards emit in completion order (fastest first). The SSE stream is never blocked — Opus events flow from t=0. Haiku for instant structured cards, Opus for cross-clause reasoning, jurisdiction detection, and self-correction. |
 | 11 | **Prompt caching** | Yes | Analyzes multiple documents without paying full price each time. The system prompts (which are identical across runs) are cached by Anthropic's API. | Every API call uses `cache_control: {type: 'ephemeral'}` on the system prompt, activating Anthropic's prompt caching (5-minute TTL). Cached input tokens cost 90% less than uncached. The actual per-run savings depend on the ratio of system prompt tokens (cached) to document tokens (not cached) — significant for repeated analyses but less than 90% of total cost. |
 | 12 | **Counterfactual generation** | Yes | Reads "Fair Standard Comparison" in the verdict (what a fair version of each clause would say) and clicks "Counter-Draft" to get rewritten clauses ready to propose. | Two features work together. **Fair Standard Comparison** (Opus thread 2, `build_asymmetry_prompt`): for the worst clauses, Opus generates "This document says / A fair version would say / The gap." **Counter-Draft** (on-demand endpoint): Opus rewrites each YELLOW/RED clause with fair alternatives, preserving the drafter's legitimate interests while removing exploitation. The prompt instructs: "Only redraft clauses that are genuinely unfair." |
 | 13 | **Stylistic deduction** | Yes | Reads "Document Archaeology & Drafter Profile" in the verdict — learns which parts of the document are boilerplate vs. custom-drafted, and what type of entity wrote it. | Opus thread 3 (`build_archaeology_prompt`) classifies each major section as **Boilerplate** or **Custom**, then profiles the drafter type from the pattern of customization. Example output: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement." The prompt instructs: "The drafter profile should predict BEHAVIOR, not just describe structure." Custom clauses are the signal — they reveal what the drafter cared enough to modify. |
@@ -130,7 +132,7 @@ FlipSide uses more Opus 4.6 capabilities than any single feature would require �
 
 Three capabilities from [Anthropic's Opus 4.6 announcement](https://www.anthropic.com/news/claude-opus-4-6) are **structurally necessary** for FlipSide to work. Remove any one and the product degrades:
 
-1. **Adaptive thinking — the reasoning IS the product.** Opus 4.6 introduces four effort levels (low, medium, high, max) where the model picks up on contextual clues about how much extended thinking to use. Each of 4 parallel Opus threads decides its own reasoning depth: spending more thinking tokens on complex interactions and less on standard boilerplate. Most projects use extended thinking as a black box. FlipSide makes it visible in the expert verdict — the user sees the difference when Opus decides a clause deserves deep reasoning.
+1. **Adaptive thinking — the reasoning IS the product.** Opus 4.6 introduces four effort levels (low, medium, high, max) where the model picks up on contextual clues about how much extended thinking to use. The Opus verdict thread decides its own reasoning depth: spending more thinking tokens on complex cross-clause interactions and less on standard boilerplate. Most projects use extended thinking as a black box. FlipSide makes it visible in the expert verdict — the user sees the difference when Opus decides a document deserves deep reasoning.
 
 2. **Long-context retrieval — finding legal traps spread across pages.** Opus 4.6 is the first Opus-class model with a **1M token context window** (beta). On the MRCR v2 8-needle 1M benchmark, it scores **76%** vs. Sonnet 4.5's **18.5%** — a 4× improvement that Anthropic calls "a qualitative shift in how much context a model can actually use." FlipSide applies this to cross-clause interaction detection: Clause 2(c) excludes water damage from "gradual seepage over 14 days." Clause 2(e) defines the inspection timeline at 30 days. Neither clause is dangerous alone. Together, they deny virtually all residential water damage claims. Tested to 222 pages (~167K tokens): 36/36 planted traps caught, including §3↔§297 (distance 294 clauses).
 
@@ -176,58 +178,60 @@ The underlying principle is the same: **don't take yourself as the measurement o
 ## Architecture
 
 ```
-                    User uploads document
-                            │
-                            ▼
-                Flask extracts text (PDF/DOCX/paste)
-                            │
-     ┌──────────────────────┼──────────────────────┐
-     │                      │                       │
-     ▼                      ▼                       ▼
-┌──────────┐  ┌─────────────────────────┐  ┌─────────────────────┐
-│ HAIKU 4.5│  │     OPUS 4.6 × 4       │  │   OPUS 4.6 × 4      │
-│          │  │                         │  │   (continued)        │
-│ Full     │  │  Thread 1: Interactions │  │  Thread 3: Archaeol. │
-│ flip     │  │  Cross-clause compound  │  │  Boilerplate vs      │
-│ cards    │  │  risks, villain voice,  │  │  custom, drafter     │
-│ (both    │  │  YOUR MOVE actions      │  │  profile              │
-│ sides)   │  │                         │  │                       │
-│          │  │  Thread 2: Asymmetry    │  │  Thread 4: Overall   │
-│ ~12s:    │  │  Power ratio, fair      │  │  Assessment, quality │
-│ first    │  │  standard comparison    │  │  check, methodology  │
-│ card     │  │                         │  │                       │
-└────┬─────┘  └────────────┬────────────┘  └──────────┬──────────┘
-     │                     │                           │
-     │              All 5 threads start at t=0         │
-     │                     │                           │
-     ▼                     ▼                           ▼
- Cards stream      Verdict column fills         Overall waits for
- in (~12s)         section by section           parts 1-3 before
-                   (~15-60s)                    auto-expanding
+                    User uploads document / picks sample / pastes URL
+                                      │
+                                      ▼
+                      Flask extracts text (PDF/DOCX/paste/URL)
+                                      │
+                      ┌───────────────┼───────────────┐
+                      │               │               │
+                      ▼               ▼               ▼
+               ┌─────────────┐ ┌───────────┐ ┌──────────────────┐
+               │  PHASE 1    │ │  OPUS 4.6 │ │  SSE stream      │
+               │  Haiku 4.5  │ │  Verdict  │ │  opens at t=0    │
+               │  (streaming)│ │  starts   │ │                  │
+               │             │ │  at t=0   │ │  Opus events     │
+               │  Clause ID  │ │           │ │  flow immediately│
+               │  scan       │ │  One-     │ │                  │
+               │             │ │  screen   │ │  10s auto-reveal │
+               └──────┬──────┘ │  verdict  │ │  if no cards yet │
+                      │        │           │ └──────────────────┘
+            ┌─────────┤        └─────┬─────┘
+     t≈3s   ▼    t≈4s ▼   t≈5s      │
+    ┌──────────┐┌──────────┐┌──────┐ │
+    │ HAIKU    ││ HAIKU    ││ ...  │ │
+    │ Card 1   ││ Card 2   ││      │ │  Card workers start as each
+    │ worker   ││ worker   ││ N    │ │  CLAUSE: line arrives during
+    │          ││          ││      │ │  Phase 1 streaming — not after
+    └────┬─────┘└────┬─────┘└──┬───┘ │
+         │           │         │     │
+         ▼           ▼         ▼     ▼
+    First card   Cards trickle   Verdict ready
+    at ~8s       in ~8-15s       ~30-60s
 ```
 
-**Eight-Stage Pipeline**
+**Stream-First Pipeline**
 
 | Stage | Agent | What It Does | What the User Sees |
 | --- | --- | --- | --- |
-| 1. Instant Cards | Haiku 4.5 | Full flip cards — both sides | Cards fly in within ~12s. Flip any card instantly. |
-| 2. Cross-Clause | Opus 4.6 Thread 1 | Compound risks, villain voice, YOUR MOVE | Verdict column section 1 streams in |
-| 3. Asymmetry | Opus 4.6 Thread 2 | Power ratio, fair standard comparison | Verdict column section 2 streams in |
-| 4. Archaeology | Opus 4.6 Thread 3 | Boilerplate vs. custom, drafter profile | Verdict column section 3 streams in |
-| 5. Overall | Opus 4.6 Thread 4 | Assessment, methodology, quality check | Auto-expands after 1-3 complete |
-| 6. Synthesis | Opus 4.6 (auto) | Reads all expert output, produces 4-voice panel synthesis | Streams in while user reads verdict — non-blocking |
-| 7. Counter-Draft | Opus 4.6 (on demand) | Rewrites unfair clauses with alternatives | Fair-language replacements per clause |
-| 8. Follow-up | Opus 4.6 (interactive) | User questions → Opus traces through all clauses | Consultation + message-the-company |
+| 1. Streaming Prescan | Haiku 4.5 | Streams clause identification; card workers launch per CLAUSE: line | Investigation screen with real document text + scanning loupe |
+| 2. Parallel Cards | Haiku 4.5 × N | N parallel workers generate full flip cards (front + back) | First card appears at ~8s, rest trickle in. Fastest card first. |
+| 3. Expert Verdict | Opus 4.6 | One-screen verdict: tier, main risk, power ratio, jurisdiction, checklist | Streams from t=0. Auto-reveals at 10s if cards haven't arrived. |
+| 4. Synthesis | Opus 4.6 (auto) | Reads verdict + document, produces 4-voice expert panel | Streams in while user reads verdict — non-blocking |
+| 5. Counter-Draft | Opus 4.6 (on demand) | Rewrites unfair clauses with fair alternatives | Fair-language replacements per clause |
+| 6. Follow-up | Opus 4.6 (interactive) | User questions → Opus traces through all clauses | Consultation + message-the-company |
 
-**Key architectural insight:** We originally put Opus 4.6 on the card backs — assuming the flip needed the most powerful model. After 3 hours of DOM rendering failures, we discovered Haiku was already doing a great job on cards. Opus's real value is in the work Haiku *can't* do: cross-clause reasoning, power analysis, archaeological deduction, and self-correction. Each model now has a stage that showcases what it does best. See [strategy.md](strategy.md) for the full decision story.
+**Pipeline parallelism — the key optimization.** Phase 1 (clause identification) streams via `client.messages.stream()`. As each `CLAUSE:` line arrives (~3s into the stream), that clause's card worker launches immediately — overlapping identification with generation. The first card is ready ~5s after its worker starts, not ~15s after the full prescan completes. Cards emit in completion order (fastest first), not index order. The Opus verdict runs from t=0 in parallel with everything, so the user is never staring at a blank screen.
 
-**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with extended thinking, vision, tool use, prompt caching), single-file HTML/CSS/JS frontend, DOMPurify for XSS protection. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
+**Key architectural insight:** We originally put Opus 4.6 on the card backs — assuming the flip needed the most powerful model. Haiku does a great job on cards. Opus's real value is in the work Haiku *can't* do: cross-clause reasoning, power analysis, jurisdiction detection, and self-correction. Each model does what it does best. See [strategy.md](strategy.md) for the full decision story.
+
+**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 + Opus 4.6 with adaptive thinking, vision, prompt caching), single-file HTML/CSS/JS frontend, DOMPurify for XSS protection. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
 
 ---
 
 ## The Demo Moment
 
-The user picks **"Peace of Mind"** — a homeowner's insurance policy. Cards appear within seconds.
+The user picks **"Peace of Mind"** — a homeowner's insurance policy. The first card appears in ~8 seconds.
 
 Card front (the naive reader):
 
@@ -245,7 +249,7 @@ Card back (the expert analysis):
 >
 > **$0 payout on a $50,000 water damage claim.** Exclusion 2(c) excludes "gradual seepage over 14 days." Clause 2(e) sets the inspection window at 30 days. Together: virtually all residential water damage can be reclassified as "gradual" after the fact. The broad coverage on the front is a psychological anchor — it makes you stop reading before you reach the exclusions that take it away.
 
-Meanwhile, the verdict column fills in: the cross-clause thread has already detected that Clauses 2(c) and 2(e) create a compound trap.
+Meanwhile, the Opus verdict has been streaming since t=0 — it's already identified that Clauses 2(c) and 2(e) create a compound trap and auto-detected the jurisdiction.
 
 Then the user clicks **"Message the Company"** — and Opus drafts a professional letter citing the specific clauses, ready to copy or email.
 
@@ -343,7 +347,7 @@ FlipSide is released under the [MIT License](LICENSE) — free for anyone to use
 
 This project was built entirely with Claude Code by someone who does not write code. Every line — the Flask backend, the SSE streaming architecture, the 5-thread parallel pipeline, the flip card frontend — was written through conversation with Claude Opus 4.6.
 
-That changes who gets to build software. If a journalist with zero programming experience can ship a 5,918-line frontend and a 2,514-line backend in a weekend, then the barrier to building tools is gone. The only barrier left is having something worth building.
+That changes who gets to build software. If a journalist with zero programming experience can ship a 9,000-line frontend and a 3,500-line backend in a weekend, then the barrier to building tools is gone. The only barrier left is having something worth building.
 
 This is in the public domain of ideas because the tools that made it possible should produce things that are accessible to everyone. The people who need FlipSide most — tenants, patients, borrowers, app users, shoppers, pet owners, newlyweds — are the same people who could never afford to hire a developer to build it. Now they don't have to.
 
