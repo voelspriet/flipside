@@ -1152,3 +1152,49 @@ Principle: **cards are the product**. The card nav area is navigation-only — n
 ### Key Insight
 
 The thinking stream is free narration material — Opus already generates document-specific reasoning as part of its analysis. The only cost is extraction (regex + cleanup heuristics), which is ~0ms per chunk. Canned messages required maintenance and never matched the user's document. Live narration turns a generic loading screen into a document-specific experience with zero additional API cost.
+
+## Decision 28: Respect User Flow State — Deferred Transitions + Intent-Driven Scroll
+
+**Date**: 2026-02-15
+
+### Problem
+
+Two interruption patterns broke the user's reading flow:
+
+1. **Verdict strip hijack**: When browsing flip cards mid-flip (`.layout-flipped`), the verdict progress strip would change state ("building" → "peek" → "ready") and visually jolt the user out of their reading. The pulse animation on the CTA competed for attention with the card content they were actively studying.
+
+2. **Automatic scroll-to-verdict**: `revealDeepAnalysis()` used a one-shot `_verdictScrolled` boolean. The first automatic call (poll timer, core tag upgrade) would scroll the page to the verdict — even if the user was mid-card. Subsequent user-initiated clicks on "Read it" then *wouldn't* scroll because the boolean was already spent.
+
+Both problems share a root cause: **the system treated "content is ready" as "user wants to see it now."**
+
+### Solution: The Apple Notification Pattern
+
+The deferred strip transition pattern (`_pendingStripState`) applies the same principle Apple uses in iOS notifications: interruptible content is held until the user lifts their finger.
+
+**Part A — Deferred strip transitions**:
+
+| State | What happens |
+|-------|-------------|
+| User browsing cards (`.layout-flipped`) | Strip state change stored in `_pendingStripState`, not applied |
+| User navigates to next card (`showCardAtIndex()`) | `.layout-flipped` removed → pending state flushed via `_applyStripState()` |
+| User not mid-flip | Strip updates immediately as before |
+
+The verdict strip also lost its pulse animation entirely — hover-only glow instead. Label softened from "Your Expert Verdict is Ready" to "Expert verdict ready." The system *knows* but doesn't *shout*.
+
+**Part B — Intent-driven scroll**:
+
+Replaced the one-shot `_verdictScrolled` boolean with a `userInitiated` parameter on `revealDeepAnalysis(userInitiated)`:
+
+| Caller | `userInitiated` | Scrolls? |
+|--------|-----------------|----------|
+| Verdict strip CTA click | `true` | Yes — user asked for it |
+| "Full Verdict →" button | `true` | Yes |
+| Nav "Next" past last card | `true` | Yes |
+| Poll timer (800ms re-render) | `false` | No — background update |
+| Core tag upgrade event | `false` | No |
+
+Result: automatic updates never hijack scroll position, but every user-initiated click reliably scrolls to the verdict top.
+
+### Key Insight
+
+The system knows the verdict is ready but waits for a natural pause point (card navigation) to announce it. "Content ready" ≠ "interrupt now." Respecting flow state is a UX pattern that costs nothing to implement but prevents the most jarring class of interruptions — the ones where the user is actively reading something else.
