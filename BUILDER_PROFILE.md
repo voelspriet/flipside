@@ -6,7 +6,7 @@
 
 ## Background
 
-I train investigative teams at BBC, NYT, and Reuters. My methodology — "Think Like a Document" — means: read from the drafter's perspective, not yours. FlipSide applies that to legal documents.
+I train investigative teams worldwide to find the story in data. "Think Like a Document" — means: read from the drafter's perspective, not yours. FlipSide applies that to legal documents.
 
 Assessor for IFCN (Poynter) and EFCSN. Early Bellingcat contributor. Author of the [Reporter's Guide to Detecting AI-Generated Content](https://gijn.org/resource/guide-detecting-ai-generated-content/) (GIJN).
 
@@ -16,7 +16,7 @@ Assessor for IFCN (Poynter) and EFCSN. Early Bellingcat contributor. Author of t
 
 ## Other Tools in Production
 
-- **ImageWhisperer / DetectAI** ([detectai.live](https://detectai.live)) — Parallel LLM + forensic image analysis. 25+ detection methods.
+- **ImageWhisperer / DetectAI** ([imagewhisperer.ai](https://imagewhisperer.ai)) — Parallel LLM + forensic image analysis. 25+ detection methods.
 - **SearchWhisperer** ([searchwhisperer.ai](https://searchwhisperer.ai)) — "Think Like a Document" as a search tool. Orchestrates 4 LLMs, scores queries on 4 dimensions.
 - **AI Whisperer** ([github.com/voelspriet/aiwhisperer](https://github.com/voelspriet/aiwhisperer)) — Open-source. Shrinks PDFs for AI upload, sanitizes sensitive data.
 
