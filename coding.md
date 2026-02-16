@@ -40,23 +40,6 @@ Every claim below is grounded in the git history, benchmarks, and the actual dev
 | Link row (Paste text / URL / Compare / FAQ) | `.upload-links` |
 | Green-bordered disclaimer at bottom | `.disclaimer` |
 
-**Same method, different screen — the investigation/loading state:**
-
-| What you see | What Claude calls it |
-|---|---|
-| "CloudVault Terms of Service (Sample)" (title) | `#docTitleHero` / `#docTitleText` |
-| White scrollable document preview | `#editorialLoading` / `.editorial-loading` |
-| Document text inside preview | `#editorialLoadingText` / `.editorial-loading-text` |
-| Magnifying glass scanning animation | `.investigation-loupe` (positioned by JS) |
-| "... Reading the fine print" (animated dots + status) | `.editorial-loading-indicator` → `.pulsing-dots` + `#editorialLoadingStatus` |
-| Rust-bordered narration ("Looking at how either side can walk away") | `#briefingSentence` / `.briefing-sentence` inside `#expertBriefing` |
-| Two-track progress area | `.briefing-tracks` |
-| "Clause readers" card with red dot | `.briefing-track` → `#trackReaders` (dot) + `.track-label` + `#trackReadersDetail` |
-| "Expert verdict" card with red dot | `.briefing-track` → `#trackExpert` (dot) + `.track-label` + `#trackExpertDetail` |
-| "2 angles considered" | `#briefingDepth` / `.briefing-depth` (computed: `tokenCount / 90`) |
-
-The narration line is dynamic — `THINKING_TRANSLATIONS` pattern-matches Opus thinking tokens (e.g., `/terminat/i` → "Looking at how either side can walk away") and translates model reasoning into plain language in real time.
-
 **Step 2: Use the names.** Now you can give precise instructions:
 - "Move the `.disclaimer` above the `.upload-container`"
 - "Show a preview image inside the `.drop-zone`"
@@ -94,7 +77,7 @@ This produced `swooshBriefingToCardNav()` — a FLIP animation that captures sou
 
 **What happened in FlipSide:** The entire frontend is a single 10,603-line HTML file containing CSS, HTML, and JavaScript inline. The backend is a single 3,469-line Python file containing Flask routes, 9+ prompt templates, SSE streaming, and parallel thread management. Every change requires understanding both files simultaneously.
 
-**Grounded example:** Commit `0cc0c33` (stream-first pipeline) changed 962 lines across both files. The backend restructuring (new `_card_pipeline()`, `_run_parallel_streaming()`, streaming prescan) required matching SSE event types (`card_ready`, `cards_started`, `cards_instant`) with frontend handlers (`tryExtractNewClauses()`, `transitionToCardView()`, auto-reveal timer). A single mismatched event name or data format would silently break the pipeline. Opus 4.6 held the full 14,000+ lines in working memory and kept the cross-file contract consistent.
+**Grounded example:** Commit `0cc0c33` (stream-first pipeline) changed 962 lines across both files. The backend restructuring (new `_card_pipeline()`, `_run_parallel_streaming()`, streaming prescan) required matching SSE event types with frontend handlers. A single mismatched event name would silently break the pipeline. The change required connecting `_prescan_document()`, `card_worker()`, `_card_pipeline()`, `_run_parallel_streaming()` in the backend and `transitionToCardView()` in the frontend — spread across thousands of lines, where a mismatch at any point causes silent failure.
 
 ---
 
@@ -169,17 +152,7 @@ Every instruction required inferring the technical intent from non-technical lan
 
 ---
 
-## 7. Long-Context Retrieval Across Code
-
-**The benchmark:** MRCR v2 8-needle 1M 76% (long-context retrieval), vs Sonnet 4.5's 18.5%.
-
-**What happened in FlipSide:** The streaming pipeline change required connecting code across `_prescan_document()`, `card_worker()`, `_card_pipeline()`, `_run_parallel_streaming()` in the backend and `transitionToCardView()` in the frontend — spread across thousands of lines in two files. The model had to hold all five locations in context simultaneously to ensure the Queue bridge, event types, and completion signals were consistent.
-
-This is the code equivalent of Anthropic's needle-in-a-haystack test: finding and connecting specific code patterns separated by thousands of lines, where a mismatch at any point causes silent failure.
-
----
-
-## 8. Tool Use Agent — Opus as Decision-Maker, Not Just Text Generator
+## 7. Tool Use Agent — Opus as Decision-Maker, Not Just Text Generator
 
 **The benchmark:** BigLaw Bench 90.2% + native parallel tool use + extended thinking.
 
@@ -191,29 +164,13 @@ This is the code equivalent of Anthropic's needle-in-a-haystack test: finding an
 | `get_clause_analysis(n)` | Retrieve FlipSide's flip card analysis for clause N |
 | `get_verdict_summary()` | Retrieve the overall expert verdict |
 
-When a user asks "What happens if I'm 3 months late on rent?", Opus doesn't receive the full document — it receives only the question. Then it reasons:
+When a user asks "What happens if I'm 3 months late on rent?", Opus receives only the question — not the full document. It autonomously searches for "late payment," "termination," and "grace period" (parallel tool calls), retrieves the relevant clause analyses, then synthesizes: "$12,300 total — $6,750 in uncapped late fees on $5,550 in rent." The user sees each tool call live — transparency builds trust.
 
-1. "Let me search for 'late payment'" → calls `search_document` → finds clauses 1 and 4
-2. "Let me also check 'termination' and 'grace period'" → two more parallel searches
-3. "Clause 1 looks relevant. Let me read my prior analysis." → calls `get_clause_analysis(1)`
-4. "Clause 4 too." → calls `get_clause_analysis(4)`
-5. Synthesizes: "$12,300 total — $6,750 in uncapped late fees on $5,550 in rent. Fees exceed the debt."
-
-The answer includes a formatted table, cross-clause interaction analysis, and actionable negotiation advice — all derived from tool-retrieved evidence, not from the model trying to hold 40 pages in context.
-
-**The strategic choice: tool use vs. context dump.** The old follow-up endpoint sent the entire document plus all analysis to Opus in one prompt. The new version sends just the question and lets Opus decide what to retrieve. Three advantages:
-
-1. **Better answers**: Opus retrieves its own card analyses, which contain risk scores, trick classifications, and dollar figures it calculated during the main analysis. The follow-up answer references this structured data, not raw document text.
-2. **Visible reasoning**: The user sees "Searching document for 'late payment'..." → "Reading clause analysis #1..." in real time. Transparency builds trust.
-3. **Shorter context = focused output**: Instead of processing 50,000 tokens of document, Opus processes ~5,000 tokens of relevant excerpts. The answer is tighter.
-
-**The parallel tool calls**: Opus called `search_document` three times and `get_clause_analysis` twice — all in two rounds. The Anthropic API supports parallel tool use: the model returns multiple `tool_use` blocks in one response. Opus reasons about ALL the information it needs upfront, not one query at a time. This is the same pattern as a senior attorney who, upon hearing a question, immediately thinks "I need to check the penalty clause, the termination clause, and the cure period" — not "let me check one thing, then think about what else I need."
-
-**Why Opus 4.6:** The quality of tool use depends on three things: (1) knowing which tools to call (requires understanding the question deeply), (2) crafting good search queries (requires understanding legal concepts), and (3) synthesizing results across multiple tool returns into a coherent answer (requires extended reasoning). Opus 4.6 is calibrated — it searches strategically based on the question's legal implications, rather than over-searching or under-searching.
+The strategic choice: the old endpoint sent the entire document to Opus. The new version lets Opus decide what to retrieve. Shorter context, better answers, visible reasoning.
 
 ---
 
-## 9. On-Demand Architecture — The Product Decision That Required a System Rethink
+## 8. Architecture Rethinks — The Product Decision That Required a System Rethink
 
 **What happened in FlipSide:** The architecture went through three phases: (1) 4 parallel Opus deep dives from t=0, (2) simplified to 1 verdict + on-demand deep dives via `/deepdive/` endpoint, (3) expanded back to 6 parallel threads (verdict + 5 deep dives) when we realized the wall-clock cost of parallel is zero and the UX gain is enormous — everything arrives together.
 
