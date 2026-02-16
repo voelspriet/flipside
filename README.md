@@ -1,5 +1,11 @@
 # FlipSide
 
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](https://github.com/voelspriet/flipside/releases)
+[![Claude Opus 4.6](https://img.shields.io/badge/Claude-Opus%204.6-blueviolet.svg)](https://www.anthropic.com/news/claude-opus-4-6)
+[![Built with Claude Code](https://img.shields.io/badge/built%20with-Claude%20Code-darkcyan.svg)](https://claude.ai/claude-code)
+
 **The dark side of small print.**
 
 Gym memberships, app terms, pet adoptions, sweepstakes entries — the things you sign with a shrug. They weren't written with one.
