@@ -118,7 +118,11 @@ Plus: **paste text directly**, **paste a URL**, **compare two documents** side b
 
 Three capabilities from [Anthropic's Opus 4.6 announcement](https://www.anthropic.com/news/claude-opus-4-6) are **structurally necessary** for FlipSide to work. Remove any one and the product degrades:
 
-1. **Adaptive thinking — the reasoning IS the product.** Opus 4.6 introduces four effort levels (low, medium, high, max) where the model picks up on contextual clues about how much extended thinking to use. The Opus verdict thread decides its own reasoning depth: spending more thinking tokens on complex cross-clause interactions and less on standard boilerplate. Most projects use extended thinking as a black box. FlipSide makes it visible in the expert verdict — the user sees the difference when Opus decides a document deserves deep reasoning.
+1. **Adaptive thinking — the reasoning IS the product.** Opus 4.6 introduces four effort levels (low, medium, high, max) where the model picks up on contextual clues about how much extended thinking to use. The Opus verdict thread decides its own reasoning depth: spending more thinking tokens on complex cross-clause interactions and less on standard boilerplate. Most projects use extended thinking as a black box. FlipSide makes it visible — the user watches Opus think in real time:
+
+![~8,979 reasoning tokens · 1.0× more thinking than output](screenshots/readme_thinking_tokens.jpg)
+
+*The ratio tells the story.* `1.0×` means Opus spent as many tokens reasoning as it did writing output — a 1:1 ratio of thinking to answering. For a simple document this might drop to `0.3×`. For a 222-page cross-clause trap it climbs to `3.0×`+. The model decides how hard to think based on what it finds. The user sees this live — not after the fact.
 
 2. **Long-context retrieval — finding legal traps spread across pages.** Opus 4.6 is the first Opus-class model with a **1M token context window** (beta). On the MRCR v2 8-needle 1M benchmark, it scores **76%** vs. Sonnet 4.5's **18.5%** — a 4x improvement that Anthropic calls "a qualitative shift in how much context a model can actually use." FlipSide applies this to cross-clause interaction detection: Clause 2(c) excludes water damage from "gradual seepage over 14 days." Clause 2(e) defines the inspection timeline at 30 days. Neither clause is dangerous alone. Together, they deny virtually all residential water damage claims. Tested to 222 pages (~167K tokens): 36/36 planted traps caught, including Section 3 interacting with Section 297 (distance 294 clauses).
 
