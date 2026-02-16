@@ -1,6 +1,6 @@
 # How Opus 4.6 Built FlipSide
 
-**0% of the code was written by a human. 14,000+ lines in 6 days, built entirely through conversation. Here's what Opus 4.6 did that no other model could.**
+**0% of the code was written by a human. 14,000+ lines in 6 days, built entirely through conversation. Here's how Opus 4.6 made it possible.**
 
 | Metric | Value |
 | --- | --- |
@@ -102,7 +102,7 @@ This produced `swooshBriefingToCardNav()` — a FLIP animation that captures sou
 
 **The benchmark:** Terminal-Bench 2.0 highest score (long-horizon agentic coding). "Plans more carefully, sustains agentic tasks for longer."
 
-**What happened in FlipSide:** The streaming pipeline change (commits `0cc0c33` + this session) required reasoning about 5 interacting threads:
+**What happened in FlipSide:** The streaming pipeline change (commit `0cc0c33`) required reasoning about 5 interacting threads:
 
 1. Upload thread → runs `_prescan_document()` with streaming Phase 1
 2. N card worker threads → each generates one flip card via Haiku API
@@ -140,7 +140,7 @@ Each pivot required understanding the entire existing system, identifying what c
 
 ## 5. Self-Correction During Development
 
-**The benchmark:** "Superior code review and debugging capabilities to identify its own mistakes."
+**The benchmark:** Anthropic's Opus 4.6 announcement: "superior code review and debugging capabilities to identify its own mistakes."
 
 **What happened in FlipSide:** 18 bug fix commits in the git history. Many were caught and fixed within the same session — the model identified the problem, traced it to the root cause, and fixed it without being told what was wrong.
 
@@ -156,7 +156,7 @@ Each pivot required understanding the entire existing system, identifying what c
 
 ## 6. Understanding Intent from Imprecise Input
 
-**The benchmark:** GDPval-AA +144 Elo over GPT-5.2 (economically valuable knowledge work).
+**The benchmark:** GDPval-AA top score (economically valuable knowledge work — finance, legal, and other domains).
 
 **What happened in FlipSide:** The user gives instructions like:
 
@@ -173,7 +173,7 @@ Every instruction required inferring the technical intent from non-technical lan
 
 **The benchmark:** MRCR v2 8-needle 1M 76% (long-context retrieval), vs Sonnet 4.5's 18.5%.
 
-**What happened in FlipSide:** The streaming pipeline change required connecting code at line 85 (`_prescan_document` Phase 1), line 115 (`card_worker`), line 2409 (`_card_pipeline`), line 2692 (`_run_parallel_streaming`), and line 5868 (`transitionToCardView` in the frontend). These are spread across 8,800 lines of code in two files. The model had to hold all five locations in context simultaneously to ensure the Queue bridge, event types, and completion signals were consistent.
+**What happened in FlipSide:** The streaming pipeline change required connecting code across `_prescan_document()`, `card_worker()`, `_card_pipeline()`, `_run_parallel_streaming()` in the backend and `transitionToCardView()` in the frontend — spread across thousands of lines in two files. The model had to hold all five locations in context simultaneously to ensure the Queue bridge, event types, and completion signals were consistent.
 
 This is the code equivalent of Anthropic's needle-in-a-haystack test: finding and connecting specific code patterns separated by thousands of lines, where a mismatch at any point causes silent failure.
 
@@ -215,22 +215,15 @@ The answer includes a formatted table, cross-clause interaction analysis, and ac
 
 ## 9. On-Demand Architecture — The Product Decision That Required a System Rethink
 
-**What happened in FlipSide:** The original architecture ran 4 parallel Opus deep dives (Scenario, Walkaway, Combinations, Playbook) automatically from t=0 alongside the verdict. Maximum parallelism. But it created UX problems: the verdict finished first, the user started reading, then deep dives completed at different times — scroll jumps, layout shifts, panels appearing while reading.
+**What happened in FlipSide:** The architecture went through three phases: (1) 4 parallel Opus deep dives from t=0, (2) simplified to 1 verdict + on-demand deep dives via `/deepdive/` endpoint, (3) expanded back to 6 parallel threads (verdict + 5 deep dives) when we realized the wall-clock cost of parallel is zero and the UX gain is enormous — everything arrives together.
 
-**The pivot:** Remove all 4 parallel threads. Make each deep dive on-demand — triggered by a single button click. The pipeline simplified from 6 parallel Opus threads to 1 (verdict only), with deep dives running independently via a new `/deepdive/` endpoint.
+Each pivot required a full system rethink across both files:
 
-**What Opus 4.6 had to do:**
-1. Remove `_launch_deep_dives()` and the threading coordination from `run_parallel()`
-2. Change `OPUS_SOURCES` from `{'overall', 'scenario', 'walkaway', 'combinations', 'playbook'}` to `{'overall'}` in all 3 event loop functions
-3. Add verdict text persistence (`doc['_verdict_text']`) for follow-up queries
-4. Build a new self-contained SSE endpoint that runs one Opus call per click
-5. Rewrite the frontend depth buttons from "wait for completion" to "click to start"
-6. Add the Ask FlipSide tool-use agent as a new feature
-7. Keep everything else — cards, verdict, streaming, editorial loading — working
+**Phase 1 → 2 (simplify):** Remove `_launch_deep_dives()`, change `OPUS_SOURCES` in 3 event loop functions, add verdict persistence, build a new SSE endpoint for on-demand calls, rewrite frontend buttons from "wait" to "click to start," add the Ask FlipSide tool-use agent.
 
-This was a simultaneous backend simplification (remove 4 threads + event handlers) and feature addition (new endpoint + tool-use agent + frontend UI), touching both files across hundreds of lines. The model held the full 14,000+-line codebase in context while making coordinated changes to the event loop, thread management, SSE protocol, and frontend state management.
+**Phase 2 → 3 (expand):** Restore parallel threading with 6 Opus calls from t=0, add progress tracking ("3 of 5 reports ready"), coordinate deep dive completion with frontend collapsible panels, keep on-demand `/deepdive/` as fallback.
 
-**Why this matters for 4.6:** The pivot wasn't "change a function." It was "rethink the architecture: remove parallelism, add on-demand, add tool use, keep everything else working." That requires understanding the entire system — thread timing, event loops, frontend state, SSE protocol — and making surgical changes across all of it simultaneously. This is Terminal-Bench 65.4% in action: sustained multi-step reasoning across a large codebase under changing requirements.
+**Why this matters for 4.6:** Each pivot wasn't "change a function." It was "rethink the architecture while keeping everything else working." Thread timing, event loops, frontend state, SSE protocol — surgical changes across all of it simultaneously, across 14,000+ lines.
 
 ---
 
