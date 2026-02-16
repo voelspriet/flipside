@@ -77,7 +77,7 @@ While you flip cards, Opus 4.6 streams a verdict from t=0: **Verdict Tier** (5 l
 
 ### The Numbers
 
-| 8 parallel threads | ~8s first card | 6 Opus threads | ~$0.54 per analysis |
+| N Haiku card workers + 6 Opus threads | ~8s first card | ~$0.54 per analysis |
 |---|---|---|---|
 
 ---
@@ -134,7 +134,7 @@ Plus: **vision** catches formatting tricks text extraction misses, **self-correc
 
 ### Opus 4.6 Capabilities Used
 
-![What happens when you upload a document — 8 parallel threads: Haiku pre-scan → N × Haiku flip cards, while Opus verdict + 5 deep dives all stream from t=0](screenshots/architecture_parallel.jpg)
+![What happens when you upload a document — Haiku pre-scan → N × Haiku flip cards in parallel, while 6 Opus 4.6 threads (verdict + 5 deep dives) all stream from t=0](screenshots/architecture_parallel.jpg)
 
 FlipSide uses 16 Opus 4.6 capabilities — including three that Anthropic [specifically highlights in the Opus 4.6 announcement](https://www.anthropic.com/news/claude-opus-4-6): adaptive thinking, long-context retrieval, and low over-refusals. Each used capability is **visible in the product** — not a behind-the-scenes optimization. Six parallel Opus 4.6 threads run simultaneously, each exercising a different capability.
 
