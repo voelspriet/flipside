@@ -71,3 +71,6 @@ This failure was caught by the human, not by Opus 4.6. I had to scroll back thro
 ---
 
 <sub>Documented during the Claude Hackathon 2026. The failure was real, unscripted, and caught by the human.</sub>
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

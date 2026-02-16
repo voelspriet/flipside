@@ -23,3 +23,6 @@ Assessor for IFCN (Poynter) and EFCSN. Early Bellingcat contributor. Author of t
 ---
 
 **Website**: [digitaldigging.org](https://digitaldigging.org)
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

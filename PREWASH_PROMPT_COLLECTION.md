@@ -159,3 +159,6 @@ FlipSide builds verification into every layer:
 
 > "In 2009 I wrote a book to teach that the intelligence comes from you, not from the search engine. In 2026 I built FlipSide to prove the same thing about AI. The machine changed. The principle didn't."
 > — Henk van Ess
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

@@ -101,3 +101,6 @@ The shift from 4.5 to 4.6 isn't "better code generation." It's the difference be
 - [Adaptive Thinking](https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-6) — Model-controlled reasoning depth
 - FlipSide git history: 89 commits, Feb 10–15, 2026
 - FlipSide architecture: `app.py` (3,861 lines), `templates/index.html` (10,748 lines)
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

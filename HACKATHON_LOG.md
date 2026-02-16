@@ -598,3 +598,6 @@ The first four are the same error at different scales: **the AI uses itself as t
 ---
 
 <sub>Maintained during the Claude Code Hackathon 2026. Every entry links to a detailed document in the docs/ folder.</sub>
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

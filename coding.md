@@ -259,3 +259,6 @@ Opus 4.6 didn't write better functions. It built a better system — and rebuilt
 - [Opus 4.6 vs 4.5 Benchmarks](https://ssntpl.com/blog-claude-opus-4-6-vs-4-5-benchmarks-testing/) — Real-world testing results
 - [Opus 4.6: A Step Change for the Enterprise](https://thenewstack.io/anthropics-opus-4-6-is-a-step-change-for-the-enterprise/) — The New Stack
 - FlipSide git history: 89 commits, Feb 10–15 2026
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

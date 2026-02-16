@@ -328,3 +328,6 @@ Categories: Reasoning Depth, Adversarial Input, Multilingual, Scale, Meta-Cognit
 **Method**: Analysis of Not Applicable gate and model self-referential capabilities.
 **Finding**: Two possible outcomes depending on the analysis text content: (1) If the analysis output contains sufficient legal terminology and clause references (risk scores, trick categories, "shall," "waive"), the model might analyze it as a document about legal analysis — finding meta-patterns in how the analysis frames risks, identifying biases in the scoring methodology, noting where the analysis itself uses persuasive language. (2) If the output is clearly not a contract (no mutual obligations between parties), the Not Applicable gate fires. The archaeology section would be fascinating: "This was drafted by an AI analysis tool. The drafter profile: systematic, risk-amplifying, consistently adversarial framing." This probe is inherently unpredictable — the outcome depends on the density of legal-looking language in the analysis output.
 **Status**: ASSESSED — outcome depends on legal framing density; meta-analysis or Not Applicable
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

@@ -437,3 +437,6 @@ The full evidence trail across the project:
 - Cat Wu, Product Lead and co-creator of Claude Code — "We have noticed this as well... it's changing the model from doing fast thinking to slow thinking" (hackathon AMA, Feb 2026)
 - FlipSide hackathon build: 89 commits, 8 documented cases with before/after evidence, 30 agent-tested comparisons
 - The Prewash Method — Henk van Ess, developed during Claude Hackathon 2026
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

@@ -113,3 +113,6 @@ Not because the human didn't contribute — because the human's contribution was
 ---
 
 *[30 decisions with rationale](strategy.md) · [78-entry build timeline](HACKATHON_LOG.md) · [meta-prompting: 30 agents, 8 cases](meta-prompting-strategy.md) · [5 AI failures documented](docs/ANCHORING_FAILURE.md) · [the Prewash Method](PREWASH_METHOD.md) · [builder profile](BUILDER_PROFILE.md)*
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

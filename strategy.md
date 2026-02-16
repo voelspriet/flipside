@@ -1279,3 +1279,6 @@ The judging criterion "Break the Barriers" says: take something locked behind ex
 ### Key Insight
 
 Positioning determines perception. The same tool framed as "contract review" competes with established legal tech. Framed as "the dark side of small print," it has no competition — because nobody else treats a coupon with the same seriousness as a corporate lease.
+---
+
+**Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)
