@@ -10,7 +10,7 @@ I train investigative teams worldwide to find the story in data. "Think Like a D
 
 Assessor for IFCN (Poynter) and EFCSN. Early Bellingcat contributor. Author of the [Reporter's Guide to Detecting AI-Generated Content](https://gijn.org/resource/guide-detecting-ai-generated-content/) (GIJN).
 
-Talked and walked with coders. But I am not a coder.
+Walked and talked with coders for 20 years. The thinking is mine — the code is Claude's.
 
 **Newsletter**: 10,000+ subscribers from BBC, NYT, Reuters, Amnesty, Europol, UN, Harvard, MIT, NATO, Interpol.
 

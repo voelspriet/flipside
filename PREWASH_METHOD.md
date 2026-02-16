@@ -210,7 +210,7 @@ FlipSide's prompts are framing-sensitive. The difference between "find unfair cl
 
 ---
 
-Van Ess says: "I'm very poor at coding. Every line of FlipSide was built through conversation with Claude Opus 4.6. But the thinking — the method that shaped every prompt, every architecture decision, every UI choice — that comes from 20 years of teaching people to find what's hidden in plain sight."
+Van Ess says: "0% of the code is mine. Every line of FlipSide was built through conversation with Claude Opus 4.6. But the thinking — the method that shaped every prompt, every architecture decision, every UI choice — that comes from 20 years of teaching people to find what's hidden in plain sight."
 
 > The Prewash Method was never about prompts. "Think Like a Document" was never about documents. Both teach the same thing: the intelligence comes from you, not from the machine.
 ---

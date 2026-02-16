@@ -56,7 +56,7 @@ That's the product. The front is how the drafter *wants* you to feel. The back i
 
 ### One-Screen Expert Verdict
 
-While you flip cards, Opus 4.6 streams a verdict from t=0: **Verdict Tier** (5 levels, "Sign with Confidence" → "Do Not Sign") · **The Main Thing** (worst risk + clause refs) · **One Action** (before signing) · **Power Ratio** (their rights vs. yours, counted from the document) · **Jurisdiction** (auto-detected, local law violations flagged) · **Colophon** (self-review for false positives).
+While you flip cards, Opus 4.6 streams a verdict from t=0: **Verdict Tier** (5 levels, "Nothing to Worry About" → "Walk Away") · **The Main Thing** (worst risk + clause refs) · **One Action** (before committing) · **Power Ratio** (their rights vs. yours, counted from the document) · **Jurisdiction** (auto-detected, local law violations flagged) · **Colophon** (self-review for false positives).
 
 ### 5 Expert Deep Dives (Opus 4.6 in parallel)
 
@@ -173,6 +173,18 @@ FlipSide uses 16 Opus 4.6 capabilities — including three that Anthropic [speci
 
 ---
 
+## Quick Start
+
+```bash
+git clone https://github.com/voelspriet/flipside.git
+cd flipside
+pip install -r requirements.txt
+echo "ANTHROPIC_API_KEY=your-key-here" > .env
+python app.py  # opens on http://localhost:5001
+```
+
+---
+
 ## Architecture
 
 ```
@@ -222,7 +234,7 @@ FlipSide uses 16 Opus 4.6 capabilities — including three that Anthropic [speci
 
 **Key architectural insight:** We originally put Opus 4.6 on the card backs — assuming the flip needed the most powerful model. Haiku does a great job on cards. Opus's real value is in the work Haiku *can't* do: cross-clause reasoning, power analysis, jurisdiction detection, and self-correction. We started with 4 parallel Opus threads, consolidated to 1 verdict + 4 on-demand deep dives, then expanded to 6 parallel threads when we realized the wall-clock cost of running them all at t=0 is zero (parallel) while the UX gain is enormous (everything arrives together). Each thread exercises a different Opus 4.6 capability — see the capabilities table above. See [strategy.md](strategy.md) for the full decision story.
 
-**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 for cards + Opus 4.6 for verdict with adaptive thinking, vision, prompt caching). Single-file editorial design system with CSS custom properties, ease-out-expo animations, SSE streaming for real-time card rendering, and DOMPurify for XSS defense on all LLM output. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
+**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 for cards + Opus 4.6 for verdict with adaptive thinking, vision, prompt caching). Single-file frontend by design — zero build step, instant deploy, hackathon velocity. CSS custom properties, ease-out-expo animations, SSE streaming for real-time card rendering, and DOMPurify for XSS defense on all LLM output. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
 
 ---
 
@@ -290,55 +302,6 @@ We validated the pattern by running 30 Opus 4.6 agents (10 tasks x 3 approaches:
 FlipSide's entire architecture is a **productized version of this discovery**. The system prompt teaches Claude *how to think about documents*: adopt the drafter's perspective, apply a taxonomy of 18 legal trick types (Silent Waiver, Time Trap, Cascade Clause, Phantom Protection, Honey Trap...), contrast "what the small print says" against "what you should read." The prompt is a pre-built reasoning framework that every uploaded document executes against.
 
 The user never sees this meta-prompt. They just see better results.
-
----
-
-## The Principle
-
-FlipSide applies **"Think Like a Document"** (Henk van Ess) to a new domain:
-
-| In search | In FlipSide |
-| --- | --- |
-| Don't search using YOUR words | Don't read using YOUR perspective |
-| Think like the document you're looking for | Think like the party who drafted the document |
-| The document doesn't know your vocabulary | The contract doesn't serve your interests |
-| Match the document's language to find it | Adopt the drafter's perspective to understand it |
-
-The underlying principle is the same: **don't take yourself as the measurement of things. Observe what must be there.**
-
----
-
-## What This Is Not
-
-* Not a legal advice tool (it analyzes documents, it does not give legal recommendations)
-* Not a contract generator (it reads existing documents, it does not create new ones)
-* Not a diff tool (it reveals strategic intent, not textual differences)
-* Not a chatbot (it performs one analysis per document — though you can ask follow-up questions and take action after)
-
----
-
-## Problem Statement Fit
-
-**Primary: Break the Barriers**
-Legal document analysis is locked behind expertise ([$2,500/hour at BigLaw](https://www.redlinedcs.com/post/big-law-attorneys)) and relevance — people don't think a gym membership or coupon book needs reviewing. FlipSide breaks both barriers: it's free and it treats every document with the same seriousness. The barrier we break isn't just cost — it's the assumption that everyday documents aren't worth analyzing.
-
-**Secondary: Amplify Human Judgment**
-FlipSide doesn't replace the user's decision to sign or not sign. It makes them dramatically more informed — human in the loop, but now with the other side's perspective visible.
-
----
-
-## The Process
-
-This project documents not just the product, but the entire decision-making process — including five documented AI failures and two new methodologies for working with AI:
-
-| Document | What It Covers |
-| --- | --- |
-| [Hackathon Log](HACKATHON_LOG.md) | 78 entries, complete process timeline |
-| [Strategy Decisions](strategy.md) | 27 strategy decisions with rationale — including a midpoint self-evaluation |
-| [The Prewash Method](PREWASH_METHOD.md) | How to clean bias from AI prompts before execution |
-| [Live Demonstration](docs/LIVE_DEMONSTRATION.md) | "Think Like a Document" demonstrated on the AI itself |
-| [Prewash Prompt Collection](PREWASH_PROMPT_COLLECTION.md) | 7 real before/after prompt examples |
-| [Five AI Failures](docs/ANCHORING_FAILURE.md) | Confirmation bias, framing bias, vocabulary bias, adjective bias, format rigidity — all caught by the human |
 
 ---
 
@@ -410,7 +373,7 @@ Third-party licenses: Flask (BSD-3), Anthropic SDK (MIT), python-docx (MIT), pdf
 
 ---
 
-Built entirely through conversation with Claude Code by someone very poor at coding. Every line — the Flask backend, the SSE streaming pipeline, the 10,700-line frontend — written by talking to Opus 4.6. Not by writing code.
+0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,700-line frontend — built through conversation with Claude Code and Opus 4.6.
 
 *FlipSide. Everyone deserves to see the other side.*
 ---

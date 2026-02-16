@@ -1,6 +1,6 @@
 # How Opus 4.6 Built FlipSide
 
-**Someone very poor at coding built 14,600 lines in 5 days. Here's what Opus 4.6 did that no other model could.**
+**0% of the code was written by a human. 14,600 lines in 5 days, built entirely through conversation. Here's what Opus 4.6 did that no other model could.**
 
 | Metric | Value |
 | --- | --- |
@@ -15,11 +15,11 @@
 | Bug fixes | 18 commits |
 | Files | 2 main files (app.py + index.html) |
 
-Every claim below is grounded in the git history, benchmarks, and the actual development process. FlipSide was built entirely through conversation with Claude Code (powered by Opus 4.6) by someone with zero programming experience.
+Every claim below is grounded in the git history, benchmarks, and the actual development process. FlipSide was built entirely through conversation with Claude Code (powered by Opus 4.6). Not a single line was typed by a human.
 
 ---
 
-## 1. Visual Vocabulary — Directing Code Changes Without Coding Skills
+## 1. Visual Vocabulary — Directing Code Changes Through Conversation
 
 **The problem:** You can SEE the element you want to change, but you don't know what it's called in code. You can't say "move the `#dropZone`" if you've never opened the HTML.
 
@@ -246,7 +246,7 @@ The difference shows up in:
 - **Thread safety reasoning** across 5 concurrent threads sharing mutable state
 - **Self-correction** that caught security issues, dead code, and race conditions
 - **Intent inference** from non-technical, typo-filled instructions
-- **Visual vocabulary** — reading screenshots and establishing shared element names with someone who can barely code
+- **Visual vocabulary** — reading screenshots and establishing shared element names through conversation
 
 Opus 4.6 didn't write better functions. It built a better system — and rebuilt it 7 times as the design evolved — while maintaining consistency across 14,600 lines and understanding imprecise intent from three misspelled words and a screenshot.
 

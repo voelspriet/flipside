@@ -62,17 +62,17 @@ We replaced the generic messages with live narration extracted from the thinking
 
 ---
 
-## Lesson 4: Someone Bad at Coding Built This — 14,600 Lines via Conversation
+## Lesson 4: 0% Human Code — 14,600 Lines via Conversation
 
 > For the full development story with grounded examples from the git history, see [coding.md](coding.md).
 
-**What happened:** Every line of FlipSide was written by Claude Code directed by someone who is very poor at coding. 89 commits over 5 days. 7 major architecture pivots where the entire system was restructured.
+**What happened:** Every line of FlipSide was written by Claude Code — 0% by a human. 89 commits over 5 days. 7 major architecture pivots where the entire system was restructured.
 
 The development method that made this possible: screenshot the current state, ask Claude to label every visible element with its name, then use those names to direct changes. For bugs: show the screenshot, say "it flickers," give NO hypothesis — let the model trace from evidence.
 
 **What the user sees:** A polished product that went through 7 complete rethinks — from single-model to split-model, from sequential to parallel, from blocking to streaming — each time getting faster and more useful. The final product feels like it was built by a team, not iterated by one person and one model.
 
-**The lesson:** Opus 4.6 doesn't just write code — it translates between visual thinking and technical implementation. The screenshot-to-vocabulary workflow replaced the IDE for someone bad at coding. And with a 1M token context window, the entire codebase fits in working memory during every edit.
+**The lesson:** Opus 4.6 doesn't just write code — it translates between visual thinking and technical implementation. The screenshot-to-vocabulary workflow replaced the IDE entirely. And with a 1M token context window, the entire codebase fits in working memory during every edit.
 
 **Why Opus 4.6:** Any model can write a function. But rethinking a system 7 times — while maintaining consistency across 14,600 lines, understanding imprecise intent from three misspelled words and a screenshot — requires the combination of Terminal-Bench 65.4% (agentic coding), MRCR 76% (long-context retrieval across code), and GDPval-AA +144 Elo (understanding intent from imprecise input).
 
