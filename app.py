@@ -45,11 +45,12 @@ def store_document(doc_id, doc):
     """Store a document with a timestamp, evicting stale entries first."""
     _evict_stale_documents()
     doc['_ts'] = time.time()
+    # Set events BEFORE storing so /analyze can't see doc without them
+    doc['_prescan_event'] = threading.Event()
+    doc['_precards_event'] = threading.Event()
     with _documents_lock:
         documents[doc_id] = doc
     # Pre-scan + pre-generate cards during upload
-    doc['_prescan_event'] = threading.Event()
-    doc['_precards_event'] = threading.Event()
     threading.Thread(
         target=_prescan_document, args=(doc_id,), daemon=True
     ).start()
@@ -1258,16 +1259,10 @@ def upload():
             return jsonify({'error': 'Could not extract text from document.'}), 400
 
         doc_id = str(uuid.uuid4())
-        role = request.form.get('role', 'other')
-        negotiable = request.form.get('negotiable', 'false') == 'true'
-        depth = request.form.get('depth', 'standard')
 
         store_document(doc_id, {
             'text': text,
             'filename': filename,
-            'role': role,
-            'negotiable': negotiable,
-            'depth': depth,
             'page_images': page_images,
         })
 
@@ -1305,9 +1300,6 @@ def upload():
 @app.route('/sample', methods=['POST'])
 def sample():
     data = request.get_json(silent=True) or {}
-    role = data.get('role', 'tenant')
-    negotiable = data.get('negotiable', True)
-    depth = data.get('depth', 'standard')
     sample_type = data.get('type', 'lease')
 
     doc = SAMPLE_DOCUMENTS.get(sample_type, SAMPLE_DOCUMENTS['lease'])
@@ -1318,9 +1310,6 @@ def sample():
     store_document(doc_id, {
         'text': text,
         'filename': filename,
-        'role': role,
-        'negotiable': negotiable,
-        'depth': depth,
     })
 
     return jsonify({
@@ -1702,7 +1691,7 @@ def _parse_clause_line(line):
         else:
             result['title'] = title_part
 
-        for part in parts[1:]:
+        for i, part in enumerate(parts[1:]):
             if part.startswith('RISK:'):
                 result['risk'] = part[5:].strip()
             elif part.startswith('SCORE:'):
@@ -1713,8 +1702,11 @@ def _parse_clause_line(line):
             elif part.startswith('TRICK:'):
                 result['trick'] = part[6:].strip()
             elif part.startswith('QUOTE:'):
-                quote = part[6:].strip().strip('"').strip('\u201c').strip('\u201d')
+                # Rejoin remaining parts — quote text may contain | chars
+                quote = '|'.join(parts[1 + i:])
+                quote = quote[6:].strip().strip('"').strip('\u201c').strip('\u201d')
                 result['quote'] = quote
+                break
 
         return result if result['title'] else None
     except Exception as e:
@@ -2214,11 +2206,30 @@ def analyze(doc_id):
         # ── Non-blocking check: are pre-generated cards ready? ──
         precards_event = doc.get('_precards_event')
         claims_summary = ''
+        prescan_na = False
         if precards_event and precards_event.is_set():
             ps = doc.get('_prescan')
             pc = doc.get('_precards')
-            if (ps and ps.get('clauses') and pc and pc.get('cards')):
+            if ps and '**Not Applicable**' in ps.get('scan_text', ''):
+                prescan_na = True
+            elif ps and ps.get('clauses') and pc and pc.get('cards'):
                 claims_summary = _build_claims_summary(ps, pc)
+
+        # ── Not applicable: skip Opus threads entirely (saves ~$2) ──
+        if prescan_na:
+            ps = doc.get('_prescan')
+            p_text = ps.get('profile_text', '') if ps else ''
+            scan_sec = ps.get('seconds', 0) if ps else 0
+            if p_text:
+                yield sse('text', p_text + '\n')
+            yield sse('quick_done', json.dumps({
+                'seconds': scan_sec, 'model': FAST_MODEL}))
+            yield sse('handoff', json.dumps({
+                'tricks_found': 0, 'summary': '', 'clause_count': 0,
+                'not_applicable': True}))
+            yield sse('done', json.dumps({
+                'quick_seconds': scan_sec, 'deep_seconds': 0, 'model': MODEL}))
+            return
 
         # ── Start Opus verdict at t=0 — enriched with card data if available ──
         verdict_max = 32000  # Enough for adaptive thinking + all 11 tags (FLAGGED_CLAIMS can be long)
@@ -2492,7 +2503,12 @@ def analyze(doc_id):
                 error_msg = str(event)
                 error_source = error_msg.split(':')[0] if ':' in error_msg else ''
                 yield sse('error', error_msg)
-                if error_source.startswith('card_'):
+                if error_source == 'card_pipeline':
+                    for ci in range(total_cards):
+                        card_done_flags[ci] = True
+                        card_texts.setdefault(ci, '')
+                    cards_all_done = True
+                elif error_source.startswith('card_'):
                     try:
                         idx = int(error_source.split('_')[1])
                         card_done_flags[idx] = True
@@ -2709,7 +2725,12 @@ def analyze(doc_id):
                 error_msg = str(event)
                 error_source = error_msg.split(':')[0] if ':' in error_msg else ''
                 yield sse('error', error_msg)
-                if error_source.startswith('card_'):
+                if error_source == 'card_pipeline':
+                    for ci in range(total_cards):
+                        card_done_flags[ci] = True
+                        card_texts.setdefault(ci, '')
+                    cards_all_done = True
+                elif error_source.startswith('card_'):
                     try:
                         idx = int(error_source.split('_')[1])
                         card_done_flags[idx] = True
@@ -3383,6 +3404,15 @@ def fetch_url():
             'User-Agent': 'Mozilla/5.0 (compatible; FlipSide/1.0)'
         })
         resp.raise_for_status()
+
+        # SSRF: re-check final URL after redirects
+        final_host = urlparse(resp.url).hostname or ''
+        if final_host in ('localhost', '127.0.0.1', '0.0.0.0', '::1') or \
+           final_host.startswith(('10.', '172.16.', '172.17.', '172.18.', '172.19.',
+                                  '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
+                                  '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
+                                  '172.30.', '172.31.', '192.168.', '169.254.')):
+            return jsonify({'error': 'Internal URLs are not allowed.'}), 400
 
         soup = BeautifulSoup(resp.text, 'html.parser')
         for tag in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe']):

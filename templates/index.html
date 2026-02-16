@@ -426,12 +426,6 @@
         .hero-flip-trigger:hover { background: rgba(196,75,40,0.04); }
         .hero-flip-trigger-back { color: var(--text-muted); }
         .hero-flip-trigger-back:hover { background: var(--bg-warm); }
-        .hero-flip-nudge {
-            font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;
-            font-family: 'JetBrains Mono', monospace; opacity: 0.6;
-            transition: opacity 0.3s ease;
-        }
-        .hero-flip-nudge.hidden { opacity: 0; }
         .hero-flip-subline {
             font-size: 0.78rem; color: var(--text-secondary); margin-top: 1.25rem;
             line-height: 1.4; text-align: center;
@@ -461,8 +455,7 @@
             grid-column: 1 / -1;
         }
         .upload-method.active-input .method-zone { display: none; }
-        .upload-method.active-input .paste-area,
-        .upload-method.active-input #urlInputArea { display: block !important; }
+        .upload-method.active-input .paste-area { display: block !important; }
 
         .drop-zone {
             border: 2px dashed var(--border); border-radius: var(--radius-md);
@@ -1256,7 +1249,7 @@
         }
 
         @media (max-width: 1200px) {
-            .analysis-sidebar { width: 200px; }
+            .analysis-layout.sidebar-visible .analysis-sidebar { width: 200px; }
         }
         @media (max-width: 900px) {
             .analysis-layout { flex-direction: column; padding: 0 1rem; gap: 1rem; justify-content: flex-start; }
@@ -1374,31 +1367,11 @@
         .pulsing-dots span:nth-child(2) { animation-delay: 0.2s; }
         .pulsing-dots span:nth-child(3) { animation-delay: 0.4s; }
 
-        .verdict-streaming {
-            text-align: center;
-            padding: 2rem 1rem 2.5rem;
-            color: #9a938b;
-        }
-        .verdict-streaming-label {
-            font-size: 0.82rem;
-            margin-top: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 0.3px;
-        }
         .pulsing-dot {
             display: inline-block; width: 6px; height: 6px;
             border-radius: 50%; background: var(--accent);
             margin-left: 0.4rem; animation: pulse 1.5s infinite;
             vertical-align: middle;
-        }
-
-        /* ── Deep analysis status ─────────────────── */
-        .deep-status {
-            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-            padding: 0.6rem 1rem; margin-top: 0.5rem;
-            font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
-            text-transform: uppercase; letter-spacing: 0.1em;
-            color: var(--text-muted);
         }
 
         /* ── Card viewport ──────────────────────────── */
@@ -1425,9 +1398,6 @@
             font-variant-numeric: tabular-nums;
         }
         .card-nav-counter strong { color: var(--text-primary); font-weight: 700; }
-
-        /* ── Context banner — emotional safety framing ── */
-        .context-banner { display: none; }
 
         /* ── Educational review pill (top of analysis) ── */
         .edu-review-pill {
@@ -2468,12 +2438,7 @@
         .level-yellow { border-left: 3px solid var(--yellow); }
         .level-green { border-left: 3px solid var(--green); }
 
-        /* Risk badges */
-        .risk-badge {
-            display: inline-block; padding: 2px 8px; border-radius: 4px;
-            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
-            vertical-align: middle;
-        }
+        /* Risk badges — primary definitions in card-back section (~line 3342) */
         .risk-green { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
         .risk-yellow { background: var(--yellow-bg); color: var(--yellow-text); border: 1px solid var(--yellow-border); }
         .risk-red { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-border); }
@@ -2484,11 +2449,6 @@
         }
         .score-bar { display: inline-block; width: 60px; height: 4px; background: var(--border-light); border-radius: 2px; vertical-align: middle; }
         .score-fill { display: block; height: 100%; border-radius: 2px; transition: width 0.6s ease; }
-        .trick-label {
-            display: inline-block; margin-left: 0.5rem; padding: 1px 6px;
-            background: var(--bg-warm); border: 1px solid var(--border);
-            border-radius: var(--radius-sm); font-size: 0.72rem; color: var(--text-secondary);
-        }
 
         /* "What the small print says" / "What you should read" juxtaposition */
         .clause-split-header {
@@ -2523,7 +2483,6 @@
 
         /* Cross-clause cards */
         .cross-clause-card { border-left: 3px solid var(--accent); }
-        .playbook-card { border-left: 3px solid var(--yellow); }
         .assessment-card {
             border-left: 3px solid var(--red);
             background: linear-gradient(135deg, var(--bg-card), rgba(196, 75, 40, 0.03));
@@ -4303,7 +4262,6 @@
             /* Deep analysis header */
             .deep-analysis-header { padding: 0 0.5rem; }
 
-            .insight-narrative { font-size: 0.78rem; }
             .insight-example-label { font-size: 0.55rem; }
             .insight-label { font-size: 0.55rem; margin-bottom: 0.5rem; }
         }
@@ -4324,6 +4282,7 @@
         .playbook-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
+            border-left: 3px solid var(--yellow);
             border-radius: 12px;
             padding: 1.25rem;
             margin-top: 1rem;
@@ -5278,7 +5237,6 @@
     var verdictBody      = $('verdictBody');
     var verdictExpandBtn = $('verdictExpandBtn');
     var _verdictRenderTimers = {};
-    var _verdictAutoScroll = true;
     var _verdictCountdownInterval = null;
     var _verdictCountdownSec = 120;
 
@@ -5985,7 +5943,6 @@
         cardViewTransitioned = false;
         clauseHighlightData = [];
         _highlightsRenderedUpTo = -1;
-        _maxCardReached = 0;
         documentNotApplicable = '';
         detectedDocLanguage = '';
         $('exportLangBtn').classList.add('hidden');
@@ -6515,6 +6472,10 @@
                 statusText.textContent = 'Reconnecting (' + _sseRetryCount + '/' + _sseMaxRetries + ')...';
                 setTimeout(function() {
                     if (statusPill.classList.contains('done')) return;
+                    // Reset card state to prevent duplicates on reconnect
+                    responseContent = '';
+                    parsedClauseCount = 0;
+                    flipCardContainer.innerHTML = '';
                     connectStream(docId);
                 }, 2000 * _sseRetryCount);
                 return;
@@ -7191,7 +7152,6 @@
     var clauseHighlightData = [];
 
     var _highlightsRenderedUpTo = -1;  // tracks which card index highlights are shown up to
-    var _maxCardReached = 0;  // highest card index the user has navigated to
 
     function highlightClauseInPreview(clause, cardIndex) {
         if (!clause.quote || clause.quote.length < 10) return;
@@ -7979,7 +7939,6 @@
         verdictExpandBtn.style.pointerEvents = 'none';
         var summaryEl = $('verdictSummary');
         if (summaryEl) { summaryEl.innerHTML = ''; summaryEl.classList.remove('visible'); }
-        _verdictAutoScroll = true;
         Object.keys(_verdictRenderTimers).forEach(function(k) { clearTimeout(_verdictRenderTimers[k]); });
         _verdictRenderTimers = {};
         // Reset accumulators and section UI — lock all sections
@@ -8156,12 +8115,6 @@
     $('focusedPrev').addEventListener('click', function() { navigateFocused(-1); });
     $('focusedNext').addEventListener('click', function() { navigateFocused(1); });
 
-    // Stop auto-scroll if user scrolls up in verdict column
-    verdictBody.addEventListener('scroll', function() {
-        var atBottom = verdictBody.scrollHeight - verdictBody.scrollTop - verdictBody.clientHeight < 40;
-        _verdictAutoScroll = atBottom;
-    });
-
     // ── Reveal full verdict (progressive — streams as it builds) ──────
     var _verdictPollTimer = null;
     // _verdictScrolled removed — scroll is now intent-driven via userInitiated param
@@ -8203,6 +8156,10 @@
             _saveVerdictLayerState();
             inlineContent.innerHTML = renderOneScreenVerdict(text);
             _restoreVerdictLayerState();
+            // Ensure divider reflects real verdict, not flash scan
+            var dt = $('verdictDividerText');
+            var isDone = opusSections.overall.done || deepTextComplete || isDoneRendering;
+            if (dt) dt.textContent = isDone ? 'Full Expert Verdict' : 'Expert Verdict (building\u2026)';
         }
     }
 
@@ -8253,6 +8210,9 @@
         if (inlineVerdict && inlineContent) {
             inlineContent.innerHTML = html;
             inlineVerdict.classList.add('visible');
+            // Label the divider as quick scan — not the full verdict yet
+            var dividerText = $('verdictDividerText');
+            if (dividerText) dividerText.textContent = 'Quick Scan Results';
             _flashVerdictShown = true;
         }
     }
@@ -9203,7 +9163,6 @@
         if (index < 0 || index >= cards.length) return;
 
         currentCardIndex = index;
-        if (index > _maxCardReached) _maxCardReached = index;
         // Restore side columns when navigating (un-flips the card)
         var layout = flipCardContainer.closest('.analysis-layout');
         if (layout) layout.classList.remove('layout-flipped');
@@ -9363,8 +9322,6 @@
         updateCardDots(cards, total);
         // Update risk summary strip when all cards built
         if (flipCardsBuilt) updateRiskSummary(cards);
-        // Update tricks detected bar
-        updateTricksDetectedBar();
     }
 
     // ── Card pips in sticky nav ─────────────────────────────
@@ -9409,11 +9366,6 @@
         if (counts.green > 0) html += '<span class="risk-count"><span class="risk-dot risk-dot-green"></span>' + counts.green + ' fair</span>';
         strip.innerHTML = html;
         strip.classList.add('visible');
-    }
-
-    // ── Tricks detected bar — hidden from card nav, rendered inside verdict instead ──
-    function updateTricksDetectedBar() {
-        // Tricks data accumulates in _detectedTricks; rendered in renderOneScreenVerdict()
     }
 
     function updateCardDots(cards, total) {
