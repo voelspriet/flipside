@@ -118,7 +118,7 @@ The change involved: switching Phase 1 from a blocking API call to streaming, st
 
 ## 4. Architecture Pivots Without Breaking Things
 
-**The benchmark:** Partner reports: "thinks more deeply and more carefully revisits reasoning before settling on answers."
+**The benchmark:** Anthropic's Opus 4.6 announcement: "thinks more deeply and more carefully revisits reasoning before settling on answers."
 
 **What happened in FlipSide:** The git history shows 7 major architecture pivots — not incremental changes, but fundamental restructurings of how the system works:
 
