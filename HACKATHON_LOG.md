@@ -2,7 +2,7 @@
 
 ## Built with Opus 4.6 — Claude Code Hackathon, February 2026
 
-> 78 entries in 5 days. 5 documented AI failures -- all caught by the human. 7 architecture pivots. 222 pages stress-tested with 36/36 planted traps caught. This is the full build story. Every methodology, failure, and pivot links to a detailed document in the [docs/](https://github.com/voelspriet/flipside/tree/main/docs) folder.
+> 78 entries in 5 days. 5 documented AI failures -- all caught by the human. 7 architecture pivots. 222 pages stress-tested with 36/36 planted traps caught. This is the full build story. Key methodologies and failures link to detailed documents in the [docs/](https://github.com/voelspriet/flipside/tree/main/docs) folder.
 
 ---
 
@@ -89,18 +89,17 @@ The human had flagged Damien Charlotin's hallucination database (907 cases + Pel
 
 **Entry 10 — New Concepts via "Think Like a Document"**
 Five new tool concepts generated using a Prewash-compliant prompt with 5 constraints and 5 required outputs. The principle was used as a generative design constraint, not just a search technique.
-→ Five concepts generated: SourceSight, CiteGuard, GrantWhisperer, ContractLens, SourceFlipper
+→ Five concepts: SourceSight (source credibility), CiteGuard (citation verification), GrantWhisperer (grant optimization), ContractLens (one-sided document analysis → later became FlipSide), SourceFlipper (perspective-based comparison)
 
 **Entry 11 — Matrix Comparison**
-Earlier decision matrix retested against new concepts using identical scoring. The initial winner still led on two dimensions but no longer won on every dimension. ContractLens emerged as the strongest concept.
-→ ContractLens emerged as strongest concept
+Earlier decision matrix retested against new concepts using identical scoring. The initial winner still led on two dimensions but no longer won on every dimension. ContractLens — a tool to analyze one-sided contracts from the drafter's perspective — emerged as the strongest concept.
 
 **Entry 12 — Expanded Reach**
 Each concept modified for broader user base. ContractLens expanded from "contracts" to "any one-sided document" (ToS, insurance, loans, HOA rules), growing from ~50M to ~250M+ potential users with zero added complexity. ContractLens ranked #1.
 → ContractLens expanded from ~50M to ~250M+ potential users
 
 **Entry 13 — Problem Deep Dive**
-10 real problems identified. Three lenses applied (most users, most financial damage, least served). The Policyholder's Exclusion Maze appeared in all three lists: ~30M users/year, $10K–$50K per denied claim, zero existing tools.
+10 real problems identified. Three lenses applied (most users, most financial damage, least served). The Policyholder's Exclusion Maze — the labyrinth of interacting exclusion clauses insurers use to deny legitimate claims — appeared in all three lists: ~30M users/year, $10K–$50K per denied claim, zero existing tools.
 → Policyholder's Exclusion Maze: ~30M users/year, $10K–$50K per denied claim
 
 **Entry 14 — FAILURE: Framing Bias**
@@ -228,7 +227,7 @@ Created `test_ux_flow.py` — a Python script that simulates a user session via 
 ### Phase 6: 10 Opus 4.6 Capabilities Sprint
 
 **Entry 41 — Opus Capabilities Audit**
-Ran a structured audit (`prompts/opus_capabilities_audit.md`) identifying 10 Opus 4.6 capabilities FlipSide didn't use yet. Ranked by (Demo Impact × Feasibility). 10 parallel evaluation agents assessed each capability against the codebase. All 10 were implemented in a single session.
+Ran a structured audit identifying 10 Opus 4.6 capabilities FlipSide didn't use yet. Ranked by (Demo Impact × Feasibility). 10 parallel evaluation agents assessed each capability against the codebase. All 10 were implemented in a single session.
 
 **Entry 42 — Vision / Multimodal PDF Analysis**
 PDF pages are now rendered as PNG images (pdfplumber, 150 DPI, max 10 pages) and sent alongside extracted text to Opus 4.6's deep analysis. The prompt instructs Opus to detect visual formatting tricks: fine print, buried placement, table structures that obscure comparisons, visual hierarchy manipulation. Images are only sent to the Opus deep thread, not Haiku (cost optimization).

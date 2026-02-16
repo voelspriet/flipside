@@ -175,7 +175,7 @@
 **Date**: 2026-02-11
 **Context**: The human had a concept for a 3D card-flip animation showing two thinking processes (reader's naive impression → drafter's strategic intent). The concept was clear emotionally ("I physically want to see something flip") but unclear technically — the visualization, streaming integration, and prompt architecture were tangled together. The instinct was to start coding.
 
-**The strategy**: Instead of building the flip card directly, write a concept assessment prompt first. Execute the prompt. Cross-reference the output against all 17 hackathon documents. Score against jury criteria. Only then update the plan and build.
+**The strategy**: Instead of building the flip card directly, write a concept assessment prompt first. Execute the prompt. Cross-reference the output against all existing hackathon documents. Score against jury criteria. Only then update the plan and build.
 
 **What happened**:
 
@@ -185,7 +185,7 @@
 
 3. The prompt was executed. It produced: 9 intent categories (Revenue Engineering, Liability Shifting, etc.), a three-phase streaming architecture (cards appear → cards flip → analysis resolves), key constraint (the flip must be literal — 3D CSS transform, not a text fade), and three risk factors (drafter voice becoming cartoonish, green clause handling, streaming timing).
 
-4. The output was cross-referenced against all hackathon documents: DECISION_MATRIX.md, CRITERIA_ANALYSIS.md, JURY_ANALYSIS.md, LIVE_DEMONSTRATION.md, FLIPSIDE_PRODUCT.md, TOOL_CONCEPTS.md, PRODUCT_UNITY_ANALYSIS.md, strategy.md, and hackathon_log_update.md. Scored against criteria weights (Demo 30%, Impact 25%, Opus 4.6 Use 25%, Depth 20%).
+4. The output was cross-referenced against all existing hackathon documents (internal planning docs, strategy.md, LIVE_DEMONSTRATION.md — early working documents were later consolidated into this file and HACKATHON_LOG.md). Scored against criteria weights (Demo 30%, Impact 25%, Opus 4.6 Use 25%, Depth 20%).
 
 5. Assessment conclusion: the flip IS the product — it scores highest on Demo (physical animation is memorable), Opus 4.6 Use (requires extended thinking to generate drafter voice), and Impact (makes the asymmetry visceral, not just reported). Only then was the plan updated and implementation started.
 
@@ -230,7 +230,7 @@
 
 3. Instead of coding a fourth fix, the human said: "you are allowed to build a better system from the ground off. Make a prompt for a GUI specialist."
 
-4. A 250-line architecture prompt was written (`flip-card-rewrite-prompt.md`) specifying a two-phase approach: Phase 1 = stream normally (no flip cards), Phase 2 = after `quick_done`, extract structured data from response, build flip cards ONCE, guard the render cycle from ever touching them again.
+4. A 250-line architecture prompt was written (since applied to codebase and removed from repo) specifying a two-phase approach: Phase 1 = stream normally (no flip cards), Phase 2 = after `quick_done`, extract structured data from response, build flip cards ONCE, guard the render cycle from ever touching them again.
 
 **Why this works**:
 
@@ -294,7 +294,7 @@
 **Date**: 2026-02-12
 **Context**: With the core product working (flip cards, deep analysis, split-model architecture), the question was: what Opus 4.6 capabilities does FlipSide NOT use yet? The "Most Creative Opus 4.6 Exploration" prize ($5k) goes to "the unexpected capability or use case nobody thought to try."
 
-**The strategy**: Run a structured capabilities audit (`prompts/opus_capabilities_audit.md`) evaluating 10 untapped Opus 4.6 capabilities. Rank by (Demo Impact × Feasibility). Implement all of them in a single session using parallel planning agents.
+**The strategy**: Run a structured capabilities audit evaluating 10 untapped Opus 4.6 capabilities. Rank by (Demo Impact × Feasibility). Implement all of them in a single session using parallel planning agents.
 
 **What happened**:
 
