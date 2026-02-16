@@ -1060,7 +1060,6 @@ def _has_garbled_text(text):
     Counts common function words in original vs reversed version of each line.
     If any line scores better reversed, the text needs cleaning.
     """
-    import re
     COMMON = {
         'de', 'het', 'van', 'en', 'een', 'voor', 'in', 'te', 'op', 'aan',
         'met', 'bij', 'uit', 'naar', 'dat', 'die', 'niet', 'ook', 'maar',
@@ -2504,10 +2503,16 @@ def analyze(doc_id):
                 error_source = error_msg.split(':')[0] if ':' in error_msg else ''
                 yield sse('error', error_msg)
                 if error_source == 'card_pipeline':
-                    for ci in range(total_cards):
+                    for ci in range(max(total_cards, 0)):
                         card_done_flags[ci] = True
                         card_texts.setdefault(ci, '')
                     cards_all_done = True
+                    # Emit quick_done + handoff so frontend transitions
+                    yield sse('quick_done', json.dumps({
+                        'seconds': time.time() - start_time, 'model': FAST_MODEL}))
+                    yield sse('handoff', json.dumps({
+                        'tricks_found': 0, 'summary': '',
+                        'clause_count': 0, 'not_applicable': False}))
                 elif error_source.startswith('card_'):
                     try:
                         idx = int(error_source.split('_')[1])
@@ -2726,10 +2731,15 @@ def analyze(doc_id):
                 error_source = error_msg.split(':')[0] if ':' in error_msg else ''
                 yield sse('error', error_msg)
                 if error_source == 'card_pipeline':
-                    for ci in range(total_cards):
+                    for ci in range(max(total_cards, 0)):
                         card_done_flags[ci] = True
                         card_texts.setdefault(ci, '')
                     cards_all_done = True
+                    yield sse('quick_done', json.dumps({
+                        'seconds': time.time() - start_time, 'model': FAST_MODEL}))
+                    yield sse('handoff', json.dumps({
+                        'tricks_found': 0, 'summary': '',
+                        'clause_count': 0, 'not_applicable': False}))
                 elif error_source.startswith('card_'):
                     try:
                         idx = int(error_source.split('_')[1])
@@ -3381,7 +3391,6 @@ def fetch_url():
     try:
         data = request.get_json(silent=True) or {}
         url = data.get('url', '').strip()
-        depth = data.get('depth', 'standard')
         if not url:
             return jsonify({'error': 'No URL provided.'}), 400
         if not url.startswith(('http://', 'https://')):
@@ -3431,7 +3440,6 @@ def fetch_url():
         store_document(doc_id, {
             'text': text,
             'filename': title[:100],
-            'depth': depth,
         })
 
         return jsonify({

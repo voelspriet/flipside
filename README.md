@@ -103,7 +103,7 @@ No document handy? Pick a life moment:
 | <img src="static/thumb_sweepstakes.jpg" width="20"> **Trip of a Lifetime** | Sweepstakes official rules (real Coca-Cola) | Accepting the prize grants perpetual, worldwide rights to your name, likeness, and story — with no compensation |
 | <img src="static/tile_hackathon.jpg" width="20"> **The Hackathon** | Event waiver we all signed (real) | You grant a perpetual, irrevocable license to all your Materials — code, ideas, feedback — with no confidentiality obligation |
 
-Plus: **paste text directly**, **paste a URL**, **compare two documents** side by side, or upload your own PDF, DOCX, or TXT.
+Plus: **paste text directly** or upload your own PDF, DOCX, or TXT.
 
 ### Stress Tests
 
@@ -188,10 +188,10 @@ python app.py  # opens on http://localhost:5001
 ## Architecture
 
 ```
-                    User uploads document / picks sample / pastes URL
+                    User uploads document / picks sample / pastes text
                                       |
                                       v
-                      Flask extracts text (PDF/DOCX/paste/URL)
+                      Flask extracts text (PDF/DOCX/paste)
                                       |
                               Haiku pre-scan identifies clauses
                                       |
@@ -373,7 +373,7 @@ Third-party licenses: Flask (BSD-3), Anthropic SDK (MIT), python-docx (MIT), pdf
 
 ---
 
-0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,700-line frontend — built through conversation with Claude Code and Opus 4.6.
+0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,594-line frontend — built through conversation with Claude Code and Opus 4.6.
 
 *FlipSide. Everyone deserves to see the other side.*
 ---

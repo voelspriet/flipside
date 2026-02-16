@@ -1,15 +1,15 @@
 # How Opus 4.6 Built FlipSide
 
-**0% of the code was written by a human. 14,600 lines in 5 days, built entirely through conversation. Here's what Opus 4.6 did that no other model could.**
+**0% of the code was written by a human. 14,000+ lines in 6 days, built entirely through conversation. Here's what Opus 4.6 did that no other model could.**
 
 | Metric | Value |
 | --- | --- |
 | Lines written by a human | 0 |
-| Total commits | 89 |
-| Total insertions | 28,550 lines |
-| Total deletions | 8,357 lines |
-| Net codebase | 14,600+ lines (3,861 backend + 10,748 frontend) |
-| Development period | 5 days (Feb 10–15, 2026) |
+| Total commits | 111 |
+| Total insertions | 46,062 lines |
+| Total deletions | 18,571 lines |
+| Net codebase | 14,000+ lines (3,469 backend + 10,594 frontend) |
+| Development period | 6 days (Feb 10–16, 2026) |
 | Average velocity | ~5,700 lines/day |
 | Architecture pivots | 7 major restructurings (>500 lines changed) |
 | Bug fixes | 18 commits |
@@ -92,9 +92,9 @@ This produced `swooshBriefingToCardNav()` — a FLIP animation that captures sou
 
 **The benchmark:** Terminal-Bench 2.0 65.4% (agentic coding), up from 59.8% for Opus 4.5.
 
-**What happened in FlipSide:** The entire frontend is a single 10,748-line HTML file containing CSS, HTML, and JavaScript inline. The backend is a single 3,861-line Python file containing Flask routes, 9+ prompt templates, SSE streaming, and parallel thread management. Every change requires understanding both files simultaneously.
+**What happened in FlipSide:** The entire frontend is a single 10,594-line HTML file containing CSS, HTML, and JavaScript inline. The backend is a single 3,469-line Python file containing Flask routes, 9+ prompt templates, SSE streaming, and parallel thread management. Every change requires understanding both files simultaneously.
 
-**Grounded example:** Commit `0cc0c33` (stream-first pipeline) changed 962 lines across both files. The backend restructuring (new `_card_pipeline()`, `_run_parallel_streaming()`, streaming prescan) required matching SSE event types (`card_ready`, `cards_started`, `cards_instant`) with frontend handlers (`tryExtractNewClauses()`, `transitionToCardView()`, auto-reveal timer). A single mismatched event name or data format would silently break the pipeline. Opus 4.6 held the full 14,600 lines in working memory and kept the cross-file contract consistent.
+**Grounded example:** Commit `0cc0c33` (stream-first pipeline) changed 962 lines across both files. The backend restructuring (new `_card_pipeline()`, `_run_parallel_streaming()`, streaming prescan) required matching SSE event types (`card_ready`, `cards_started`, `cards_instant`) with frontend handlers (`tryExtractNewClauses()`, `transitionToCardView()`, auto-reveal timer). A single mismatched event name or data format would silently break the pipeline. Opus 4.6 held the full 14,000+ lines in working memory and kept the cross-file contract consistent.
 
 **Why 4.5 would struggle:** Opus 4.5 had a 200K token context window. With both files (~50K tokens) plus conversation history plus the plan, you'd routinely hit context limits during multi-file edits. Opus 4.6's 1M token window (beta) means the entire codebase fits comfortably.
 
@@ -167,7 +167,7 @@ Each pivot required understanding the entire existing system, identifying what c
 - "it still takes 30 seconds before first card" → Didn't suggest superficial fixes. Traced the actual bottleneck (blocking Phase 1 → sequential Phase 2 → ordered emission) and proposed streaming Phase 1 with overlapped card generation
 - "what was that program starting with a p" → Playwright
 
-Every instruction required inferring the technical intent from non-technical language, then mapping it to the correct code location in a 14,600-line codebase.
+Every instruction required inferring the technical intent from non-technical language, then mapping it to the correct code location in a 14,000+-line codebase.
 
 ---
 
@@ -230,7 +230,7 @@ The answer includes a formatted table, cross-clause interaction analysis, and ac
 6. Add the Ask FlipSide tool-use agent as a new feature
 7. Keep everything else — cards, verdict, streaming, editorial loading — working
 
-This was a simultaneous backend simplification (remove 4 threads + event handlers) and feature addition (new endpoint + tool-use agent + frontend UI), touching both files across hundreds of lines. The model held the full 14,600-line codebase in context while making coordinated changes to the event loop, thread management, SSE protocol, and frontend state management.
+This was a simultaneous backend simplification (remove 4 threads + event handlers) and feature addition (new endpoint + tool-use agent + frontend UI), touching both files across hundreds of lines. The model held the full 14,000+-line codebase in context while making coordinated changes to the event loop, thread management, SSE protocol, and frontend state management.
 
 **Why this matters for 4.6:** The pivot wasn't "change a function." It was "rethink the architecture: remove parallelism, add on-demand, add tool use, keep everything else working." That requires understanding the entire system — thread timing, event loops, frontend state, SSE protocol — and making surgical changes across all of it simultaneously. This is Terminal-Bench 65.4% in action: sustained multi-step reasoning across a large codebase under changing requirements.
 
@@ -248,7 +248,7 @@ The difference shows up in:
 - **Intent inference** from non-technical, typo-filled instructions
 - **Visual vocabulary** — reading screenshots and establishing shared element names through conversation
 
-Opus 4.6 didn't write better functions. It built a better system — and rebuilt it 7 times as the design evolved — while maintaining consistency across 14,600 lines and understanding imprecise intent from three misspelled words and a screenshot.
+Opus 4.6 didn't write better functions. It built a better system — and rebuilt it 7 times as the design evolved — while maintaining consistency across 14,000+ lines and understanding imprecise intent from three misspelled words and a screenshot.
 
 ---
 
@@ -258,7 +258,7 @@ Opus 4.6 didn't write better functions. It built a better system — and rebuilt
 - [What's New in Claude 4.6](https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-6) — Claude API Docs
 - [Opus 4.6 vs 4.5 Benchmarks](https://ssntpl.com/blog-claude-opus-4-6-vs-4-5-benchmarks-testing/) — Real-world testing results
 - [Opus 4.6: A Step Change for the Enterprise](https://thenewstack.io/anthropics-opus-4-6-is-a-step-change-for-the-enterprise/) — The New Stack
-- FlipSide git history: 89 commits, Feb 10–15 2026
+- FlipSide git history: 111 commits, Feb 10–16 2026
 ---
 
 **Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

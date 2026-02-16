@@ -2,7 +2,7 @@
 
 ## Built with Opus 4.6 — Claude Code Hackathon, February 2026
 
-> 78 entries in 5 days. 5 documented AI failures -- all caught by the human. 7 architecture pivots. 222 pages stress-tested with 36/36 planted traps caught. This is the full build story. Key methodologies and failures link to detailed documents in the [docs/](https://github.com/voelspriet/flipside/tree/main/docs) folder.
+> 78 entries in 6 days. 5 documented AI failures -- all caught by the human. 7 architecture pivots. 222 pages stress-tested with 36/36 planted traps caught. This is the full build story. Key methodologies and failures link to detailed documents in the [docs/](https://github.com/voelspriet/flipside/tree/main/docs) folder.
 
 ---
 
@@ -497,11 +497,11 @@ Also locked "Go Deeper" buttons (`.locked` class: 45% opacity, `cursor: not-allo
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 3,861 | Backend: Flask, SSE, parallel processing, vision, tool use, follow-up, prompt caching, dynamic token budget, suitability gate, 14 sample docs |
-| `templates/index.html` | 10,748 | Card-first frontend: instant flip cards, live thinking narration, one-screen verdict with risk summary + tricks + 4 Go Deeper buttons, clean export, confidence badges, follow-up UI, DOMPurify |
+| `app.py` | 3,469 | Backend: Flask, SSE, parallel processing, vision, tool use, follow-up, prompt caching, dynamic token budget, suitability gate, 14 sample docs |
+| `templates/index.html` | 10,594 | Card-first frontend: instant flip cards, live thinking narration, one-screen verdict with risk summary + tricks + 4 Go Deeper buttons, clean export, confidence badges, follow-up UI, DOMPurify |
 | `docs/` | 2 files | LIVE_DEMONSTRATION.md, ANCHORING_FAILURE.md |
 | `HACKATHON_LOG.md` | This file | 78 entries, complete process timeline |
-| `README.md` | Product description + 14 Opus capabilities + meta-prompting discovery |
+| `README.md` | Product description + 16 Opus capabilities + meta-prompting discovery |
 
 ---
 
@@ -559,8 +559,8 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (3,861 lines) | Flask backend: prompts, parallel processing, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
-| `templates/index.html` (10,748 lines) | Card-first frontend: instant flip cards, one-screen verdict, 4 Go Deeper buttons, live thinking narration, clean export, confidence badges, follow-up UI with tool calls, DOMPurify |
+| `app.py` (3,469 lines) | Flask backend: prompts, parallel processing, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
+| `templates/index.html` (10,594 lines) | Card-first frontend: instant flip cards, one-screen verdict, 4 Go Deeper buttons, live thinking narration, clean export, confidence badges, follow-up UI with tool calls, DOMPurify |
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | Methodology documents (LIVE_DEMONSTRATION, ANCHORING_FAILURE) |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
 | This file | 78 entries, complete process timeline |
@@ -576,7 +576,7 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 **Deadline: February 16, 3:00 PM EST**
 
-## 14 Opus 4.6 Capabilities Used
+## 16 Opus 4.6 Capabilities Used
 
 | # | Capability | Visible in product |
 |---|-----------|-------------------|

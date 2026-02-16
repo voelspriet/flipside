@@ -106,13 +106,13 @@ That sentence is also the core of "Think Like a Document." The methodology I tau
 
 ## What This Produced
 
-8+ hours of planning. 89 commits. 7 architecture pivots. 14,600+ lines of code (3,861 backend + 10,748 frontend — [coding.md](coding.md)). [30 strategic decisions](strategy.md). 5 documented AI failures. Zero lines written by a human.
+8+ hours of planning. 111 commits. 7 architecture pivots. 14,000+ lines of code (3,469 backend + 10,594 frontend — [coding.md](coding.md)). [29 strategic decisions](strategy.md). 5 documented AI failures. Zero lines written by a human.
 
 Not because the human didn't contribute — because the human's contribution was the thinking, not the typing.
 
 ---
 
-*[30 decisions with rationale](strategy.md) · [78-entry build timeline](HACKATHON_LOG.md) · [meta-prompting: 30 agents, 8 cases](meta-prompting-strategy.md) · [5 AI failures documented](docs/ANCHORING_FAILURE.md) · [the Prewash Method](PREWASH_METHOD.md) · [builder profile](BUILDER_PROFILE.md)*
+*[29 decisions with rationale](strategy.md) · [78-entry build timeline](HACKATHON_LOG.md) · [meta-prompting: 30 agents, 8 cases](meta-prompting-strategy.md) · [5 AI failures documented](docs/ANCHORING_FAILURE.md) · [the Prewash Method](PREWASH_METHOD.md) · [builder profile](BUILDER_PROFILE.md)*
 ---
 
 **Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

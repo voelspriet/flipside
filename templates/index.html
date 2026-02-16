@@ -174,10 +174,6 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
-        @keyframes scoreBarFill {
-            from { width: 0; }
-        }
-
         /* ══════════════════════════════════════════════════════
            SCREEN 1: UPLOAD
            ══════════════════════════════════════════════════════ */
@@ -475,10 +471,6 @@
             width: 100%; height: 100%;
             transform-style: preserve-3d;
         }
-        @keyframes idle-flip {
-            0%, 100% { transform: rotateY(0deg); }
-            50% { transform: rotateY(180deg); }
-        }
         .drop-zone .dz-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
         .drop-zone .hint { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem; }
         .drop-zone { position: relative; }
@@ -620,9 +612,27 @@
         }
 
         .upload-error {
-            margin-top: 0.8rem; padding: 0.6rem 0.8rem; background: var(--red-bg);
-            border: 1px solid var(--red-border); border-radius: var(--radius-sm);
-            color: var(--red-text); font-size: 0.82rem;
+            margin-top: 1.2rem; padding: 1.4rem 1.5rem; background: var(--bg-surface);
+            border: 1px solid var(--border); border-radius: 12px;
+            color: var(--text-body); font-size: 0.88rem; line-height: 1.6;
+            text-align: center;
+        }
+        .upload-error-icon {
+            font-size: 1.6rem; margin-bottom: 0.6rem; opacity: 0.5;
+        }
+        .upload-error-headline {
+            font-family: 'DM Sans', sans-serif; font-weight: 700;
+            font-size: 1.1rem; color: var(--text-primary);
+            margin-bottom: 0.4rem; letter-spacing: -0.02em;
+        }
+        .upload-error-detail {
+            font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;
+        }
+        .upload-error-tryagain {
+            display: inline-block; font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem; font-weight: 600; color: var(--accent);
+            cursor: pointer; border: none; background: none;
+            text-decoration: underline; text-underline-offset: 2px;
         }
 
         .disclaimer {
@@ -1376,9 +1386,6 @@
 
         /* ── Card viewport ──────────────────────────── */
         .card-viewport { margin: 0.5rem 0 1.5rem; }
-        .card-navigation {
-            display: none; /* bottom nav removed — top sticky nav is primary */
-        }
         .card-nav-btn {
             display: inline-flex; align-items: center; gap: 0.35rem;
             background: none; border: 1px solid var(--border);
@@ -1413,6 +1420,7 @@
             animation: fadeUp 0.5s var(--ease-out-expo) both;
         }
         .edu-review-pill.hidden { display: none; }
+
 
         /* ── Document title hero (analysis entry) ── */
         .doc-title-hero {
@@ -1872,6 +1880,12 @@
             border: 1px solid #d4a030;
         }
         .verdict-tier-icon { font-size: 0.9rem; }
+        .verdict-enforcement-frame {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; font-weight: 500;
+            letter-spacing: 0.03em; color: var(--text-muted);
+            margin-bottom: 1.2rem;
+        }
         .verdict-what-is-this {
             font-size: 1.05rem; line-height: 1.55; color: var(--text-primary);
             font-weight: 500; margin-bottom: 0.4rem;
@@ -1926,7 +1940,7 @@
         }
         .verdict-jurisdiction.jurisdiction-warnings {
             background: rgba(196,75,40,0.04);
-            border-color: var(--risk-red, #c44b28);
+            border-color: var(--accent);
             border-width: 2px;
         }
         .verdict-jurisdiction-label {
@@ -2433,22 +2447,10 @@
         }
         .clause-card hr { border: none; border-top: 1px solid var(--border-light); margin: 1rem 0; }
 
-        /* Risk level card borders */
-        .level-red { border-left: 3px solid var(--red); }
-        .level-yellow { border-left: 3px solid var(--yellow); }
-        .level-green { border-left: 3px solid var(--green); }
-
-        /* Risk badges — primary definitions in card-back section (~line 3342) */
+        /* Risk badges — primary definitions in card-back section */
         .risk-green { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
         .risk-yellow { background: var(--yellow-bg); color: var(--yellow-text); border: 1px solid var(--yellow-border); }
         .risk-red { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-border); }
-
-        .risk-score {
-            font-size: 0.78rem; color: var(--text-secondary); margin-left: 0.5rem;
-            display: inline-flex; align-items: center; gap: 0.4rem;
-        }
-        .score-bar { display: inline-block; width: 60px; height: 4px; background: var(--border-light); border-radius: 2px; vertical-align: middle; }
-        .score-fill { display: block; height: 100%; border-radius: 2px; transition: width 0.6s ease; }
 
         /* "What the small print says" / "What you should read" juxtaposition */
         .clause-split-header {
@@ -2628,8 +2630,6 @@
         .front-quote-pill .pill-num-green { background: var(--green); }
         .front-quote-pill .pill-num-yellow { background: var(--yellow); color: #1a1a1a; }
         .front-quote-pill .pill-num-red { background: var(--accent); }
-        .front-quote-pill .pill-text {
-        }
         .flip-card .clause-title {
             font-size: 1.15rem; font-weight: 700; color: var(--text-primary);
             line-height: 1.3; margin-bottom: 1rem;
@@ -2671,23 +2671,6 @@
         .reader-voice-text {
             font-size: 0.95rem; line-height: 1.6; color: var(--text-body);
         }
-        /* .reader-voice-clause removed — quote now only at top */
-        .reader-voice-en {
-            font-size: 0.78rem; line-height: 1.5; color: var(--text-muted);
-            font-style: italic; margin-top: 0.4rem;
-            padding-top: 0.4rem; border-top: 1px dashed var(--border-light);
-        }
-        .reader-voice-en::before {
-            content: 'EN'; display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.5rem; font-weight: 700; font-style: normal;
-            text-transform: uppercase; letter-spacing: 0.08em;
-            background: var(--bg-surface); border: 1px solid var(--border);
-            border-radius: 3px; padding: 0.1rem 0.3rem;
-            margin-right: 0.4rem; vertical-align: middle;
-            color: var(--text-muted);
-        }
-
         /* ── Investigation loading screen ── */
         .skeleton-card {
             display: flex;
@@ -3076,7 +3059,7 @@
             margin: 0.75rem auto;
             padding: 0.5rem 1.2rem;
             width: fit-content;
-            background: var(--rust-accent, #c44b28);
+            background: var(--accent);
             color: #fff;
             border-radius: 100px;
             font-size: 0.82rem;
@@ -3410,108 +3393,6 @@
             font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5;
         }
 
-        /* Juxtaposition columns */
-        .clause-juxtapose {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;
-        }
-        @media (max-width: 560px) { .clause-juxtapose { grid-template-columns: 1fr; } }
-        .juxtapose-col {
-            padding: 0.9rem 1rem; border-radius: var(--radius-sm);
-            font-size: 0.84rem; line-height: 1.6;
-        }
-        .juxtapose-label {
-            display: block; font-family: 'JetBrains Mono', monospace;
-            font-size: 0.62rem; font-weight: 500;
-            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.4rem;
-        }
-        .juxtapose-says {
-            background: var(--bg-surface); border: 1px solid var(--border-light); color: var(--text-body);
-        }
-        .juxtapose-says .juxtapose-label { color: var(--text-muted); }
-        .juxtapose-read {
-            background: var(--accent-light); border: 1px solid var(--accent-medium);
-            color: var(--text-primary); font-weight: 500;
-        }
-        .juxtapose-read .juxtapose-label { color: var(--accent); }
-
-        /* Small print block (card back, full-width) */
-        .smallprint-block {
-            padding: 0.9rem 1rem; border-radius: var(--radius-sm);
-            background: var(--bg-surface); border: 1px solid var(--border-light);
-            font-size: 0.84rem; line-height: 1.6; color: var(--text-body);
-            margin-bottom: 1rem;
-        }
-
-        /* English translation toggle (bilingual cards) */
-        .en-translation {
-            margin-top: 1rem; border-top: 1px dashed var(--border-light);
-            padding-top: 0.5rem;
-        }
-        .en-translation-toggle {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.1em;
-            color: var(--text-muted); cursor: pointer;
-            padding: 0.4rem 0; list-style: none;
-            transition: color var(--transition);
-        }
-        .en-translation-toggle:hover { color: var(--accent); }
-        .en-translation-toggle::-webkit-details-marker { display: none; }
-        .en-translation-toggle::before {
-            content: '▸ '; font-size: 0.7rem;
-            transition: transform 0.2s ease;
-            display: inline-block;
-        }
-        .en-translation[open] > .en-translation-toggle::before {
-            content: '▾ ';
-        }
-        .en-juxtapose {
-            margin-top: 0.6rem; opacity: 0.85;
-        }
-        .en-juxtapose .juxtapose-col {
-            font-size: 0.78rem;
-        }
-        .en-juxtapose .juxtapose-label::after {
-            content: ' (EN)'; font-weight: 400;
-        }
-
-        /* English report summary (bilingual deep analysis) */
-        .en-report-summary {
-            margin-top: 2rem; border: 1px dashed var(--border);
-            border-radius: var(--radius); padding: 0;
-            background: var(--bg-surface);
-        }
-        .en-report-toggle {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.1em;
-            color: var(--text-muted); cursor: pointer;
-            padding: 1rem 1.5rem; list-style: none;
-            transition: color var(--transition);
-        }
-        .en-report-toggle:hover { color: var(--accent); }
-        .en-report-toggle::-webkit-details-marker { display: none; }
-        .en-report-toggle::before {
-            content: '▸ '; font-size: 0.75rem;
-            display: inline-block;
-        }
-        .en-report-summary[open] > .en-report-toggle::before {
-            content: '▾ ';
-        }
-        .en-report-toggle::after {
-            content: 'EN'; display: inline-block;
-            font-size: 0.5rem; font-weight: 700;
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 3px; padding: 0.1rem 0.35rem;
-            margin-left: 0.5rem; vertical-align: middle;
-        }
-        .en-report-content {
-            padding: 0 1.5rem 1.5rem;
-        }
-        .en-report-content h3 {
-            font-size: 0.95rem; margin-top: 1.25rem;
-        }
-
         /* Flip-back trigger */
         .flip-back-trigger {
             display: flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -3555,8 +3436,6 @@
             transition: transform 0.4s var(--ease-out-expo);
         }
         .card-bottom-next:hover .card-bottom-next-arrow { transform: translateX(4px); }
-
-        /* (clause-nav removed — replaced by .card-navigation) */
 
         /* ── Back score bar ─────────────────────────── */
         .back-score-bar {
@@ -3999,10 +3878,6 @@
             .card-nav-dot.risk-red.active { background: var(--red); }
             .card-nav-dot.risk-yellow.active { background: var(--yellow); }
             .card-nav-dot.risk-green.active { background: var(--green); }
-            .card-navigation {
-                flex-direction: column;
-                gap: 0.25rem;
-            }
 
             /* Phase 4: Compact sidebar strip — scrolls away on mobile so card nav can stick */
             .analysis-sidebar {
@@ -4228,15 +4103,12 @@
             /* Card back */
             .risk-header { padding: 1rem 1.25rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
             .back-body { padding: 1.25rem; }
-            .clause-juxtapose { grid-template-columns: 1fr; gap: 0.5rem; }
-            .juxtapose-col { padding: 0.7rem 0.85rem; font-size: 0.78rem; }
             .drafter-voice { padding: 0.75rem 0.9rem; font-size: 0.82rem; }
-            .bottom-line { padding: 0.7rem 0.9rem; font-size: 0.78rem; }
+            .back-bottom-line { padding: 0.7rem 0.9rem; font-size: 0.78rem; }
             .flip-back-trigger { padding: 0.7rem 1.25rem; font-size: 0.75rem; }
             .card-bottom-next { padding: 0.7rem 1rem; font-size: 0.68rem; min-height: 44px; }
 
             /* Card navigation */
-            .card-navigation { gap: 0.75rem; padding: 1rem 0; }
             .card-nav-btn { padding: 0.25rem 0.4rem; font-size: 0.72rem; min-width: 38px; min-height: 38px; }
             .card-nav-counter { font-size: 0.6rem; }
 
@@ -4253,11 +4125,6 @@
             /* Follow-up */
             .followup-input { font-size: 0.85rem; }
 
-            /* Bilingual */
-            .en-translation-toggle { font-size: 0.6rem; padding: 0.3rem 0; }
-            .en-juxtapose .juxtapose-col { font-size: 0.72rem; }
-            .en-report-toggle { font-size: 0.65rem; padding: 0.75rem 1rem; }
-            .en-report-content { padding: 0 1rem 1rem; }
 
             /* Deep analysis header */
             .deep-analysis-header { padding: 0 0.5rem; }
@@ -4271,7 +4138,6 @@
             .brand h1 { font-size: 2rem; }
             .front-content { padding: 1rem 1rem 0; }
             .risk-header { padding: 0.75rem 1rem; }
-            .card-navigation { gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
             .card-nav-btn { padding: 0.2rem 0.35rem; font-size: 0.68rem; min-width: 36px; min-height: 36px; }
             .card-nav-sticky { padding: 0.25rem 0.35rem; gap: 0.3rem; }
             .card-nav-counter { font-size: 0.55rem; }
@@ -4727,7 +4593,7 @@
         <div class="card-viewport hidden" id="cardViewport">
             <!-- Context banner — emotional safety framing -->
             <!-- Educational review pill (above title) -->
-            <div class="edu-review-pill hidden" id="eduReviewPill">FlipSide found clauses worth a closer look. This is an educational review — not legal advice.</div>
+            <div class="edu-review-pill hidden" id="eduReviewPill">FlipSide shows what this document allows if enforced to the letter. Educational review &mdash; not legal advice.</div>
             <!-- Document title hero (bridges visual weight from upload screen) -->
             <div class="doc-title-hero hidden" id="docTitleHero"><span id="docTitleText"></span><span class="doc-title-flag hidden" id="docTitleFlag"></span></div>
             <!-- Sticky card navigation (top) -->
@@ -4878,7 +4744,6 @@
                     <span id="inlineVerdictProgressText">Expert analysis in progress...</span>
                 </div>
             </div>
-            <!-- deep-status removed — status shown in header ticker + status pill -->
         </div>
 
         <!-- Results: summary + deep analysis -->
@@ -5093,7 +4958,6 @@
     var isDoneRendering = false;
     var deepTextComplete = false;  // Set when all Opus threads complete
     var _renderedVerdictTags = {};  // Track which verdict tags have been progressively rendered
-    var _flashVerdictShown = false; // Whether the flash verdict from card data is showing
     var _coreVerdictReady = false;  // Whether core verdict tags (TIER + MAIN_THING) have arrived
     var animatedCardTitles = new Set();
     var activeFilters = new Set(); // 'red', 'yellow', 'green'
@@ -5103,17 +4967,12 @@
     var documentOcrUsed = false;
     var currentDocId = '';
     var currentFilename = '';  // Module-level filename for rejection screen
-    var userHasScrolled = false;
-    var lastAutoScrollY = 0;
     var flipCardsBuilt = false;
     var parsedClauseCount = 0;   // How many --- segments we've already parsed
     var currentCardIndex = 0;    // Which card is currently shown
     var hasFlippedOnce = false;  // Force first flip before allowing navigation
     var cardViewTransitioned = false; // Whether we've transitioned from loading to cards
-    var editorialStatusInterval = null;
-    var editorialStatusIdx = 0;
     var _detectedTricks = {};  // Live trick accumulator: { trickName: count }
-    var isSampleAnalysis = false;  // Whether current analysis is from a sample document
     var _quickDoneSafetyTimer = null;  // Safety net: treat cards as built if quick_done is delayed
     var _verdictStripRead = false;  // Whether user has clicked through to verdict (hides strip)
     var _autoRevealTimer = null;   // 10s timer: auto-show verdict if no cards yet
@@ -5123,6 +4982,8 @@
 
     // ── Elements ──────────────────────────────────────────────
     var $ = function(id) { return document.getElementById(id); };
+    // Safe event binding — silently skips if element missing
+    function on(id, evt, fn) { var el = $(id); if (el) el.addEventListener(evt, fn); }
 
     // Screens
     var uploadScreen   = $('upload-screen');
@@ -5236,7 +5097,6 @@
     var verdictTitle     = $('verdictTitle');
     var verdictBody      = $('verdictBody');
     var verdictExpandBtn = $('verdictExpandBtn');
-    var _verdictRenderTimers = {};
     var _verdictCountdownInterval = null;
     var _verdictCountdownSec = 120;
 
@@ -5315,7 +5175,6 @@
                     });
                     // Verdict column stays hidden — inline verdict below cards (Problem 3)
                     // Data continues streaming into opusSections for inline rendering
-                    requestNotificationPermission();
                     updateVerdictStrip();
                 }
             }
@@ -5376,7 +5235,7 @@
     });
 
     // ── Click clause marker in preview → navigate to that card ──
-    $('editorialLoadingText').addEventListener('click', function(e) {
+    on('editorialLoadingText', 'click', function(e) {
         var highlight = e.target.closest('.doc-highlight');
         if (highlight) {
             var idx = parseInt(highlight.getAttribute('data-card-index'));
@@ -5477,10 +5336,6 @@
                 document.body.classList.remove('sheet-open');
             }
         }
-        // Make setSheetState available globally
-        window._setSheetState = setSheetState;
-        window._getSheetState = function() { return sheetState; };
-
         var header = vc.querySelector('.verdict-header');
         if (header) {
             header.addEventListener('touchstart', function(e) {
@@ -5648,16 +5503,23 @@
     }
 
     function showError(msg) {
-        uploadError.textContent = msg;
+        var headline = 'This document couldn\u2019t be processed';
+        if (/unsupported/i.test(msg)) headline = 'Unsupported file type';
+        else if (/no file|no text/i.test(msg)) headline = 'Nothing to analyze';
+        else if (/could not extract/i.test(msg)) headline = 'No readable text found';
+        else if (/internal error/i.test(msg)) headline = 'Something went wrong';
+        uploadError.innerHTML =
+            '<div class="upload-error-icon">\uD83D\uDCC4</div>' +
+            '<div class="upload-error-headline">' + escapeHtml(headline) + '</div>' +
+            '<div class="upload-error-detail">' + escapeHtml(msg) + '</div>' +
+            '<button class="upload-error-tryagain" onclick="this.closest(\'.upload-error\').classList.add(\'hidden\')">Dismiss</button>';
         uploadError.classList.remove('hidden');
-        setTimeout(function() { uploadError.classList.add('hidden'); }, 8000);
     }
 
     function updateAnalyzeBtn() {
         var hasFile = selectedFile !== null;
         var hasText = pasteArea.value.trim().length > 0;
-        var hasUrl = urlInput && urlInput.value.trim().length > 0;
-        var ready = hasFile || hasText || hasUrl;
+        var ready = hasFile || hasText;
         analyzeBtn.disabled = !ready;
         // Show/hide depth selector; toggle demo grid; button always visible
         if (ready) {
@@ -5727,6 +5589,7 @@
             return;
         }
         selectedFile = file;
+        uploadError.classList.add('hidden'); // Clear any previous error
         fileNameEl.textContent = file.name;
         fileSizeEl.textContent = formatSize(file.size);
         uploadPrompt.classList.add('hidden');
@@ -5754,8 +5617,6 @@
     });
 
     // ── 3-column input method toggles ─────────────────────────────────
-    var urlInput = $('urlInput');
-    var urlInputArea = $('urlInputArea');
     var methodPaste = $('methodPaste');
     var uploadMethods = $('uploadMethods');
 
@@ -5767,8 +5628,6 @@
         }
         pasteArea.classList.add('hidden');
         pasteArea.value = '';
-        if (urlInputArea) urlInputArea.classList.add('hidden');
-        if (urlInput) urlInput.value = '';
     }
 
     // Click on "Paste text" zone → expand to full-width textarea
@@ -5790,7 +5649,7 @@
     // Click on "Try a demo" zone → pick random sample and launch
     var demoZone = $('demoZone');
     if (demoZone) {
-        var SAMPLE_KEYS = ['lease','insurance','tos','employment','loan','gym','medical','coupon','wedding','pet','sweepstakes','hackathon'];
+        var SAMPLE_KEYS = ['lease','insurance','tos','employment','loan','gym','medical','hoa','coupon','wedding','pet','sweepstakes','timeshare','hackathon'];
         demoZone.addEventListener('click', function() {
             var pick = SAMPLE_KEYS[Math.floor(Math.random() * SAMPLE_KEYS.length)];
             startSampleAnalysis(pick);
@@ -5802,13 +5661,6 @@
     pasteArea.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') { resetUploadMethods(); updateAnalyzeBtn(); }
     });
-    if (urlInput) {
-        urlInput.addEventListener('input', updateAnalyzeBtn);
-        urlInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') { resetUploadMethods(); updateAnalyzeBtn(); }
-        });
-    }
-
     // ── Depth selector ────────────────────────────────────────
     depthSelector.addEventListener('click', function(e) {
         var btn = e.target.closest('.depth-btn');
@@ -5835,7 +5687,6 @@
     function startSampleAnalysis(sampleType) {
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = 'Loading...';
-        isSampleAnalysis = true;
 
         fetch(BASE_URL + '/sample', {
             method: 'POST',
@@ -5863,35 +5714,11 @@
     });
 
     function startAnalysis() {
-        isSampleAnalysis = false;
         var formData = new FormData();
         if (selectedFile) {
             formData.append('file', selectedFile);
         } else if (pasteArea.value.trim()) {
             formData.append('text', pasteArea.value.trim());
-        } else if (urlInput && urlInput.value.trim()) {
-            // URL mode — fetch from server
-            analyzeBtn.disabled = true;
-            analyzeBtn.textContent = 'Fetching URL...';
-            fetch(BASE_URL + '/fetch-url', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: urlInput.value.trim(), depth: analysisDepth })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Flip it'; return; }
-                documentFullText = (data.full_text || '').replace(/\n*— Page \d+ —\n*/g, '\n\n');
-                documentThumbnail = null;
-                documentOcrUsed = false;
-                switchToAnalysis(data.doc_id, data.filename);
-            })
-            .catch(function(err) {
-                showError('URL fetch failed: ' + err.message);
-                analyzeBtn.disabled = false;
-                analyzeBtn.textContent = 'Flip it';
-            });
-            return; // Don't fall through to the file upload path
         } else {
             showError('Please select a file or paste text.');
             return;
@@ -5920,7 +5747,7 @@
     // ── Switch to analysis screen ─────────────────────────────
     function switchToAnalysis(docId, filename) {
         // Clean up timers from any previous analysis
-        stopEditorialStatusRotation();
+
         // Reset state
         responseContent = '';
         quickDone = false;
@@ -5930,7 +5757,6 @@
         _currentStripState = 'building';
         _pendingStripState = null;
         _renderedVerdictTags = {};
-        _flashVerdictShown = false;
         _coreVerdictReady = false;
         resetThinkingViewer();
         animatedCardTitles = new Set();
@@ -5946,8 +5772,6 @@
         documentNotApplicable = '';
         detectedDocLanguage = '';
         $('exportLangBtn').classList.add('hidden');
-        userHasScrolled = false;
-        lastAutoScrollY = 0;
         currentDocId = docId;
         currentFilename = filename || '';
         thinkingCharCount = 0;
@@ -6017,7 +5841,6 @@
         resultsArea.classList.add('hidden');
         $('cardViewport').classList.add('hidden');
         $('cardNavigation').classList.add('hidden');
-        var _ds2 = $('deepStatus'); if (_ds2) _ds2.classList.add('hidden');
         $('copyAllBtn').classList.add('hidden');
         $('exportBtn').classList.add('hidden');
         $('emailLawyerBtn').classList.add('hidden');
@@ -6217,12 +6040,12 @@
 
                 case 'handoff':
                     var hoData = {};
-                    try { hoData = JSON.parse(msg.content); } catch(e) {}
+                    try { hoData = JSON.parse(msg.content); } catch(_) {}
                     if (hoData.not_applicable) {
                         statusText.textContent = 'Document scanned — no terms to analyze';
                         statusPill.classList.add('done');
                         stopStatusRotation();
-                        stopEditorialStatusRotation();
+                
                         stopCapTicker();
                         capTicker.classList.add('hidden');
                     } else {
@@ -6240,7 +6063,7 @@
                     if (_quickDoneSafetyTimer) { clearTimeout(_quickDoneSafetyTimer); _quickDoneSafetyTimer = null; }
                     if (_autoRevealTimer) { clearTimeout(_autoRevealTimer); _autoRevealTimer = null; }
                     var qdData = {};
-                    try { qdData = JSON.parse(msg.content); } catch(e) {}
+                    try { qdData = JSON.parse(msg.content); } catch(_) {}
 
                     // Parse all remaining cards before deciding path
                     var rejected = finalClauseSweep();
@@ -6259,8 +6082,7 @@
                     var qdSec = qdData.seconds ? qdData.seconds.toFixed(1) + 's' : '';
                     statusText.textContent = 'Cards ready' + (qdSec ? ' (' + qdSec + ')' : '') + ' \u2014 Expert report building...';
                     startStatusRotation('deep');
-                    stopEditorialStatusRotation();
-                    var _ds = $('deepStatus'); if (_ds) _ds.classList.remove('hidden');
+            
                     buildFilterChips();
                     buildPlaybookCard();
                     // Always update nav — ensures Next button exits "Analyzing" state
@@ -6371,12 +6193,12 @@
                     break;
 
                 case 'done':
-                    isDoneRendering = true; window._isDone = true;
+                    isDoneRendering = true;
                     stopVerdictCountdown();
                     statusPill.classList.add('done');
                     if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
                     stopStatusRotation();
-                    stopEditorialStatusRotation();
+            
                     if (thinkingCharCount > 0) showCapStats();
                     // Mark all deep dives as done (safety — they should already be)
                     DEEP_DIVE_SOURCES.forEach(function(s) {
@@ -6385,13 +6207,12 @@
                     });
                     var ddLabel = $('deepDiveProgressLabel');
                     if (ddLabel) ddLabel.innerHTML = 'All ' + DEEP_DIVE_SOURCES.length + ' expert reports ready \u2713';
-                    var _ds2 = $('deepStatus'); if (_ds2) _ds2.classList.add('hidden');
                     // Re-show model badge now that analysis is complete
                     var doneBadge = document.querySelector('.model-badge');
                     if (doneBadge) doneBadge.classList.remove('hidden');
 
                     var doneData = {};
-                    try { doneData = JSON.parse(msg.content); } catch(e) {}
+                    try { doneData = JSON.parse(msg.content); } catch(_) {}
                     var quickSec = doneData.quick_seconds ? doneData.quick_seconds.toFixed(1) : null;
                     var deepSec = doneData.deep_seconds ? doneData.deep_seconds.toFixed(1) : null;
                     var synthSec = doneData.synthesis_seconds ? doneData.synthesis_seconds.toFixed(1) : null;
@@ -6445,7 +6266,6 @@
                     statusPill.classList.add('done');
                     if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
                     stopStatusRotation();
-                    removeCursor();
 
                     resultsArea.classList.remove('hidden');
                     var errMsg = msg.content || 'Unknown error';
@@ -6482,7 +6302,6 @@
             }
             statusText.textContent = 'Connection lost';
             statusPill.classList.add('done');
-            removeCursor();
             stopStatusRotation();
             if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
             if (responseContent.length < 50) {
@@ -6596,8 +6415,6 @@
             statusText.textContent = messages[currentStatusIdx];
             // Mirror deep status text
             if (group === 'deep') {
-                var dst = $('deepStatusText');
-                if (dst) dst.textContent = messages[currentStatusIdx];
             }
         }, 4000);
     }
@@ -6606,7 +6423,6 @@
         if (statusRotateInterval) { clearInterval(statusRotateInterval); statusRotateInterval = null; }
     }
 
-    function removeCursor() { /* no-op — thinking panel removed */ }
 
     // ── Results rendering ─────────────────────────────────────
     function renderResults() {
@@ -6621,17 +6437,6 @@
         if (renderTimeout) { clearTimeout(renderTimeout); renderTimeout = null; }
         doRenderResults();
     }
-
-    function isNearBottom() {
-        return (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 300);
-    }
-
-    // Track manual scroll
-    window.addEventListener('scroll', function() {
-        if (Math.abs(window.scrollY - lastAutoScrollY) > 100) {
-            userHasScrolled = true;
-        }
-    }, { passive: true });
 
     function doRenderResults() {
         // ── Guard: once flip cards are built, DON'T render deep analysis during streaming ──
@@ -6851,7 +6656,7 @@
             isDoneRendering = true;
             if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
             stopStatusRotation();
-            stopEditorialStatusRotation();
+    
             statusPill.classList.add('done');
             // Hide ALL analysis chrome
             $('cardViewport').classList.remove('hidden');
@@ -6859,7 +6664,6 @@
             $('eduReviewPill').classList.add('hidden');
             var ocrEl = $('ocrBanner');
             if (ocrEl) ocrEl.classList.add('hidden');
-            var _ds2 = $('deepStatus'); if (_ds2) _ds2.classList.add('hidden');
             hideVerdictCol();
             stopVerdictCountdown();
             var heroEl2 = $('docTitleHero');
@@ -6872,8 +6676,6 @@
             // Hide card nav elements
             var cardNavSticky = $('cardNavSticky');
             if (cardNavSticky) cardNavSticky.classList.add('hidden');
-            var tricksBar = $('tricksDetectedBar');
-            if (tricksBar) tricksBar.classList.add('hidden');
 
             // Build explanation text
             var typeMatch = responseContent.match(/\*\*Document Type\*\*[:\s]*([^\n*]+)/i);
@@ -7371,7 +7173,7 @@
     function transitionToCardView() {
         cardViewTransitioned = true;
         if (_autoRevealTimer) { clearTimeout(_autoRevealTimer); _autoRevealTimer = null; }
-        stopEditorialStatusRotation();
+
         var statusEl = $('editorialLoadingStatus');
         if (statusEl) statusEl.textContent = 'Analysis in progress...';
 
@@ -7397,6 +7199,8 @@
 
         // Show context banner (Problem 1: emotional safety)
         $('eduReviewPill').classList.remove('hidden');
+
+
 
         // Update investigation phases
         var skStatusTxt = $('skeletonStatusText');
@@ -7503,16 +7307,7 @@
         setInvestPhase(3, 'done', '\u2713 Ready');
     }
 
-    // ── Request notification permission after first flip (non-intrusive) ──
-    var _notifRequested = false;
-    function requestNotificationPermission() {
-        if (_notifRequested || !('Notification' in window) || Notification.permission !== 'default') return;
-        _notifRequested = true;
-        // Delay to not interrupt the flip experience
-        setTimeout(function() {
-            Notification.requestPermission();
-        }, 3000);
-    }
+
 
     // ── Verdict column helpers (4-section live report) ─────────────────
     function hideVerdictCol() {
@@ -7520,45 +7315,6 @@
         // On mobile, close bottom sheet
         if (window.innerWidth <= 900) {
             document.body.classList.remove('sheet-open');
-        }
-    }
-    function renderOpusSection(source) {
-        if (!_verdictRenderTimers[source]) {
-            _verdictRenderTimers[source] = setTimeout(function() {
-                _verdictRenderTimers[source] = null;
-                // Verdict column stays hidden — inline verdict renders from same data (Problem 3)
-                var bodyEl = $('opusBody_' + source);
-                if (!bodyEl) return;
-                var text = opusSections[source].text;
-                if (!text.trim()) return;
-                var html = safeMd2Html(text);
-                html = styleRiskBadges(html);
-                html = styleReaderBlocks(html);
-                html = styleDrafterBlocks(html);
-                bodyEl.innerHTML = safeHtml(html);
-                // Append cursor while streaming
-                if (!opusSections[source].done) {
-                    var cur = document.createElement('span');
-                    cur.className = 'verdict-cursor';
-                    bodyEl.appendChild(cur);
-                }
-                // If user is viewing this section in focused mode, update live
-                if (_focusedSource === source) {
-                    var contentEl = $('focusedContent');
-                    if (contentEl) {
-                        var fHtml = safeMd2Html(text);
-                        fHtml = styleRiskBadges(fHtml);
-                        fHtml = styleReaderBlocks(fHtml);
-                        fHtml = styleDrafterBlocks(fHtml);
-                        contentEl.innerHTML = safeHtml(fHtml);
-                        if (!opusSections[source].done) {
-                            var fc = document.createElement('span');
-                            fc.className = 'verdict-cursor';
-                            contentEl.appendChild(fc);
-                        }
-                    }
-                }
-            }, 200);
         }
     }
     function markOpusSectionDone(source) {
@@ -7661,17 +7417,17 @@
         var textEl = $('verdictStripText');
 
         if (state === 'ready') {
-            building.classList.add('hidden');
-            peek.classList.add('hidden');
-            ready.classList.remove('hidden');
+            if (building) building.classList.add('hidden');
+            if (peek) peek.classList.add('hidden');
+            if (ready) ready.classList.remove('hidden');
         } else if (state === 'peek') {
-            building.classList.add('hidden');
-            peek.classList.remove('hidden');
-            ready.classList.add('hidden');
+            if (building) building.classList.add('hidden');
+            if (peek) peek.classList.remove('hidden');
+            if (ready) ready.classList.add('hidden');
         } else {
-            building.classList.remove('hidden');
-            peek.classList.add('hidden');
-            ready.classList.add('hidden');
+            if (building) building.classList.remove('hidden');
+            if (peek) peek.classList.add('hidden');
+            if (ready) ready.classList.add('hidden');
             if (textEl) textEl.textContent = 'Expert analyzing\u2026';
         }
         _currentStripState = state;
@@ -7731,7 +7487,6 @@
 
     // ── Expert Briefing: narrated AI progress ──
     var _briefingRevealed = false;
-    var _briefingTimer = null;
     var _narrateBuffer = '';          // accumulates thinking text until sentence boundary
     var _lastNarrationTime = 0;       // rate-limit: don't update faster than every 3.5s
     var _shownNarrations = {};        // dedup: don't repeat the same narration
@@ -7859,7 +7614,6 @@
         _shownNarrations = {};
         _lastNarrationTime = 0;
         _workerDotsReady = 0;
-        if (_briefingTimer) { clearInterval(_briefingTimer); _briefingTimer = null; }
         var panel = $('expertBriefing');
         if (panel) panel.classList.remove('visible');
         var sentence = $('briefingSentence');
@@ -7939,8 +7693,6 @@
         verdictExpandBtn.style.pointerEvents = 'none';
         var summaryEl = $('verdictSummary');
         if (summaryEl) { summaryEl.innerHTML = ''; summaryEl.classList.remove('visible'); }
-        Object.keys(_verdictRenderTimers).forEach(function(k) { clearTimeout(_verdictRenderTimers[k]); });
-        _verdictRenderTimers = {};
         // Reset accumulators and section UI — lock all sections
         Object.keys(opusSections).forEach(function(k) {
             opusSections[k] = { text: '', done: false };
@@ -8111,9 +7863,10 @@
     });
 
     // Focused panel navigation
-    $('focusedClose').addEventListener('click', function() { exitFocusedMode(); });
-    $('focusedPrev').addEventListener('click', function() { navigateFocused(-1); });
-    $('focusedNext').addEventListener('click', function() { navigateFocused(1); });
+    var _fcClose = $('focusedClose'), _fcPrev = $('focusedPrev'), _fcNext = $('focusedNext');
+    if (_fcClose) _fcClose.addEventListener('click', function() { exitFocusedMode(); });
+    if (_fcPrev) _fcPrev.addEventListener('click', function() { navigateFocused(-1); });
+    if (_fcNext) _fcNext.addEventListener('click', function() { navigateFocused(1); });
 
     // ── Reveal full verdict (progressive — streams as it builds) ──────
     var _verdictPollTimer = null;
@@ -8174,12 +7927,13 @@
         for (var i = 0; i < cards.length; i++) {
             var r = cards[i].getAttribute('data-risk-level') || 'green';
             if (counts[r] !== undefined) counts[r]++;
-            var title = cards[i].querySelector('h3');
+            var shouldRead = cards[i].getAttribute('data-should-read') || '';
+            var clauseTitle = cards[i].getAttribute('data-clause-title') || '';
             var score = parseInt(cards[i].getAttribute('data-score') || '0');
             var trickName = cards[i].getAttribute('data-trick') || '';
-            if (score > worstScore) {
+            if (score > worstScore && shouldRead) {
                 worstScore = score;
-                worstCard = title ? title.textContent.trim() : 'Clause ' + (i + 1);
+                worstCard = shouldRead;
             }
             if (trickName) tricks[trickName] = (tricks[trickName] || 0) + 1;
         }
@@ -8213,7 +7967,6 @@
             // Label the divider as quick scan — not the full verdict yet
             var dividerText = $('verdictDividerText');
             if (dividerText) dividerText.textContent = 'Quick Scan Results';
-            _flashVerdictShown = true;
         }
     }
 
@@ -8294,9 +8047,6 @@
             var id = layers[i].id;
             if (id) _expandedVerdictLayers[id] = !layers[i].classList.contains('collapsed');
         }
-        // Also save honey toggle state
-        var honeyToggles = document.querySelectorAll('.back-honey-toggle.expanded');
-        _expandedVerdictLayers._honeyCount = honeyToggles.length;
         // Save which deep dive panel is open (survives verdict re-renders)
         _expandedVerdictLayers._openDeepDive = null;
         DEEP_DIVE_SOURCES.forEach(function(s) {
@@ -8407,6 +8157,9 @@
         html += '<span class="verdict-tier-icon">' + tc.icon + '</span> ';
         html += escapeHtml(tc.label);
         html += '</div>';
+
+        // ── Enforcement framing ──
+        html += '<div class="verdict-enforcement-frame">Assumes every clause is enforced as written \u2014 the worst case, not a prediction.</div>';
 
         // ── Jurisdiction elevated: render right after tier if it has warnings ──
         if (jurisdictionHasWarnings) {
@@ -8823,7 +8576,6 @@
                 // Now update main status to fully complete
                 statusText.textContent = 'Analysis complete';
                 stopStatusRotation();
-                if (_briefingTimer) { clearInterval(_briefingTimer); _briefingTimer = null; }
                 showBriefingSentence('All expert reports are ready');
             } else {
                 label.innerHTML = doneCount + ' of ' + total + ' expert reports ready<span class="pulsing-dots"><span></span><span></span><span></span></span>';
@@ -9480,28 +9232,6 @@
         }
     }
 
-    // ── Editorial status rotation ──────────────────────────
-    var editorialStatusMessages = [
-        'FlipSide is reading between the lines...',
-        'Adopting the drafter\u2019s perspective...',
-        'Looking for what\u2019s hidden in plain sight...',
-        'Every clause exists for a reason...',
-        'The boring parts are the dangerous parts...'
-    ];
-
-    function startEditorialStatusRotation() {
-        stopEditorialStatusRotation();
-        editorialStatusIdx = 0;
-        editorialStatusInterval = setInterval(function() {
-            editorialStatusIdx = (editorialStatusIdx + 1) % editorialStatusMessages.length;
-            var el = $('editorialLoadingStatus');
-            if (el) el.textContent = editorialStatusMessages[editorialStatusIdx];
-        }, 4000);
-    }
-
-    function stopEditorialStatusRotation() {
-        if (editorialStatusInterval) { clearInterval(editorialStatusInterval); editorialStatusInterval = null; }
-    }
 
     // ── Clause card wrapping ──────────────────────────────────
     function wrapClauseSections(container) {
@@ -10096,13 +9826,14 @@
     if (_thinkToggleEl) _thinkToggleEl.addEventListener('click', toggleThinkingViewer);
 
     // ── Verdict progress strip CTAs ──────────────────────────
-    $('verdictStripCta').addEventListener('click', function(e) {
+    var _vsCta = $('verdictStripCta'), _vsPeekCta = $('verdictStripPeekCta');
+    if (_vsCta) _vsCta.addEventListener('click', function(e) {
         e.stopPropagation();
         dismissVerdictStrip();
         exitFocusedMode();
         revealDeepAnalysis(true);
     });
-    $('verdictStripPeekCta').addEventListener('click', function(e) {
+    if (_vsPeekCta) _vsPeekCta.addEventListener('click', function(e) {
         e.stopPropagation();
         dismissVerdictStrip();
         exitFocusedMode();
@@ -10126,7 +9857,7 @@
     });
 
     // ── Back to cards button (from verdict view) ──────────────
-    $('backToCardsBtn').addEventListener('click', function() {
+    on('backToCardsBtn', 'click', function() {
         if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
         $('deepAnalysisSection').classList.add('hidden');
         $('cardViewport').classList.remove('hidden');
@@ -10138,7 +9869,7 @@
     });
 
     // ── Cards ready pill click → jump to first card ──────────
-    $('cardsReadyPill').addEventListener('click', function() {
+    on('cardsReadyPill', 'click', function() {
         $('cardsReadyPill').classList.add('hidden');
         _verdictAutoRevealed = false;
         // Hide inline verdict, show card viewport
@@ -10163,7 +9894,7 @@
         if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
         if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
         stopStatusRotation();
-        stopEditorialStatusRotation();
+
         stopInvestigationScroll();
         resetVerdictCol();
         stopVerdictCountdown();
@@ -10189,10 +9920,10 @@
     });
 
     // ── Header brand = back ───────────────────────────────────
-    $('headerBrand').addEventListener('click', function() { backBtn.click(); });
+    on('headerBrand', 'click', function() { backBtn.click(); });
 
     // ── Copy all ──────────────────────────────────────────────
-    $('copyAllBtn').addEventListener('click', function() {
+    on('copyAllBtn', 'click', function() {
         var text = flipCardsBuilt
             ? (flipCardContainer.innerText + '\n\n' + deepAnalysisEl.innerText)
             : resultsContent.innerText;
@@ -10204,7 +9935,7 @@
     });
 
     // ── Export PDF Report (Problem 7) ───────────────────────────
-    $('exportBtn').addEventListener('click', function() {
+    on('exportBtn', 'click', function() {
         var btn = this;
         if (btn.classList.contains('generating')) return;
         btn.classList.add('generating');
@@ -10419,7 +10150,7 @@
     });
 
     // ── All flags via mail ─────────────────────────────────────────
-    $('emailLawyerBtn').addEventListener('click', function() {
+    on('emailLawyerBtn', 'click', function() {
         var docName = 'FlipSide Analysis';
         var meta = metadataLine.textContent;
         if (meta) docName = meta.split('Type:')[1] ? meta.split('Type:')[1].split('Drafted')[0].trim() : docName;
@@ -10471,7 +10202,7 @@
     });
 
     // ── Download report in document language ────────────────────
-    $('exportLangBtn').addEventListener('click', function() {
+    on('exportLangBtn', 'click', function() {
         var btn = this;
         if (btn.classList.contains('generating')) return;
         btn.classList.add('generating');
@@ -10572,7 +10303,7 @@
     });
 
     // ── Dark mode ─────────────────────────────────────────────
-    $('darkModeBtn').addEventListener('click', function() {
+    on('darkModeBtn', 'click', function() {
         document.body.classList.toggle('dark-mode');
         var isDark = document.body.classList.contains('dark-mode');
         this.innerHTML = isDark ? '&#9788;' : '&#9790;';
@@ -10829,7 +10560,6 @@
         var faqSections = document.querySelectorAll('.faq-section[id]');
         var navLinks = uploadNav.querySelectorAll('a[href^="#faq-"]');
         if (faqSections.length && navLinks.length) {
-            var scrollContainer = uploadMain;
             var onScroll = function() {
                 if (faqWrapper.classList.contains('hidden')) return;
                 var current = '';

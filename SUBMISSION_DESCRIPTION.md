@@ -10,7 +10,7 @@ Why Opus 4.6? Haiku 4.5 builds the flip cards — fast, structured, parallel. Bu
 
 Millions of people sign one-sided documents every year without understanding the other side. FlipSide makes legal awareness free and human — not legal advice, but the other side of the story.
 
-0% of the code was written by a human. 100% was built through conversation with Claude Code. 14,600 lines. 89 commits. 7 architecture pivots. 5 days.
+0% of the code was written by a human. 100% was built through conversation with Claude Code. 14,000+ lines. 111 commits. 7 architecture pivots. 6 days.
 ---
 
 **Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

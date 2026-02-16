@@ -27,7 +27,7 @@ During the FlipSide hackathon, we noticed a consistent pattern: asking Claude to
 
 Cat Wu (Product Lead and co-creator of Claude Code) confirmed during the hackathon AMA: *"We have noticed this as well... My best guess is that it's changing the model from doing fast thinking to slow thinking."* (Full quote in The Key Insight above.)
 
-After applying this pattern across 89 commits and 15+ documented cases, we have a theory about why it works — backed by 8 real before/after cases from the build and a 30-agent validation test.
+After applying this pattern across 111 commits and 15+ documented cases, we have a theory about why it works — backed by 8 real before/after cases from the build and a 30-agent validation test.
 
 ---
 
@@ -54,7 +54,7 @@ The simplest analogy: Direct action is "Build me a nice kitchen." Plan mode is "
 
 ## Why Meta-Prompting Wins: Observable Differences
 
-We don't know what happens inside the model. We observe inputs and outputs. Here's what we observed across 89 commits:
+We don't know what happens inside the model. We observe inputs and outputs. Here's what we observed across 111 commits:
 
 | | What the user controls | What the user sees before execution | What's invisible |
 |---|---|---|---|
@@ -435,7 +435,7 @@ The full evidence trail across the project:
 ## Sources
 
 - Cat Wu, Product Lead and co-creator of Claude Code — "We have noticed this as well... it's changing the model from doing fast thinking to slow thinking" (hackathon AMA, Feb 2026)
-- FlipSide hackathon build: 89 commits, 8 documented cases with before/after evidence, 30 agent-tested comparisons
+- FlipSide hackathon build: 111 commits, 8 documented cases with before/after evidence, 30 agent-tested comparisons
 - The Prewash Method — Henk van Ess, developed during Claude Hackathon 2026
 ---
 

@@ -1,6 +1,6 @@
 # FlipSide Hackathon — Strategy Decisions
 
-30 strategic decisions made during a 5-day hackathon building FlipSide, a tool that flips consumer documents to reveal what the other side intended. Each entry documents the context, the choice, what happened, and the key insight. Decisions range from product philosophy (how reassurance becomes a weapon) to architecture recovery (writing the prompt instead of the code) to automated QC (Playwright capturing LLM output for expert review). This file is the evidence base for the "Keep Thinking Prize" — a real-time record of how the product evolved through iteration, failure, external feedback, and deliberate strategic pivots.
+29 strategic decisions made during a 6-day hackathon building FlipSide, a tool that flips consumer documents to reveal what the other side intended. Each entry documents the context, the choice, what happened, and the key insight. Decisions range from product philosophy (how reassurance becomes a weapon) to architecture recovery (writing the prompt instead of the code) to automated QC (Playwright capturing LLM output for expert review). This file is the evidence base for the "Keep Thinking Prize" — a real-time record of how the product evolved through iteration, failure, external feedback, and deliberate strategic pivots.
 
 ---
 
