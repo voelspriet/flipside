@@ -2,7 +2,7 @@
 
 **FlipSide — The dark side of small print.**
 
-E  Every contract has a drafter. The drafter wrote it for a reason. FlipSide   
+  Every contract has a drafter. The drafter wrote it for a reason. FlipSide   
   shows you that reason.                                                      
                                                                               
   Upload any document you didn't write — gym membership, coupon, app terms,   
