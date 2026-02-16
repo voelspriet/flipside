@@ -400,6 +400,6 @@ Third-party licenses: Flask (BSD-3), Anthropic SDK (MIT), python-docx (MIT), pdf
 
 ---
 
-Built entirely through conversation with Claude Code by a non-coder. Every line — the Flask backend, the SSE streaming pipeline, the 10,700-line frontend — written by talking to Opus 4.6. Not by writing code.
+Built entirely through conversation with Claude Code by someone very poor at coding. Every line — the Flask backend, the SSE streaming pipeline, the 10,700-line frontend — written by talking to Opus 4.6. Not by writing code.
 
 *FlipSide. Everyone deserves to see the other side.*

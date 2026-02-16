@@ -1,6 +1,6 @@
 # How Opus 4.6 Built FlipSide
 
-**A non-coder built 14,600 lines in 5 days. Here's what Opus 4.6 did that no other model could.**
+**Someone very poor at coding built 14,600 lines in 5 days. Here's what Opus 4.6 did that no other model could.**
 
 | Metric | Value |
 | --- | --- |
@@ -19,7 +19,7 @@ Every claim below is grounded in the git history, benchmarks, and the actual dev
 
 ---
 
-## 1. Visual Vocabulary — How a Non-Coder Directs Code Changes
+## 1. Visual Vocabulary — Directing Code Changes Without Coding Skills
 
 **The problem:** You can SEE the element you want to change, but you don't know what it's called in code. You can't say "move the `#dropZone`" if you've never opened the HTML.
 
@@ -71,7 +71,7 @@ The narration line is dynamic — `THINKING_TRANSLATIONS` pattern-matches Opus t
 - Screenshot + "why is there a gap between these two?" → Claude measures the CSS margins/padding on the exact elements visible
 - Screenshot + "this takes too long" → Claude traces the visual state to the code that controls when it transitions (not a CSS question — an architecture question)
 
-**The progression:** The project started with imprecise instructions ("never show anlyze complete hre" + screenshot) and evolved into a systematic workflow: screenshot first, get the vocabulary, then direct changes precisely. The screenshot replaced the IDE for a non-coder — instead of right-clicking "Inspect Element," you just show Claude what you see.
+**The progression:** The project started with imprecise instructions ("never show anlyze complete hre" + screenshot) and evolved into a systematic workflow: screenshot first, get the vocabulary, then direct changes precisely. The screenshot replaced the IDE — instead of right-clicking "Inspect Element," you just show Claude what you see.
 
 **Cross-screen animation — swooshing elements between two screenshots:**
 
@@ -160,7 +160,7 @@ Each pivot required understanding the entire existing system, identifying what c
 
 **The benchmark:** GDPval-AA +144 Elo over GPT-5.2 (economically valuable knowledge work).
 
-**What happened in FlipSide:** The user is a non-coder who gives instructions like:
+**What happened in FlipSide:** The user gives instructions like:
 
 - "never show anlyze complete hre" + screenshot → Found the exact `editorialLoadingStatus` element, traced where "Analysis complete" is set (line 5457), and hid the entire indicator row
 - "so why not jump out this screen the moment the first card is ready" → Understood this as an architecture question about pipeline parallelism, not a CSS question about screen transitions
@@ -246,9 +246,9 @@ The difference shows up in:
 - **Thread safety reasoning** across 5 concurrent threads sharing mutable state
 - **Self-correction** that caught security issues, dead code, and race conditions
 - **Intent inference** from non-technical, typo-filled instructions
-- **Visual vocabulary** — reading screenshots and establishing shared element names with a non-coder
+- **Visual vocabulary** — reading screenshots and establishing shared element names with someone who can barely code
 
-Opus 4.6 didn't write better functions. It built a better system — and rebuilt it 7 times as the design evolved — while maintaining consistency across 14,600 lines and understanding a non-coder's intent from three misspelled words and a screenshot.
+Opus 4.6 didn't write better functions. It built a better system — and rebuilt it 7 times as the design evolved — while maintaining consistency across 14,600 lines and understanding imprecise intent from three misspelled words and a screenshot.
 
 ---
 
