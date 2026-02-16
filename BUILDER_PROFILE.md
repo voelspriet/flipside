@@ -1,6 +1,6 @@
 # Builder: Henk van Ess
 
-20 years teaching investigators how to find what's hidden in plain sight. 
+Teaching investigators worldwide how to find what's hidden in plain sight. 
 
 ---
 
