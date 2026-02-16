@@ -861,7 +861,7 @@ The instinct was: put the best model on the most visible feature (card backs). T
 | Strategy decisions (iteration evidence) | Done (22 decisions) |
 | Third-party license attribution | Done |
 | 14 sample documents | Done |
-| Demo video (3 min) | Script ready (DEMO_SCRIPT.md) |
+| Demo video (3 min) | Done |
 
 ### The Lesson
 

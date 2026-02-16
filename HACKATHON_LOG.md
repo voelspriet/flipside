@@ -34,11 +34,11 @@ Upload a document you didn't write — a contract, Terms of Service, insurance p
 
 **Entry 1 — Meta-Prompting**
 Instead of asking Claude to build a documentation agent, we asked it to *design the prompt for itself first*. This established the workflow for the entire hackathon: generate the prompt → review it → clean it → execute it.
-→ [docs/META_PROMPTING.md](https://github.com/voelspriet/flipside/tree/main/docs/META_PROMPTING.md)
+→ See [meta-prompting-strategy.md](meta-prompting-strategy.md)
 
 **Entry 2 — Jury Research**
 Researched all 5 judges before choosing a project. Caught a critical factual error: Claude's training data incorrectly linked judge Thariq Shihipar to Upsolve (a nonprofit). Live web research proved this was wrong — Thariq is a serial entrepreneur (One More Multiverse, $17M raised). This correction changed the entire strategic direction.
-→ [docs/JURY_RESEARCH_LIVE.md](https://github.com/voelspriet/flipside/tree/main/docs/JURY_RESEARCH_LIVE.md)
+→ Jury research conducted via live web search
 
 **Entry 3 — Omission Test: Testing Opus 4.6's Gap Awareness**
 A deliberate test. The human explained the two-input decision approach (personal strengths + jury interests) but intentionally withheld the hackathon's official judging criteria. Opus 4.6 independently identified it as a missing variable and presented this table:
@@ -55,7 +55,7 @@ This demonstrates that the model reasons about **what it doesn't know** — not 
 
 **Entry 4 — Criteria Analysis**
 Full hackathon brief analyzed: Demo 30%, Opus 4.6 Use 25%, Impact 25%, Depth 20%. Two special prizes identified as targets: "Most Creative Opus 4.6 Exploration" and "The Keep Thinking Prize."
-→ [docs/HACKATHON_BRIEF.md](https://github.com/voelspriet/flipside/tree/main/docs/HACKATHON_BRIEF.md) | [docs/CRITERIA_ANALYSIS.md](https://github.com/voelspriet/flipside/tree/main/docs/CRITERIA_ANALYSIS.md)
+→ Criteria: Demo 30%, Impact 25%, Opus 4.6 Use 25%, Depth 20%
 
 ---
 
@@ -65,7 +65,7 @@ Full hackathon brief analyzed: Demo 30%, Opus 4.6 Use 25%, Impact 25%, Depth 20%
 Claude wrote a research prompt containing adjective bias ("brutally honest," "is it forced?"). The human caught it before execution. This led to documenting The Prewash Method — a two-cycle technique for cleaning AI prompts:
 - Cycle 1: Remove adjective bias
 - Cycle 2: Replace vague language with measurable criteria
-→ [docs/PREWASH_METHOD.md](https://github.com/voelspriet/flipside/tree/main/docs/PREWASH_METHOD.md)
+→ [PREWASH_METHOD.md](PREWASH_METHOD.md)
 
 **Entry 6 — Live Demonstration**
 The human gave Claude a deliberately vague input. Claude interpreted it confidently through its own vocabulary. The human then revealed the actual structured prompt — proving that "Think Like a Document" applies to AI reasoning itself. Documented verbatim.
@@ -73,7 +73,7 @@ The human gave Claude a deliberately vague input. Claude interpreted it confiden
 
 **Entry 7 — Prewash Prompt Collection**
 Seven real before/after prompt examples collected as an educational resource. Shows what Cycle 1 removes and what Cycle 2 fixes in each case.
-→ [docs/PREWASH_PROMPT_COLLECTION.md](https://github.com/voelspriet/flipside/tree/main/docs/PREWASH_PROMPT_COLLECTION.md)
+→ [PREWASH_PROMPT_COLLECTION.md](PREWASH_PROMPT_COLLECTION.md)
 
 ---
 
@@ -81,7 +81,7 @@ Seven real before/after prompt examples collected as an educational resource. Sh
 
 **Entry 8 — Initial Decision Matrix**
 Four ideas evaluated against three inputs (strengths × jury × criteria). **CiteGuard** — a legal citation hallucination verifier — scored highest on every dimension: 46/50 jury fit, 9.1/10 criteria fit, 10/10 uniqueness. The team's 731-document hallucination corpus was the competitive moat.
-→ [docs/DECISION_MATRIX.md](https://github.com/voelspriet/flipside/tree/main/docs/DECISION_MATRIX.md)
+→ CiteGuard scored 46/50 jury fit, 9.1/10 criteria fit, 10/10 uniqueness
 
 **Entry 9 — FAILURE: Anchoring Bias**
 The human had flagged Damien Charlotin's hallucination database (907 cases + PelAIkan verification tool) as a direct competitor to CiteGuard. Despite this, Claude scored CiteGuard's uniqueness at 10/10 across three subsequent documents. The competitor evidence was acknowledged in conversation but never propagated into the scoring. CiteGuard recommendation invalidated. Product decision reopened.
@@ -89,31 +89,31 @@ The human had flagged Damien Charlotin's hallucination database (907 cases + Pel
 
 **Entry 10 — New Concepts via "Think Like a Document"**
 Five new tool concepts generated using a Prewash-compliant prompt with 5 constraints and 5 required outputs. The principle was used as a generative design constraint, not just a search technique.
-→ [docs/TOOL_CONCEPTS.md](https://github.com/voelspriet/flipside/tree/main/docs/TOOL_CONCEPTS.md)
+→ Five concepts generated: SourceSight, CiteGuard, GrantWhisperer, ContractLens, SourceFlipper
 
 **Entry 11 — Matrix Comparison**
 Earlier decision matrix retested against new concepts using identical scoring. The initial winner still led on two dimensions but no longer won on every dimension. ContractLens emerged as the strongest concept.
-→ [docs/MATRIX_COMPARISON.md](https://github.com/voelspriet/flipside/tree/main/docs/MATRIX_COMPARISON.md)
+→ ContractLens emerged as strongest concept
 
 **Entry 12 — Expanded Reach**
 Each concept modified for broader user base. ContractLens expanded from "contracts" to "any one-sided document" (ToS, insurance, loans, HOA rules), growing from ~50M to ~250M+ potential users with zero added complexity. ContractLens ranked #1.
-→ [docs/EXPANDED_REACH.md](https://github.com/voelspriet/flipside/tree/main/docs/EXPANDED_REACH.md)
+→ ContractLens expanded from ~50M to ~250M+ potential users
 
 **Entry 13 — Problem Deep Dive**
 10 real problems identified. Three lenses applied (most users, most financial damage, least served). The Policyholder's Exclusion Maze appeared in all three lists: ~30M users/year, $10K–$50K per denied claim, zero existing tools.
-→ [docs/CONTRACTLENS_PROBLEMS.md](https://github.com/voelspriet/flipside/tree/main/docs/CONTRACTLENS_PROBLEMS.md)
+→ Policyholder's Exclusion Maze: ~30M users/year, $10K–$50K per denied claim
 
 **Entry 14 — FAILURE: Framing Bias**
 The human asked about a document comparison feature. Claude narrowed it to "compare two insurance policies" because it was anchored on ContractLens. The human's actual intent was broader: any two documents, three comparison types (contradictions, divergent conclusions, gaps). Third documented instance of AI interpreting through its most recent frame.
-→ [docs/FRAMING_BIAS_FAILURE.md](https://github.com/voelspriet/flipside/tree/main/docs/FRAMING_BIAS_FAILURE.md)
+→ Third documented instance of AI interpreting through its most recent frame
 
 **Entry 15 — Document Comparison Concept**
 The broader comparison concept defined with three precise comparison types, five document pairings, and a concrete walkthrough (pharma press release vs. FDA response letter).
-→ [docs/DOCUMENT_COMPARISON_CONCEPT.md](https://github.com/voelspriet/flipside/tree/main/docs/DOCUMENT_COMPARISON_CONCEPT.md)
+→ Three comparison types defined: contradictions, divergent conclusions, gaps
 
 **Entry 16 — Product Unity Analysis**
 Tested whether ContractLens and document comparison could be one product. Answer: no — a single sentence cannot describe both to both audiences. Recommendation: build ContractLens only. The comparison tool's 2M users are 0.8% of ContractLens's 250M+.
-→ [docs/PRODUCT_UNITY_ANALYSIS.md](https://github.com/voelspriet/flipside/tree/main/docs/PRODUCT_UNITY_ANALYSIS.md)
+→ Recommendation: build ContractLens only. Comparison tool's 2M users = 0.8% of ContractLens's 250M+
 
 **Entry 17 — FlipSide**
 Product named. Tagline chosen: *"FlipSide: the dark side of small print."*
@@ -345,7 +345,7 @@ Reviewed all verdict column elements for readability in the ~300px sidebar. Fixe
 Save Report rewritten: builds clean HTML from card `data-*` attributes and DOM queries instead of dumping raw `innerHTML` (which included broken SVG score rings and 3D flip transforms). Loading time estimates added ("about a minute" / "about 30 seconds"). Verdict column now hides for non-applicable documents. Spinning ⟳ flip icon on all cards.
 
 **Entry 70 — Hackathon Event Waiver as 14th Sample**
-Added the real "Built with Opus 4.6" hackathon event waiver as a sample document. Claude sparkle icon tile. Meta-recursive: FlipSide analyzes the document that governs its own creation. Generated thumbnails. Demo script created (DEMO_SCRIPT.md, 3-minute 7-scene narrative).
+Added the real "Built with Opus 4.6" hackathon event waiver as a sample document. Claude sparkle icon tile. Meta-recursive: FlipSide analyzes the document that governs its own creation. Generated thumbnails. Demo script created (3-minute 7-scene narrative).
 
 **Entry 71 — Verdict Summary + Home Button + Layout Fixes**
 Persistent verdict summary appears when all 4 Opus sections complete: risk score + first sentence from overall assessment. Stays visible as user navigates cards. Home button replaces "Back" text with house icon. "Paste text" / "Compare" links moved under drop zone. Score label moved below ring (was clipped inside SVG). "Read full verdict" button flips on Y-axis when ready. Card flip ⟳ stops spinning after flip.
@@ -500,11 +500,7 @@ Also locked "Go Deeper" buttons (`.locked` class: 45% opacity, `cursor: not-allo
 |----------|-------|--------|
 | `app.py` | 3,861 | Backend: Flask, SSE, parallel processing, vision, tool use, follow-up, prompt caching, dynamic token budget, suitability gate, 14 sample docs |
 | `templates/index.html` | 10,748 | Card-first frontend: instant flip cards, live thinking narration, one-screen verdict with risk summary + tricks + 4 Go Deeper buttons, clean export, confidence badges, follow-up UI, DOMPurify |
-| `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
-| `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
-| `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
-| `prompts/` | 3 files | Opus capabilities audit, gap analysis, feasibility study |
-| `docs/` | 18 documents | Methodology, decisions, failures, corrections |
+| `docs/` | 2 files | LIVE_DEMONSTRATION.md, ANCHORING_FAILURE.md |
 | `HACKATHON_LOG.md` | This file | 78 entries, complete process timeline |
 | `README.md` | Product description + 14 Opus capabilities + meta-prompting discovery |
 
@@ -518,7 +514,7 @@ Each failure was caught by the human, not by Opus 4.6. Each demonstrates a diffe
 |---|---------|-------|---------|-----------|--------------|
 | 1 | [Live Demonstration](https://github.com/voelspriet/flipside/tree/main/docs/LIVE_DEMONSTRATION.md) | Planning | Training vocabulary bias | Projected its own framework onto a vague input | Revealed the structured version |
 | 2 | [Anchoring Failure](https://github.com/voelspriet/flipside/tree/main/docs/ANCHORING_FAILURE.md) | Planning | Confirmation bias across documents | Maintained a conclusion despite contradicting evidence | Scrolled back and demanded accountability |
-| 3 | [Framing Bias](https://github.com/voelspriet/flipside/tree/main/docs/FRAMING_BIAS_FAILURE.md) | Planning | Recency/context anchoring | Interpreted a new concept through its most recent topic | Showed the neutral version |
+| 3 | Framing Bias | Planning | Recency/context anchoring | Interpreted a new concept through its most recent topic | Showed the neutral version |
 | 4 | Meta-analysis prompt (Entry 33) | Self-examination | Adjective/framing bias | Wrote a prompt with "experienced," "differently," unverified claims, leading questions | Demanded Prewash-compliant rewrite |
 | 5 | LLM output format assumption (Entry 36) | Build | Format rigidity bias | Wrote a regex assuming all models produce identical output format | Debugged via console.log, found Haiku drops `/100` |
 
@@ -536,8 +532,7 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 4. **Always verify AI training data with live research.** The Thariq/Upsolve error would have misdirected the entire strategy.
 
-5. **AI prompts carry invisible bias.** Every adjective is a policy decision. The Prewash Method catches them before they compound.
-→ [docs/PREWASH_METHOD.md](https://github.com/voelspriet/flipside/tree/main/docs/PREWASH_METHOD.md)
+5. **AI prompts carry invisible bias.** Every adjective is a policy decision. The [Prewash Method](PREWASH_METHOD.md) catches them before they compound.
 
 6. **Removing bias is not enough — add precision.** "How well?" is unbiased but unmeasurable. "Rate 1-5" is both.
 
@@ -567,17 +562,13 @@ The first four are the same error at different scales: **the AI uses itself as t
 |----------|---------|
 | `app.py` (3,861 lines) | Flask backend: prompts, parallel processing, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
 | `templates/index.html` (10,748 lines) | Card-first frontend: instant flip cards, one-screen verdict, 4 Go Deeper buttons, live thinking narration, clean export, confidence badges, follow-up UI with tool calls, DOMPurify |
-| `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
-| `test_ux_flow.py` (230 lines) | Automated UX flow test |
-| `maintain_docs.py` (230 lines) | Doc maintenance agent |
-| `prompts/` (3 files) | Opus capabilities audit, gap analysis, feasibility study |
-| [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
+| [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | Methodology documents (LIVE_DEMONSTRATION, ANCHORING_FAILURE) |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
 | This file | 78 entries, complete process timeline |
 
 ## What Remains
 
-- Demo video (3 minutes, scripted narrative) — script ready (DEMO_SCRIPT.md)
+- ~~Demo video (3 minutes, scripted narrative)~~ Done
 - ~~100-200 word summary~~ Done (173 words)
 - ~~Update README.md to match current state~~ Done
 - ~~Reduce perceived Opus wait time~~ Addressed: verdict progress strip, live thinking narration (Expert Mind), 10s auto-reveal, one-screen verdict

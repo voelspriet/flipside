@@ -10,7 +10,7 @@ I came to the hackathon with two things I'd spent years developing:
 
 **"Think Like a Document"** — a methodology for AI-augmented query reformulation and enhanced information sensemaking.
 
-**Meta-prompting** — a technique I'd discovered for getting better results from AI. Instead of telling Claude to do something, I said: *"Give me first a prompt for yourself that would do this."* ([verbatim transcript](docs/META_PROMPTING.md)) Then I read what it wrote, found the bias, cleaned it, and said "execute." The AI designs its own instructions — but I review them before they run. We later validated this across [30 agents and 8 real cases](meta-prompting-strategy.md).
+**Meta-prompting** — a technique I'd discovered for getting better results from AI. Instead of telling Claude to do something, I said: *"Give me first a prompt for yourself that would do this."* Then I read what it wrote, found the bias, cleaned it, and said "execute." The AI designs its own instructions — but I review them before they run. We later validated this across [30 agents and 8 real cases](meta-prompting-strategy.md).
 
 I wanted to see what happens when you merge these two ideas with Opus 4.6.
 
@@ -18,9 +18,9 @@ I wanted to see what happens when you merge these two ideas with Opus 4.6.
 
 ## The Conversation
 
-I explained both concepts to Claude. Not as a product brief — as a way of thinking. I described how "Think Like a Document" works in search, how the [Prewash Method](docs/PREWASH_METHOD.md) catches bias in prompts, and asked: what could we build that puts these principles inside a product?
+I explained both concepts to Claude. Not as a product brief — as a way of thinking. I described how "Think Like a Document" works in search, how the [Prewash Method](PREWASH_METHOD.md) catches bias in prompts, and asked: what could we build that puts these principles inside a product?
 
-Claude's first instinct was **CiteGuard** — a legal citation hallucination verifier. We built a [decision matrix](docs/DECISION_MATRIX.md) crossing three inputs: builder strengths, [jury interests](docs/JURY_RESEARCH_LIVE.md), and [judging criteria](docs/CRITERIA_ANALYSIS.md). CiteGuard scored highest on every dimension: 46/50 jury fit, 9.1/10 criteria fit, 10/10 uniqueness.
+Claude's first instinct was **CiteGuard** — a legal citation hallucination verifier. We built a decision matrix crossing three inputs: builder strengths, jury interests, and judging criteria. CiteGuard scored highest on every dimension: 46/50 jury fit, 9.1/10 criteria fit, 10/10 uniqueness.
 
 I deliberately withheld the judging criteria to test whether Opus 4.6 would identify it as a missing variable. It did, unprompted — presenting a table showing the gap before I revealed the data. ([HACKATHON_LOG](HACKATHON_LOG.md), Entry 3.)
 
@@ -44,7 +44,7 @@ This is also the core of "Think Like a Document": the AI was reading from its ow
 
 What followed was not a straight line. It was a conversation — sometimes an argument — between a human who knows how hidden information works and a model that knows how to write code.
 
-Five new concepts were generated using a [Prewash-compliant prompt](docs/TOOL_CONCEPTS.md) with "Think Like a Document" as the organizing constraint. **ContractLens** emerged as the strongest ([Entry 11](HACKATHON_LOG.md)), was [expanded](docs/EXPANDED_REACH.md) from "contracts" to "any one-sided document," and eventually became [FlipSide](HACKATHON_LOG.md) (Entry 17).
+Five new concepts were generated using a Prewash-compliant prompt with "Think Like a Document" as the organizing constraint. **ContractLens** emerged as the strongest ([Entry 11](HACKATHON_LOG.md)), was expanded from "contracts" to "any one-sided document," and eventually became [FlipSide](HACKATHON_LOG.md) (Entry 17).
 
 The idea that survived: what if "Think Like a Document" applies to contracts? Every contract has a drafter. The drafter wrote it for a reason. If you could read from the drafter's perspective instead of your own, you'd see things you'd never notice as a reader.
 
@@ -94,7 +94,7 @@ Along the way, Claude failed five times. I caught all five. Each is documented w
 |---|---------|-------|----------|
 | 1 | Training vocabulary bias | [Entry 6](HACKATHON_LOG.md) | [docs/LIVE_DEMONSTRATION.md](docs/LIVE_DEMONSTRATION.md) — verbatim transcript |
 | 2 | Anchoring bias | [Entry 9](HACKATHON_LOG.md) | [docs/ANCHORING_FAILURE.md](docs/ANCHORING_FAILURE.md) — 10/10 across 3 documents |
-| 3 | Framing bias | [Entry 14](HACKATHON_LOG.md) | [docs/FRAMING_BIAS_FAILURE.md](docs/FRAMING_BIAS_FAILURE.md) — narrowed to insurance |
+| 3 | Framing bias | [Entry 14](HACKATHON_LOG.md) | Narrowed broad concept to insurance — recency anchoring |
 | 4 | Adjective bias | [Entry 33](HACKATHON_LOG.md) | Prompt contained "brutally honest" — priming for negative evaluation |
 | 5 | Format rigidity | [Entry 36](HACKATHON_LOG.md) | Haiku silently broke every parser by drifting from the specified output format |
 
@@ -112,4 +112,4 @@ Not because the human didn't contribute — because the human's contribution was
 
 ---
 
-*[30 decisions with rationale](strategy.md) · [78-entry build timeline](HACKATHON_LOG.md) · [meta-prompting: 30 agents, 8 cases](meta-prompting-strategy.md) · [5 AI failures documented](docs/ANCHORING_FAILURE.md) · [the Prewash Method](docs/PREWASH_METHOD.md) · [builder profile](BUILDER_PROFILE.md)*
+*[30 decisions with rationale](strategy.md) · [78-entry build timeline](HACKATHON_LOG.md) · [meta-prompting: 30 agents, 8 cases](meta-prompting-strategy.md) · [5 AI failures documented](docs/ANCHORING_FAILURE.md) · [the Prewash Method](PREWASH_METHOD.md) · [builder profile](BUILDER_PROFILE.md)*

@@ -327,11 +327,10 @@ This project documents not just the product, but the entire decision-making proc
 | --- | --- |
 | [Hackathon Log](HACKATHON_LOG.md) | 78 entries, complete process timeline |
 | [Strategy Decisions](strategy.md) | 27 strategy decisions with rationale — including a midpoint self-evaluation |
-| [The Prewash Method](docs/PREWASH_METHOD.md) | How to clean bias from AI prompts before execution |
+| [The Prewash Method](PREWASH_METHOD.md) | How to clean bias from AI prompts before execution |
 | [Live Demonstration](docs/LIVE_DEMONSTRATION.md) | "Think Like a Document" demonstrated on the AI itself |
-| [Prewash Prompt Collection](docs/PREWASH_PROMPT_COLLECTION.md) | 7 real before/after prompt examples |
+| [Prewash Prompt Collection](PREWASH_PROMPT_COLLECTION.md) | 7 real before/after prompt examples |
 | [Five AI Failures](docs/ANCHORING_FAILURE.md) | Confirmation bias, framing bias, vocabulary bias, adjective bias, format rigidity — all caught by the human |
-| [All docs](docs/) | 18+ methodology and decision documents |
 
 ---
 

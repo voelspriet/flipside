@@ -105,7 +105,7 @@ Claude generated a blueprint with explicit categories: decisions, pivots, blocke
 
 Without the meta-prompt, "detail" would have meant whatever Claude's default interpretation produced. The user would discover the misalignment hours later, after the agent had been running.
 
-*Source: [META_PROMPTING.md](docs/META_PROMPTING.md), [PREWASH_PROMPT_COLLECTION.md](docs/PREWASH_PROMPT_COLLECTION.md) Prompt 1*
+*Source: [PREWASH_PROMPT_COLLECTION.md](PREWASH_PROMPT_COLLECTION.md) Prompt 1*
 
 ---
 
@@ -178,7 +178,7 @@ Direct Action would never have caught this. You'd run the prompts and get plausi
 
 Five adjective biases — all priming for negative evaluation — were visible in the prompt and stripped before execution. In Direct Action, these biases would have been invisible: embedded in the model's internal framing, never seen, contaminating the output. This was the incident that led to the Prewash Method.
 
-*Source: [PREWASH_PROMPT_COLLECTION.md](docs/PREWASH_PROMPT_COLLECTION.md) Prompt 2, [PREWASH_METHOD.md](docs/PREWASH_METHOD.md)*
+*Source: [PREWASH_PROMPT_COLLECTION.md](PREWASH_PROMPT_COLLECTION.md) Prompt 2, [PREWASH_METHOD.md](PREWASH_METHOD.md)*
 
 ---
 
@@ -196,7 +196,7 @@ Five adjective biases — all priming for negative evaluation — were visible i
 
 Any developer — or any Claude Code session — could execute this prompt cold. The three Direct Action patches couldn't be reused because they were patches to a wrong architecture, not specifications for a correct one.
 
-*Source: [flip-card-rewrite-prompt.md](flip-card-rewrite-prompt.md)*
+*Source: flip-card-rewrite-prompt (prompt no longer in repo — applied directly to codebase)*
 
 ---
 
@@ -222,7 +222,7 @@ Any developer — or any Claude Code session — could execute this prompt cold.
 
 **The meta-prompt caught the bias because the user read the prompt before execution.** In Direct Action, the AI's recency bias would have been invisible — the output would have been plausible, just narrower than intended.
 
-*Source: [FRAMING_BIAS_FAILURE.md](docs/FRAMING_BIAS_FAILURE.md)*
+*Source: Framing bias incident documented in [planning.md](planning.md) and [HACKATHON_LOG.md](HACKATHON_LOG.md) Entry 14*
 
 ---
 
@@ -244,7 +244,7 @@ Any developer — or any Claude Code session — could execute this prompt cold.
 
 **What the vague version would have produced:** Three ideas anchored to whatever domains the model found most interesting at that moment — with no feasibility constraints, no screen layouts, no user base estimates, and no way to compare them systematically.
 
-*Source: [PREWASH_PROMPT_COLLECTION.md](docs/PREWASH_PROMPT_COLLECTION.md) Prompt 3, [LIVE_DEMONSTRATION.md](docs/LIVE_DEMONSTRATION.md)*
+*Source: [PREWASH_PROMPT_COLLECTION.md](PREWASH_PROMPT_COLLECTION.md) Prompt 3, [LIVE_DEMONSTRATION.md](docs/LIVE_DEMONSTRATION.md)*
 
 ---
 
@@ -261,7 +261,7 @@ Any developer — or any Claude Code session — could execute this prompt cold.
 
 **Result:** A 320-line analysis showing CiteGuard still scored highest on Jury Fit (46/50), but GrantWhisperer and ContractLens scored higher on feasibility (10 vs. 8). The analysis identified where earlier assumptions had narrowed the option space — a finding invisible in a simple "which is best?" comparison.
 
-*Source: [PREWASH_PROMPT_COLLECTION.md](docs/PREWASH_PROMPT_COLLECTION.md) Prompt 7*
+*Source: [PREWASH_PROMPT_COLLECTION.md](PREWASH_PROMPT_COLLECTION.md) Prompt 7*
 
 ---
 
@@ -423,15 +423,11 @@ The full evidence trail across the project:
 
 | File | What it documents |
 |------|-------------------|
-| [META_PROMPTING.md](docs/META_PROMPTING.md) | The founding discovery: "Give me first a prompt for yourself" |
-| [PREWASH_METHOD.md](docs/PREWASH_METHOD.md) | Formalized 4-step method: prompt → strip bias → add measurement → execute |
-| [PREWASH_PROMPT_COLLECTION.md](docs/PREWASH_PROMPT_COLLECTION.md) | 7 concrete before/after examples with exact text |
+| [PREWASH_METHOD.md](PREWASH_METHOD.md) | Formalized 4-step method: prompt → strip bias → add measurement → execute |
+| [PREWASH_PROMPT_COLLECTION.md](PREWASH_PROMPT_COLLECTION.md) | 7 concrete before/after examples with exact text |
 | [LIVE_DEMONSTRATION.md](docs/LIVE_DEMONSTRATION.md) | The pattern demonstrated on the AI itself — verbatim exchange |
-| [FRAMING_BIAS_FAILURE.md](docs/FRAMING_BIAS_FAILURE.md) | How recency bias narrowed a broad concept to one application |
 | [strategy.md](strategy.md) | Decisions 1, 2, 4, 5, 23, 25: repeated applications across the build |
 | [HACKATHON_LOG.md](HACKATHON_LOG.md) | Entries 1, 5, 6, 7, 19, 29, 33: timeline of the pattern's evolution |
-| [flip-card-rewrite-prompt.md](flip-card-rewrite-prompt.md) | The 250-line architecture prompt that replaced a fourth round of patches |
-| [PREWASH_PROMPT_COLLECTION.md](PREWASH_PROMPT_COLLECTION.md) | 7 principles mapped to prompt functions — the audit baseline |
 | [README.md](README.md) | Lines 147–159: canonical explanation |
 
 ---
