@@ -10,6 +10,8 @@ I train investigative teams worldwide to find the story in data. "Think Like a D
 
 Assessor for IFCN (Poynter) and EFCSN. Early Bellingcat contributor. Author of the [Reporter's Guide to Detecting AI-Generated Content](https://gijn.org/resource/guide-detecting-ai-generated-content/) (GIJN).
 
+Talked and walked with coders. But I am not a coder.
+
 **Newsletter**: 10,000+ subscribers from BBC, NYT, Reuters, Amnesty, Europol, UN, Harvard, MIT, NATO, Interpol.
 
 ---
@@ -20,9 +22,8 @@ Assessor for IFCN (Poynter) and EFCSN. Early Bellingcat contributor. Author of t
 - **SearchWhisperer** ([searchwhisperer.ai](https://searchwhisperer.ai)) — "Think Like a Document" as a search tool. Orchestrates 4 LLMs, scores queries on 4 dimensions.
 - **AI Whisperer** ([github.com/voelspriet/aiwhisperer](https://github.com/voelspriet/aiwhisperer)) — Open-source. Shrinks PDFs for AI upload, sanitizes sensitive data.
 
----
+Proudly coded by Claude Code.
 
-**Website**: [digitaldigging.org](https://digitaldigging.org)
 ---
 
 **Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)
