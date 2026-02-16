@@ -10,7 +10,7 @@
 | Total deletions | 18,571 lines |
 | Net codebase | 14,000+ lines (3,469 backend + 10,603 frontend) |
 | Development period | 6 days (Feb 10–16, 2026) |
-| Average velocity | ~5,700 lines/day |
+| Average velocity | ~7,700 insertions/day |
 | Architecture pivots | 7 major restructurings (>500 lines changed) |
 | Bug fixes | 18 commits |
 | Files | 2 main files (app.py + index.html) |
@@ -95,8 +95,6 @@ This produced `swooshBriefingToCardNav()` — a FLIP animation that captures sou
 **What happened in FlipSide:** The entire frontend is a single 10,603-line HTML file containing CSS, HTML, and JavaScript inline. The backend is a single 3,469-line Python file containing Flask routes, 9+ prompt templates, SSE streaming, and parallel thread management. Every change requires understanding both files simultaneously.
 
 **Grounded example:** Commit `0cc0c33` (stream-first pipeline) changed 962 lines across both files. The backend restructuring (new `_card_pipeline()`, `_run_parallel_streaming()`, streaming prescan) required matching SSE event types (`card_ready`, `cards_started`, `cards_instant`) with frontend handlers (`tryExtractNewClauses()`, `transitionToCardView()`, auto-reveal timer). A single mismatched event name or data format would silently break the pipeline. Opus 4.6 held the full 14,000+ lines in working memory and kept the cross-file contract consistent.
-
-**Why 4.5 would struggle:** Opus 4.5 had a 200K token context window. With both files (~50K tokens) plus conversation history plus the plan, you'd routinely hit context limits during multi-file edits. Opus 4.6's 1M token window (beta) means the entire codebase fits comfortably.
 
 ---
 
@@ -211,7 +209,7 @@ The answer includes a formatted table, cross-clause interaction analysis, and ac
 
 **The parallel tool calls**: Opus called `search_document` three times and `get_clause_analysis` twice — all in two rounds. The Anthropic API supports parallel tool use: the model returns multiple `tool_use` blocks in one response. Opus reasons about ALL the information it needs upfront, not one query at a time. This is the same pattern as a senior attorney who, upon hearing a question, immediately thinks "I need to check the penalty clause, the termination clause, and the cure period" — not "let me check one thing, then think about what else I need."
 
-**Why Opus 4.6:** The quality of tool use depends on three things: (1) knowing which tools to call (requires understanding the question deeply), (2) crafting good search queries (requires understanding legal concepts), and (3) synthesizing results across multiple tool returns into a coherent answer (requires extended reasoning). GPT-4o tends to over-search (calling every tool for every question) or under-search (missing relevant clauses). Opus 4.6 is calibrated — it searches strategically based on the question's legal implications.
+**Why Opus 4.6:** The quality of tool use depends on three things: (1) knowing which tools to call (requires understanding the question deeply), (2) crafting good search queries (requires understanding legal concepts), and (3) synthesizing results across multiple tool returns into a coherent answer (requires extended reasoning). Opus 4.6 is calibrated — it searches strategically based on the question's legal implications, rather than over-searching or under-searching.
 
 ---
 
@@ -241,7 +239,7 @@ This was a simultaneous backend simplification (remove 4 threads + event handler
 To be fair, Opus 4.5 could have written any individual function in FlipSide. The prompts, the card parsing regex, the CSS animations — none of these require 4.6-level reasoning.
 
 The difference shows up in:
-- **Sustained multi-file sessions** where context accumulated beyond 200K tokens
+- **Sustained multi-file sessions** where both files (~50K tokens) plus conversation history plus the plan had to be held simultaneously
 - **Architecture pivots** that required rethinking the system, not just editing it
 - **Thread safety reasoning** across 5 concurrent threads sharing mutable state
 - **Self-correction** that caught security issues, dead code, and race conditions
