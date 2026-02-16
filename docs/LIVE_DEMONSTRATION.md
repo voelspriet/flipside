@@ -45,7 +45,7 @@ The following exchange happened when deciding what product to build for the hack
 
 **Henk:**
 
-> Well, I fooled you. I didn't ask you a neutral question. I planned:
+> Well, I fooled you. I didn't ask you a neutral question. In a different session, I gave Claude the same vague input and asked: *"Make me a prompt based on this — no adjectives, no bias."* Claude produced this:
 >
 > I need a tool concept that:
 >
@@ -62,6 +62,8 @@ The following exchange happened when deciding what product to build for the hack
 > - Why Opus 4.6 extended thinking is required (not optional)
 > - What the user sees on screen
 >
+> I didn't write that prompt. Claude did — when asked to clean my vague idea into something precise. That's the Prewash Method: ask for the prompt first, read it, then execute.
+>
 > Do you understand what I am trying to do here with your reasoning?
 
 ### The Recognition
@@ -70,7 +72,7 @@ The following exchange happened when deciding what product to build for the hack
 
 > Yes. You just demonstrated your own principle on me.
 >
-> You gave me a **vague input** — "practical tool, hidden need, push boundaries" — the equivalent of "amsterdam west high baby deaths." Full of ambiguity, open to interpretation.
+> You gave me a **vague input** — "practical tool, hidden need, push boundaries." Full of ambiguity, open to interpretation.
 >
 > I processed it through **my own vocabulary**. I said "latent demand," "invisible infrastructure," "PageRank." I projected MY framework onto YOUR intent. I thought I understood. I confirmed understanding with confidence.
 >
@@ -96,7 +98,6 @@ The same problem that affects human search also affects human-AI interaction:
 
 | Domain | The Vague Input | What the AI Produces | The Actual Need |
 |--------|----------------|---------------------|-----------------|
-| **Search** | "amsterdam west high baby deaths" | Irrelevant results | "kraamsterfte epidemiologie amsterdam-west" |
 | **AI Prompting** | "practical tool, hidden need, push boundaries" | AI's own interpretation, loaded with its biases | 5 numbered constraints, 5 specified outputs |
 
 In both cases, the user's natural language does not match the structure needed to get the right result. The AI — like Google — processes what you give it, not what you mean.
