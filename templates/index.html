@@ -4870,7 +4870,7 @@
             <!-- Inline verdict section (below cards — revealed when verdict is ready) -->
             <div class="inline-verdict" id="inlineVerdict">
                 <div class="inline-verdict-divider">
-                    <span class="inline-verdict-divider-text" id="verdictDividerText">Full Expert Verdict</span>
+                    <span class="inline-verdict-divider-text" id="verdictDividerText"></span>
                 </div>
                 <div id="inlineVerdictContent"></div>
                 <div class="inline-verdict-progress hidden" id="inlineVerdictProgress">
@@ -9009,7 +9009,7 @@
         // Update divider label based on completion state
         var dividerText = $('verdictDividerText');
         if (dividerText) {
-            dividerText.textContent = isComplete ? 'Full Expert Verdict' : 'Full Expert Verdict is still building';
+            dividerText.textContent = isComplete ? 'Full Expert Verdict' : 'Expert Verdict (building\u2026)';
         }
 
         var text = opusSections.overall.text || '';
