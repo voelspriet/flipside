@@ -8,6 +8,6 @@ Upload any document you didn't write — gym membership, app terms, employment c
 
 Why Opus 4.6? Haiku 4.5 builds the flip cards — fast, structured, parallel. But the verdict requires what only Opus delivers: cross-clause reasoning that connects a liability waiver on page 2 to an arbitration clause on page 8. Adaptive thinking that scales its depth to the document's complexity. Theory of mind that reconstructs the drafter's intent from the language they chose.
 
-250M+ people sign one-sided documents every year without understanding the other side. FlipSide makes legal awareness free and human — not legal advice, but the other side of the story.
+Millions of people sign one-sided documents every year without understanding the other side. FlipSide makes legal awareness free and human — not legal advice, but the other side of the story.
 
 Built by a non-coder through conversation with Claude Code. 14,600 lines. 89 commits. 7 architecture pivots. 5 days.
