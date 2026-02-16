@@ -3313,7 +3313,8 @@
             overflow: hidden; white-space: nowrap;
             transition: max-width 0.3s var(--ease-out-expo), padding-left 0.3s ease;
         }
-        .confidence-badge:hover .confidence-reason { max-width: 220px; padding-left: 0.3rem; }
+        .confidence-badge:hover .confidence-reason,
+        .confidence-badge.touch-open .confidence-reason { max-width: 220px; padding-left: 0.3rem; }
 
         .back-body { padding: 1.25rem 1.75rem 0.5rem; }
         .back-footer {
@@ -3857,7 +3858,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                gap: 6px;
+                gap: 0;
                 padding: 0.4rem 0;
             }
             .card-nav-dot {
@@ -3867,6 +3868,11 @@
                 background: var(--border);
                 transition: all 0.3s ease;
                 cursor: pointer;
+                padding: 0;
+                margin: 0 -1px;
+                /* Expand touch target to 44px without changing visual size */
+                box-sizing: content-box;
+                border: 18px solid transparent;
             }
             .card-nav-dot.active {
                 width: 20px;
@@ -4119,8 +4125,8 @@
 
             /* Summary */
             .verdict-tier { font-size: 1rem; }
-            .clause-dot { width: 8px; height: 8px; }
-            .clause-strip { gap: 4px; }
+            .clause-dot { width: 8px; height: 8px; border: 14px solid transparent; box-sizing: content-box; margin: -2px; }
+            .clause-strip { gap: 0; }
 
             /* Follow-up */
             .followup-input { font-size: 0.85rem; }
@@ -5146,6 +5152,12 @@
 
     // ── Event delegation for flip cards + card navigation ──
     document.querySelector('.content-col').addEventListener('click', function(e) {
+        // Confidence badge: toggle reason text on tap (mobile touch equivalent of hover)
+        var badge = e.target.closest('.confidence-badge');
+        if (badge) {
+            badge.classList.toggle('touch-open');
+            return;
+        }
         var flipTrigger = e.target.closest('.flip-trigger');
         if (flipTrigger) {
             var card = flipTrigger.closest('.flip-card');
