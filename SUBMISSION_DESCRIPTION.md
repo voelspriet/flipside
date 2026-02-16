@@ -4,7 +4,7 @@
 
 Every contract has a drafter. The drafter wrote it for a reason. FlipSide shows you that reason.
 
-Upload any document you didn't write — gym membership, app terms, employment contract, insurance policy — or try one of 14 built-in samples. FlipSide treats a $2 coupon with the same seriousness as a $500,000 corporate lease. Browse flip cards: the front shows what the drafter wants you to feel. Flip it to see what an expert catches. Risk scores, trick classifications, concrete dollar figures.
+Upload any document you didn't write — gym membership, coupon, app terms, employment contract, insurance policy — or try one of 14 built-in samples. FlipSide treats a $2 coupon with the same seriousness as a $500,000 corporate lease. Browse flip cards: the front shows what the drafter wants you to feel. Flip it to see what an expert catches. Risk scores, trick classifications, concrete dollar figures.
 
 Why Opus 4.6? Haiku 4.5 builds the flip cards — fast, structured, parallel. But the verdict requires what only Opus delivers: cross-clause reasoning that connects a liability waiver on page 2 to an arbitration clause on page 8. Adaptive thinking that scales its depth to the document's complexity. Theory of mind that reconstructs the drafter's intent from the language they chose.
 
