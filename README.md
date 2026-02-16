@@ -287,7 +287,7 @@ The user never sees this meta-prompt. They just see better results.
 
 ## The Principle
 
-FlipSide applies **"Think Like a Document"** (CHI 2026, Henk van Ess) to a new domain:
+FlipSide applies **"Think Like a Document"** (Henk van Ess) to a new domain:
 
 | In search | In FlipSide |
 | --- | --- |
@@ -345,7 +345,7 @@ This project documents not just the product, but the entire decision-making proc
 
 ## Builder
 
-**Henk van Ess** — International OSINT expert, investigation trainer, tool builder. Assessor for IFCN and EFCSN. Early Bellingcat contributor. 20+ years verification methodology. CHI 2026 paper on "Think Like a Document." 10,000+ newsletter subscribers from BBC, NYT, Reuters, Europol, Harvard, MIT, NATO. See [BUILDER_PROFILE.md](BUILDER_PROFILE.md).
+**Henk van Ess** — Investigation trainer (BBC, NYT, Reuters), tool builder. Assessor for IFCN and EFCSN. Early Bellingcat contributor. 20+ years verification methodology. 10,000+ newsletter subscribers from BBC, NYT, Reuters, Europol, Harvard, MIT, NATO. See [BUILDER_PROFILE.md](BUILDER_PROFILE.md).
 
 ## Hackathon
 
