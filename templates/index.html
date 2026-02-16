@@ -5143,6 +5143,7 @@
     var documentThumbnail = null;
     var documentOcrUsed = false;
     var currentDocId = '';
+    var currentFilename = '';  // Module-level filename for rejection screen
     var userHasScrolled = false;
     var lastAutoScrollY = 0;
     var flipCardsBuilt = false;
@@ -5991,6 +5992,7 @@
         userHasScrolled = false;
         lastAutoScrollY = 0;
         currentDocId = docId;
+        currentFilename = filename || '';
         thinkingCharCount = 0;
         outputCharCount = 0;
         stopCapTicker();
@@ -6082,7 +6084,7 @@
         // Document title hero — bridges visual weight from upload screen
         var heroEl = $('docTitleHero');
         if (heroEl) {
-            var displayName = (filename || 'Document').replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
+            var displayName = (currentFilename || 'Document').replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
             $('docTitleText').textContent = displayName;
             $('docTitleFlag').classList.add('hidden');
             $('docTitleFlag').textContent = '';
@@ -6282,12 +6284,26 @@
                     if (_autoRevealTimer) { clearTimeout(_autoRevealTimer); _autoRevealTimer = null; }
                     var qdData = {};
                     try { qdData = JSON.parse(msg.content); } catch(e) {}
+
+                    // Parse all remaining cards before deciding path
+                    var rejected = finalClauseSweep();
+                    if (rejected) {
+                        // ── Document not applicable — rejection screen already shown ──
+                        // Finalize status (handoff/done events won't arrive — EventSource closed)
+                        statusText.textContent = 'Document scanned \u2014 not a contract';
+                        statusPill.classList.add('done');
+                        stopCapTicker();
+                        capTicker.classList.add('hidden');
+                        console.log('[FlipSide] Not applicable \u2014 rejection screen shown');
+                        break;
+                    }
+
+                    // ── Normal path: cards found ──
                     var qdSec = qdData.seconds ? qdData.seconds.toFixed(1) + 's' : '';
                     statusText.textContent = 'Cards ready' + (qdSec ? ' (' + qdSec + ')' : '') + ' \u2014 Expert report building...';
                     startStatusRotation('deep');
                     stopEditorialStatusRotation();
                     var _ds = $('deepStatus'); if (_ds) _ds.classList.remove('hidden');
-                    finalClauseSweep();
                     buildFilterChips();
                     buildPlaybookCard();
                     // Always update nav — ensures Next button exits "Analyzing" state
@@ -6833,6 +6849,7 @@
     }
 
     // ── Final sweep on quick_done — parse last segment too ──
+    // Returns true if rejection screen was shown (0 cards = not applicable)
     function finalClauseSweep() {
         var segments = responseContent.split(/\n+---\n+/);
         console.log('[FlipSide] finalClauseSweep: ' + segments.length + ' segments, parsedClauseCount=' + parsedClauseCount);
@@ -6857,6 +6874,12 @@
         if (sidebarStatus && finalCount > 0) sidebarStatus.textContent = finalCount + ' clause' + (finalCount !== 1 ? 's' : '') + ' flagged';
         // buildPlaybookCard() called after quick_done — Haiku now provides trick data
 
+        // Ensure metadata (including Not Applicable signal) is extracted
+        if (!documentNotApplicable && responseContent.length > 50) {
+            var naMatch = responseContent.match(/\*\*Not Applicable\*\*[:\s]*([^\n*]+)/i);
+            if (naMatch) documentNotApplicable = naMatch[1].trim();
+        }
+
         // If no cards were found, show an explanation
         var totalCards = flipCardContainer.querySelectorAll('.flip-card').length;
         if (totalCards === 0) {
@@ -6868,6 +6891,7 @@
             if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
             stopStatusRotation();
             stopEditorialStatusRotation();
+            statusPill.classList.add('done');
             // Hide ALL analysis chrome
             $('cardViewport').classList.remove('hidden');
             $('skeletonCard').classList.add('hidden');
@@ -6900,7 +6924,7 @@
                     : 'FlipSide scanned this document but didn\u2019t find any terms, obligations, or clauses that need your attention.');
 
             // Build the rejection card
-            var displayName = (filename || 'Document').replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
+            var displayName = (currentFilename || 'Document').replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
             var rejectionHtml = '<div class="rejection-screen">' +
                 '<svg class="rejection-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
                     '<rect x="12" y="6" width="40" height="52" rx="4"/>' +
@@ -6934,7 +6958,9 @@
                 rejInner.style.opacity = '1';
                 rejInner.style.transform = 'translateY(0)';
             });
+            return true; // rejection screen shown
         }
+        return false; // normal cards found
     }
 
     // ── Opus card backs: incremental parsing ──────────────────
@@ -8036,7 +8062,7 @@
         _focusedSource = source;
         verdictBody.classList.add('in-focus');
         var panel = $('verdictFocusedPanel');
-        panel.classList.add('active');
+        if (panel) panel.classList.add('active');
         renderFocusedSection();
     }
 
@@ -8044,7 +8070,7 @@
         _focusedSource = null;
         verdictBody.classList.remove('in-focus');
         var panel = $('verdictFocusedPanel');
-        panel.classList.remove('active');
+        if (panel) panel.classList.remove('active');
     }
 
     function renderFocusedSection() {
@@ -8055,41 +8081,48 @@
         var allDone = opusSections.overall.done;
 
         // Title
-        $('focusedTitle').textContent = _sectionLabels[_focusedSource] || _focusedSource;
+        var titleEl = $('focusedTitle');
+        if (titleEl) titleEl.textContent = _sectionLabels[_focusedSource] || _focusedSource;
 
         // Content
         var contentEl = $('focusedContent');
-        var text = opusSections[_focusedSource].text;
-        if (text.trim()) {
-            var html = safeMd2Html(text);
-            html = styleRiskBadges(html);
-            html = styleWhyClauses(html);
-            html = styleReaderBlocks(html);
-            html = styleDrafterBlocks(html);
-            html = styleSplitClauses(html);
-            contentEl.innerHTML = safeHtml(html);
-        } else {
-            contentEl.innerHTML = '<p style="color:var(--text-muted);font-style:italic;">Content loading...</p>';
+        if (contentEl) {
+            var text = opusSections[_focusedSource].text;
+            if (text.trim()) {
+                var html = safeMd2Html(text);
+                html = styleRiskBadges(html);
+                html = styleWhyClauses(html);
+                html = styleReaderBlocks(html);
+                html = styleDrafterBlocks(html);
+                html = styleSplitClauses(html);
+                contentEl.innerHTML = safeHtml(html);
+            } else {
+                contentEl.innerHTML = '<p style="color:var(--text-muted);font-style:italic;">Content loading...</p>';
+            }
+            contentEl.scrollTop = 0;
         }
-        contentEl.scrollTop = 0;
 
         // Nav arrows
-        $('focusedPrev').disabled = (idx <= 0);
-        $('focusedNext').disabled = (idx >= total - 1);
+        var prevEl = $('focusedPrev');
+        var nextEl = $('focusedNext');
+        if (prevEl) prevEl.disabled = (idx <= 0);
+        if (nextEl) nextEl.disabled = (idx >= total - 1);
 
         // Counter: "Section 1 · 2 of 4 ready" or "Section 1 · Full report ready →"
         var counterEl = $('focusedCounter');
-        if (allDone) {
-            counterEl.innerHTML = 'Section ' + (idx + 1) + ' of ' + total + ' · <a class="ready-link" id="focusedReadAll">Full report ready \u2192</a>';
-            var readAllLink = $('focusedReadAll');
-            if (readAllLink) {
-                readAllLink.addEventListener('click', function() {
-                    exitFocusedMode();
-                    revealDeepAnalysis(true);
-                });
+        if (counterEl) {
+            if (allDone) {
+                counterEl.innerHTML = 'Section ' + (idx + 1) + ' of ' + total + ' · <a class="ready-link" id="focusedReadAll">Full report ready \u2192</a>';
+                var readAllLink = $('focusedReadAll');
+                if (readAllLink) {
+                    readAllLink.addEventListener('click', function() {
+                        exitFocusedMode();
+                        revealDeepAnalysis(true);
+                    });
+                }
+            } else {
+                counterEl.textContent = 'Section ' + (idx + 1) + ' \u00b7 Verdict building\u2026';
             }
-        } else {
-            counterEl.textContent = 'Section ' + (idx + 1) + ' \u00b7 Verdict building\u2026';
         }
     }
 
@@ -8909,7 +8942,7 @@
         var resultEl = $('askFlipsideResult');
         var btnEl = $('askFlipsideBtn');
         var inputEl = $('askFlipsideInput');
-        if (!resultEl || !question.trim()) return;
+        if (!resultEl || !btnEl || !inputEl || !question.trim()) return;
 
         btnEl.disabled = true;
         inputEl.disabled = true;
@@ -9294,32 +9327,33 @@
             var counter = n.querySelector('.card-nav-counter');
             var prevBtn = n.querySelector('.card-nav-prev');
             var nextBtn = n.querySelector('.card-nav-next');
-            var nextLabel = nextBtn.querySelector('.card-nav-next-label');
+            var nextLabel = nextBtn ? nextBtn.querySelector('.card-nav-next-label') : null;
 
-            if (flipCardsBuilt) {
-                counter.innerHTML = 'Clause <strong>' + (currentCardIndex + 1) + '</strong> of <strong>' + total + '</strong>';
-            } else {
-                counter.innerHTML = 'Clause <strong>' + (currentCardIndex + 1) + '</strong>';
+            if (counter) {
+                if (flipCardsBuilt) {
+                    counter.innerHTML = 'Clause <strong>' + (currentCardIndex + 1) + '</strong> of <strong>' + total + '</strong>';
+                } else {
+                    counter.innerHTML = 'Clause <strong>' + (currentCardIndex + 1) + '</strong>';
+                }
             }
-            prevBtn.disabled = currentCardIndex === 0;
+            if (prevBtn) prevBtn.disabled = currentCardIndex === 0;
 
             if (currentCardIndex >= total - 1 && !quickDone) {
-                nextLabel.innerHTML = 'Analyzing<span class="pulsing-dot"></span>';
-                nextBtn.disabled = true;
-                nextBtn.removeAttribute('data-action');
+                if (nextLabel) nextLabel.innerHTML = 'Analyzing<span class="pulsing-dot"></span>';
+                if (nextBtn) { nextBtn.disabled = true; nextBtn.removeAttribute('data-action'); }
             } else if (currentCardIndex >= total - 1 && flipCardsBuilt) {
                 var opusDone = deepTextComplete || isDoneRendering;
-                if (opusDone) {
-                    nextLabel.textContent = 'Full Verdict \u2192';
-                } else {
-                    nextLabel.innerHTML = 'Full Verdict <span class="pulsing-dot" style="margin-left:0.3rem"></span>';
+                if (nextLabel) {
+                    if (opusDone) {
+                        nextLabel.textContent = 'Full Verdict \u2192';
+                    } else {
+                        nextLabel.innerHTML = 'Full Verdict <span class="pulsing-dot" style="margin-left:0.3rem"></span>';
+                    }
                 }
-                nextBtn.disabled = false;
-                nextBtn.setAttribute('data-action', 'assessment');
+                if (nextBtn) { nextBtn.disabled = false; nextBtn.setAttribute('data-action', 'assessment'); }
             } else {
-                nextLabel.textContent = 'Next \u2192';
-                nextBtn.disabled = false;
-                nextBtn.removeAttribute('data-action');
+                if (nextLabel) nextLabel.textContent = 'Next \u2192';
+                if (nextBtn) { nextBtn.disabled = false; nextBtn.removeAttribute('data-action'); }
             }
         });
 
@@ -10392,7 +10426,7 @@
             '<p style="font-size:1rem;color:#3d3b36;margin-top:-0.3rem">' + escapeHtml(docName) + '</p>' +
             '<p style="font-size:0.78rem;color:#9c9789">Analyzed: ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + '</p>' +
             body +
-            '<div class="footer">Generated by FlipSide \u2014 The Other Side of Small Print.<br>Powered by Claude Opus 4.6. This is an AI-generated educational review, not legal advice.<br>flipside.digitaldigging.org</div>' +
+            '<div class="footer">Generated by FlipSide \u2014 The Other Side of Small Print.<br>Powered by Claude Opus 4.6. This is an AI-generated educational review, not legal advice.<br>Henk van Ess \u2014 www.digitaldigging.org</div>' +
             '</body></html>';
 
         // Use html2pdf.js if available, otherwise fall back to HTML download
