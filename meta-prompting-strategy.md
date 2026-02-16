@@ -153,7 +153,7 @@ The fallback path had a mandatory planning step (Rule 1: "Before outputting any 
 
 **Why this matters for meta-prompting:**
 
-This is the meta-prompting pattern applied recursively. The Prewash Method says: *don't trust the first answer — read the prompt before executing.* The audit applied that rule to the prompts themselves. The documentation described principles. The code partially implemented them. The gap between description and implementation is the same concept gap The Google Code identifies between what you think you searched for and what's actually in the document.
+This is the meta-prompting pattern applied recursively. The Prewash Method says: *don't trust the first answer — read the prompt before executing.* The audit applied that rule to the prompts themselves. The documentation described principles. The code partially implemented them. The gap between description and implementation is the same concept gap between what you think you searched for and what's actually in the document.
 
 Direct Action would never have caught this. You'd run the prompts and get plausible output — cards with figures and examples that *look* consistent but have no rule enforcing consistency. Plan Mode would have surfaced options ("should we audit the prompts?") but wouldn't have produced the 77-cell scorecard. The meta-prompting approach — "check every prompt against every principle" — forced systematic coverage.
 

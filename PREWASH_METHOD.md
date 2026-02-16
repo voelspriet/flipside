@@ -1,12 +1,12 @@
 # The Prewash Method
 
-**A methodology for AI document analysis, built on a 2009 information retrieval framework. Every architecture decision in FlipSide traces back to it.**
+**A methodology for AI document analysis, built on "Think Like a Document" — a framework for closing the gap between what you think and what's literally written. Every architecture decision in FlipSide traces back to it.**
 
 ---
 
-## The Google Code (2009)
+## Think Like a Document (2009)
 
-Van Ess published *De Google Code* (Pearson, 2009 — sold out in seven weeks, published in the Netherlands, France, and Germany). One thesis:
+Van Ess published the methodology (Pearson, 2009 — Netherlands, France, Germany). One thesis:
 
 > Don't ask questions. Predict answers.
 
@@ -37,7 +37,7 @@ Van Ess published *De Google Code* (Pearson, 2009 — sold out in seven weeks, p
 
 ---
 
-## From Google Code to AI: The Prewash
+## From Search to AI: The Prewash
 
 In 2024, Van Ess extended the framework to AI prompting. Same principle — think like the document — applied to how you instruct models.
 
@@ -113,14 +113,14 @@ First product idea: CiteGuard (legal citation verifier). Before building it, Van
 | "Stress test, not a cheerleader" | Frames entire task as skeptical |
 | "How well does this apply?" | Unbiased but unmeasurable |
 
-This is the vocabulary mismatch from The Google Code. Claude was "searching with its own words" instead of "thinking like the document." Two prewash cycles:
+This is the core vocabulary mismatch. Claude was "searching with its own words" instead of "thinking like the document." Two prewash cycles:
 
 | Cycle | What it does |
 |---|---|
 | Cycle 1 | Remove adjective bias — strip emotional loading from the prompt |
 | Cycle 2 | Replace vague with measurable — don't say "map Burma," search for `Maßstab 1:60000` |
 
-### AI fails The Google Code test
+### AI fails the same test
 
 Van Ess gave Claude a deliberately vague input: *"I need a practical tool that helps people, maybe with a hidden need, push boundaries without breaking them."* Asked: "Do you understand?"
 
@@ -144,11 +144,11 @@ Where does the concept gap create the most value?
 | News verification | Medium — journalists already check sources | Existing tools |
 | **Contracts** | **Massive** — everyone signs, nobody reads, drafter writes for TWO audiences | **No tool showed both readings** |
 
-Contracts are the Google Code gap at its purest. A lease clause says "Your flexible payment timeline." An expert reads the same clause: "$4,100 in penalties if you're two days late." Same words. Two documents. **The concept gap IS the product.**
+Contracts are the concept gap at its purest. A lease clause says "Your flexible payment timeline." An expert reads the same clause: "$4,100 in penalties if you're two days late." Same words. Two documents. **The concept gap IS the product.**
 
-### The flip card = The Google Code, materialized
+### The flip card = Think Like a Document, materialized
 
-| Card side | Who is reading | Google Code parallel |
+| Card side | Who is reading | The parallel |
 |---|---|---|
 | **Front** (green) | Reader who thinks conceptually — "this seems fine" | You type `map Burma` and feel confident |
 | **Back** (red, with numbers) | Expert who reads literally — "$4,100 exposure" | The map reads `Deutschland Maßstab 1:60000 1965` |
@@ -169,7 +169,7 @@ Every architecture decision traces to a principle. The pre-scan IS the prewash. 
 
 ---
 
-## FlipSide ↔ Google Code
+## FlipSide ↔ Think Like a Document
 
 | Principle | Implementation |
 |---|---|
@@ -206,10 +206,10 @@ The `/frontend-design` skill would have produced professional code for a prompt 
 | Are we analyzing the right thing? (framing risk) | Prewash — audit the instructions |
 | Are we building the right thing? (scope risk) | Plan Mode — surface options |
 
-FlipSide's prompts are framing-sensitive. The difference between "find unfair clauses" and "find clauses where one party can terminate but the other cannot" determines whether the analysis catches the trick or misses it. That's a vocabulary problem — the same problem The Google Code solves. No skill catches it.
+FlipSide's prompts are framing-sensitive. The difference between "find unfair clauses" and "find clauses where one party can terminate but the other cannot" determines whether the analysis catches the trick or misses it. That's a vocabulary problem — the core "Think Like a Document" problem. No skill catches it.
 
 ---
 
-Van Ess says: "I don't write code. I never have. Every line of FlipSide was built through conversation with Claude Opus 4.6. But the thinking — the method that shaped every prompt, every architecture decision, every UI choice — that comes from 20 years of teaching people to find what's hidden in plain sight."
+Van Ess says: "I'm very poor at coding. Every line of FlipSide was built through conversation with Claude Opus 4.6. But the thinking — the method that shaped every prompt, every architecture decision, every UI choice — that comes from 20 years of teaching people to find what's hidden in plain sight."
 
-> The Google Code was never about Google. The Prewash Method was never about prompts. Both teach the same thing: the intelligence comes from you, not from the machine.
+> The Prewash Method was never about prompts. "Think Like a Document" was never about documents. Both teach the same thing: the intelligence comes from you, not from the machine.

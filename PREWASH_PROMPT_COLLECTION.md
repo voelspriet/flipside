@@ -1,6 +1,6 @@
 # Prewash Prompt Collection
 
-**How FlipSide's prompts implement The Google Code. Each pattern maps a 2009 information retrieval principle to a concrete prompting decision.**
+**7 prompting patterns behind FlipSide — each maps a "Think Like a Document" principle to a concrete implementation decision.**
 
 ---
 
@@ -22,7 +22,7 @@ Every FlipSide prompt avoids the concept word and targets the literal structure.
 
 ## 2. Think Like the Drafter, Then the Reader
 
-The Google Code: pretend you are the writer. What would you write?
+Think Like a Document: pretend you are the writer. What would you write?
 
 FlipSide runs this twice per clause — once as the drafter, once as the expert.
 
@@ -62,13 +62,19 @@ Same clause. Two readings. The gap between them is the product.
 | "Summarize the risks" | "For each clause: What specific dollar amount is at stake?" |
 | "What tricks are used?" | "Classify using this exact taxonomy: Cascade Clause, Silent Rollover, Phantom Option, ..." |
 
-The trick taxonomy (18 constrained types) is a direct Google Code application: give AI a literal vocabulary instead of letting it invent conceptual labels. Output becomes consistent and countable.
+The trick taxonomy (18 constrained types) gives AI a literal vocabulary instead of letting it invent conceptual labels. Output becomes consistent and countable.
 
 ---
 
-## 4. The Prewash — Automated
+## 4. The Prewash — Give Me a Prompt, Then Execute
 
-In workshops, Van Ess teaches: *"I am an investigator at [MEDIUM]. Give me a prompt to analyze this document."* AI writes a better prompt than you would.
+The Prewash Method: instead of telling AI what to do, ask it to write the prompt first. Then read it, fix the bias, and say "execute."
+
+| Step | Action |
+|---|---|
+| 1 | *"Give me a prompt to analyze this document."* |
+| 2 | Read the prompt AI wrote. Find the bias. Adapt it. |
+| 3 | *"Execute."* |
 
 FlipSide automates this as the **pre-scan**:
 
@@ -122,7 +128,7 @@ Three tool calls, one answer. Verified against the source, not generated from me
 
 ## 7. The Control Trick — Verify
 
-The Google Code: search for your answer alongside the subject. If 4 sources confirm, it's reliable.
+Verify: search for your answer alongside the subject. If 4 sources confirm, it's reliable.
 
 FlipSide builds verification into every layer:
 
@@ -138,18 +144,18 @@ FlipSide builds verification into every layer:
 
 ## Prompt Function Map
 
-| Function | Google Code principle | What it does |
+| Function | Principle | What it does |
 |---|---|---|
 | `build_clause_id_prompt()` | The prewash | Pre-scans document, identifies clauses to analyze |
 | `build_single_card_system()` | Think like drafter, then reader | Full flip card: front (reassurance) + back (reveal) |
-| `build_verdict_prompt()` | The control trick | Single Opus pass: tier, power ratio, risks, jurisdiction |
-| `build_scenario_prompt()` | The three dots — ranges | "What if 30/60/90 days late?" |
+| `build_verdict_prompt()` | Verify against source | Single Opus pass: tier, power ratio, risks, jurisdiction |
+| `build_scenario_prompt()` | Ranges, not single answers | "What if 30/60/90 days late?" |
 | `build_walkaway_prompt()` | Predict the answer — with math | Maximum financial exposure |
 | `build_combinations_prompt()` | Think like the document | Clauses that interact with each other |
 | `build_playbook_prompt()` | Don't ask, predict | The negotiation script you'd actually use |
-| `build_followup_prompt()` | Google Code as tool-use | Agent with document search + card retrieval |
+| `build_followup_prompt()` | Search, don't guess | Agent with document search + card retrieval |
 
 ---
 
-> "In 2009 I wrote The Google Code to teach that the intelligence comes from you, not from Google. In 2026 I built FlipSide to prove the same thing about AI. The machine changed. The principle didn't."
+> "In 2009 I wrote a book to teach that the intelligence comes from you, not from the search engine. In 2026 I built FlipSide to prove the same thing about AI. The machine changed. The principle didn't."
 > — Henk van Ess

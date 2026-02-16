@@ -30,7 +30,7 @@ FlipSide treats a $2 coupon with the same seriousness as a $500,000 corporate le
 
 ## What FlipSide Does
 
-Upload any document someone else wrote. FlipSide shows you both sides.
+Every contract has a drafter. The drafter wrote it for a reason. FlipSide reads from the drafter's perspective — then shows you what they intended you to miss.
 
 ### The Flip
 
