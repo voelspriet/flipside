@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0a0a0a;
+    --text: #f0f0f0;
+    --muted: #666;
+    --opus: #c9a0ff;
+    --haiku: #5cd67b;
+    --accent: #ffa657;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    padding: 2rem;
+}
+.slide.active {
+    animation: slideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.slide.out {
+    animation: slideOut 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ── Slide types ── */
+
+/* Title */
+.s-title h1 {
+    font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+    text-align: center; line-height: 1.05;
+}
+.s-title p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--muted);
+    margin-top: 0.6rem; letter-spacing: 0.5px;
+}
+
+/* Fact card */
+.fact {
+    max-width: 620px; width: 100%;
+    text-align: left;
+}
+.fact-model {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 1px;
+    display: inline-block;
+    margin-bottom: 0.7rem;
+}
+.fact-model.opus { background: rgba(201,160,255,0.15); color: var(--opus); }
+.fact-model.haiku { background: rgba(92,214,123,0.15); color: var(--haiku); }
+
+.fact-name {
+    font-size: 2rem; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 0.5rem; line-height: 1.1;
+}
+
+.fact-desc {
+    font-size: 1.05rem; color: #bbb; line-height: 1.6;
+    margin-bottom: 0.8rem;
+}
+
+.fact-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; color: var(--accent);
+    letter-spacing: 0.3px;
+    padding: 0.5rem 0.7rem;
+    background: rgba(255,166,87,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+}
+
+.fact-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; color: var(--muted);
+    margin-top: 0.7rem;
+    text-transform: uppercase; letter-spacing: 0.8px;
+}
+
+/* Parallel group slide */
+.parallel-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; color: var(--opus);
+    text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 0.3rem;
+}
+.parallel-title {
+    font-size: 1.6rem; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 1rem;
+}
+.mini-cards {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    max-width: 580px; width: 100%;
+}
+.mini-card {
+    display: flex; align-items: baseline; gap: 0.8rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    opacity: 0;
+    transform: translateY(8px);
+}
+.mini-card.in {
+    animation: miniIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.mc-name {
+    font-size: 0.85rem; font-weight: 700;
+    white-space: nowrap; min-width: 170px;
+    color: var(--text);
+}
+.mc-desc {
+    font-size: 0.75rem; color: #888;
+    line-height: 1.4;
+}
+
+/* Capability slide */
+.cap {
+    max-width: 640px; width: 100%;
+    text-align: left;
+}
+.cap-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 0.5rem;
+}
+.cap-name {
+    font-size: 1.8rem; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 0.6rem; line-height: 1.1;
+    color: var(--opus);
+}
+.cap-user {
+    font-size: 0.95rem; color: #ccc; line-height: 1.55;
+    margin-bottom: 0.6rem;
+}
+.cap-user em { color: var(--text); font-style: normal; font-weight: 600; }
+.cap-tech {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; color: var(--accent);
+    letter-spacing: 0.2px;
+    line-height: 1.5;
+    padding: 0.45rem 0.65rem;
+    background: rgba(255,166,87,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+}
+
+/* Stats slide */
+.stats-row {
+    display: flex; gap: 3rem;
+    text-align: center;
+}
+.stat-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 3rem; font-weight: 800; color: var(--accent);
+    letter-spacing: -2px;
+    line-height: 1;
+}
+.stat-label {
+    font-size: 0.65rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-top: 0.3rem;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+@keyframes miniIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- Slide 0: Title -->
+<div class="slide s-title" id="s0">
+    <h1>8 parallel AI threads.<br>One document.</h1>
+    <p>opus 4.6 + haiku 4.5</p>
+</div>
+
+<!-- Slide 1: Pre-scan -->
+<div class="slide" id="s1">
+    <div class="fact">
+        <div class="fact-model haiku">Haiku 4.5</div>
+        <div class="fact-name">Pre-scan</div>
+        <div class="fact-desc">Before you see anything, Haiku reads the entire document and identifies every clause worth examining. Groups overlaps. Orders by severity.</div>
+        <div class="fact-detail">Outputs N clause IDs → spawns N parallel workers</div>
+        <div class="fact-time">t = 0 → ~7s · hidden from user</div>
+    </div>
+</div>
+
+<!-- Slide 2: Flip Cards -->
+<div class="slide" id="s2">
+    <div class="fact">
+        <div class="fact-model haiku">Haiku 4.5 × N</div>
+        <div class="fact-name">Flip Cards</div>
+        <div class="fact-desc">Each clause gets its own Haiku thread. Front side: reassurance, gullible reader voice. Back side: real risk score, dollar figure, trick classification from an 18-type taxonomy.</div>
+        <div class="fact-detail">N simultaneous threads · full card in one pass · ~$0.08 total</div>
+        <div class="fact-time">~7s → ~12s · cards stream to screen</div>
+    </div>
+</div>
+
+<!-- Slide 3: Expert Verdict -->
+<div class="slide" id="s3">
+    <div class="fact">
+        <div class="fact-model opus">Opus 4.6</div>
+        <div class="fact-name">Expert Verdict</div>
+        <div class="fact-desc">One-screen verdict: tier rating, the main risk in plain language, power ratio (their rights vs. yours, counted from the document), auto-detected jurisdiction with local law violations flagged.</div>
+        <div class="fact-detail">Adaptive thinking · streams from t=0 · auto-reveals at 10s if cards haven't arrived</div>
+        <div class="fact-time">runs from t = 0 in parallel with everything</div>
+    </div>
+</div>
+
+<!-- Slide 4: Deep dives intro -->
+<div class="slide s-title" id="s4">
+    <h1>5 more Opus threads.<br>All in parallel.</h1>
+    <p>fire after verdict · arrive ~15–20s</p>
+</div>
+
+<!-- Slide 5: Document Archaeology -->
+<div class="slide" id="s5">
+    <div class="fact">
+        <div class="fact-model opus">Opus 4.6 · thread 1 of 5</div>
+        <div class="fact-name">Document Archaeology</div>
+        <div class="fact-desc">Classifies every section as boilerplate vs. custom-drafted. Profiles the drafter — which parts were written <em>for</em> you vs. <em>about</em> you. Reveals what's standard and what was deliberately inserted.</div>
+        <div class="fact-detail">Boilerplate ratio · drafter intent profile · custom clause flags</div>
+    </div>
+</div>
+
+<!-- Slide 6: What Could Happen -->
+<div class="slide" id="s6">
+    <div class="fact">
+        <div class="fact-model opus">Opus 4.6 · thread 2 of 5</div>
+        <div class="fact-name">What Could Happen</div>
+        <div class="fact-desc">Worst-case narrative timeline using the document's actual numbers, dates, and deadlines. Not hypothetical — built from the specific terms you're about to sign.</div>
+        <div class="fact-detail">Month-by-month scenario · real dollar amounts · cascading triggers</div>
+    </div>
+</div>
+
+<!-- Slide 7: Walk-Away Number -->
+<div class="slide" id="s7">
+    <div class="fact">
+        <div class="fact-model opus">Opus 4.6 · thread 3 of 5</div>
+        <div class="fact-name">Walk-Away Number</div>
+        <div class="fact-desc">Maximum financial exposure: every fee, penalty, and obligation compounded into one figure. The number that answers "what's the worst this can cost me?"</div>
+        <div class="fact-detail">Hero number + line-by-line breakdown · fees you didn't know existed</div>
+    </div>
+</div>
+
+<!-- Slide 8: Hidden Combinations -->
+<div class="slide" id="s8">
+    <div class="fact">
+        <div class="fact-model opus">Opus 4.6 · thread 4 of 5</div>
+        <div class="fact-name">Hidden Combinations</div>
+        <div class="fact-desc">Cross-clause compound traps that are invisible when reading linearly. Clause 4 says one thing, clause 11 says another — together they create a trap no single reading finds.</div>
+        <div class="fact-detail">Clause interaction map · compound risk scoring · "read these together"</div>
+    </div>
+</div>
+
+<!-- Slide 9: Negotiation Playbook -->
+<div class="slide" id="s9">
+    <div class="fact">
+        <div class="fact-model opus">Opus 4.6 · thread 5 of 5</div>
+        <div class="fact-name">Negotiation Playbook</div>
+        <div class="fact-desc">What to push on, what to mention, what to skip — with theory of mind about the drafter's priorities. Knows what they'll concede and what they won't.</div>
+        <div class="fact-detail">Leverage map · "they'll give you X if you accept Y" · priority ranking</div>
+    </div>
+</div>
+
+<!-- Slide 10: Stats -->
+<div class="slide" id="s10">
+    <div class="stats-row">
+        <div>
+            <div class="stat-big">8</div>
+            <div class="stat-label">Parallel threads</div>
+        </div>
+        <div>
+            <div class="stat-big">$0.54</div>
+            <div class="stat-label">Per analysis</div>
+        </div>
+        <div>
+            <div class="stat-big">8s</div>
+            <div class="stat-label">First card</div>
+        </div>
+        <div>
+            <div class="stat-big">0</div>
+            <div class="stat-label">Lines by a human</div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 11: Transition to build story -->
+<div class="slide s-title" id="s11">
+    <h1>That's what it does.<br>Here's how it was built.</h1>
+    <p>opus 4.6 as the developer</p>
+</div>
+
+<!-- Slide 12: The builder -->
+<div class="slide" id="s12">
+    <div class="fact">
+        <div class="fact-model opus">Opus 4.6 via Claude Code</div>
+        <div class="fact-name">The entire codebase</div>
+        <div class="fact-desc">14,600 lines across two files. Every line written by Opus 4.6 through conversation with a non-coder. Typo-filled instructions and screenshots in, working production code out.</div>
+        <div class="fact-detail">3,861 lines backend · 10,748 lines frontend · 5 days · 89 commits</div>
+    </div>
+</div>
+
+<!-- Slide 13: Architecture pivots -->
+<div class="slide" id="s13">
+    <div class="fact">
+        <div class="fact-model opus">Long-context reasoning</div>
+        <div class="fact-name">7 architecture pivots</div>
+        <div class="fact-desc">Each pivot restructured 500+ lines without breaking the system. Opus held the full 10,748-line frontend in context while rewiring threading, SSE streaming, and DOM rendering across interconnected functions.</div>
+        <div class="fact-detail">Pivot 5: ripped out 5 sequential threads → replaced with N parallel workers in one session</div>
+    </div>
+</div>
+
+<!-- Slide 14: Self-correction -->
+<div class="slide" id="s14">
+    <div class="fact">
+        <div class="fact-model opus">Self-correction</div>
+        <div class="fact-name">18 bug fix commits</div>
+        <div class="fact-desc">Opus found its own bugs, reasoned about race conditions in 5 concurrent threads sharing mutable state, and fixed security issues it introduced — including XSS vulnerabilities in LLM output rendering.</div>
+        <div class="fact-detail">Also found 460 lines of dead code through self-review and removed them</div>
+    </div>
+</div>
+
+<!-- Slide 15: Visual vocabulary -->
+<div class="slide" id="s15">
+    <div class="fact">
+        <div class="fact-model opus">Intent inference</div>
+        <div class="fact-name">Screenshots → code</div>
+        <div class="fact-desc">The builder sent screenshots of UI problems with vague descriptions. Opus mapped visual elements to exact CSS selectors and DOM nodes, then produced the correct fix — no line numbers, no file paths, just "this looks wrong."</div>
+        <div class="fact-detail">"make the card thing less jumpy" → identified cubic-bezier curve, fixed transform-origin, added will-change</div>
+    </div>
+</div>
+
+<!-- Slide 16: Build stats -->
+<div class="slide" id="s16">
+    <div class="stats-row">
+        <div>
+            <div class="stat-big">14,600</div>
+            <div class="stat-label">Lines of code</div>
+        </div>
+        <div>
+            <div class="stat-big">89</div>
+            <div class="stat-label">Commits</div>
+        </div>
+        <div>
+            <div class="stat-big">7</div>
+            <div class="stat-label">Architecture pivots</div>
+        </div>
+        <div>
+            <div class="stat-big">5</div>
+            <div class="stat-label">Days</div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 17: Capabilities intro -->
+<div class="slide s-title" id="s17">
+    <h1>16 Opus 4.6 capabilities.<br>All in one tool.</h1>
+</div>
+
+<!-- Slide 18: Adaptive thinking -->
+<div class="slide" id="s18">
+    <div class="cap">
+        <div class="cap-counter">Capability 1 of 16</div>
+        <div class="cap-name">Adaptive thinking</div>
+        <div class="cap-user">The verdict streams in ~30–60s. Opus spends <em>more reasoning on complex cross-clause interactions</em> and less on straightforward sections. The user never configures this.</div>
+        <div class="cap-tech">thinking: {type: 'adaptive'} — model autonomously decides its own thinking budget per document</div>
+    </div>
+</div>
+
+<!-- Slide 19: Long-context retrieval -->
+<div class="slide" id="s19">
+    <div class="cap">
+        <div class="cap-counter">Capability 2 of 16</div>
+        <div class="cap-name">Long-context retrieval</div>
+        <div class="cap-user">Tested on <em>222 pages / ~167K tokens</em>. Catches cross-clause interactions like "Clause 3 + Clause 297 create a compound trap" — distance of 294 clauses.</div>
+        <div class="cap-tech">36/36 planted traps caught across 9 synthetic documents up to 300 clauses</div>
+    </div>
+</div>
+
+<!-- Slide 20: Low over-refusals -->
+<div class="slide" id="s20">
+    <div class="cap">
+        <div class="cap-counter">Capability 3 of 16</div>
+        <div class="cap-name">Low over-refusals</div>
+        <div class="cap-user">The analysis adopts the <em>drafter's adversarial perspective</em>. A gullible reader voice on card fronts; the card backs reveal what the drafter intended. Previous models would self-censor.</div>
+        <div class="cap-tech">Opus 4.6 fully commits to the perspective flip — the core product mechanic</div>
+    </div>
+</div>
+
+<!-- Slide 21: Depth presets -->
+<div class="slide" id="s21">
+    <div class="cap">
+        <div class="cap-counter">Capability 4 of 16</div>
+        <div class="cap-name">Depth presets</div>
+        <div class="cap-user">Choose <em>Quick / Standard / Deep</em> before uploading. Currently all run at fixed budget while output quality is validated per tier.</div>
+        <div class="cap-tech">Three presets defined (16K / 32K / 64K) · currently fixed at 32K verdict + 16K deep dives · ready to map to native effort parameter</div>
+    </div>
+</div>
+
+<!-- Slide 22: Follow-up Q&A -->
+<div class="slide" id="s22">
+    <div class="cap">
+        <div class="cap-counter">Capability 5 of 16</div>
+        <div class="cap-name">Follow-up Q&A</div>
+        <div class="cap-user">Type "What happens if I'm 3 months late on rent?" — get a <em>traced answer with tool-call indicators visible on screen</em>. Opus searches the document, retrieves card analyses, and traces through all relevant clauses.</div>
+        <div class="cap-tech">Tool-use agent with 3 tools: search_document, get_clause_analysis, get_verdict_summary · up to 6 reasoning rounds per question</div>
+    </div>
+</div>
+
+<!-- Slide 23: Vision / multimodal -->
+<div class="slide" id="s23">
+    <div class="cap">
+        <div class="cap-counter">Capability 6 of 16</div>
+        <div class="cap-name">Vision / multimodal</div>
+        <div class="cap-user">Upload a PDF. See findings about <em>visual tricks</em> — fine print, buried placement, dense tables, light-gray disclaimers — that text extraction alone would miss.</div>
+        <div class="cap-tech">PDF pages rendered as JPEG (150 DPI, up to 10 pages) + extracted text → multimodal content blocks to Opus</div>
+    </div>
+</div>
+
+<!-- Slide 24: Structured output -->
+<div class="slide" id="s24">
+    <div class="cap">
+        <div class="cap-counter">Capability 7 of 16</div>
+        <div class="cap-name">Structured output via prompts</div>
+        <div class="cap-user">Every clause in the same format: risk score, trick type (from <em>18-type taxonomy</em>), confidence level, figure, example. Consistent across any document.</div>
+        <div class="cap-tech">Tagged fields ([REASSURANCE], [REVEAL], Score:, Trick:) + constrained vocabulary · regex-parsed frontend</div>
+    </div>
+</div>
+
+<!-- Slide 25: Confidence calibration -->
+<div class="slide" id="s25">
+    <div class="cap">
+        <div class="cap-counter">Capability 8 of 16</div>
+        <div class="cap-name">Confidence calibration</div>
+        <div class="cap-user">Each clause includes <em>HIGH / MEDIUM / LOW confidence</em> with a one-line reasoning chain. The verdict adjusts confidence after self-review.</div>
+        <div class="cap-tech">HIGH = clear language, MEDIUM = some ambiguity, LOW = multiple interpretations · CSS badges defined, rendering wiring in progress</div>
+    </div>
+</div>
+
+<!-- Slide 26: Self-correction -->
+<div class="slide" id="s26">
+    <div class="cap">
+        <div class="cap-counter">Capability 9 of 16</div>
+        <div class="cap-name">Self-correction</div>
+        <div class="cap-user">The verdict's colophon contains a <em>quality check where the analysis reviews itself</em> for false positives and blind spots — before the user acts on it.</div>
+        <div class="cap-tech">[COLOPHON] section: "Be genuinely self-critical. Users trust uncertainty over false certainty."</div>
+    </div>
+</div>
+
+<!-- Slide 27: Split-model parallel -->
+<div class="slide" id="s27">
+    <div class="cap">
+        <div class="cap-counter">Capability 10 of 16</div>
+        <div class="cap-name">Split-model parallel pipeline</div>
+        <div class="cap-user">First card in <em>~8 seconds</em>. 6 Opus threads stream from t=0: verdict + 5 expert reports. Progress counter shows "3 of 5 expert reports ready." All done in ~20s.</div>
+        <div class="cap-tech">Haiku 4.5 for instant cards · 6× Opus 4.6 threads fire at t=0 in parallel · SSE stream never blocked</div>
+    </div>
+</div>
+
+<!-- Slide 28: Prompt caching -->
+<div class="slide" id="s28">
+    <div class="cap">
+        <div class="cap-counter">Capability 11 of 16</div>
+        <div class="cap-name">Prompt caching</div>
+        <div class="cap-user">Analyze multiple documents without paying full price each time. System prompts are <em>cached across runs</em>.</div>
+        <div class="cap-tech">cache_control: {type: 'ephemeral'} on system prompt · 5-min TTL · cached tokens cost 90% less</div>
+    </div>
+</div>
+
+<!-- Slide 29: Theory of mind -->
+<div class="slide" id="s29">
+    <div class="cap">
+        <div class="cap-counter">Capability 12 of 16</div>
+        <div class="cap-name">Theory of mind</div>
+        <div class="cap-user">The Negotiation Playbook: what to push on (they'll bend), what to mention (builds credibility), what to skip (non-negotiable). <em>Includes a ready-to-send message.</em></div>
+        <div class="cap-tech">Opus models the drafter's incentives to predict concessions · "they'll give you X if you accept Y"</div>
+    </div>
+</div>
+
+<!-- Slide 30: Stylistic deduction -->
+<div class="slide" id="s30">
+    <div class="cap">
+        <div class="cap-counter">Capability 13 of 16</div>
+        <div class="cap-name">Stylistic deduction</div>
+        <div class="cap-user">Document Archaeology: each section classified as <em>boilerplate vs. custom-drafted</em>. Custom clauses reveal the drafter's real priorities.</div>
+        <div class="cap-tech">"This lease pattern is typical of high-volume property management optimizing for automated enforcement"</div>
+    </div>
+</div>
+
+<!-- Slide 31: English-only + download -->
+<div class="slide" id="s31">
+    <div class="cap">
+        <div class="cap-counter">Capability 14 of 16</div>
+        <div class="cap-name">English-only + download in language</div>
+        <div class="cap-user">Analysis always in English. For non-English documents, a <em>"Report in [language]"</em> button downloads the full translated analysis. Tested on West Frisian (~500K speakers).</div>
+        <div class="cap-tech">LANGUAGE RULE: ALWAYS respond in ENGLISH · quotes in original + EN translation · full report translation via Opus</div>
+    </div>
+</div>
+
+<!-- Slide 32: Causal chain reasoning -->
+<div class="slide" id="s32">
+    <div class="cap">
+        <div class="cap-counter">Capability 15 of 16</div>
+        <div class="cap-name">Causal chain reasoning</div>
+        <div class="cap-user">"What Could Happen": a <em>month-by-month worst-case scenario</em> using the document's actual fees, deadlines, and compounding rules. Total exposure at the end.</div>
+        <div class="cap-tech">Opus picks the most likely trigger, traces clause chains 3–6 months · self-check: total = sum of all fees</div>
+    </div>
+</div>
+
+<!-- Slide 33: Forensic arithmetic -->
+<div class="slide" id="s33">
+    <div class="cap">
+        <div class="cap-counter">Capability 16 of 16</div>
+        <div class="cap-name">Forensic arithmetic</div>
+        <div class="cap-user">The Walk-Away Number: <em>maximum financial exposure as a hero dollar figure</em> with a line-by-line breakdown. Every fee, penalty, and compounded obligation traced to its source clause.</div>
+        <div class="cap-tech">build_walkaway_prompt · parallel Opus thread from t=0 · self-check: "total must equal sum of breakdown items"</div>
+    </div>
+</div>
+
+<script>
+var T = {
+    hold:      2800,  // how long each slide stays
+    gap:       200,   // black gap between slides
+    deepHold:  2200,  // shorter hold for deep dive slides (5 in a row)
+    capHold:   2400,  // capability slides (16 in a row, need to move)
+};
+
+var slides = ['s0','s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12','s13','s14','s15','s16','s17','s18','s19','s20','s21','s22','s23','s24','s25','s26','s27','s28','s29','s30','s31','s32','s33'];
+var current = 0;
+
+function showSlide(idx) {
+    if (idx >= slides.length) return;
+    var el = document.getElementById(slides[idx]);
+    el.classList.add('active');
+
+    // Variable hold times for different sections
+    var id = slides[idx];
+    var num = parseInt(id.substring(1));
+    var holdTime = T.hold;
+    if (num >= 5 && num <= 9) holdTime = T.deepHold;    // deep dives
+    if (num >= 18 && num <= 33) holdTime = T.capHold;   // capabilities
+    setTimeout(function() {
+        el.classList.remove('active');
+        el.classList.add('out');
+        setTimeout(function() {
+            el.classList.remove('out');
+            showSlide(idx + 1);
+        }, T.gap);
+    }, holdTime);
+}
+
+setTimeout(function() { showSlide(0); }, 300);
+</script>
+
+</body>
+</html>

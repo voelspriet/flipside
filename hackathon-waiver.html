@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlipSide vs. The Hackathon Waiver</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --cream: #f7f5f0;
+    --bg: #0a0a0a;
+    --text: #f0f0f0;
+    --dark-text: #1a1a1a;
+    --muted: #666;
+    --red: #ff6b6b;
+    --orange: #ffa657;
+    --green: #5cd67b;
+    --opus: #c9a0ff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    padding: 2rem;
+}
+.slide.active { animation: slideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.slide.out { animation: slideOut 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* Cream slides */
+.cream {
+    background: var(--cream);
+    color: var(--dark-text);
+}
+.cream h1 {
+    font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+    text-align: right; line-height: 1.05;
+    max-width: 700px; width: 100%;
+}
+.cream p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: #888;
+    margin-top: 0.6rem; letter-spacing: 0.5px;
+    text-align: right; max-width: 700px; width: 100%;
+}
+
+/* Dark title slides */
+.dark-title h1 {
+    font-size: 2.8rem; font-weight: 800; letter-spacing: -2px;
+    text-align: center; line-height: 1.1;
+}
+
+/* Finding cards */
+.finding {
+    max-width: 640px; width: 100%; text-align: left;
+}
+.severity {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    padding: 3px 10px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    display: inline-block; margin-bottom: 0.7rem;
+}
+.severity-aggressive { background: rgba(255,107,107,0.15); color: var(--red); }
+.severity-unusual { background: rgba(255,166,87,0.15); color: var(--orange); }
+.severity-standard { background: rgba(255,255,255,0.08); color: var(--muted); }
+.finding-title {
+    font-size: 1.8rem; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 0.5rem; line-height: 1.1;
+}
+.finding-desc {
+    font-size: 0.95rem; color: #aaa; line-height: 1.6;
+    margin-bottom: 0.8rem;
+}
+.finding-quote {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: var(--red);
+    letter-spacing: 0.3px; padding: 0.5rem 0.7rem;
+    background: rgba(255,107,107,0.06);
+    border-left: 3px solid var(--red);
+    border-radius: 0 6px 6px 0;
+    line-height: 1.5;
+}
+.finding-quote.orange {
+    color: var(--orange);
+    background: rgba(255,166,87,0.06);
+    border-color: var(--orange);
+}
+
+/* Punchline */
+.punchline {
+    max-width: 600px; text-align: center;
+}
+.punchline h2 {
+    font-size: 2rem; font-weight: 800; letter-spacing: -1px;
+    line-height: 1.15;
+}
+.punchline p {
+    font-size: 1rem; color: #888; margin-top: 0.8rem;
+    line-height: 1.6;
+}
+
+/* MIT slide */
+.mit-box {
+    text-align: center;
+}
+.mit-box h2 {
+    font-size: 2.4rem; font-weight: 800; letter-spacing: -1px;
+    color: var(--green); margin-bottom: 0.8rem;
+}
+.mit-box p {
+    font-size: 0.95rem; color: #888; line-height: 1.7;
+}
+.mit-badge {
+    font-family: 'JetBrains Mono', monospace;
+    display: inline-block; margin-top: 1rem;
+    padding: 6px 18px; border-radius: 100px;
+    border: 2px solid var(--green);
+    color: var(--green); font-size: 0.75rem;
+    font-weight: 600; letter-spacing: 1px;
+}
+
+/* Credits */
+.credits {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; color: #444;
+    letter-spacing: 0.5px; text-align: center;
+    line-height: 1.8;
+}
+
+/* Conclusion */
+.conclusion {
+    max-width: 600px; text-align: left;
+}
+.conclusion p {
+    font-size: 1.05rem; color: #bbb; line-height: 1.7;
+}
+.conclusion .warn {
+    font-size: 1.3rem; font-weight: 800; color: var(--red);
+    margin-top: 1rem; letter-spacing: -0.5px;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; } to { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- s0: Cream — I checked the rules -->
+<div class="slide cream" id="s0">
+    <h1>I checked the Hackathon rules<br>with FlipSide.</h1>
+</div>
+
+<!-- s1: Black — And then it all went wrong -->
+<div class="slide dark-title" id="s1">
+    <h1>And then it all went wrong.</h1>
+</div>
+
+<!-- s2: Deep check intro -->
+<div class="slide" id="s2">
+    <div class="finding">
+        <div class="severity severity-aggressive">Deep Document Check</div>
+        <div class="finding-title">60% boilerplate.<br>The custom IP clauses are<br>where the real strategy lives.</div>
+        <div class="finding-desc">Specifically engineered to give the organizers an irrevocable license to everything participants create, share, or even casually mention — while paying prizes exclusively in API credits.</div>
+    </div>
+</div>
+
+<!-- s3: Card 1 — Materials license -->
+<div class="slide" id="s3">
+    <div class="finding">
+        <div class="severity severity-aggressive">Aggressive</div>
+        <div class="finding-title">They can use anything you<br>share, pitch, or mention —<br>forever.</div>
+        <div class="finding-desc">Zero confidentiality obligations. The "Materials" license covers ideas, feedback, pitches, casual Slack messages — everything exchanged "in connection with the Event."</div>
+        <div class="finding-quote">"royalty free, transferable, sub-licensable, worldwide and perpetual and irrevocable license"</div>
+    </div>
+</div>
+
+<!-- s4: Card 2 — Ownership illusion -->
+<div class="slide" id="s4">
+    <div class="finding">
+        <div class="severity severity-aggressive">Aggressive</div>
+        <div class="finding-title">You keep "ownership"<br>but the license makes it<br>meaningless.</div>
+        <div class="finding-desc">The license grants: use, reproduce, adapt, modify, create derivative works, exploit "for any purpose without restriction." You own the title — they own the movie rights.</div>
+        <div class="finding-quote">"otherwise exploit the Submission for any purpose without restriction"</div>
+    </div>
+</div>
+
+<!-- s5: Card 3 — API credits -->
+<div class="slide" id="s5">
+    <div class="finding">
+        <div class="severity severity-unusual">Unusual</div>
+        <div class="finding-title" style="color:var(--orange);">All prizes are API credits.<br>Not cash.</div>
+        <div class="finding-desc">Credits cost the organizer a fraction of face value while locking winners into the platform. You may owe real-dollar taxes on $50,000 in credits you can't liquidate.</div>
+        <div class="finding-quote orange">$500 participation · $50K first prize · $30K second · $10K third — all API credits</div>
+    </div>
+</div>
+
+<!-- s6: Hidden combo — kick out + keep work -->
+<div class="slide" id="s6">
+    <div class="finding">
+        <div class="severity severity-aggressive">Hidden Combination</div>
+        <div class="finding-title">They can kick you out<br>and keep your work forever.</div>
+        <div class="finding-desc">The conduct policy allows disqualification under a subjective standard. The IP license has no termination trigger. You leave with nothing — they keep everything, royalty-free, "for any purpose without restriction."</div>
+        <div class="finding-quote">Clause A: disqualify "without liability" · Clause B: license is "perpetual, irrevocable"</div>
+    </div>
+</div>
+
+<!-- s7: Conclusion -->
+<div class="slide" id="s7">
+    <div class="conclusion">
+        <p>Everything you share during this event — every idea, pitch, code snippet, feedback, or chat message — permanently loses all confidentiality and gets licensed to the organizers forever.</p>
+        <p class="warn">Don't bring anything to this hackathon<br>that you wouldn't post publicly.</p>
+    </div>
+</div>
+
+<!-- s8: Punchline -->
+<div class="slide" id="s8">
+    <div class="punchline">
+        <h2>Because FlipSide says<br>we can't trust the firm<br>who coded FlipSide.</h2>
+    </div>
+</div>
+
+<!-- s9: MIT License -->
+<div class="slide" id="s9">
+    <div class="mit-box">
+        <h2>This tool is absolutely free.</h2>
+        <p>No paid tiers. No premium features.<br>No subscriptions. No plans to add any.</p>
+        <div class="mit-badge">MIT LICENSE</div>
+    </div>
+</div>
+
+<!-- s10: Final — cream -->
+<div class="slide cream" id="s10">
+    <h1>FlipSide</h1>
+    <p>everyone deserves to see the other side.</p>
+</div>
+
+<!-- s11: Name reveal -->
+<div class="slide" id="s11">
+    <div class="punchline">
+        <h2><a href="https://github.com/voelspriet/flipside" style="color:var(--text);text-decoration:none;">Henk van Ess</a></h2>
+        <p style="margin-top:0.5rem;"><a href="https://github.com/voelspriet/flipside" style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.7rem;text-decoration:none;letter-spacing:0.3px;">github.com/voelspriet/flipside</a></p>
+    </div>
+</div>
+
+<!-- s12: Credits -->
+<div class="slide" id="s12">
+    <div class="credits">
+        produced by Claude Code<br>
+        see video.md
+    </div>
+</div>
+
+<script>
+var T = { hold: 2800, gap: 150, creamHold: 2200, wrongHold: 2500, cardHold: 3000, comboHold: 3200, conclusionHold: 3500, punchHold: 3000, mitHold: 2800, finalHold: 2500, creditHold: 2000 };
+
+var slides = ['s0','s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12'];
+
+function getHold(num) {
+    if (num === 0) return T.creamHold;      // I checked the rules
+    if (num === 1) return T.wrongHold;       // went wrong
+    if (num === 2) return T.comboHold;       // deep check intro
+    if (num >= 3 && num <= 5) return T.cardHold;  // 3 cards
+    if (num === 6) return T.comboHold;       // hidden combo
+    if (num === 7) return T.conclusionHold;  // conclusion
+    if (num === 8) return T.punchHold;       // punchline
+    if (num === 9) return T.mitHold;         // MIT
+    if (num === 10) return T.finalHold;      // FlipSide
+    if (num === 11) return T.creamHold;       // Henk van Ess
+    if (num === 12) return T.creditHold;     // credits
+    return T.hold;
+}
+
+function showSlide(idx) {
+    if (idx >= slides.length) return;
+    var el = document.getElementById(slides[idx]);
+    el.classList.add('active');
+    setTimeout(function() {
+        el.classList.remove('active');
+        el.classList.add('out');
+        setTimeout(function() {
+            el.classList.remove('out');
+            showSlide(idx + 1);
+        }, T.gap);
+    }, getHold(idx));
+}
+
+setTimeout(function() { showSlide(0); }, 200);
+</script>
+
+</body>
+</html>

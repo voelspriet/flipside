@@ -68,7 +68,7 @@ The trick taxonomy (18 constrained types) is a direct Google Code application: g
 
 ## 4. The Prewash — Automated
 
-In workshops, Van Ess teaches: *"I am a journalist at [MEDIUM]. Give me a prompt to analyze this document."* AI writes a better prompt than you would.
+In workshops, Van Ess teaches: *"I am an investigator at [MEDIUM]. Give me a prompt to analyze this document."* AI writes a better prompt than you would.
 
 FlipSide automates this as the **pre-scan**:
 

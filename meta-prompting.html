@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Meta-Prompting Discovery</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0a0a0a;
+    --text: #f0f0f0;
+    --muted: #666;
+    --opus: #c9a0ff;
+    --haiku: #5cd67b;
+    --accent: #ffa657;
+    --red: #ff6b6b;
+    --green: #5cd67b;
+    --yellow: #ffd93d;
+    --blue: #6bc5f8;
+    --A: #ff6b6b;
+    --B: #ffd93d;
+    --C: #c9a0ff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    padding: 2rem;
+}
+.slide.active {
+    animation: slideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.slide.out {
+    animation: slideOut 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ── Slide types ── */
+
+/* Title */
+.s-title h1 {
+    font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+    text-align: center; line-height: 1.05;
+}
+.s-title p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--muted);
+    margin-top: 0.6rem; letter-spacing: 0.5px;
+}
+.s-title .subtitle {
+    font-size: 1.1rem; color: #999; font-weight: 500;
+    margin-top: 0.8rem; letter-spacing: -0.3px;
+    max-width: 560px; text-align: center; line-height: 1.5;
+}
+
+/* Quote slide */
+.s-quote {
+    max-width: 700px; text-align: center;
+}
+.s-quote blockquote {
+    font-size: 1.6rem; font-weight: 700; letter-spacing: -0.8px;
+    line-height: 1.35; color: var(--opus);
+    border: none; padding: 0;
+}
+.s-quote .attribution {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; color: var(--muted);
+    margin-top: 1rem; letter-spacing: 0.5px;
+}
+
+/* Fact card */
+.fact {
+    max-width: 620px; width: 100%;
+    text-align: left;
+}
+.fact-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 1px;
+    display: inline-block;
+    margin-bottom: 0.7rem;
+    background: rgba(201,160,255,0.15); color: var(--opus);
+}
+.fact-name {
+    font-size: 2rem; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 0.5rem; line-height: 1.1;
+}
+.fact-desc {
+    font-size: 1.05rem; color: #bbb; line-height: 1.6;
+    margin-bottom: 0.8rem;
+}
+.fact-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; color: var(--accent);
+    letter-spacing: 0.3px;
+    padding: 0.5rem 0.7rem;
+    background: rgba(255,166,87,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+}
+
+/* ── Infographic: Three columns ── */
+.three-col {
+    display: flex; gap: 1.6rem;
+    max-width: 860px; width: 100%;
+}
+.col {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    padding: 1.2rem;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.col-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+.col-tag.a { background: rgba(255,107,107,0.15); color: var(--A); }
+.col-tag.b { background: rgba(255,217,61,0.15); color: var(--B); }
+.col-tag.c { background: rgba(201,160,255,0.15); color: var(--C); }
+.col-title {
+    font-size: 1rem; font-weight: 800; letter-spacing: -0.5px;
+    margin-bottom: 0.3rem;
+}
+.col-analogy {
+    font-size: 0.75rem; color: var(--accent); font-style: italic;
+    margin-bottom: 0.4rem;
+}
+.col-desc {
+    font-size: 0.72rem; color: #999; line-height: 1.5;
+}
+.three-col-header {
+    font-size: 1.3rem; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 1.2rem; text-align: center;
+}
+
+/* ── Infographic: Visibility layers ── */
+.vis-layers {
+    max-width: 640px; width: 100%;
+    display: flex; flex-direction: column; gap: 0.6rem;
+}
+.vis-layer {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    position: relative;
+}
+.vis-layer .vis-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 600;
+    min-width: 36px; text-align: center;
+    padding: 2px 8px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+}
+.vis-layer .vis-input {
+    font-size: 0.75rem; font-weight: 600; min-width: 120px;
+    white-space: nowrap;
+}
+.vis-layer .vis-see {
+    font-size: 0.7rem; color: #999; flex: 1;
+}
+.vis-layer .vis-hidden {
+    font-size: 0.65rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+}
+.vis-layer.la { background: rgba(255,107,107,0.06); border: 1px solid rgba(255,107,107,0.15); }
+.vis-layer.la .vis-tag { background: rgba(255,107,107,0.2); color: var(--A); }
+.vis-layer.la .vis-hidden { background: rgba(255,107,107,0.1); color: var(--A); }
+.vis-layer.lb { background: rgba(255,217,61,0.06); border: 1px solid rgba(255,217,61,0.12); }
+.vis-layer.lb .vis-tag { background: rgba(255,217,61,0.2); color: var(--B); }
+.vis-layer.lb .vis-hidden { background: rgba(255,217,61,0.1); color: var(--B); }
+.vis-layer.lc { background: rgba(201,160,255,0.06); border: 1px solid rgba(201,160,255,0.15); }
+.vis-layer.lc .vis-tag { background: rgba(201,160,255,0.2); color: var(--C); }
+.vis-layer.lc .vis-hidden { background: rgba(201,160,255,0.1); color: var(--C); }
+
+.vis-header {
+    font-size: 1.3rem; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 1rem; text-align: center;
+}
+
+/* ── Infographic: Bar chart ── */
+.bar-chart {
+    max-width: 560px; width: 100%;
+    display: flex; flex-direction: column; gap: 1.2rem;
+}
+.bar-chart-header {
+    font-size: 1.4rem; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 0.5rem; text-align: center;
+}
+.bar-chart-sub {
+    font-size: 0.75rem; color: var(--muted); text-align: center;
+    margin-top: -0.3rem; margin-bottom: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+}
+.bar-row {
+    display: flex; align-items: center; gap: 0.8rem;
+}
+.bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 600;
+    min-width: 100px; text-align: right;
+    letter-spacing: 0.3px;
+}
+.bar-label.la { color: var(--A); }
+.bar-label.lb { color: var(--B); }
+.bar-label.lc { color: var(--C); }
+.bar-track {
+    flex: 1; height: 32px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+.bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex; align-items: center;
+    padding-left: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; font-weight: 700;
+    color: var(--bg);
+    width: 0%;
+    transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bar-fill.fa { background: var(--A); }
+.bar-fill.fb { background: var(--B); }
+.bar-fill.fc { background: var(--C); }
+
+/* ── Infographic: Dimension breakdown ── */
+.dim-chart {
+    max-width: 620px; width: 100%;
+}
+.dim-chart-header {
+    font-size: 1.3rem; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 1rem; text-align: center;
+}
+.dim-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.dim-name {
+    font-size: 0.7rem; font-weight: 600;
+    min-width: 100px; text-align: right;
+    color: #999;
+}
+.dim-bars {
+    flex: 1; display: flex; flex-direction: column; gap: 3px;
+}
+.dim-bar {
+    height: 8px; border-radius: 4px;
+    width: 0%;
+    transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dim-bar.da { background: var(--A); }
+.dim-bar.db { background: var(--B); }
+.dim-bar.dc { background: var(--C); }
+.dim-legend {
+    display: flex; gap: 1.5rem; justify-content: center;
+    margin-top: 1rem;
+}
+.dim-legend-item {
+    display: flex; align-items: center; gap: 0.3rem;
+    font-size: 0.6rem; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+}
+.dim-legend-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+}
+
+/* ── Infographic: Bias strip ── */
+.bias-strip {
+    max-width: 580px; width: 100%;
+}
+.bias-strip-header {
+    font-size: 1.3rem; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 1rem; text-align: center;
+}
+.bias-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 0.6rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+}
+.bias-before {
+    font-size: 0.78rem; color: var(--red);
+    text-decoration: line-through;
+    min-width: 200px;
+    font-weight: 600;
+}
+.bias-arrow {
+    font-size: 1rem; color: var(--muted);
+}
+.bias-after {
+    font-size: 0.78rem; color: var(--green);
+    font-weight: 600;
+}
+
+/* ── Infographic: Audit heatmap ── */
+.audit-grid {
+    max-width: 620px; width: 100%;
+}
+.audit-header {
+    font-size: 1.3rem; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 0.8rem; text-align: center;
+}
+.audit-sub {
+    font-size: 0.75rem; color: var(--muted); text-align: center;
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+.audit-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 3px;
+}
+.audit-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem; font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 0.3rem 0.2rem;
+    text-align: center;
+}
+.audit-table th:first-child {
+    text-align: right; padding-right: 0.6rem;
+}
+.audit-table td:first-child {
+    font-size: 0.6rem; font-weight: 600;
+    color: #bbb;
+    text-align: right; padding-right: 0.6rem;
+    white-space: nowrap;
+}
+.audit-cell {
+    width: 32px; height: 24px;
+    border-radius: 4px;
+    text-align: center;
+}
+.audit-cell.pass { background: rgba(92,214,123,0.2); }
+.audit-cell.partial { background: rgba(255,217,61,0.15); }
+.audit-cell.fail { background: rgba(255,107,107,0.2); }
+.audit-legend {
+    display: flex; gap: 1.2rem; justify-content: center;
+    margin-top: 0.8rem;
+}
+.audit-legend-item {
+    display: flex; align-items: center; gap: 0.3rem;
+    font-size: 0.55rem; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: #999;
+}
+.audit-legend-dot {
+    width: 10px; height: 10px; border-radius: 3px;
+}
+
+/* ── Infographic: Surprising finding ── */
+.surprise-box {
+    max-width: 560px; width: 100%;
+    text-align: center;
+}
+.surprise-big {
+    font-size: 6rem; font-weight: 800; letter-spacing: -4px;
+    color: var(--B);
+    line-height: 1;
+}
+.surprise-of {
+    font-size: 1.2rem; color: var(--muted); margin-top: 0.2rem;
+    font-weight: 600;
+}
+.surprise-desc {
+    font-size: 1rem; color: #bbb; line-height: 1.6;
+    margin-top: 1rem; max-width: 480px; margin-left: auto; margin-right: auto;
+}
+.surprise-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: var(--accent);
+    margin-top: 1rem; padding: 0.5rem 0.7rem;
+    background: rgba(255,166,87,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    text-align: left;
+}
+
+/* ── Decision table ── */
+.decision-table {
+    max-width: 640px; width: 100%;
+}
+.decision-header {
+    font-size: 1.3rem; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 1rem; text-align: center;
+}
+.dt-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+}
+.dt-situation {
+    font-size: 0.72rem; color: #bbb;
+    flex: 1;
+}
+.dt-winner {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; font-weight: 700;
+    padding: 2px 10px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+}
+.dt-winner.wa { background: rgba(255,107,107,0.15); color: var(--A); }
+.dt-winner.wb { background: rgba(255,217,61,0.15); color: var(--B); }
+.dt-winner.wc { background: rgba(201,160,255,0.15); color: var(--C); }
+
+/* ── Stats row ── */
+.stats-row {
+    display: flex; gap: 3rem;
+    text-align: center;
+}
+.stat-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 3rem; font-weight: 800; color: var(--accent);
+    letter-spacing: -2px;
+    line-height: 1;
+}
+.stat-label {
+    font-size: 0.65rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-top: 0.3rem;
+}
+
+/* ── Flicker case ── */
+.flicker-flow {
+    max-width: 600px; width: 100%;
+}
+.flicker-header {
+    font-size: 1.3rem; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 1.2rem; text-align: center;
+}
+.flicker-step {
+    display: flex; align-items: flex-start; gap: 0.8rem;
+    margin-bottom: 0.7rem;
+}
+.flicker-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    min-width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.flicker-num.fail { background: rgba(255,107,107,0.2); color: var(--A); }
+.flicker-num.win { background: rgba(201,160,255,0.2); color: var(--C); }
+.flicker-text {
+    font-size: 0.78rem; color: #bbb; line-height: 1.5;
+}
+.flicker-text em { color: var(--text); font-style: normal; font-weight: 600; }
+.flicker-text .strike { color: var(--red); text-decoration: line-through; }
+.flicker-divider {
+    width: 1px; height: 16px; background: var(--muted);
+    margin: 0.2rem 0 0.2rem 11px;
+    opacity: 0.3;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- Slide 0: Title -->
+<div class="slide s-title" id="s0">
+    <h1>What if the AI showed you<br>its reasoning <em style="color:var(--opus)">before</em> it reasoned?</h1>
+    <p>the meta-prompting discovery</p>
+</div>
+
+<!-- Slide 1: The key insight quote -->
+<div class="slide" id="s1">
+    <div class="s-quote">
+        <blockquote>"Plan mode makes the model think about what <em style="color:var(--text)">you</em> want.<br>Meta-prompting makes the model think about what <em style="color:var(--text)">the task</em> requires."</blockquote>
+        <div class="attribution">These are different questions with different answers.</div>
+    </div>
+</div>
+
+<!-- Slide 2: The invisible prompt problem -->
+<div class="slide" id="s2">
+    <div class="fact">
+        <div class="fact-label">The problem</div>
+        <div class="fact-name">The invisible prompt</div>
+        <div class="fact-desc">Every time you give an AI a direct instruction, there is an invisible step between your words and the output. "Analyze this contract" produces analysis — but the criteria, the focus, the depth, the format were all decided somewhere you can't see.</div>
+        <div class="fact-detail">You only see the result. You never see why.</div>
+    </div>
+</div>
+
+<!-- Slide 3: Three approaches -->
+<div class="slide" id="s3">
+    <div class="three-col-header">Three approaches to the same task</div>
+    <div class="three-col">
+        <div class="col">
+            <div class="col-tag a">A · Direct</div>
+            <div class="col-title">"Fix the bug."</div>
+            <div class="col-analogy">"Build me a nice kitchen."</div>
+            <div class="col-desc">Model executes immediately. You see the output. You don't see why it chose that approach over alternatives.</div>
+        </div>
+        <div class="col">
+            <div class="col-tag b">B · Plan</div>
+            <div class="col-title">"Plan how to fix it."</div>
+            <div class="col-analogy">"Show me three kitchen layouts."</div>
+            <div class="col-desc">Model presents options. You pick one. You controlled the direction — but the model chose which options to show.</div>
+        </div>
+        <div class="col">
+            <div class="col-tag c">C · Meta-prompt</div>
+            <div class="col-title">"Write a prompt to fix it."</div>
+            <div class="col-analogy">"Show me the blueprint first."</div>
+            <div class="col-desc">Model produces a detailed reasoning framework. You read it. You find the biases. You adjust. Then: "Execute."</div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 4: Visibility spectrum -->
+<div class="slide" id="s4">
+    <div class="vis-layers">
+        <div class="vis-header">What you can see at each level</div>
+        <div class="vis-layer la">
+            <div class="vis-tag">A</div>
+            <div class="vis-input">"Do X"</div>
+            <div class="vis-see">You see: output only</div>
+            <div class="vis-hidden">Everything hidden</div>
+        </div>
+        <div class="vis-layer lb">
+            <div class="vis-tag">B</div>
+            <div class="vis-input">"Plan X"</div>
+            <div class="vis-see">You see: a menu of options</div>
+            <div class="vis-hidden">Framing hidden</div>
+        </div>
+        <div class="vis-layer lc">
+            <div class="vis-tag">C</div>
+            <div class="vis-input">"Write prompt for X"</div>
+            <div class="vis-see">You see: the full instructions</div>
+            <div class="vis-hidden">Nothing hidden</div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 5: Bias caught — Case 3 -->
+<div class="slide" id="s5">
+    <div class="bias-strip">
+        <div class="bias-strip-header">5 biases caught before execution</div>
+        <div style="font-size:0.7rem;color:var(--muted);text-align:center;margin-bottom:1rem;font-family:'JetBrains Mono',monospace;">Case 3: Research prompt that audited its own bias</div>
+        <div class="bias-row">
+            <div class="bias-before">"Be brutally honest"</div>
+            <div class="bias-arrow">→</div>
+            <div class="bias-after">"Analyze"</div>
+        </div>
+        <div class="bias-row">
+            <div class="bias-before">"Is it forced?"</div>
+            <div class="bias-arrow">→</div>
+            <div class="bias-after">"How does it apply?"</div>
+        </div>
+        <div class="bias-row">
+            <div class="bias-before">"Does this genuinely apply?"</div>
+            <div class="bias-arrow">→</div>
+            <div class="bias-after">"Rate applicability 1–5"</div>
+        </div>
+        <div class="bias-row">
+            <div class="bias-before">"Stress test, not a cheerleader"</div>
+            <div class="bias-arrow">→</div>
+            <div class="bias-after" style="color:var(--muted);font-style:italic;">removed</div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--accent);text-align:center;margin-top:1rem;">In Direct Action, these biases would be invisible — embedded in the output, never seen.</div>
+    </div>
+</div>
+
+<!-- Slide 6: Flicker bug — Case 4 -->
+<div class="slide" id="s6">
+    <div class="flicker-flow">
+        <div class="flicker-header">3 failed patches → 1 blueprint</div>
+        <div class="flicker-step">
+            <div class="flicker-num fail">1</div>
+            <div class="flicker-text"><span class="strike">CSS state maps</span> — DOM rebuilt every 300ms, wipes flip state</div>
+        </div>
+        <div class="flicker-divider"></div>
+        <div class="flicker-step">
+            <div class="flicker-num fail">2</div>
+            <div class="flicker-text"><span class="strike">Event delegation</span> — same root cause, different symptom</div>
+        </div>
+        <div class="flicker-divider"></div>
+        <div class="flicker-step">
+            <div class="flicker-num fail">3</div>
+            <div class="flicker-text"><span class="strike">Animation caching</span> — correct fix, wrong architecture</div>
+        </div>
+        <div style="height:0.5rem"></div>
+        <div style="text-align:center;font-size:0.7rem;color:var(--muted);margin:0.5rem 0;">Switched to meta-prompt: "Write a prompt for a GUI specialist"</div>
+        <div style="height:0.3rem"></div>
+        <div class="flicker-step">
+            <div class="flicker-num win">C</div>
+            <div class="flicker-text"><em>250-line blueprint</em> — exact DOM structure, guard patterns, CSS spec, verification steps. Any developer could execute it cold.</div>
+        </div>
+        <div class="fact-detail" style="margin-top:0.8rem;">The three patches couldn't be reused — they were patches to a wrong architecture, not specifications for a correct one.</div>
+    </div>
+</div>
+
+<!-- Slide 7: Transition — "So we asked" -->
+<div class="slide s-title" id="s7">
+    <h1>So we asked the<br>Claude Code team.</h1>
+    <p>hackathon ama · february 2026</p>
+</div>
+
+<!-- Slide 8: Henk's question -->
+<div class="slide" id="s8">
+    <div class="fact">
+        <div class="fact-label">Our question</div>
+        <div class="fact-name">Why does "write me a prompt"<br>beat "just do it"?</div>
+        <div class="fact-desc">"Give me a prompt to analyze [topic]" then "execute prompt" works way better than "analyze this topic" — why is that?</div>
+        <div class="fact-detail">Asked directly to Cat Wu, Product Lead and co-creator of Claude Code</div>
+    </div>
+</div>
+
+<!-- Slide 9: Cat Wu's answer — the coworker analogy -->
+<div class="slide" id="s9">
+    <div class="s-quote">
+        <blockquote>"My best guess is that it's changing the model from doing <em style="color:var(--text)">fast thinking</em> to <em style="color:var(--text)">slow thinking</em>."</blockquote>
+        <div class="attribution">Cat Wu · Product Lead and co-creator of Claude Code</div>
+    </div>
+</div>
+
+<!-- Slide 10: Cat Wu — the full analogy -->
+<div class="slide" id="s10">
+    <div class="s-quote">
+        <blockquote>"Like if you ask a coworker 'can you take a quick look at X?' — they might do an <em style="color:var(--A)">80% pass</em>. Whereas if you say 'this is why it's important' — they do <em style="color:var(--C)">more thorough work</em>."</blockquote>
+        <div class="attribution">Cat Wu · Hackathon AMA, Feb 2026</div>
+    </div>
+</div>
+
+<!-- Slide 11: Cat Wu — the mechanism -->
+<div class="slide" id="s11">
+    <div class="s-quote">
+        <blockquote>"Asking the model to improve the prompt causes the model to believe that this is a <em style="color:var(--text)">more important thing to do</em>, that it should be more comprehensive in."</blockquote>
+        <div class="attribution">Cat Wu · "We've shipped things like prompt improver" for this reason</div>
+    </div>
+</div>
+
+<!-- Slide 12: Our hypothesis -->
+<div class="slide" id="s12">
+    <div class="fact">
+        <div class="fact-label">Our hypothesis</div>
+        <div class="fact-name">The model reflects on the task,<br>not on what you want</div>
+        <div class="fact-desc">The two-step approach forces the model to reason about reasoning — what makes good analysis, what biases to avoid, what structure to use — before doing any actual work. It's chain-of-thought at the meta level.</div>
+        <div class="fact-detail">We tested this with 30 Opus 4.6 agents and 8 real cases from the build.</div>
+    </div>
+</div>
+
+<!-- Slide 13: Test intro -->
+<div class="slide s-title" id="s13">
+    <h1>30 agents.<br>10 tasks.<br>3 approaches.</h1>
+    <p>opus 4.6 · all runs parallel · scored on 5 dimensions</p>
+</div>
+
+<!-- Slide 14: Bar chart — aggregate scores -->
+<div class="slide" id="s14">
+    <div class="bar-chart">
+        <div class="bar-chart-header">Average score across 10 tasks</div>
+        <div class="bar-chart-sub">5 dimensions · 1–5 scale · 25 max</div>
+        <div class="bar-row">
+            <div class="bar-label la">Direct Action</div>
+            <div class="bar-track">
+                <div class="bar-fill fa" id="bar-a" style="width:0%">9.2</div>
+            </div>
+        </div>
+        <div class="bar-row">
+            <div class="bar-label lb">Plan Mode</div>
+            <div class="bar-track">
+                <div class="bar-fill fb" id="bar-b" style="width:0%">11.9</div>
+            </div>
+        </div>
+        <div class="bar-row">
+            <div class="bar-label lc">Meta-Prompt</div>
+            <div class="bar-track">
+                <div class="bar-fill fc" id="bar-c" style="width:0%">24.1</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 15: Dimension breakdown -->
+<div class="slide" id="s15">
+    <div class="dim-chart">
+        <div class="dim-chart-header">Score by dimension</div>
+        <div class="dim-row">
+            <div class="dim-name">Specificity</div>
+            <div class="dim-bars">
+                <div class="dim-bar da" id="d1a" style="width:0%"></div>
+                <div class="dim-bar db" id="d1b" style="width:0%"></div>
+                <div class="dim-bar dc" id="d1c" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="dim-row">
+            <div class="dim-name">Structure</div>
+            <div class="dim-bars">
+                <div class="dim-bar da" id="d2a" style="width:0%"></div>
+                <div class="dim-bar db" id="d2b" style="width:0%"></div>
+                <div class="dim-bar dc" id="d2c" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="dim-row">
+            <div class="dim-name">Bias awareness</div>
+            <div class="dim-bars">
+                <div class="dim-bar da" id="d3a" style="width:0%"></div>
+                <div class="dim-bar db" id="d3b" style="width:0%"></div>
+                <div class="dim-bar dc" id="d3c" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="dim-row">
+            <div class="dim-name">Completeness</div>
+            <div class="dim-bars">
+                <div class="dim-bar da" id="d4a" style="width:0%"></div>
+                <div class="dim-bar db" id="d4b" style="width:0%"></div>
+                <div class="dim-bar dc" id="d4c" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="dim-row">
+            <div class="dim-name">Reusability</div>
+            <div class="dim-bars">
+                <div class="dim-bar da" id="d5a" style="width:0%"></div>
+                <div class="dim-bar db" id="d5b" style="width:0%"></div>
+                <div class="dim-bar dc" id="d5c" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="dim-legend">
+            <div class="dim-legend-item"><div class="dim-legend-dot" style="background:var(--A)"></div> Direct</div>
+            <div class="dim-legend-item"><div class="dim-legend-dot" style="background:var(--B)"></div> Plan</div>
+            <div class="dim-legend-item"><div class="dim-legend-dot" style="background:var(--C)"></div> Meta</div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 16: The surprise -->
+<div class="slide" id="s16">
+    <div class="surprise-box">
+        <div class="surprise-big">4 / 10</div>
+        <div class="surprise-of">times Direct Action beat Plan Mode</div>
+        <div class="surprise-desc">Plan mode added an option-surfacing layer that consumed reasoning budget without adding depth. It produced polished menus for underspecified problems.</div>
+        <div class="surprise-detail">The model spent tokens on "what does the user want?" instead of "what does the task need?"</div>
+    </div>
+</div>
+
+<!-- Slide 17: Self-audit heatmap -->
+<div class="slide" id="s17">
+    <div class="audit-grid">
+        <div class="audit-header">The prewash didn't prewash itself</div>
+        <div class="audit-sub">77-cell audit: 7 principles × 11 prompt functions</div>
+        <table class="audit-table">
+            <tr>
+                <th></th>
+                <th>Pass</th>
+                <th>Partial</th>
+                <th>Fail</th>
+            </tr>
+            <tr>
+                <td>Concept Gap</td>
+                <td class="audit-cell pass"></td>
+                <td class="audit-cell partial"></td>
+                <td class="audit-cell fail"></td>
+            </tr>
+            <tr>
+                <td>Drafter/Reader</td>
+                <td class="audit-cell pass"></td>
+                <td class="audit-cell partial"></td>
+                <td class="audit-cell fail"></td>
+            </tr>
+            <tr>
+                <td>No Subj. Terms</td>
+                <td class="audit-cell pass"></td>
+                <td class="audit-cell partial"></td>
+                <td class="audit-cell" style="background:rgba(255,107,107,0.08)"></td>
+            </tr>
+            <tr>
+                <td>The Prewash</td>
+                <td class="audit-cell pass" style="background:rgba(92,214,123,0.08)"></td>
+                <td class="audit-cell"></td>
+                <td class="audit-cell fail"></td>
+            </tr>
+            <tr>
+                <td>Depth</td>
+                <td class="audit-cell pass"></td>
+                <td class="audit-cell"></td>
+                <td class="audit-cell"></td>
+            </tr>
+            <tr>
+                <td>Source Language</td>
+                <td class="audit-cell pass"></td>
+                <td class="audit-cell partial"></td>
+                <td class="audit-cell fail"></td>
+            </tr>
+            <tr>
+                <td>Verify</td>
+                <td class="audit-cell pass" style="background:rgba(92,214,123,0.08)"></td>
+                <td class="audit-cell partial"></td>
+                <td class="audit-cell fail"></td>
+            </tr>
+        </table>
+        <div class="audit-legend">
+            <div class="audit-legend-item"><div class="audit-legend-dot" style="background:rgba(92,214,123,0.4)"></div> Pass</div>
+            <div class="audit-legend-item"><div class="audit-legend-dot" style="background:rgba(255,217,61,0.35)"></div> Partial</div>
+            <div class="audit-legend-item"><div class="audit-legend-dot" style="background:rgba(255,107,107,0.4)"></div> Fail</div>
+        </div>
+        <div class="fact-detail" style="margin-top:1rem;">The critical finding: the verification rule existed only in the fallback path — not in the code that actually runs.</div>
+    </div>
+</div>
+
+<!-- Slide 18: The concept gap in the concept gap detector -->
+<div class="slide" id="s18">
+    <div class="fact">
+        <div class="fact-label">Case 2 · the recursive failure</div>
+        <div class="fact-name">The concept gap detector<br>had a concept gap</div>
+        <div class="fact-desc">The pre-scan prompt — the one that decides which clauses get analyzed — opened with: <em style="color:var(--red)">"clauses that a consumer should worry about."</em> The word "worry" is exactly the kind of concept word the Prewash Method says to avoid.</div>
+        <div class="fact-detail">Fixed: "clauses where rights, obligations, or financial exposure are asymmetric" — structural patterns, not subjective judgment</div>
+    </div>
+</div>
+
+<!-- Slide 19: When to use which -->
+<div class="slide" id="s19">
+    <div class="decision-table">
+        <div class="decision-header">When each approach wins</div>
+        <div class="dt-row">
+            <div class="dt-situation">Fix a typo</div>
+            <div class="dt-winner wa">Direct</div>
+        </div>
+        <div class="dt-row">
+            <div class="dt-situation">Add a console.log</div>
+            <div class="dt-winner wa">Direct</div>
+        </div>
+        <div class="dt-row">
+            <div class="dt-situation">"Should we build X or Y?"</div>
+            <div class="dt-winner wb">Plan</div>
+        </div>
+        <div class="dt-row">
+            <div class="dt-situation">Explore an unfamiliar codebase</div>
+            <div class="dt-winner wb">Plan</div>
+        </div>
+        <div class="dt-row">
+            <div class="dt-situation">Design a complex prompt</div>
+            <div class="dt-winner wc">Meta</div>
+        </div>
+        <div class="dt-row">
+            <div class="dt-situation">Debug after 2+ failed attempts</div>
+            <div class="dt-winner wc">Meta</div>
+        </div>
+        <div class="dt-row">
+            <div class="dt-situation">Synthesize conflicting input</div>
+            <div class="dt-winner wc">Meta</div>
+        </div>
+        <div class="dt-row">
+            <div class="dt-situation">Long-running agent setup</div>
+            <div class="dt-winner wc">Meta</div>
+        </div>
+        <div class="dt-row">
+            <div class="dt-situation">QC / review existing output</div>
+            <div class="dt-winner wc">Meta</div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 20: The productized version -->
+<div class="slide" id="s20">
+    <div class="fact">
+        <div class="fact-label">The product</div>
+        <div class="fact-name">FlipSide is a<br>productized meta-prompt</div>
+        <div class="fact-desc">The system prompt teaches Claude how to think about documents before it sees one: adopt the drafter's perspective, apply 18 trick types, contrast "what it says" vs. "what you should read." Every upload executes against this pre-built reasoning framework.</div>
+        <div class="fact-detail">The user never sees the meta-prompt. They just see better results.</div>
+    </div>
+</div>
+
+<!-- ═══ PRODUCT DEMO BLOCK ═══ -->
+
+<!-- Slide 21: Upload -->
+<div class="slide" id="s21">
+    <div class="fact">
+        <div class="fact-label">Step 1</div>
+        <div class="fact-name">Upload any document<br>someone else wrote</div>
+        <div class="fact-desc">PDF, DOCX, paste text, paste a URL — or pick from 14 built-in samples. Gym memberships, insurance policies, a real Coca-Cola sweepstakes, the hackathon waiver we all signed.</div>
+        <div class="fact-detail">Treats a $2 coupon with the same seriousness as a $500,000 corporate lease</div>
+    </div>
+</div>
+
+<!-- Slide 22: Card front -->
+<div class="slide" id="s22">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(92,214,123,0.15);color:var(--green);">Card front · the drafter's framing</div>
+        <div class="fact-name" style="color:var(--green);">"Comprehensive coverage<br>for your peace of mind"</div>
+        <div class="fact-desc" style="font-style:italic;color:#999;">I'd think: OK, so my house is covered for "direct physical loss" — that sounds like everything. Water damage, fire, theft. Good. That's exactly what I'm paying for.</div>
+        <div class="fact-detail" style="border-color:var(--green);color:var(--green);background:rgba(92,214,123,0.06);">This is Cat's "80% pass" — the fast-thinking first impression the drafter designed for you</div>
+    </div>
+</div>
+
+<!-- Slide 23: Card back -->
+<div class="slide" id="s23">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(255,107,107,0.15);color:var(--red);">Card back · the meta-prompt's analysis</div>
+        <div class="fact-name" style="color:var(--red);">$0 payout on a<br>$50,000 claim</div>
+        <div class="fact-desc">Exclusion 2(c) excludes "gradual seepage over 14 days." Clause 2(e) sets inspection at 30 days. Together: virtually all residential water damage can be reclassified as "gradual" after the fact.</div>
+        <div class="fact-detail" style="border-color:var(--red);color:var(--red);background:rgba(255,107,107,0.06);">Score: 82/100 · Trick: PHANTOM PROTECTION · the broad coverage is a psychological anchor</div>
+    </div>
+</div>
+
+<!-- Slide 24: The pipeline -->
+<div class="slide" id="s24">
+    <div class="stats-row">
+        <div>
+            <div class="stat-big">8</div>
+            <div class="stat-label">Parallel threads</div>
+        </div>
+        <div>
+            <div class="stat-big" style="color:var(--haiku);">~8s</div>
+            <div class="stat-label">First card</div>
+        </div>
+        <div>
+            <div class="stat-big" style="color:var(--opus);">6</div>
+            <div class="stat-label">Opus threads at t=0</div>
+        </div>
+        <div>
+            <div class="stat-big">$0.54</div>
+            <div class="stat-label">Per analysis</div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 25: 14 samples -->
+<div class="slide" id="s25">
+    <div class="fact">
+        <div class="fact-label">14 built-in samples</div>
+        <div class="fact-name">Every document you sign<br>with a shrug</div>
+        <div class="fact-desc" style="font-size:0.9rem;line-height:1.7;">
+            <span style="color:var(--accent);">Lease</span> · <span style="color:var(--accent);">Insurance</span> · <span style="color:var(--accent);">Gym membership</span> · <span style="color:var(--accent);">Employment contract</span> · <span style="color:var(--accent);">Loan</span> · <span style="color:var(--accent);">Terms of Service</span> · <span style="color:var(--accent);">Medical consent</span> · <span style="color:var(--accent);">HOA bylaws</span> · <span style="color:var(--accent);">Coupon rewards</span> · <span style="color:var(--accent);">Wedding venue</span> · <span style="color:var(--accent);">Pet adoption</span> · <span style="color:var(--accent);">Timeshare</span> · <span style="color:var(--accent);">Coca-Cola sweepstakes</span> (real) · <span style="color:var(--accent);">Hackathon waiver</span> (real — the one we all signed)
+        </div>
+    </div>
+</div>
+
+<!-- Slide 26: Ask FlipSide -->
+<div class="slide" id="s26">
+    <div class="fact">
+        <div class="fact-label">Follow-up Q&amp;A</div>
+        <div class="fact-name">"What happens if I'm<br>3 months late on rent?"</div>
+        <div class="fact-desc">Opus runs as a tool-use agent — autonomously decides which tools to call, searches the document server-side, retrieves card analyses, and traces the answer through every relevant clause.</div>
+        <div class="fact-detail">3 tools: search_document · get_clause_analysis · get_verdict_summary · up to 6 reasoning rounds</div>
+    </div>
+</div>
+
+<!-- ═══ DEEP DIVES BLOCK ═══ -->
+
+<!-- Slide 27: Deep dives intro -->
+<div class="slide s-title" id="s27">
+    <h1>5 Opus threads.<br>All in parallel.<br>Each one a different lens.</h1>
+    <p>fire at t=0 · arrive ~15–20s</p>
+</div>
+
+<!-- Slide 28: Document Archaeology -->
+<div class="slide" id="s28">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(201,160,255,0.15);color:var(--opus);">Opus 4.6 · thread 1 of 5</div>
+        <div class="fact-name">Document Archaeology</div>
+        <div class="fact-desc">Each section classified as <em style="color:var(--opus)">boilerplate</em> vs. <em style="color:var(--accent)">custom-drafted</em>. Custom clauses reveal the drafter's real priorities — what they cared enough to modify. Profiles the drafter type.</div>
+        <div class="fact-detail">"This lease pattern is typical of high-volume property management optimizing for automated enforcement"</div>
+    </div>
+</div>
+
+<!-- Slide 29: What Could Happen -->
+<div class="slide" id="s29">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(201,160,255,0.15);color:var(--opus);">Opus 4.6 · thread 2 of 5</div>
+        <div class="fact-name">What Could Happen</div>
+        <div class="fact-desc">Month-by-month worst-case scenario using the document's <em style="color:var(--accent)">actual fees, deadlines, and compounding rules</em>. Not hypothetical — built from the specific terms you're about to sign. Total exposure at the end.</div>
+        <div class="fact-detail">Picks the most likely trigger, not the most dramatic · self-check: total = sum of all fees</div>
+    </div>
+</div>
+
+<!-- Slide 30: Walk-Away Number -->
+<div class="slide" id="s30">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(201,160,255,0.15);color:var(--opus);">Opus 4.6 · thread 3 of 5</div>
+        <div class="fact-name">Walk-Away Number</div>
+        <div class="fact-desc">Maximum financial exposure as a <em style="color:var(--red)">hero dollar figure</em> with a line-by-line breakdown. Every fee, penalty, deposit, and compounded obligation traced to its source clause. Compared to industry norms.</div>
+        <div class="fact-detail">Forensic arithmetic: "The TOTAL must equal the sum of the breakdown items — verify your math"</div>
+    </div>
+</div>
+
+<!-- Slide 31: Hidden Combinations -->
+<div class="slide" id="s31">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(201,160,255,0.15);color:var(--opus);">Opus 4.6 · thread 4 of 5</div>
+        <div class="fact-name">Hidden Combinations</div>
+        <div class="fact-desc">Cross-clause compound traps that are <em style="color:var(--red)">invisible when reading linearly</em>. Clause 4 says one thing, clause 11 says another — together they create a trap no single reading finds.</div>
+        <div class="fact-detail">Clause interaction map · compound risk scoring · "read these together" groupings</div>
+    </div>
+</div>
+
+<!-- Slide 32: Negotiation Playbook -->
+<div class="slide" id="s32">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(201,160,255,0.15);color:var(--opus);">Opus 4.6 · thread 5 of 5</div>
+        <div class="fact-name">Negotiation Playbook</div>
+        <div class="fact-desc">What to push on (they'll bend), what to mention (builds credibility), what to skip (non-negotiable). <em style="color:var(--opus)">Theory of mind</em> about the drafter's priorities. Includes a ready-to-send message.</div>
+        <div class="fact-detail">Opus models the drafter's incentives to predict concessions · "they'll give you X if you accept Y"</div>
+    </div>
+</div>
+
+<!-- ═══ CLOSING BLOCK ═══ -->
+
+<!-- Slide 33: The safety layer -->
+<div class="slide" id="s33">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(92,214,123,0.15);color:var(--green);">The safety layer</div>
+        <div class="fact-name">The guinea pigs thought<br>the $539 was real</div>
+        <div class="fact-desc">My sister and brother-in-law tested an early version. They saw the gym penalty and panicked — thought they'd been tricked into a subscription. Claude's diagnosis: <em style="color:var(--red)">"zero emotional safety."</em></div>
+        <div class="fact-detail">We built the safety layer that night: context framing, reassurance-first design, "educational review — no action required"</div>
+    </div>
+</div>
+
+<!-- Slide 34: Stats -->
+<div class="slide" id="s34">
+    <div class="stats-row">
+        <div>
+            <div class="stat-big">30</div>
+            <div class="stat-label">Opus 4.6 agents</div>
+        </div>
+        <div>
+            <div class="stat-big">8</div>
+            <div class="stat-label">Documented cases</div>
+        </div>
+        <div>
+            <div class="stat-big">77</div>
+            <div class="stat-label">Audit cells</div>
+        </div>
+        <div>
+            <div class="stat-big">96%</div>
+            <div class="stat-label">Meta-prompt score</div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 35: Close -->
+<div class="slide s-title" id="s35">
+    <h1>Don't tell the AI what to do.<br>Show it what <em style="color:var(--opus)">good</em> looks like.</h1>
+    <div class="subtitle">Chain-of-thought at the meta level. The model is better at designing frameworks than following vague instructions.</div>
+</div>
+
+<script>
+var T = {
+    hold:      3200,   // standard hold
+    gap:       200,    // black gap
+    chartHold: 4000,   // longer for infographics
+    quoteHold: 3600,   // quotes need reading time
+    catHold:   4200,   // Cat Wu quotes need extra time
+    titleHold: 2800,   // title slides
+    cardHold:  3600,   // card front/back — need reading time
+    diveHold:  3000,   // deep dives — 5 in a row, keep moving
+};
+
+var slides = ['s0','s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12','s13','s14','s15','s16','s17','s18','s19','s20','s21','s22','s23','s24','s25','s26','s27','s28','s29','s30','s31','s32','s33','s34','s35'];
+var current = 0;
+
+// Bar chart animation
+function animateBars() {
+    setTimeout(function() {
+        document.getElementById('bar-a').style.width = '36.8%';
+        document.getElementById('bar-b').style.width = '47.6%';
+        document.getElementById('bar-c').style.width = '96.4%';
+    }, 400);
+}
+
+// Dimension chart animation
+function animateDims() {
+    var data = {
+        d1: [2.7, 2.8, 4.8],
+        d2: [2.2, 3.1, 5.0],
+        d3: [1.0, 1.4, 4.5],
+        d4: [2.1, 2.5, 4.9],
+        d5: [1.2, 2.1, 4.9]
+    };
+    setTimeout(function() {
+        for (var k in data) {
+            document.getElementById(k+'a').style.width = (data[k][0] / 5 * 100) + '%';
+            document.getElementById(k+'b').style.width = (data[k][1] / 5 * 100) + '%';
+            document.getElementById(k+'c').style.width = (data[k][2] / 5 * 100) + '%';
+        }
+    }, 400);
+}
+
+function getHoldTime(id) {
+    var num = parseInt(id.substring(1));
+    // Titles
+    if (num === 0 || num === 7 || num === 13 || num === 27 || num === 35) return T.titleHold;
+    // Cat Wu quotes — extra reading time
+    if (num === 9 || num === 10 || num === 11) return T.catHold;
+    // Our quotes
+    if (num === 1) return T.quoteHold;
+    // Card front/back — need reading time
+    if (num === 22 || num === 23) return T.cardHold;
+    // Deep dives — 5 in a row, keep pace
+    if (num >= 28 && num <= 32) return T.diveHold;
+    // Charts/infographics
+    if (num === 3 || num === 4 || num === 5 || num === 14 || num === 15 || num === 17 || num === 19 || num === 25) return T.chartHold;
+    return T.hold;
+}
+
+function showSlide(idx) {
+    if (idx >= slides.length) return;
+    var el = document.getElementById(slides[idx]);
+    el.classList.add('active');
+
+    // Trigger chart animations
+    if (slides[idx] === 's14') animateBars();
+    if (slides[idx] === 's15') animateDims();
+
+    var holdTime = getHoldTime(slides[idx]);
+    setTimeout(function() {
+        el.classList.remove('active');
+        el.classList.add('out');
+        setTimeout(function() {
+            el.classList.remove('out');
+            showSlide(idx + 1);
+        }, T.gap);
+    }, holdTime);
+}
+
+setTimeout(function() { showSlide(0); }, 300);
+</script>
+
+</body>
+</html>

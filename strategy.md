@@ -1,8 +1,51 @@
 # FlipSide Hackathon — Strategy Decisions
 
+30 strategic decisions made during a 5-day hackathon building FlipSide, a tool that flips consumer documents to reveal what the other side intended. Each entry documents the context, the choice, what happened, and the key insight. Decisions range from product philosophy (how reassurance becomes a weapon) to architecture recovery (writing the prompt instead of the code) to automated QC (Playwright capturing LLM output for expert review). This file is the evidence base for the "Keep Thinking Prize" — a real-time record of how the product evolved through iteration, failure, external feedback, and deliberate strategic pivots.
+
+---
+
+## Table of Contents
+
+| # | Decision | Summary |
+|---|----------|---------|
+| 1 | Let 4.6 Study Problems Via Screenshots | Debug from visual evidence, not hints |
+| 2 | Let 4.6 Watch Itself Via Playwright | Self-monitoring escalation for persistent bugs |
+| 3 | Parallel Tasks and Speed Improvements Probe | Full-path latency audit prompt |
+| 4 | Use Meta-Prompting to Assess Before Building | Concept assessment before commitment |
+| 5 | **Write the Prompt, Not the Code** [\*] | Architecture rewrite via specification prompt |
+| 6 | Split-Model Architecture (Haiku + Opus) | Fast cards, deep verdict, parallel threads |
+| 7 | On-Demand Deep Analysis | Buffer analysis until user requests it |
+| 8 | 10 Opus 4.6 Capabilities in One Sprint | Vision, tool use, follow-up, and 7 more |
+| 9 | Prefix-Aware Deployment | Server-injected base URL for reverse proxies |
+| 10 | **Reassurance as Weapon** [\*] | Card front mirrors the drafter's framing |
+| 11 | Rebuild From Source, Never From State | Immutable source prevents injection drift |
+| 12 | Postel's Law for Document Input | Fast gate + cheap model for garbled text |
+| 13 | Context Before Content | Show document identity before analysis |
+| 14 | The Figure IS the Graphic | Push structure upstream into the prompt |
+| 15 | Event-Driven Choreography | Tie animations to data events, not timers |
+| 16 | **The Comparison Lives in Memory, Not on Screen** [\*] | Delete the split-screen; trust the flip |
+| 17 | **Three-Tier Fuzzy Matching** [\*] | Postel's Law for LLM-to-text alignment |
+| 18 | **Suitability Gate** [\*] | Let Haiku say "not for me" at zero cost |
+| 19 | DOMPurify | Sanitize LLM output before innerHTML |
+| 20 | The Flip IS the Model Transition | Haiku front, Opus back (later superseded) |
+| 21 | 5-Thread Architecture | Haiku full cards + 4x Opus expert threads |
+| 22 | Haiku Was Already Great at Cards | Put each model where its capabilities matter |
+| 23 | Midpoint Self-Evaluation | Honest halftime scoring against jury criteria |
+| 24 | Synthesize Conflicting Feedback | Turn contradictory opinions into design constraints |
+| 25 | Expert Panel Synthesis + Fact-Checker QC | 4-voice synthesis + internal consistency fixes |
+| 26 | Summon Three Expert Agents | Parallel role-prompted agents for convergence |
+| 27 | Expert Scrutiny via Playwright | Automated QC of generative output quality |
+| 28 | Live Thinking Narration + Layout Reorder | Real Opus reasoning replaces canned messages |
+| 29 | Respect User Flow State | Deferred transitions, intent-driven scroll |
+| 30 | Flip the Pitch | "Documents nobody reviews" positioning |
+
+[\*] Recommended starting points for judges — these five decisions best illustrate product philosophy, external validation, meta-prompting, graceful degradation, and robust parsing.
+
+---
+
 ## Decision: Let 4.6 Study Problems Via Screenshots
 
-**Date**: 2025-02-11
+**Date**: 2026-02-11
 **Context**: During the hackathon, a UI flicker bug appeared in the clause card buttons (MD, star, copy). Rather than describing the problem or suggesting a cause, the approach was to show Claude 4.6 the screenshot and ask it to analyze.
 
 **The strategy**: Present the visual evidence. Don't coach. Don't offer hypotheses. Let the model study the problem independently and trace the root cause.
@@ -42,7 +85,7 @@
 
 ## Decision: Let 4.6 Watch Itself Via Playwright
 
-**Date**: 2025-02-11
+**Date**: 2026-02-11
 **Context**: After three code-level fix attempts, the flicker persisted. The in-page debug monitor (MutationObserver injected into the app) showed zero mutations — it was disconnecting during the render cycle, missing all mutations. The user's instinct: "I'd rather have you watch yourself."
 
 **The strategy**: Instead of describing what might be wrong or asking the model to guess from code, give it automated tooling to observe its own output in a real browser. Let the model write a Playwright script, run it against the live app, capture every DOM mutation programmatically, and then analyze the data.
@@ -505,7 +548,7 @@
 
 ## Decision: The Flip IS the Model Transition — Split-Model Card Architecture
 
-**Date**: 2025-02-13
+**Date**: 2026-02-13
 **Status**: Architecture decided — implementation next
 
 ### The Insight
@@ -828,7 +871,7 @@ At halftime, FlipSide's engineering depth was ahead of its presentation layer. D
 
 ## Decision 23: Synthesize Conflicting Feedback Into a Structured Prompt Instead of /plan
 
-**Date**: 2025-02-14
+**Date**: 2026-02-14
 **Context**: After real user testing, five people returned feedback that directly contradicted each other. Erik Borra reported navigation confusion, scroll sync bugs, jargon problems, and count mismatches. Ray Kentie had a near panic attack — he thought FlipSide was flagging a real threat and got scared. Other testers said "simple tool, clear" and "leuke tool." The user themselves added observations about visual polish and sample labeling. The problem wasn't a single feature request — it was a tangle of conflicting opinions about the same product, where one person's "too scary" was another person's "clear and useful."
 
 **The strategy**: Skip `/plan` mode entirely. Instead, treat the conflicting feedback as raw material for a synthesis prompt. Drop all the opinions into a single message, then produce a comprehensive, categorized analysis that:
@@ -1198,3 +1241,41 @@ Result: automatic updates never hijack scroll position, but every user-initiated
 ### Key Insight
 
 The system knows the verdict is ready but waits for a natural pause point (card navigation) to announce it. "Content ready" ≠ "interrupt now." Respecting flow state is a UX pattern that costs nothing to implement but prevents the most jarring class of interruptions — the ones where the user is actively reading something else.
+
+---
+
+## Decision 29: Flip the Pitch — "Documents Nobody Reviews"
+
+**Date**: 2026-02-15
+
+### Problem
+
+When explaining FlipSide to people, the immediate assumption was: "Oh, another legal tech tool." Contract review. Redlining. NDA triage. The word "document" triggers a mental model of lawyers reviewing corporate agreements — and that mental model has competition: DoNotPay, LegalZoom, Lawgeex, Anthropic's own legal plugin.
+
+The tool was being perceived as a worse version of something that already exists, when it's actually the first version of something that doesn't.
+
+### The Insight
+
+The documents that affect the most people are the ones nobody thinks need reviewing. Gym memberships. App terms. Pet adoption contracts. Coupon reward programs. Sweepstakes rules. Wedding venue policies. You sign them with a shrug. They're not written with one.
+
+These documents contain the same 18 tricks that $800/hour attorneys find in corporate M&A deals — Time Traps, Phantom Protections, Burden Shifts, Escape Hatches — but nobody built a tool for them because nobody thought of them as "legal documents."
+
+That's the blind spot. Not access to legal review — the *relevance* of legal review.
+
+### The Pivot
+
+Flipped the pitch from "upload a contract" to "the dark side of small print":
+
+| Before | After |
+|--------|-------|
+| "Upload any contract, lease, or terms of service — and see what the other side isn't telling you." | "Gym memberships. Sweepstakes rules. Pet adoptions. Insurance claims. The same 18 tricks that $800/hour attorneys find in corporate deals — hiding in the documents nobody reviews." |
+
+The sample grid already proved this — 14 tiles spanning leases to Coca-Cola sweepstakes to hackathon waivers — but the brand copy was still speaking "legal tech." Now the first thing people read names the documents they've actually signed and shrugged at.
+
+### Why This Matters for the Hackathon
+
+The judging criterion "Break the Barriers" says: take something locked behind expertise and put it in everyone's hands. But the real barrier isn't expertise — it's relevance. People don't think a gym membership needs reviewing. FlipSide doesn't just make legal review accessible. It expands what's worth reviewing. That's the barrier we break.
+
+### Key Insight
+
+Positioning determines perception. The same tool framed as "contract review" competes with established legal tech. Framed as "the dark side of small print," it has no competition — because nobody else treats a coupon with the same seriousness as a corporate lease.

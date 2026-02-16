@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Origin Story — How FlipSide Was Born</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --cream: #f7f5f0;
+    --bg: #0a0a0a;
+    --text: #f0f0f0;
+    --dark-text: #1a1a1a;
+    --muted: #666;
+    --rust: #c44b28;
+    --red: #ff6b6b;
+    --green: #5cd67b;
+    --opus: #c9a0ff;
+    --accent: #ffa657;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    padding: 2rem;
+}
+.slide.active { animation: slideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.slide.out { animation: slideOut 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* Cream slides */
+.cream {
+    background: var(--cream);
+    color: var(--dark-text);
+}
+.cream h1 {
+    font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+    text-align: right; line-height: 1.05;
+    max-width: 700px; width: 100%;
+}
+.cream p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: #888;
+    margin-top: 0.6rem; letter-spacing: 0.5px;
+    text-align: right; max-width: 700px; width: 100%;
+}
+
+/* Dark title */
+.dark-title { text-align: center; }
+.dark-title h1 {
+    font-size: 2.8rem; font-weight: 800; letter-spacing: -2px;
+    line-height: 1.1;
+}
+.dark-title p {
+    font-size: 1rem; color: var(--muted); margin-top: 0.6rem;
+    font-style: italic;
+}
+
+/* Fact cards */
+.fact {
+    max-width: 620px; width: 100%; text-align: left;
+}
+.fact-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 1px;
+    display: inline-block; margin-bottom: 0.7rem;
+}
+.fact-name {
+    font-size: 1.8rem; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 0.5rem; line-height: 1.1;
+}
+.fact-desc {
+    font-size: 0.95rem; color: #aaa; line-height: 1.6;
+    margin-bottom: 0.8rem;
+}
+.fact-quote {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.3px;
+    padding: 0.5rem 0.7rem;
+    border-left: 3px solid var(--opus);
+    border-radius: 0 6px 6px 0;
+    line-height: 1.5;
+    color: var(--opus);
+    background: rgba(201,160,255,0.06);
+}
+
+/* Jury preview */
+.jury-preview {
+    max-width: 600px; width: 100%; text-align: left;
+}
+.jury-preview-header {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 0.8rem;
+}
+.jury-preview-logo {
+    font-size: 1.2rem; font-weight: 700;
+}
+.jury-preview-logo span { color: var(--rust); }
+.jury-preview-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 100px;
+    background: rgba(196,75,40,0.1); color: var(--rust);
+    text-transform: uppercase; letter-spacing: 0.08em;
+}
+.jury-mini-items {
+    display: flex; flex-direction: column; gap: 0.3rem;
+}
+.jury-mini-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.35rem 0.6rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    border-left: 3px solid var(--rust);
+    font-size: 0.75rem;
+}
+.jury-mini-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; font-weight: 700;
+    min-width: 26px; text-align: center;
+    padding: 0.1rem 0.3rem; border-radius: 4px;
+}
+.jury-mini-name { font-weight: 600; min-width: 120px; }
+.jury-mini-trick {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem; color: var(--rust);
+    padding: 1px 6px; border-radius: 100px;
+    background: rgba(255,107,107,0.1);
+}
+.jury-mini-clean {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem; color: var(--green);
+}
+
+/* Stats row */
+.stats-row {
+    display: flex; gap: 2.5rem; text-align: center;
+}
+.stat-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.5rem; font-weight: 800;
+    letter-spacing: -2px; line-height: 1;
+}
+.stat-label {
+    font-size: 0.6rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-top: 0.3rem;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; } to { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- s0: Cream — This is the tool I planned -->
+<div class="slide cream" id="s0">
+    <h1>This is the tool I planned.</h1>
+</div>
+
+<!-- s1: Jury screenshot -->
+<div class="slide" id="s1" style="padding:0;background:var(--cream);">
+    <img src="screenshots/jury_fullscreen.jpg" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
+<!-- s2: Cream — But never made -->
+<div class="slide cream" id="s2">
+    <h1>But never made.</h1>
+</div>
+
+<!-- s3: The reasoning bet -->
+<div class="slide dark-title" id="s3">
+    <h1>I thought:<br><span style="color:var(--opus)">if Opus 4.6 is this good<br>at reasoning —</span></h1>
+</div>
+
+<!-- s4: Let it come up with the idea -->
+<div class="slide dark-title" id="s4">
+    <h1><span style="color:var(--opus)">let it come up<br>with the idea itself.</span></h1>
+</div>
+
+<!-- s5: The interview -->
+<div class="slide dark-title" id="s5">
+    <h1>I made it interview me.<br><span style="color:var(--accent)">How I work. How I think.<br>What "Think Like a Document" means.</span></h1>
+</div>
+
+<!-- s6: The constraint -->
+<div class="slide dark-title" id="s6">
+    <h1>One rule:<br><span style="color:var(--opus)">the tool must be Opus<br>showing off its reasoning.</span></h1>
+</div>
+
+<!-- s7: The dance -->
+<div class="slide dark-title" id="s7">
+    <h1>8 hours.<br>Man and machine.<br>No code.</h1>
+</div>
+
+<!-- s8: Together we came up with... -->
+<div class="slide dark-title" id="s8">
+    <h1>Together we came up with...</h1>
+</div>
+
+<!-- s9: The product IS Opus -->
+<div class="slide dark-title" id="s9">
+    <h1>a product where<br><span style="color:var(--opus)">the product is Opus 4.6.</span></h1>
+</div>
+
+<!-- s10: Not uses — IS -->
+<div class="slide dark-title" id="s10">
+    <h1>It doesn't <em>use</em> AI.<br><span style="color:var(--accent)">It is AI thinking out loud.</span></h1>
+</div>
+
+<!-- s11: What that means -->
+<div class="slide dark-title" id="s11">
+    <h1>Every card. Every verdict.<br>Every trick it catches.<br><span style="color:var(--opus)">That's Opus reasoning<br>— made visible.</span></h1>
+</div>
+
+<script>
+var T = { gap: 150, creamHold: 2000, screenHold: 3000, darkHold: 2200, danceHold: 2600, dotHold: 2400, revealHold: 2800 };
+
+var slides = ['s0','s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11'];
+
+function getHold(num) {
+    if (num === 0) return T.creamHold;       // This is the tool I planned
+    if (num === 1) return T.screenHold;      // Jury screenshot
+    if (num === 2) return T.creamHold;       // But never made
+    if (num === 3) return T.darkHold;        // if Opus is this good at reasoning —
+    if (num === 4) return T.darkHold;        // let it come up with the idea
+    if (num === 5) return T.danceHold;       // I made it interview me
+    if (num === 6) return T.darkHold;        // One rule
+    if (num === 7) return T.danceHold;       // 8 hours
+    if (num === 8) return T.dotHold;         // Together we came up with...
+    if (num === 9) return T.revealHold;      // a product where the product is Opus 4.6
+    if (num === 10) return T.revealHold;     // It doesn't use AI — it IS AI
+    if (num === 11) return T.danceHold + 400;// Every card, every verdict — Opus reasoning made visible
+    return T.darkHold;
+}
+
+function showSlide(idx) {
+    if (idx >= slides.length) return;
+    var el = document.getElementById(slides[idx]);
+    el.classList.add('active');
+    setTimeout(function() {
+        el.classList.remove('active');
+        el.classList.add('out');
+        setTimeout(function() {
+            el.classList.remove('out');
+            showSlide(idx + 1);
+        }, T.gap);
+    }, getHold(idx));
+}
+
+setTimeout(function() { showSlide(0); }, 200);
+</script>
+
+</body>
+</html>

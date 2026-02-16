@@ -4,27 +4,23 @@
 
 ---
 
-## Who
+## Why FlipSide Comes From This Builder
 
-Henk van Ess is an internationally recognized expert in online research methods, leveraging the web and AI to uncover information effectively. His expertise is sought after by Pulitzer winners, NGOs, research firms, and law enforcement.
+I've spent 20 years teaching investigators how to find what's hidden in plain sight. FlipSide does the same thing for contracts.
 
-A pioneer in AI-powered digital research and open-source intelligence (OSINT), Henk's methods for discovering and verifying online information have earned him international recognition. Through hands-on workshops and training sessions worldwide, he empowers professionals with practical digital investigation skills.
+I train investigative teams at BBC, NYT, and Reuters to find hidden information. My methodology — "Think Like a Document" — was published at CHI 2026 (ACM). FlipSide applies it to contracts: read from the drafter's perspective, not yours.
 
-**Assessor** for Poynter's International Fact-Checking Network (IFCN) and the European Fact-Checking Standards Network (EFCSN). Early contributor to **Bellingcat**, the renowned collective specializing in open-source investigations. Author of multiple books on internet research and data analysis.
-
-**Newsletter**: 10,000+ subscribers from BBC, Google, Microsoft, The New York Times, The Washington Post, Reuters, Amnesty International, Europol, The United Nations, Harvard, Oxford, Stanford, MIT, NATO, and Interpol.
-
-**Website**: [digitaldigging.org](https://digitaldigging.org)
+This is not an abstract idea. It comes from decades of training investigators to find documents they couldn't find, verify claims they couldn't verify, and see what was hidden in plain sight. FlipSide is the same thinking applied to legal documents.
 
 ---
 
-## Why FlipSide Comes From This Builder
+## Who
 
-FlipSide applies a methodology Henk has been developing for 20+ years: **don't take yourself as the measurement of things — observe what must be there.**
+Assessor for Poynter's International Fact-Checking Network (IFCN) and the European Fact-Checking Standards Network (EFCSN). Early contributor to Bellingcat. Author of multiple books on internet research and data analysis.
 
-In search, this became "Think Like a Document" — a peer-reviewed methodology (CHI 2026, ACM) that teaches users to search from the document's perspective, not their own. In FlipSide, the same principle is applied to contracts: read from the drafter's perspective, not yours.
+**Newsletter**: 10,000+ subscribers from BBC, The New York Times, Reuters, Amnesty International, Europol, The United Nations, Harvard, MIT, NATO, and Interpol.
 
-This is not an abstract idea. It comes from decades of training journalists to find documents they couldn't find, verify claims they couldn't verify, and see what was hidden in plain sight. FlipSide applies the same thinking to legal documents.
+**Website**: [digitaldigging.org](https://digitaldigging.org)
 
 ---
 
@@ -38,7 +34,7 @@ The methodology behind SearchWhisperer and FlipSide: don't search or read using 
 
 ### GIJN Guide: Detecting AI-Generated Content
 
-Author of the [Reporter's Guide to Detecting AI-Generated Content](https://gijn.org/resource/guide-detecting-ai-generated-content/) for the Global Investigative Journalism Network. Covers seven detection techniques for identifying machine-made content, including mathematical signatures, physics failures, and noise pattern analysis.
+Author of the [Reporter's Guide to Detecting AI-Generated Content](https://gijn.org/resource/guide-detecting-ai-generated-content/) for the Global Investigative Journalism Network. Covers seven detection techniques for identifying machine-made content.
 
 ---
 
@@ -46,22 +42,11 @@ Author of the [Reporter's Guide to Detecting AI-Generated Content](https://gijn.
 
 ### ImageWhisperer / DetectAI (detectai.live)
 
-Born from the GIJN guide. Runs parallel LLM analysis alongside forensic image processing.
-
-- 25+ forensic image detection methods
-- 7 video temporal forensic methods (~100% detection on AI-generated video)
-- GAN fingerprinting for 10+ AI models (StyleGAN, DALL-E, Midjourney, Flux, Sora)
-- Claim verification with source attribution
-- SSE streaming architecture for real-time results
+Born from the GIJN guide. Runs parallel LLM analysis alongside forensic image processing. 25+ forensic image detection methods, 7 video temporal forensic methods, GAN fingerprinting for 10+ AI models. SSE streaming architecture for real-time results.
 
 ### SearchWhisperer (searchwhisperer.ai)
 
-The "Think Like a Document" methodology as a tool. CHI 2026 paper.
-
-- Scores search queries on 4 dimensions (specificity, clarity, searchability, domain)
-- Orchestrates 4 LLMs: Claude, GPT-4, Groq, Perplexity
-- Generates advanced Google operators
-- Multilingual: NL/EN/DE with domain-specific terminology
+The "Think Like a Document" methodology as a tool. CHI 2026 paper. Orchestrates 4 LLMs (Claude, GPT-4, Groq, Perplexity), scores search queries on 4 dimensions, generates advanced operators. Multilingual.
 
 ### AI Whisperer ([github.com/voelspriet/aiwhisperer](https://github.com/voelspriet/aiwhisperer))
 
@@ -73,35 +58,9 @@ Open-source tool for preparing documents for AI analysis. Shrinks massive PDFs t
 
 > *"Henk van Ess is the best in the game at explaining OSINT tips and tricks and how AI is affecting the world of OSINT."* — Explainabl
 
-> *"As Fact-Checkers and Researchers, we learn tremendously from your insights."* — Dr. Stefan Hertrampf
-
 > *"I have attended your seminars at NBC News and am in awe of your investigative abilities."* — Polly DeFrank
 
 > *"When I teach OSINT I refer my delegates to your work and that of Bellingcat."* — Ray Massie
-
-> *"I am a senior analyst... I think you share information that is essential for us to continue to do our work well as researchers/analysts."* — Paolo
-
----
-
-## Technical Stack
-
-| Layer | Technologies |
-|-------|-------------|
-| **Backend** | Python (Flask, FastAPI), Node.js (Express) |
-| **Frontend** | HTML/JS, React, Tailwind CSS |
-| **AI APIs** | Claude (Anthropic), GPT-4 (OpenAI), Gemini (Google), Perplexity, Groq |
-| **Infrastructure** | Nginx, Gunicorn, Systemd, SSL/HTTPS |
-| **Data** | SQLite, CSV, JSON, PDF parsing |
-
-### Proven Architecture Patterns
-
-| Pattern | Where It's Proven |
-|---------|------------------|
-| SSE streaming | ImageWhisperer real-time analysis |
-| Multi-LLM orchestration | SearchWhisperer (4 LLMs), AgentWhisperer (4 LLMs) |
-| Flask microservices | 6+ production apps |
-| PDF/DOCX extraction | AI Whisperer, Document Extractor |
-| Ensemble methods | Vanishing point (3 methods), Video forensics (7 methods) |
 
 ---
 

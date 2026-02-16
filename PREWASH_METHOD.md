@@ -48,7 +48,7 @@ The **"voorwasprogramma"** (prewash cycle): let AI prepare the analysis before t
 | Step | Action |
 |---|---|
 | 1 | Upload the document |
-| 2 | *"I am a journalist at [MEDIUM]. Give me a prompt to analyze this document."* |
+| 2 | *"I am an investigator at [MEDIUM]. Give me a prompt to analyze this document."* |
 | 3 | Read the prompt AI wrote. Find the bias. Adjust. |
 | 4 | *"Execute."* |
 | 5 | *"Go deeper. Focus on discrepancies."* — the first answer is always superficial. |
@@ -191,7 +191,7 @@ Claude Code ships with skills designed to automate common tasks. FlipSide was bu
 
 | Available skill | What it does | Why it wasn't used |
 |---|---|---|
-| `/frontend-design` | Generates production-grade UI from a specification | FlipSide's UI evolved through 82 commits of conversation. The flip card required 15+ iterations on the READER voice alone — each reviewed, adjusted, re-tested. A one-shot generation can't do that. |
+| `/frontend-design` | Generates production-grade UI from a specification | FlipSide's UI evolved through 89 commits of conversation. The flip card required 15+ iterations on the READER voice alone — each reviewed, adjusted, re-tested. A one-shot generation can't do that. |
 | `/code-review` | Reviews pull requests | No PRs. Single-person hackathon on main branch. Every change was reviewed in conversation before committing — the prompt was reviewed before code was written. |
 | `/security-review` | Audits code for vulnerabilities | Would have been useful. Didn't use it — oversight, not principle. XSS defense (DOMPurify) was added when the risk was spotted in conversation. |
 | Agent Teams | Coordinates multiple Claude sessions in parallel | The parallelism in FlipSide runs inside the product (Haiku card workers + Opus verdict), not inside the development process. |

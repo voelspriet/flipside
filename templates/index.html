@@ -75,6 +75,14 @@
             --cream: #f7f5f0;
             --smoke: #6b6860;
             --ash: #9c9789;
+            /* Aliases for consistency */
+            --text: var(--text-primary);
+            --card-bg: var(--bg-card);
+            --yellow-dark: var(--yellow-text);
+            --accent-burnt: var(--accent);
+            --text-heading: var(--text-primary);
+            --bg-main: var(--bg-cream);
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
         /* ── Dark mode ──────────────────────────────── */
@@ -193,7 +201,7 @@
         .upload-main.has-faq {
             justify-content: flex-start; padding-top: 3rem;
         }
-        .upload-container { max-width: 560px; width: 100%; }
+        .upload-container { max-width: 940px; width: 100%; }
 
         /* ── FAQ Sections ─────────────────────────── */
         .faq-wrapper {
@@ -201,6 +209,15 @@
             padding-bottom: 4rem;
         }
         .faq-wrapper.hidden { display: none; }
+        .faq-back {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.82rem; color: var(--text-muted); cursor: pointer;
+            margin-bottom: 1rem; padding: 0.4rem 0;
+            border: none; background: none; font-family: inherit;
+            transition: color 0.15s ease;
+        }
+        .faq-back:hover { color: var(--accent); }
+        .faq-back-arrow { font-size: 1rem; }
         .faq-title {
             font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em;
             color: var(--text-primary); margin-bottom: 0.3rem;
@@ -292,9 +309,12 @@
 
         @media (max-width: 800px) {
             .upload-main { padding: 2rem 1rem; }
+            .upload-methods { grid-template-columns: 1fr; }
+            .upload-actions { flex-direction: column; }
+            .upload-actions .analyze-btn { width: 100%; }
         }
 
-        .brand { text-align: center; margin-bottom: 2rem; }
+        .brand { text-align: center; margin-bottom: 1.5rem; }
         .brand h1 {
             font-size: 3.2rem; font-weight: 800;
             letter-spacing: -0.04em; color: var(--text-primary); line-height: 1.1;
@@ -303,16 +323,146 @@
             font-size: 1.05rem; color: var(--text-secondary);
             margin-top: 0.5rem; font-weight: 400; font-style: italic;
         }
+        .brand-shrug {
+            font-size: 1rem; color: var(--text-body); margin-top: 0.9rem;
+            line-height: 1.55; max-width: 560px; margin-left: auto; margin-right: auto;
+            text-align: center; font-weight: 400;
+        }
         .brand-explain {
-            font-size: 0.95rem; color: var(--text-secondary); margin-top: 0.75rem;
-            line-height: 1.5; max-width: 460px; margin-left: auto; margin-right: auto;
+            font-size: 0.88rem; color: var(--text-muted); margin-top: 0.5rem;
+            line-height: 1.5; max-width: 560px; margin-left: auto; margin-right: auto;
             text-align: center;
+        }
+
+        /* ── Hero stacked: upload full-width, then demo card ──── */
+        .hero-upload {
+            max-width: 640px; margin: 0 auto; width: 100%;
+        }
+        .hero-demo {
+            max-width: 480px; margin: 2rem auto 0; text-align: center;
+        }
+        .hero-demo-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+            text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600;
+            color: var(--text-dim); margin-bottom: 0.5rem;
+        }
+        .hero-demo .hero-flip-card { text-align: left; }
+
+        /* ── Hero flip card demo ────────────────────────── */
+        .hero-flip {
+            text-align: center;
+        }
+        .hero-flip-intro {
+            font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
+            text-transform: uppercase; font-weight: 500;
+        }
+        .hero-flip-card {
+            position: relative; cursor: pointer; border-radius: var(--radius);
+            overflow: hidden; box-shadow: var(--shadow-md);
+            border: 1px solid var(--border); text-align: left;
+            transition: box-shadow 0.3s ease;
+        }
+        .hero-flip-card:hover { box-shadow: var(--shadow-lg); }
+        .hero-flip-front, .hero-flip-back { transition: opacity 0.35s ease, transform 0.35s ease; }
+        .hero-flip-back {
+            display: none; opacity: 0;
+        }
+        .hero-flip-card.flipped .hero-flip-front { display: none; opacity: 0; }
+        .hero-flip-card.flipped .hero-flip-back { display: block; opacity: 1; }
+        .hero-demo:has(.hero-flip-card.flipped) .hero-demo-label { opacity: 0; transition: opacity 0.3s ease; }
+        .hero-flip-header {
+            padding: 0.75rem 1.25rem; display: flex; flex-direction: column; gap: 0.15rem;
+        }
+        .hero-flip-header-green {
+            background: linear-gradient(135deg, rgba(45,138,78,0.06), rgba(45,138,78,0.10));
+            border-bottom: 2px solid var(--green);
+        }
+        .hero-flip-header-red {
+            background: linear-gradient(135deg, rgba(196,75,40,0.08), rgba(196,75,40,0.14));
+            border-bottom: 2px solid var(--red);
+        }
+        .hero-flip-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+            text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+            color: var(--text-muted);
+        }
+        .hero-flip-header-green .hero-flip-label { color: var(--green-text); }
+        .hero-flip-header-red .hero-flip-label { color: var(--accent); }
+        .hero-flip-reassurance {
+            font-size: 1rem; font-weight: 700; line-height: 1.3;
+        }
+        .hero-flip-header-green .hero-flip-reassurance { color: var(--green-text); }
+        .hero-flip-header-red .hero-flip-reassurance { color: var(--accent); }
+        .hero-flip-body { padding: 1rem 1.25rem; background: var(--bg-card); }
+        .hero-flip-quote {
+            font-size: 0.8rem; color: var(--text-secondary); font-style: italic;
+            border-left: 2px solid var(--border); padding-left: 0.75rem; margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+        .hero-flip-reader {
+            font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;
+        }
+        .hero-flip-figure {
+            font-size: 1.35rem; font-weight: 800; color: var(--accent);
+            line-height: 1.2; margin-bottom: 0.6rem;
+        }
+        .hero-flip-example {
+            font-size: 0.8rem; color: var(--text-secondary); line-height: 1.55;
+            background: rgba(196,75,40,0.04); border-left: 2px solid var(--accent);
+            padding: 0.6rem 0.75rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin-bottom: 0.6rem;
+        }
+        .hero-flip-bottom {
+            font-size: 0.82rem; font-style: italic; color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .hero-flip-trigger {
+            display: block; text-align: center; padding: 0.6rem 1rem;
+            font-size: 0.78rem; font-weight: 600; color: var(--accent);
+            border-top: 1px solid var(--border-light); background: var(--bg-card);
+            transition: background 0.2s ease;
+        }
+        .hero-flip-trigger:hover { background: rgba(196,75,40,0.04); }
+        .hero-flip-trigger-back { color: var(--text-muted); }
+        .hero-flip-trigger-back:hover { background: var(--bg-warm); }
+        .hero-flip-nudge {
+            font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;
+            font-family: 'JetBrains Mono', monospace; opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+        .hero-flip-nudge.hidden { opacity: 0; }
+        .hero-flip-subline {
+            font-size: 0.78rem; color: var(--text-secondary); margin-top: 1.25rem;
+            line-height: 1.4; text-align: center;
         }
 
         .upload-card {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow-md);
         }
+        .upload-headline {
+            font-size: 0.95rem; font-weight: 600; color: var(--text-primary);
+            line-height: 1.5; text-align: center; margin: 0 0 1.25rem;
+        }
+
+        /* 3-column input methods */
+        .upload-methods {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;
+        }
+        .upload-method { display: flex; flex-direction: column; }
+        .upload-method .drop-zone {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .upload-method .drop-zone .dz-title { font-size: 0.9rem; }
+        /* When paste/url is active, expand that column */
+        .upload-method.active-input {
+            grid-column: 1 / -1;
+        }
+        .upload-method.active-input .method-zone { display: none; }
+        .upload-method.active-input .paste-area,
+        .upload-method.active-input #urlInputArea { display: block !important; }
 
         .drop-zone {
             border: 2px dashed var(--border); border-radius: var(--radius-md);
@@ -338,8 +488,10 @@
         }
         .drop-zone .dz-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
         .drop-zone .hint { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem; }
+        .drop-zone { position: relative; }
         .drop-zone .filetypes {
-            font-size: 0.65rem; color: var(--text-dim); margin-top: 0.7rem;
+            position: absolute; bottom: 0.6rem; left: 0; right: 0;
+            font-size: 0.65rem; color: var(--text-dim);
             letter-spacing: 0.14em; text-transform: uppercase;
             font-family: 'JetBrains Mono', monospace;
         }
@@ -403,6 +555,11 @@
             border-bottom: 1px dotted var(--text-dim); transition: color var(--transition);
         }
         .upload-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+        .upload-actions {
+            display: flex; align-items: center; gap: 1.25rem; margin-top: 1.25rem;
+        }
+        .upload-actions .upload-trust { margin-top: 0; flex-shrink: 0; }
+        .upload-actions .analyze-btn { margin-top: 0; flex: 1; }
         .upload-trust {
             text-align: center; font-size: 0.72rem; color: var(--green);
             margin-top: 0.5rem; letter-spacing: 0.02em;
@@ -413,7 +570,7 @@
             margin: 1.25rem -2rem; /* bleed to card edges */
         }
         /* Demo document grid */
-        .demo-grid-section { margin-bottom: 0; }
+        .demo-grid-section { margin-bottom: 0; margin-top: 2.5rem; }
         .demo-grid-title {
             font-size: 0.88rem; font-weight: 400; color: var(--text-secondary);
             text-align: center; margin: 1rem 0 0.9rem;
@@ -422,6 +579,10 @@
         }
         .demo-grid-title .demo-grid-cta {
             font-style: normal; font-weight: 500; color: var(--accent);
+        }
+        .demo-grid-shrug {
+            font-size: 0.92rem; color: var(--text-secondary); text-align: center;
+            line-height: 1.55; margin: 0 0 1rem;
         }
         .demo-grid {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
@@ -470,11 +631,6 @@
             border: 1px solid var(--red-border); border-radius: var(--radius-sm);
             color: var(--red-text); font-size: 0.82rem;
         }
-
-        /* Compare mode */
-        .compare-row { display: flex; gap: 0.75rem; }
-        .compare-col { flex: 1; }
-        @media (max-width: 500px) { .compare-row { flex-direction: column; } }
 
         .disclaimer {
             margin-top: 1.5rem; font-size: 0.76rem;
@@ -1892,6 +2048,9 @@
         .verdict-depth-btn.locked {
             opacity: 0.45; cursor: not-allowed;
         }
+        .verdict-depth-btn.building {
+            border-color: var(--accent); opacity: 0.8;
+        }
         .verdict-depth-btn.ready {
             border-color: var(--green);
         }
@@ -1955,6 +2114,145 @@
             margin: 0.4rem 0; padding-left: 1.2rem;
         }
         .depth-result-content li { margin-bottom: 0.3rem; }
+        /* ── Scenario timeline ── */
+        .scenario-layout { padding: 0; }
+        .scenario-title {
+            font-size: 1.2rem; font-weight: 700; color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .scenario-setup {
+            font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary);
+            padding: 0.75rem 1rem; background: var(--bg-warm); border-radius: var(--radius-sm);
+            margin-bottom: 1.25rem; border-left: 3px solid var(--text-muted);
+        }
+        .scenario-timeline {
+            position: relative; padding-left: 1.5rem;
+            border-left: 2px solid var(--border-light); margin-bottom: 1.25rem;
+        }
+        .scenario-step { position: relative; margin-bottom: 1.25rem; }
+        .scenario-step-marker {
+            position: absolute; left: -1.75rem; top: 0.35rem;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--accent); border: 2px solid var(--bg-surface);
+        }
+        .scenario-step-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--accent); margin-bottom: 0.35rem;
+        }
+        .scenario-step-body { font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); }
+        .scenario-step-body p { margin: 0 0 0.4rem; }
+        .scenario-total {
+            font-size: 0.9rem; font-weight: 700; color: var(--text-primary);
+            padding: 0.85rem 1rem; background: var(--bg-warm);
+            border-radius: var(--radius-sm); border-left: 3px solid var(--accent);
+            margin-bottom: 1.25rem;
+        }
+        .scenario-total table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-weight: 400; font-size: 0.82rem; }
+        .scenario-total th, .scenario-total td { padding: 0.3rem 0.5rem; text-align: left; border-bottom: 1px solid var(--border-light); }
+        .scenario-total th { font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+        .scenario-actions {
+            margin-bottom: 1.25rem; padding: 0.85rem 1rem;
+            background: var(--green-bg); border-radius: var(--radius-sm);
+            border-left: 3px solid var(--green);
+        }
+        .scenario-actions-title {
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--green-text); margin-bottom: 0.5rem;
+        }
+        .scenario-actions ul { margin: 0; padding-left: 1.2rem; }
+        .scenario-actions li { font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.35rem; }
+        .scenario-message {
+            padding: 1rem; background: var(--bg-surface);
+            border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+        }
+        .scenario-message-title {
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.6rem;
+        }
+        .scenario-message-body {
+            font-size: 0.85rem; line-height: 1.6; color: var(--text-primary);
+            padding: 0.75rem; background: #fff; border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm); margin-bottom: 0.6rem;
+        }
+        .scenario-message-actions { display: flex; gap: 0.5rem; }
+        .scenario-message-actions button {
+            padding: 0.4rem 0.9rem; font-size: 0.78rem; font-weight: 600;
+            border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition);
+        }
+        .scenario-copy-btn {
+            background: var(--bg-warm); border: 1px solid var(--border); color: var(--text-primary);
+        }
+        .scenario-copy-btn:hover { background: var(--border-light); }
+        .scenario-email-btn {
+            background: var(--accent); border: 1px solid var(--accent); color: #fff;
+        }
+        .scenario-email-btn:hover { opacity: 0.9; }
+        /* ── Finding cards (archaeology, interactions, asymmetry) ── */
+        .finding-summary {
+            font-size: 0.9rem; line-height: 1.6; color: var(--text-primary);
+            font-weight: 500; margin-bottom: 1rem;
+            padding: 0.75rem 1rem; background: var(--bg-warm);
+            border-radius: var(--radius-sm); border-left: 3px solid var(--text-muted);
+        }
+        .finding-card {
+            margin-bottom: 1rem; padding: 0.85rem 1rem;
+            border-radius: var(--radius-sm); border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+        .finding-header {
+            display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.5rem;
+        }
+        .finding-number {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.4rem; height: 1.4rem; flex-shrink: 0; margin-top: 0.1rem;
+            border-radius: 50%; font-size: 0.7rem; font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-warm); color: var(--text-secondary); border: 1px solid var(--border);
+        }
+        .finding-title {
+            font-size: 0.88rem; font-weight: 600; color: var(--text-primary);
+            margin: 0; line-height: 1.4; flex: 1;
+        }
+        .finding-severity {
+            flex-shrink: 0; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace; padding: 0.15rem 0.5rem;
+            border-radius: 100px; white-space: nowrap;
+        }
+        .finding-severity-aggressive { background: var(--red-bg); color: var(--accent); border: 1px solid var(--accent); }
+        .finding-severity-unusual { background: var(--yellow-bg); color: var(--yellow-dark); border: 1px solid var(--yellow); }
+        .finding-severity-standard { background: var(--bg-warm); color: var(--text-muted); border: 1px solid var(--border); }
+        .finding-card:has(.finding-severity-aggressive) { border-left: 3px solid var(--accent); }
+        .finding-card:has(.finding-severity-unusual) { border-left: 3px solid var(--yellow); }
+        .finding-source {
+            border-left: 3px solid var(--border); margin: 0.5rem 0;
+            padding: 0.4rem 0.8rem; background: var(--bg-warm);
+            font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            font-style: italic;
+        }
+        .finding-explanation {
+            font-size: 0.84rem; line-height: 1.6; color: var(--text-body);
+            margin: 0.5rem 0;
+        }
+        .finding-severity-context {
+            font-size: 0.78rem; color: var(--text-muted); font-style: italic;
+            margin: 0.4rem 0;
+        }
+        .finding-action {
+            font-size: 0.82rem; line-height: 1.5; color: var(--text-primary);
+            margin-top: 0.5rem; padding: 0.5rem 0.75rem;
+            background: rgba(75,100,130,0.05); border-left: 3px solid #4b6482;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+        .finding-deep-content {
+            margin-top: 1.25rem; padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+            font-size: 0.85rem; line-height: 1.65; color: var(--text-body);
+        }
+        .finding-deep-content h2 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 1rem 0 0.5rem; }
+        .finding-deep-content h3 { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin: 0.75rem 0 0.3rem; }
+        .finding-deep-content strong { color: var(--text-primary); }
         /* Walk-away number hero */
         .walkaway-hero {
             text-align: center; padding: 1.5rem 0 1rem;
@@ -2303,7 +2601,7 @@
             animation: cardWoosh 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .flip-card-inner {
-            position: relative;
+            display: grid; /* grid overlap: both sides in same cell → height = max(front,back) */
             transition: transform 0.7s var(--ease-out-expo);
             transform-style: preserve-3d;
         }
@@ -2311,11 +2609,13 @@
             transform: rotateY(180deg);
         }
         .flip-card-front, .flip-card-back {
+            grid-row: 1; grid-column: 1; /* same cell = overlapping, both contribute to height */
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             border-radius: var(--radius);
         }
         .flip-card-front {
+            display: flex; flex-direction: column; /* vertical centering when back is taller */
             background: var(--bg-card);
             border: 1px solid var(--border);
             box-shadow: var(--shadow-md);
@@ -2326,23 +2626,14 @@
         }
         .flip-card-back {
             transform: rotateY(180deg);
-            position: absolute;
-            top: 0; left: 0; width: 100%;
             background: var(--bg-card);
             border: 1px solid var(--border);
             box-shadow: var(--shadow-md);
         }
-        .flip-card.flipped .flip-card-front {
-            visibility: hidden;
-            position: absolute;
-            top: 0; left: 0; width: 100%;
-        }
-        .flip-card.flipped .flip-card-back {
-            position: relative;
-        }
 
-        /* Front content */
-        .front-content { padding: 2rem 2rem 1.25rem; }
+        /* Front content — flex:1 fills the grid-matched height; centers reader voice */
+        .front-content { padding: 2rem 2rem 1.25rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .flip-trigger { margin-top: auto; } /* pin "Flip it" button to bottom edge */
         .clause-reassurance {
             font-size: 1.3rem; font-weight: 700; color: var(--green-text);
             line-height: 1.25; margin-bottom: 1rem;
@@ -2361,6 +2652,8 @@
             background: var(--bg-surface); border: 1px solid var(--border-light);
             font-size: 0.75rem; line-height: 1.45; color: var(--text-secondary);
             font-style: italic; overflow: hidden;
+        }
+        .front-quote-pill.whoosh-pending {
             opacity: 0; transform: scale(0.95);
             transition: opacity 0.35s ease-out, transform 0.35s ease-out;
         }
@@ -3571,6 +3864,7 @@
             /* Phase 1: 2D slide-up flip (replaces broken 3D rotateY on mobile Safari) */
             .flip-card { perspective: none; }
             .flip-card-inner {
+                display: block; /* override grid — mobile uses 2D slide-up, not 3D flip */
                 transform-style: flat;
                 transition: none;
             }
@@ -3581,6 +3875,7 @@
                 transform: none;
             }
             .flip-card-front {
+                display: block; /* override flex column centering — mobile uses natural flow */
                 position: relative;
                 transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
             }
@@ -3592,6 +3887,7 @@
                 pointer-events: none;
                 visibility: hidden;
             }
+            .front-content { display: block; } /* override flex centering for mobile */
             .flip-card-back {
                 position: relative;
                 opacity: 0;
@@ -4130,119 +4426,116 @@
         <div class="upload-nav-brand">FlipSide</div>
         <div class="upload-nav-label">Get started</div>
         <a href="#" data-nav="top">Upload a document</a>
-        <div class="upload-nav-label">FAQ</div>
-        <a href="#faq-what" data-nav="faq">What is FlipSide?</a>
-        <a href="#faq-how" data-nav="faq">How does it work?</a>
-        <a href="#faq-privacy" data-nav="faq">Your data &amp; privacy</a>
-        <a href="#faq-claude" data-nav="faq">What Claude keeps</a>
-        <a href="#faq-free" data-nav="faq">Why is it free?</a>
-        <a href="#faq-legal" data-nav="faq">Is this legal advice?</a>
-        <a href="#faq-who" data-nav="faq">Who built this?</a>
-        <a href="#faq-fair-clause" data-nav="faq" class="nav-fair-clause">The Fair Clause</a>
+        <a href="#faq-what" data-nav="faq">FAQ</a>
     </nav>
     <div class="upload-main" id="uploadMain">
     <div class="upload-container">
         <div class="brand fade-up">
             <h1>FlipSide</h1>
-            <div class="tagline">The dark side of small print.</div>
-            <p class="brand-explain">Gym memberships. Sweepstakes rules. Pet adoptions. Insurance claims. The same 18 tricks that $800/hour attorneys find in corporate deals &mdash; hiding in the documents nobody reviews.</p>
+            <div class="tagline">Fight back against fine print.</div>
         </div>
 
-        <div class="upload-card fade-up fade-up-d1">
-            <!-- Single document upload -->
+        <!-- Upload card: full width -->
+        <div class="hero-upload fade-up fade-up-d1">
+        <div class="upload-card">
+            <p class="upload-headline">Upload your gym contract, lease, insurance, or any terms of service.<br>See what the other side intended you to miss &mdash; and how to push back.</p>
+
+            <!-- Single document upload: 3-column input methods -->
             <div id="singleUpload">
-                <div class="drop-zone" id="dropZone">
-                    <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.text,.md" class="sr-only">
-                    <div id="uploadPrompt">
-                        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span>
-                        <div class="dz-title">Drop your document here</div>
-                        <div class="hint">we&rsquo;ll flip it</div>
-                        <div class="filetypes">PDF &middot; DOCX &middot; TXT</div>
-                    </div>
-                    <div id="fileInfo" class="file-selected hidden">
-                        <span class="file-name" id="fileName"></span>
-                        <span class="file-size" id="fileSize"></span>
-                        <a class="file-remove" id="fileRemove">remove</a>
-                    </div>
-                </div>
-                <textarea id="pasteArea" class="paste-area hidden" placeholder="Paste contract text here..."></textarea>
-                <div id="urlInputArea" class="hidden" style="margin-top:0.5rem">
-                    <input type="url" id="urlInput" placeholder="https://example.com/terms-of-service" style="width:100%;padding:0.6rem 0.8rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;background:var(--bg-surface);color:var(--text-body)">
-                </div>
-            </div>
-
-            <!-- Compare mode (two documents) -->
-            <div id="compareUpload" class="hidden">
-                <div class="compare-row">
-                    <div class="compare-col">
-                        <div class="drop-zone compare-drop" id="dropZone1">
-                            <input type="file" id="fileInput1" accept=".pdf,.docx,.txt,.text,.md" class="sr-only">
-                            <div id="uploadPrompt1">
-                                <span class="icon" aria-hidden="true">&#65313;</span>
-                                <div class="dz-title">Document A</div>
-                                <div class="hint">drop or click</div>
+                <div class="upload-methods" id="uploadMethods">
+                    <div class="upload-method" id="methodDrop">
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.text,.md" class="sr-only">
+                            <div id="uploadPrompt">
+                                <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span>
+                                <div class="dz-title">Drop file</div>
+                                <div class="filetypes">PDF &middot; DOCX &middot; TXT</div>
                             </div>
-                            <div id="fileInfo1" class="file-selected hidden">
-                                <span class="file-name" id="fileName1"></span>
-                                <a class="file-remove" id="fileRemove1">remove</a>
+                            <div id="fileInfo" class="file-selected hidden">
+                                <span class="file-name" id="fileName"></span>
+                                <span class="file-size" id="fileSize"></span>
+                                <a class="file-remove" id="fileRemove">remove</a>
                             </div>
                         </div>
-                        <textarea id="pasteArea1" class="paste-area hidden" placeholder="Paste Document A text..." style="min-height:80px;margin-top:0.5rem"></textarea>
                     </div>
-                    <div class="compare-col">
-                        <div class="drop-zone compare-drop" id="dropZone2">
-                            <input type="file" id="fileInput2" accept=".pdf,.docx,.txt,.text,.md" class="sr-only">
-                            <div id="uploadPrompt2">
-                                <span class="icon" aria-hidden="true">&#65314;</span>
-                                <div class="dz-title">Document B</div>
-                                <div class="hint">drop or click</div>
-                            </div>
-                            <div id="fileInfo2" class="file-selected hidden">
-                                <span class="file-name" id="fileName2"></span>
-                                <a class="file-remove" id="fileRemove2">remove</a>
-                            </div>
+                    <div class="upload-method" id="methodPaste">
+                        <div class="drop-zone method-zone" id="pasteZone">
+                            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></span>
+                            <div class="dz-title">Paste text</div>
                         </div>
-                        <textarea id="pasteArea2" class="paste-area hidden" placeholder="Paste Document B text..." style="min-height:80px;margin-top:0.5rem"></textarea>
+                        <textarea id="pasteArea" class="paste-area hidden" placeholder="Paste contract text here..."></textarea>
+                    </div>
+                    <div class="upload-method" id="methodDemo">
+                        <div class="drop-zone method-zone" id="demoZone">
+                            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M9 9h6v6H9z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="7.5" cy="16.5" r=".5" fill="currentColor"/><circle cx="16.5" cy="16.5" r=".5" fill="currentColor"/></svg></span>
+                            <div class="dz-title">Try a demo</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="upload-trust">Analyzed privately. Never stored.</div>
-
-            <div class="depth-selector hidden" id="depthSelector">
-                <button class="depth-btn" data-depth="quick">Quick</button>
-                <button class="depth-btn active" data-depth="standard">Standard</button>
-                <button class="depth-btn" data-depth="deep">Deep</button>
+            <div class="upload-actions">
+                <div class="upload-trust">Analyzed privately. Never stored.</div>
+                <div class="depth-selector hidden" id="depthSelector">
+                    <button class="depth-btn" data-depth="quick">Quick</button>
+                    <button class="depth-btn active" data-depth="standard">Standard</button>
+                    <button class="depth-btn" data-depth="deep">Deep</button>
+                </div>
+                <button class="analyze-btn" id="analyzeBtn" disabled aria-label="Start document analysis">Flip it</button>
             </div>
-
-            <button class="analyze-btn" id="analyzeBtn" disabled aria-label="Start document analysis">Flip it</button>
             <div id="uploadError" class="upload-error hidden"></div>
 
-            <div class="upload-links">
-                <a id="pasteToggle">Paste text instead</a>
-                <a href="#" id="urlToggle" class="upload-link">Paste URL instead</a>
-                <a id="compareToggle">Compare two documents</a>
-                <a href="#faq-what" data-nav="faq" id="faqLink">FAQ</a>
+            <div class="upload-links hidden">
             </div>
 
-            <div class="upload-card-divider"></div>
+        </div><!-- .upload-card -->
+        </div><!-- .hero-upload -->
+
+        <!-- Demo flip card: centered below upload -->
+        <div class="hero-demo fade-up fade-up-d2">
+            <div class="hero-demo-label">EXAMPLE</div>
+            <div class="hero-flip-card" id="heroFlipCard" tabindex="0" role="button" aria-label="Flip this example card to see the hidden side">
+                <div class="hero-flip-front">
+                    <div class="hero-flip-header hero-flip-header-green">
+                        <span class="hero-flip-label">YOU THINK THAT</span>
+                        <span class="hero-flip-reassurance">You can cancel your gym membership anytime</span>
+                    </div>
+                    <div class="hero-flip-body">
+                        <div class="hero-flip-quote">"Member may cancel by providing written notice. A processing period of 30 business days applies."</div>
+                        <div class="hero-flip-reader">Sounds simple enough — just send a letter and you're out. A month's notice? That's pretty normal.</div>
+                    </div>
+                    <div class="hero-flip-trigger">See what this really means. Flip it!</div>
+                </div>
+                <div class="hero-flip-back">
+                    <div class="hero-flip-header hero-flip-header-red">
+                        <span class="hero-flip-label">BUT IN REALITY</span>
+                        <span class="hero-flip-reassurance">They keep charging while you wait</span>
+                    </div>
+                    <div class="hero-flip-body">
+                        <div class="hero-flip-figure">$133 to leave a $29/month gym</div>
+                        <div class="hero-flip-example">"30 business days" is 6 weeks. Two more payments plus a $75 "processing fee."</div>
+                    </div>
+                    <div class="hero-flip-trigger hero-flip-trigger-back">&larr; Flip back</div>
+                </div>
+            </div>
+        </div>
 
             <div class="demo-grid-section" id="demoGridSection">
-                <div class="demo-grid-title">Every contract has two sides. You&rsquo;ve only seen one. <span class="demo-grid-cta">Try a sample.</span></div>
+                <div class="demo-grid-shrug">Gym memberships, app terms, pet adoptions, sweepstakes entries &mdash;<br>the things you sign with a shrug. They weren&rsquo;t written with one.</div>
                 <div class="demo-grid">
-                    <div class="demo-tile" data-sample="hackathon"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L9 9l-7 1 5 5-1.5 7L12 18l6.5 4L17 15l5-5-7-1z"/></svg></div><div class="demo-tile-label">The Hackathon</div><div class="demo-tile-desc">What did we all agree to?</div></div>
-                    <div class="demo-tile" data-sample="sweepstakes"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="demo-tile-label">Trip of a Lifetime</div><div class="demo-tile-desc">Can they really keep the prize?</div></div>
-                    <div class="demo-tile" data-sample="coupon"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg></div><div class="demo-tile-label">Weekend Savings</div><div class="demo-tile-desc">The savings aren&rsquo;t free</div></div>
-                    <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="demo-tile-label">Peace of Mind</div><div class="demo-tile-desc">What&rsquo;s not covered?</div></div>
                     <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div><div class="demo-tile-label">Staying Connected</div><div class="demo-tile-desc">You agreed to more than you think</div></div>
-                    <div class="demo-tile" data-sample="employment"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="demo-tile-label">First Day of Work</div><div class="demo-tile-desc">Read this before you start</div></div>
+                    <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="demo-tile-label">Peace of Mind</div><div class="demo-tile-desc">What&rsquo;s not covered?</div></div>
                     <div class="demo-tile" data-sample="loan"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18V11"/><path d="M10 18V11"/><path d="M14 18V11"/><path d="M18 18V11"/><path d="M4 7h16l-8-5z"/></svg></div><div class="demo-tile-label">Future Fund</div><div class="demo-tile-desc">The rate isn&rsquo;t the whole story</div></div>
+                    <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"/><path d="M12 11l9-9"/><path d="M17 6l4-4"/><path d="M18.5 7.5L22 7l-3-3"/></svg></div><div class="demo-tile-label">My New Place</div><div class="demo-tile-desc">Your landlord&rsquo;s favorite clause</div></div>
                     <div class="demo-tile" data-sample="gym"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div class="demo-tile-label">Morning Workout</div><div class="demo-tile-desc">Good luck canceling</div></div>
+                    <div class="demo-tile" data-sample="pet"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="4.5" cy="9" r="2"/><circle cx="17.5" cy="9" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M12 18c-2.5 2-6 2-6-.5C6 15 9 14 12 17c3-3 6-2 6 .5 0 2.5-3.5 2.5-6 .5z"/></svg></div><div class="demo-tile-label">Furry Friend</div><div class="demo-tile-desc">More than a promise</div></div>
+                    <div class="demo-tile" data-sample="coupon"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg></div><div class="demo-tile-label">Weekend Savings</div><div class="demo-tile-desc">The savings aren&rsquo;t free</div></div>
+                    <div class="demo-tile" data-sample="wedding"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4V2"/><path d="M17 4V2"/><path d="M5 4h14a2 2 0 0 1 2 2v4a7 7 0 0 1-14 0V6a2 2 0 0 1 2-2z"/></svg></div><div class="demo-tile-label">Celebration!</div><div class="demo-tile-desc">Who pays when it rains?</div></div>
+                    <div class="demo-tile" data-sample="hackathon"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L9 9l-7 1 5 5-1.5 7L12 18l6.5 4L17 15l5-5-7-1z"/></svg></div><div class="demo-tile-label">The Hackathon</div><div class="demo-tile-desc">What did we all agree to?</div></div>
+                    <div class="demo-tile" data-sample="employment"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="demo-tile-label">First Day of Work</div><div class="demo-tile-desc">Read this before you start</div></div>
+                    <div class="demo-tile" data-sample="sweepstakes"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="demo-tile-label">Trip of a Lifetime</div><div class="demo-tile-desc">Can they really keep the prize?</div></div>
                     <div class="demo-tile" data-sample="medical"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div><div class="demo-tile-label">Check-up Time</div><div class="demo-tile-desc">What you&rsquo;re really signing</div></div>
                     <div class="demo-tile" data-sample="hoa"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="demo-tile-label">Dream Home</div><div class="demo-tile-desc">Your house, their rules</div></div>
-                    <div class="demo-tile" data-sample="wedding"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4V2"/><path d="M17 4V2"/><path d="M5 4h14a2 2 0 0 1 2 2v4a7 7 0 0 1-14 0V6a2 2 0 0 1 2-2z"/></svg></div><div class="demo-tile-label">Celebration!</div><div class="demo-tile-desc">Who pays when it rains?</div></div>
-                    <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"/><path d="M12 11l9-9"/><path d="M17 6l4-4"/><path d="M18.5 7.5L22 7l-3-3"/></svg></div><div class="demo-tile-label">My New Place</div><div class="demo-tile-desc">Your landlord&rsquo;s favorite clause</div></div>
-                    <div class="demo-tile" data-sample="pet"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="4.5" cy="9" r="2"/><circle cx="17.5" cy="9" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M12 18c-2.5 2-6 2-6-.5C6 15 9 14 12 17c3-3 6-2 6 .5 0 2.5-3.5 2.5-6 .5z"/></svg></div><div class="demo-tile-label">Furry Friend</div><div class="demo-tile-desc">More than a promise</div></div>
                     <div class="demo-tile" data-sample="timeshare"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="demo-tile-label">Dream Getaway</div><div class="demo-tile-desc">Check-out is forever</div></div>
                 </div>
                 <button class="demo-grid-expand" id="demoGridExpand">See all 14 samples &#8250;</button>
@@ -4258,6 +4551,7 @@
 
     <!-- ── FAQ Sections ─────────────────────────────────── -->
     <div class="faq-wrapper hidden" id="faqWrapper">
+        <button class="faq-back" id="faqBack"><span class="faq-back-arrow">&larr;</span> Back to upload</button>
         <h2 class="faq-title">Frequently Asked Questions</h2>
         <p class="faq-subtitle">Everything you need to know before uploading a document.</p>
 
@@ -4265,7 +4559,8 @@
             <h3>What is FlipSide?</h3>
             <p>FlipSide shows you what the other side intended when they wrote your document. Upload any contract, agreement, or policy you didn't draft — a lease, insurance policy, gym membership, Terms of Service — and FlipSide reads it from <strong>the drafter's perspective</strong>, not yours.</p>
             <p>Each clause gets a flip card. The front shows what a trusting reader sees: the reassuring headline, the comforting language. Flip it, and the back reveals what an expert catches: the trick, the risk score, the figure that matters, and what you should actually read.</p>
-            <p>It's based on a peer-reviewed methodology called <strong>"Think Like a Document"</strong> — instead of reading from your perspective, read from the perspective of the party who wrote it. FlipSide applies that principle at scale using AI.</p>
+            <p>It's based on a methodology called <strong>"Think Like a Document"</strong> — instead of reading from your perspective, read from the perspective of the party who wrote it. FlipSide applies that principle at scale using AI.</p>
+            <p>FlipSide treats a $2 coupon with the same seriousness as a $500,000 corporate lease. Because the tricks are the same — only the stakes change.</p>
         </div>
 
         <hr class="faq-divider">
@@ -4277,7 +4572,8 @@
                 <li><strong>Flip Cards</strong> (Claude Haiku 4.5): Pre-scans your document, then launches parallel workers that generate full flip cards &mdash; front and back &mdash; in ~8 seconds.</li>
                 <li><strong>Expert Verdict</strong> (Claude Opus 4.6): Builds a one-screen verdict from t=0 &mdash; verdict tier, main risk, power ratio, jurisdiction detection, risks, and a self-reviewed checklist.</li>
             </ul>
-            <p>Cards appear in seconds. The expert verdict builds in the background. You can start flipping cards while Opus is still thinking. When the verdict is ready, four <strong>Go Deeper</strong> buttons unlock &mdash; each one fires a dedicated Opus 4.6 analysis on demand.</p>
+            <p>Cards appear in seconds. Six expert analyses build in parallel: a verdict, document archaeology, worst-case scenario, walk-away number, hidden combinations, and negotiation playbook. You can start flipping cards while Opus 4.6 is still thinking. Expert reports appear as each one finishes.</p>
+            <p>After the analysis, you can <strong>ask follow-up questions</strong> ("What happens if I'm 3 months late on rent?"), <strong>message the company</strong> with a professional letter citing specific clauses, or request a <strong>counter-draft</strong> that rewrites unfair clauses with negotiable alternatives.</p>
         </div>
 
         <hr class="faq-divider">
@@ -4313,7 +4609,7 @@
 
         <div class="faq-section" id="faq-free">
             <h3>Why is it free?</h3>
-            <p>FlipSide was built during the <strong>Built with Claude Hackathon</strong> (February 2026) to prove a point: legal document analysis shouldn't be locked behind $300–500/hour attorney fees. Everyone signs contracts. Not everyone can afford to understand them.</p>
+            <p>FlipSide was built during the <strong>Built with Claude Hackathon</strong> (February 2026) to prove a point: legal document analysis shouldn't be locked behind <a href="https://www.redlinedcs.com/post/big-law-attorneys" target="_blank" rel="noopener" style="color:var(--accent)">$2,500/hour BigLaw fees</a>. Everyone signs contracts. Not everyone can afford to understand them.</p>
             <p>The entire codebase is <strong>open source under the MIT License</strong> — free for anyone to use, modify, and distribute. There are no paid tiers, no premium features, no subscriptions, and no plans to add any.</p>
             <p>The only operational cost is the Anthropic API, which processes each document. During the hackathon, there are no cost constraints. The vision: making document literacy accessible to everyone, not just people who can afford a lawyer.</p>
         </div>
@@ -4335,8 +4631,8 @@
 
         <div class="faq-section" id="faq-who">
             <h3>Who built this?</h3>
-            <p><strong>Henk van Ess</strong> finds the story in public data. An internationally recognized expert in AI-powered digital research and open-source intelligence (OSINT), his methods are sought after by Pulitzer winners, NGOs, research firms, and law enforcement. Assessor for the International Fact-Checking Network (IFCN) and its European counterpart EFCSN. Early Bellingcat contributor. Author of multiple books on internet research. CHI 2026 peer-reviewed paper on &ldquo;Think Like a Document.&rdquo; 10,000+ newsletter subscribers from BBC, NYT, Reuters, Europol, Harvard, MIT, NATO.</p>
-            <p><strong>He does not write code.</strong> Every line of FlipSide &mdash; 3,975 lines of Python backend and 10,319 lines of frontend &mdash; was built through conversation with Claude Opus 4.6 in one weekend. The prompts were the product. The AI was the builder.</p>
+            <p><strong>Henk van Ess</strong> finds the story in public data. An internationally recognized expert in AI-powered digital research and open-source intelligence (OSINT), his methods are sought after by Pulitzer winners, NGOs, research firms, and law enforcement. Assessor for the International Fact-Checking Network (IFCN) and its European counterpart EFCSN. Early Bellingcat contributor. Author of multiple books on internet research. 10,000+ newsletter subscribers from BBC, NYT, Reuters, Europol, Harvard, MIT.</p>
+            <p><strong>He does not write code.</strong> Every line of FlipSide &mdash; 3,861 lines of Python backend and 10,748 lines of frontend &mdash; was built through conversation with Claude Opus 4.6 in 5 days. The prompts were the product. The AI was the builder.</p>
             <p>Previous open-source tools: <a href="https://imagewhisperer.online" target="_blank" rel="noopener" style="color:var(--accent)">ImageWhisperer</a>, SearchWhisperer, AI Whisperer. Newsletter: <a href="https://digitaldigging.substack.com" target="_blank" rel="noopener" style="color:var(--accent)">Digital Digging</a>.</p>
         </div>
 
@@ -4420,7 +4716,7 @@
         <div class="header-left">
             <span class="header-brand" id="headerBrand">FlipSide</span>
             <button class="header-btn hidden" id="copyAllBtn" aria-label="Copy all analysis to clipboard">Copy all</button>
-            <button class="header-btn hidden" id="emailLawyerBtn" aria-label="Email analysis to your lawyer">Email to Lawyer</button>
+            <button class="header-btn hidden" id="emailLawyerBtn" aria-label="Email analysis to your lawyer">All flags via mail</button>
             <button class="header-btn hidden" id="exportBtn" aria-label="Download report as PDF">Download PDF</button>
             <button class="header-btn hidden" id="exportLangBtn" title="Download report in document language" aria-label="Download report in document language"></button>
             <button class="header-btn" id="darkModeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">&#9790;</button>
@@ -4437,9 +4733,10 @@
             <button class="header-overflow-btn" id="headerOverflowBtn" title="More actions" aria-label="More actions" aria-expanded="false">&#8943;</button>
             <div class="header-overflow-menu hidden" id="headerOverflowMenu">
                 <button data-action="copy" class="hidden">Copy all</button>
-                <button data-action="email" class="hidden">Email to Lawyer</button>
+                <button data-action="email" class="hidden">All flags via mail</button>
                 <button data-action="export" class="hidden">Download PDF</button>
                 <button data-action="exportLang" class="hidden"></button>
+                <button data-action="faq">FAQ</button>
             </div>
         </div>
     </header>
@@ -4625,7 +4922,7 @@
             <!-- deep-status removed — status shown in header ticker + status pill -->
         </div>
 
-        <!-- Results: summary + deep analysis (compare mode uses resultsContent) -->
+        <!-- Results: summary + deep analysis -->
         <div class="results-area hidden" id="resultsArea">
             <div id="resultsContent"></div>
             <div id="deepAnalysisSection" class="hidden">
@@ -4825,14 +5122,10 @@
 
     // ── State ─────────────────────────────────────────────────
     var selectedFile = null;
-    var compareFile1 = null, compareFile2 = null;
     var analysisDepth = 'standard';
-    var isCompareMode = false;
     var eventSource = null;
-    var thinkingContent = '';
     var responseContent = '';
     var renderTimeout = null;
-    var thinkingPhaseCount = 0;
     var quickDone = false;
     var analysisStartTime = 0;
     var elapsedInterval = null;
@@ -4884,7 +5177,6 @@
     var fileSizeEl     = $('fileSize');
     var fileRemove     = $('fileRemove');
     var pasteArea      = $('pasteArea');
-    var pasteToggle    = $('pasteToggle');
     var analyzeBtn     = $('analyzeBtn');
     var uploadError    = $('uploadError');
     var demoGridSection = $('demoGridSection');
@@ -4899,7 +5191,6 @@
             tiles[j] = tiles[i];
         }
     })();
-    var compareToggle  = $('compareToggle');
     var depthSelector  = $('depthSelector');
 
     // Analysis elements
@@ -5014,14 +5305,14 @@
             _verdictCountdownInterval = null;
         }
     }
-    // Opus verdict (deep dives are now on-demand via /deepdive endpoint)
+    // Opus verdict + 5 deep dives stream in parallel from t=0
     var opusSections = {
         overall: { text: '', done: false }
     };
-    var DEEP_DIVE_SOURCES = ['scenario', 'walkaway', 'combinations', 'playbook'];
-    // On-demand deep dive state (populated when user clicks a button)
+    var DEEP_DIVE_SOURCES = ['archaeology', 'scenario', 'walkaway', 'combinations', 'playbook'];
+    // Deep dive state — all 5 stream from the main SSE connection (parallel with verdict)
     var deepDiveResults = {};
-    DEEP_DIVE_SOURCES.forEach(function(s) { deepDiveResults[s] = { text: '', done: false, loading: false }; });
+    DEEP_DIVE_SOURCES.forEach(function(s) { deepDiveResults[s] = { text: '', done: false }; });
 
 
     // Configure marked + DOMPurify for safe LLM output rendering
@@ -5227,7 +5518,7 @@
                 document.body.classList.remove('sheet-open');
             }
         }
-        // Make setSheetState available globally for showVerdictCol
+        // Make setSheetState available globally
         window._setSheetState = setSheetState;
         window._getSheetState = function() { return sheetState; };
 
@@ -5323,6 +5614,7 @@
     })();
 
     // ── Mobile: Header overflow menu (Phase 5) ────────────────
+    var _faqCameFromAnalysis = false;
     (function() {
         var btn = $('headerOverflowBtn');
         var menu = $('headerOverflowMenu');
@@ -5341,6 +5633,22 @@
             item.addEventListener('click', function() {
                 var action = item.getAttribute('data-action');
                 var target;
+                if (action === 'faq') {
+                    // Show FAQ on upload screen, remember we came from analysis
+                    _faqCameFromAnalysis = true;
+                    var us = $('upload-screen');
+                    var as = $('analysis-screen');
+                    if (us) us.classList.remove('hidden');
+                    if (as) as.classList.add('hidden');
+                    var fw = $('faqWrapper');
+                    var um = $('uploadMain');
+                    if (fw) fw.classList.remove('hidden');
+                    if (um) um.classList.add('has-faq');
+                    var faqTarget = document.querySelector('#faq-what');
+                    if (faqTarget) setTimeout(function() { faqTarget.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+                    menu.classList.add('hidden');
+                    return;
+                }
                 if (action === 'copy') target = $('copyAllBtn');
                 else if (action === 'email') target = $('emailLawyerBtn');
                 else if (action === 'export') target = $('exportBtn');
@@ -5387,17 +5695,10 @@
     }
 
     function updateAnalyzeBtn() {
-        var ready;
-        if (isCompareMode) {
-            var hasA = compareFile1 !== null || $('pasteArea1').value.trim().length > 0;
-            var hasB = compareFile2 !== null || $('pasteArea2').value.trim().length > 0;
-            ready = hasA && hasB;
-        } else {
-            var hasFile = selectedFile !== null;
-            var hasText = pasteArea.value.trim().length > 0;
-            var hasUrl = urlInput && urlInput.value.trim().length > 0;
-            ready = hasFile || hasText || hasUrl;
-        }
+        var hasFile = selectedFile !== null;
+        var hasText = pasteArea.value.trim().length > 0;
+        var hasUrl = urlInput && urlInput.value.trim().length > 0;
+        var ready = hasFile || hasText || hasUrl;
         analyzeBtn.disabled = !ready;
         // Show/hide depth selector; toggle demo grid; button always visible
         if (ready) {
@@ -5407,6 +5708,45 @@
             depthSelector.classList.add('hidden');
             demoGridSection.classList.remove('hidden');
         }
+    }
+
+    // ── Hero flip card demo ──────────────────────────────────
+    var heroFlipCard = $('heroFlipCard');
+    var heroFlipNudge = $('heroFlipNudge');
+    var _heroAutoFlipTimer = null;
+    var _heroUserFlipped = false;
+    function stopHeroAutoFlip() {
+        _heroUserFlipped = true;
+        if (_heroAutoFlipTimer) { clearTimeout(_heroAutoFlipTimer); _heroAutoFlipTimer = null; }
+    }
+    function startHeroAutoFlip() {
+        if (!heroFlipCard || _heroUserFlipped) return;
+        // Auto-flip cycle: show front 4s → flip to back 3s → flip to front → repeat
+        _heroAutoFlipTimer = setTimeout(function autoFlip() {
+            if (_heroUserFlipped) return;
+            heroFlipCard.classList.add('flipped');
+            _heroAutoFlipTimer = setTimeout(function() {
+                if (_heroUserFlipped) return;
+                heroFlipCard.classList.remove('flipped');
+                _heroAutoFlipTimer = setTimeout(autoFlip, 4000);
+            }, 3000);
+        }, 4000);
+    }
+    if (heroFlipCard) {
+        heroFlipCard.addEventListener('click', function() {
+            stopHeroAutoFlip();
+            heroFlipCard.classList.toggle('flipped');
+            if (heroFlipNudge) heroFlipNudge.classList.add('hidden');
+        });
+        heroFlipCard.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                stopHeroAutoFlip();
+                heroFlipCard.classList.toggle('flipped');
+                if (heroFlipNudge) heroFlipNudge.classList.add('hidden');
+            }
+        });
+        startHeroAutoFlip();
     }
 
     // ── Drag-and-drop (single) ────────────────────────────────
@@ -5434,6 +5774,13 @@
         fileInfo.classList.remove('hidden');
         pasteArea.classList.add('hidden');
         pasteArea.value = '';
+        // Expand drop zone full-width, hide other methods
+        var md = $('methodDrop');
+        if (md) md.classList.add('active-input');
+        var mp = $('methodPaste');
+        if (mp) mp.classList.add('hidden');
+        var mde = $('methodDemo');
+        if (mde) mde.classList.add('hidden');
         updateAnalyzeBtn();
     }
 
@@ -5442,108 +5789,66 @@
         selectedFile = null; fileInput.value = '';
         fileInfo.classList.add('hidden');
         uploadPrompt.classList.remove('hidden');
+        // Reset grid back to 3 columns
+        resetUploadMethods();
         updateAnalyzeBtn();
     });
 
-    // ── Paste text toggle ─────────────────────────────────────
-    pasteToggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (isCompareMode) return;
-        var isHidden = pasteArea.classList.contains('hidden');
-        if (isHidden) {
-            pasteArea.classList.remove('hidden');
-            pasteArea.focus();
-            pasteToggle.textContent = 'Upload file instead';
-            // Clear file if selected
-            if (selectedFile) { selectedFile = null; fileInput.value = ''; fileInfo.classList.add('hidden'); uploadPrompt.classList.remove('hidden'); }
-        } else {
-            pasteArea.classList.add('hidden');
-            pasteArea.value = '';
-            pasteToggle.textContent = 'Paste text instead';
-        }
-        updateAnalyzeBtn();
-    });
-    pasteArea.addEventListener('input', updateAnalyzeBtn);
-
-    // ── URL input toggle ─────────────────────────────────────────────
-    var urlToggle = $('urlToggle');
+    // ── 3-column input method toggles ─────────────────────────────────
     var urlInput = $('urlInput');
     var urlInputArea = $('urlInputArea');
-    if (urlToggle) {
-        urlToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (isCompareMode) return;
-            var isHidden = urlInputArea.classList.contains('hidden');
-            if (isHidden) {
-                urlInputArea.classList.remove('hidden');
-                urlInput.focus();
-                urlToggle.textContent = 'Upload file instead';
-                pasteArea.classList.add('hidden');
-                pasteArea.value = '';
-                pasteToggle.textContent = 'Paste text instead';
-                if (selectedFile) { selectedFile = null; fileInput.value = ''; fileInfo.classList.add('hidden'); uploadPrompt.classList.remove('hidden'); }
-            } else {
-                urlInputArea.classList.add('hidden');
-                urlInput.value = '';
-                urlToggle.textContent = 'Paste URL instead';
-            }
-            updateAnalyzeBtn();
-        });
-        urlInput.addEventListener('input', updateAnalyzeBtn);
-    }
+    var methodPaste = $('methodPaste');
+    var uploadMethods = $('uploadMethods');
 
-    // ── Compare mode toggle ───────────────────────────────────
-    compareToggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        isCompareMode = !isCompareMode;
-        $('singleUpload').classList.toggle('hidden', isCompareMode);
-        $('compareUpload').classList.toggle('hidden', !isCompareMode);
-        compareToggle.textContent = isCompareMode ? 'Single document analysis' : 'Compare two documents';
-        analyzeBtn.textContent = isCompareMode ? 'Compare documents' : 'Flip it';
-        // Reset state
-        selectedFile = null; compareFile1 = null; compareFile2 = null;
-        updateAnalyzeBtn();
-    });
-
-    // ── Compare drop zones ────────────────────────────────────
-    function setupCompareZone(num) {
-        var dz = $('dropZone' + num);
-        var fi = $('fileInput' + num);
-        var prompt = $('uploadPrompt' + num);
-        var info = $('fileInfo' + num);
-        var name = $('fileName' + num);
-        var remove = $('fileRemove' + num);
-        var paste = $('pasteArea' + num);
-
-        dz.addEventListener('click', function() { fi.click(); });
-        dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('dragover'); });
-        dz.addEventListener('dragleave', function() { dz.classList.remove('dragover'); });
-        dz.addEventListener('drop', function(e) {
-            e.preventDefault(); dz.classList.remove('dragover');
-            if (e.dataTransfer.files.length) setCompareFile(num, e.dataTransfer.files[0]);
-        });
-        fi.addEventListener('change', function() {
-            if (fi.files.length) setCompareFile(num, fi.files[0]);
-        });
-        remove.addEventListener('click', function(e) {
-            e.preventDefault(); e.stopPropagation();
-            if (num === 1) compareFile1 = null; else compareFile2 = null;
-            fi.value = '';
-            info.classList.add('hidden'); prompt.classList.remove('hidden');
-            updateAnalyzeBtn();
-        });
-        paste.addEventListener('input', updateAnalyzeBtn);
-
-        function setCompareFile(n, file) {
-            if (n === 1) compareFile1 = file; else compareFile2 = file;
-            name.textContent = file.name;
-            prompt.classList.add('hidden'); info.classList.remove('hidden');
-            paste.classList.add('hidden'); paste.value = '';
-            updateAnalyzeBtn();
+    function resetUploadMethods() {
+        // Collapse all methods back to 3-column grid
+        var methods = uploadMethods.querySelectorAll('.upload-method');
+        for (var i = 0; i < methods.length; i++) {
+            methods[i].classList.remove('active-input', 'hidden');
         }
+        pasteArea.classList.add('hidden');
+        pasteArea.value = '';
+        if (urlInputArea) urlInputArea.classList.add('hidden');
+        if (urlInput) urlInput.value = '';
     }
-    setupCompareZone(1);
-    setupCompareZone(2);
+
+    // Click on "Paste text" zone → expand to full-width textarea
+    if (methodPaste) {
+        var pasteZone = $('pasteZone');
+        if (pasteZone) pasteZone.addEventListener('click', function() {
+            resetUploadMethods();
+            methodPaste.classList.add('active-input');
+            $('methodDrop').classList.add('hidden');
+            var methodDemo = $('methodDemo');
+            if (methodDemo) methodDemo.classList.add('hidden');
+            pasteArea.classList.remove('hidden');
+            pasteArea.focus();
+            if (selectedFile) { selectedFile = null; fileInput.value = ''; fileInfo.classList.add('hidden'); uploadPrompt.classList.remove('hidden'); }
+            updateAnalyzeBtn();
+        });
+    }
+
+    // Click on "Try a demo" zone → pick random sample and launch
+    var demoZone = $('demoZone');
+    if (demoZone) {
+        var SAMPLE_KEYS = ['lease','insurance','tos','employment','loan','gym','medical','coupon','wedding','pet','sweepstakes','hackathon'];
+        demoZone.addEventListener('click', function() {
+            var pick = SAMPLE_KEYS[Math.floor(Math.random() * SAMPLE_KEYS.length)];
+            startSampleAnalysis(pick);
+        });
+    }
+
+    // Escape or empty → reset to 3-column grid
+    pasteArea.addEventListener('input', updateAnalyzeBtn);
+    pasteArea.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { resetUploadMethods(); updateAnalyzeBtn(); }
+    });
+    if (urlInput) {
+        urlInput.addEventListener('input', updateAnalyzeBtn);
+        urlInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { resetUploadMethods(); updateAnalyzeBtn(); }
+        });
+    }
 
     // ── Depth selector ────────────────────────────────────────
     depthSelector.addEventListener('click', function(e) {
@@ -5595,11 +5900,7 @@
 
     // ── Upload & analyze ──────────────────────────────────────
     analyzeBtn.addEventListener('click', function() {
-        if (isCompareMode) {
-            startCompareAnalysis();
-        } else {
-            startAnalysis();
-        }
+        startAnalysis();
     });
 
     function startAnalysis() {
@@ -5657,39 +5958,12 @@
             });
     }
 
-    function startCompareAnalysis() {
-        var formData = new FormData();
-        if (compareFile1) formData.append('file1', compareFile1);
-        else formData.append('text1', $('pasteArea1').value.trim());
-        if (compareFile2) formData.append('file2', compareFile2);
-        else formData.append('text2', $('pasteArea2').value.trim());
-        formData.append('depth', analysisDepth);
-
-        analyzeBtn.disabled = true;
-        analyzeBtn.textContent = 'Uploading...';
-
-        fetch(BASE_URL + '/compare', { method: 'POST', body: formData })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.error) { showError(data.error); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Compare documents'; return; }
-                documentFullText = (data.full_text || '').replace(/\n*— Page \d+ —\n*/g, '\n\n');
-                switchToAnalysis(data.doc_id, data.filename);
-            })
-            .catch(function(err) {
-                showError('Upload failed: ' + err.message);
-                analyzeBtn.disabled = false;
-                analyzeBtn.textContent = 'Compare documents';
-            });
-    }
-
     // ── Switch to analysis screen ─────────────────────────────
     function switchToAnalysis(docId, filename) {
         // Clean up timers from any previous analysis
         stopEditorialStatusRotation();
         // Reset state
-        thinkingContent = '';
         responseContent = '';
-        thinkingPhaseCount = 0;
         quickDone = false;
         isDoneRendering = false;
         deepTextComplete = false;
@@ -5705,6 +5979,7 @@
         flipCardsBuilt = false;
         parsedClauseCount = 0;
         currentCardIndex = 0;
+        _sseRetryCount = 0;
         hasFlippedOnce = false;
         cardViewTransitioned = false;
         clauseHighlightData = [];
@@ -5722,10 +5997,9 @@
         capTicker.className = 'capability-ticker hidden';
         capTicker.innerHTML = '';
 
-        // Reset on-demand deep dive state
+        // Reset deep dive state (all 5 stream inline now)
         DEEP_DIVE_SOURCES.forEach(function(s) {
-            deepDiveResults[s] = { text: '', done: false, loading: false };
-            if (_deepDiveSources[s]) { _deepDiveSources[s].close(); delete _deepDiveSources[s]; }
+            deepDiveResults[s] = { text: '', done: false };
         });
         opusSections.overall = { text: '', done: false };
 
@@ -5800,7 +6074,6 @@
         $('inlineVerdictProgress').classList.add('hidden');
         $('cardsReadyPill').classList.add('hidden');
         _detectedTricks = {};
-        _teaserExtracted = {};
         if (_quickDoneSafetyTimer) { clearTimeout(_quickDoneSafetyTimer); _quickDoneSafetyTimer = null; }
         if (_autoRevealTimer) { clearTimeout(_autoRevealTimer); _autoRevealTimer = null; }
         _verdictAutoRevealed = false;
@@ -5846,8 +6119,6 @@
         if (skStatusTxt) skStatusTxt.textContent = 'Reading the fine print';
         // Reset expert mind panel
         resetExpertMind();
-        // Initialize worker dots (6 generic dots — pulse while Haiku works)
-        initWorkerDots(6);
         // Populate investigation document text with real content
         var investTextEl = $('investigationText');
         if (investTextEl) {
@@ -5864,7 +6135,7 @@
         var thumbEl = $('docThumbnail');
         var thumbImg = $('docThumbnailImg');
         var layoutEl = document.querySelector('.analysis-layout');
-        var hasSidebar = documentFullText && !isCompareMode;
+        var hasSidebar = !!documentFullText;
         layoutEl.classList.remove('sidebar-visible');
         if (hasSidebar) {
             sidebar.classList.remove('hidden');
@@ -5920,6 +6191,8 @@
     }
 
     // ── SSE streaming ─────────────────────────────────────────
+    var _sseRetryCount = 0;
+    var _sseMaxRetries = 2;
     function connectStream(docId) {
         eventSource = new EventSource(BASE_URL + '/analyze/' + docId);
 
@@ -5947,7 +6220,6 @@
                     break;
 
                 case 'thinking_start':
-                    thinkingPhaseCount++;
                     if (!quickDone) {
                         startStatusRotation('thinking');
                         startCapTicker(HAIKU_MESSAGES);
@@ -5955,7 +6227,6 @@
                     break;
 
                 case 'thinking':
-                    thinkingContent += msg.content;
                     thinkingCharCount += msg.content.length;
                     break;
 
@@ -6016,11 +6287,9 @@
                     startStatusRotation('deep');
                     stopEditorialStatusRotation();
                     var _ds = $('deepStatus'); if (_ds) _ds.classList.remove('hidden');
-                    if (!isCompareMode) {
-                        finalClauseSweep();
-                        buildFilterChips();
-                        buildPlaybookCard();
-                    }
+                    finalClauseSweep();
+                    buildFilterChips();
+                    buildPlaybookCard();
                     // Always update nav — ensures Next button exits "Analyzing" state
                     updateCardNavigation();
                     // Flash verdict from card data — bridge while Opus runs
@@ -6037,7 +6306,7 @@
                     if (readersDetail) readersDetail.textContent = qdCardCount + ' clauses analyzed';
                     showBriefingSentence('All clauses scanned \u2014 expert is finalizing the verdict');
                     // Show "cards ready" pill if verdict was auto-revealed
-                    if (_verdictAutoRevealed && !isCompareMode) {
+                    if (_verdictAutoRevealed) {
                         var crCardCount = flipCardContainer.querySelectorAll('.flip-card').length;
                         if (crCardCount > 0) {
                             $('cardsReadyText').textContent = crCardCount + ' card' + (crCardCount !== 1 ? 's' : '') + ' ready';
@@ -6062,17 +6331,22 @@
                     opusSections.overall.done = true;
                     deepTextComplete = true;
                     stopVerdictCountdown();
-                    // Stop header rotation — user perceives analysis as complete
-                    stopStatusRotation();
                     if (thinkingCharCount > 0) showCapStats();
-                    statusText.textContent = 'Verdict ready';
+                    // Check if deep dives are still building
+                    var ddPending = DEEP_DIVE_SOURCES.filter(function(s) { return !deepDiveResults[s].done; }).length;
+                    if (ddPending > 0) {
+                        statusText.textContent = 'Verdict ready \u2014 ' + ddPending + ' expert report' + (ddPending !== 1 ? 's' : '') + ' building';
+                    } else {
+                        statusText.textContent = 'Analysis complete';
+                        stopStatusRotation();
+                    }
                     var verdictStatusEl = $('verdictStatus');
                     if (verdictStatusEl) verdictStatusEl.classList.add('hidden');
                     verdictTitle.textContent = 'Your verdict is ready';
                     updateVerdictButton();
                     if (flipCardsBuilt) updateCardNavigation();
                     onVerdictReady();
-                    // Unlock depth buttons
+                    // Unlock depth buttons — they now have streaming content
                     document.querySelectorAll('.verdict-depth-btn.locked').forEach(function(b) { b.classList.remove('locked'); });
                     var askSec = document.querySelector('.ask-flipside-section.hidden'); if (askSec) askSec.classList.remove('hidden');
                     // Update thinking label to final state
@@ -6086,11 +6360,42 @@
                     if (expertInd) expertInd.classList.add('done');
                     var expertDetail = $('trackExpertDetail');
                     if (expertDetail) expertDetail.textContent = 'Verdict ready';
-                    showBriefingSentence('Expert verdict is ready');
-                    if (_briefingTimer) { clearInterval(_briefingTimer); _briefingTimer = null; }
+                    showBriefingSentence('Expert verdict is ready \u2014 expert reports building');
+                    // Don't stop briefing timer — deep dives still coming
                     break;
 
-                // Deep dive events removed — now on-demand via /deepdive endpoint
+                // ── Deep dive streams (5 parallel Opus threads) ──
+                case 'archaeology_text':
+                case 'scenario_text':
+                case 'walkaway_text':
+                case 'combinations_text':
+                case 'playbook_text':
+                    var ddSource = msg.type.replace('_text', '');
+                    deepDiveResults[ddSource].text += msg.content;
+                    updateDeepDivePanel(ddSource);
+                    updateDeepDiveProgress();
+                    break;
+
+                case 'archaeology_thinking':
+                case 'scenario_thinking':
+                case 'walkaway_thinking':
+                case 'combinations_thinking':
+                case 'playbook_thinking':
+                    // Deep dive thinking — count but don't display
+                    thinkingCharCount += msg.content.length;
+                    break;
+
+                case 'archaeology_done':
+                case 'scenario_done':
+                case 'walkaway_done':
+                case 'combinations_done':
+                case 'playbook_done':
+                    var ddDoneSource = msg.type.replace('_done', '');
+                    deepDiveResults[ddDoneSource].done = true;
+                    updateDeepDivePanel(ddDoneSource);
+                    updateDeepDiveProgress();
+                    updateDepthButtonState(ddDoneSource);
+                    break;
 
                 case 'done':
                     isDoneRendering = true; window._isDone = true;
@@ -6100,6 +6405,13 @@
                     stopStatusRotation();
                     stopEditorialStatusRotation();
                     if (thinkingCharCount > 0) showCapStats();
+                    // Mark all deep dives as done (safety — they should already be)
+                    DEEP_DIVE_SOURCES.forEach(function(s) {
+                        deepDiveResults[s].done = true;
+                        updateDepthButtonState(s);
+                    });
+                    var ddLabel = $('deepDiveProgressLabel');
+                    if (ddLabel) ddLabel.innerHTML = 'All ' + DEEP_DIVE_SOURCES.length + ' expert reports ready \u2713';
                     var _ds2 = $('deepStatus'); if (_ds2) _ds2.classList.add('hidden');
                     // Re-show model badge now that analysis is complete
                     var doneBadge = document.querySelector('.model-badge');
@@ -6131,35 +6443,27 @@
                         langBtn.classList.remove('hidden');
                     }
 
-                    if (isCompareMode) {
-                        renderResultsFinal();
-                        buildSummaryCard();
-                        buildPlaybookCard();
-                    }
-
                     if (flipCardsBuilt) updateCardNavigation();
 
-                    if (!isCompareMode) {
-                        // Mark all Opus sections done (safety net)
-                        Object.keys(opusSections).forEach(function(k) {
-                            if (!opusSections[k].done) {
-                                opusSections[k].done = true;
-                                markOpusSectionDone(k);
-                            }
-                        });
-                        deepTextComplete = true;
-                        document.querySelectorAll('.verdict-depth-btn.locked').forEach(function(b) { b.classList.remove('locked'); });
-                        var askSec2 = document.querySelector('.ask-flipside-section.hidden'); if (askSec2) askSec2.classList.remove('hidden');
-                        verdictTitle.textContent = 'Your verdict is ready';
-                        updateVerdictButton();
-                        // Update all depth button states (safety net)
-                        DEEP_DIVE_SOURCES.forEach(function(s) {
-                            updateDepthButtonState(s);
-                            renderDepthResult(s);
-                        });
-                    }
+                    // Mark all Opus sections done (safety net)
+                    Object.keys(opusSections).forEach(function(k) {
+                        if (!opusSections[k].done) {
+                            opusSections[k].done = true;
+                            markOpusSectionDone(k);
+                        }
+                    });
+                    deepTextComplete = true;
+                    document.querySelectorAll('.verdict-depth-btn.locked').forEach(function(b) { b.classList.remove('locked'); });
+                    var askSec2 = document.querySelector('.ask-flipside-section.hidden'); if (askSec2) askSec2.classList.remove('hidden');
+                    verdictTitle.textContent = 'Your verdict is ready';
+                    updateVerdictButton();
+                    // Update all depth button states (safety net)
+                    DEEP_DIVE_SOURCES.forEach(function(s) {
+                        updateDepthButtonState(s);
+                        renderDepthResult(s);
+                    });
 
-                    if (!isCompareMode && !hasTaggedContent(opusSections.overall.text || '')) followupSection.classList.remove('hidden');
+                    if (!hasTaggedContent(opusSections.overall.text || '')) followupSection.classList.remove('hidden');
                     if (eventSource) { eventSource.close(); eventSource = null; }
                     break;
 
@@ -6186,8 +6490,6 @@
             }
         };
 
-        var _sseRetryCount = 0;
-        var _sseMaxRetries = 2;
         eventSource.onerror = function() {
             if (eventSource) { eventSource.close(); eventSource = null; }
             if (statusPill.classList.contains('done')) return;
@@ -6357,30 +6659,11 @@
     function doRenderResults() {
         // ── Guard: once flip cards are built, DON'T render deep analysis during streaming ──
         // Deep analysis will be rendered on-demand when user clicks "Our Verdict" or "View assessment"
-        if (flipCardsBuilt && !isCompareMode) {
+        if (flipCardsBuilt) {
             return;
         }
 
-        // ── Compare mode: keep old markdown rendering path ──
-        if (isCompareMode) {
-            var safeMd = responseContent
-                .replace(/\[READER\]\s*:/g, 'FLIPSIDE_READER:')
-                .replace(/\[DRAFTER\]\s*:/g, 'FLIPSIDE_DRAFTER:')
-                .replace(/^READER\s*:/gm, 'FLIPSIDE_READER:')
-                .replace(/^DRAFTER\s*:/gm, 'FLIPSIDE_DRAFTER:');
-            var html = safeMd2Html(safeMd);
-            html = styleRiskBadges(html);
-            html = styleWhyClauses(html);
-            html = styleReaderBlocks(html);
-            html = styleDrafterBlocks(html);
-            html = styleSplitClauses(html);
-            resultsContent.innerHTML = safeHtml(html);
-            wrapClauseSections(resultsContent);
-            resultsArea.classList.remove('hidden');
-            return;
-        }
-
-        // ── Non-compare: incremental clause detection ──
+        // ── Incremental clause detection ──
         tryExtractNewClauses();
     }
 
@@ -6580,6 +6863,7 @@
             // ── Purpose-built rejection screen (0 cards = nothing to show) ──
             // Stop all background processing — Opus verdict is pointless
             if (eventSource) { eventSource.close(); eventSource = null; }
+            stopInvestigationScroll();
             isDoneRendering = true;
             if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
             stopStatusRotation();
@@ -6659,8 +6943,10 @@
     function extractSingleClause(segment) {
         if (!segment.match(/^### /m)) return null;
 
-        // Risk flag: front-only has just [GREEN/YELLOW/RED], full has Score + Trick
-        var riskMatch = segment.match(/\[?(GREEN|YELLOW|RED)\]?\s*(?:[·•\u00B7\u2022\-–—|,]\s*Score:\s*(\d+)(?:\/100)?(?:\s*[·•\u00B7\u2022\-–—|,]\s*Trick:\s*([^\n]+))?)?/i);
+        // Risk flag: must be on its own line with Score (avoids matching "green" in reassurance text)
+        var riskMatch = segment.match(/^\s*\[?(GREEN|YELLOW|RED)\]?\s*[·•\u00B7\u2022\-–—|,]\s*Score:\s*(\d+)(?:\/100)?(?:\s*[·•\u00B7\u2022\-–—|,]\s*Trick:\s*([^\n]+))?/im);
+        // Fallback: standalone risk word on its own line (no Score)
+        if (!riskMatch) riskMatch = segment.match(/^\s*\[?(GREEN|YELLOW|RED)\]?\s*$/im);
         if (!riskMatch) return null;
 
         var headerMatch = segment.match(/^### \s*(.+)\s+\(([^)]+)\)\s*$/m);
@@ -6832,7 +7118,7 @@
         }
 
         var backTitle = clause.teaser || clause.reveal || clause.title;
-        var backLabel = (risk === 'green') ? 'And that\u2019s correct' : 'What the fine print actually says';
+        var backLabel = (risk === 'green') ? 'And that\u2019s correct' : 'What this actually allows';
         // Risk header → straight to analysis (no section ref, no quote — user can flip back or use Find in Document)
         var backInnerHtml = '';
         backInnerHtml += '<div class="risk-header risk-header-' + risk + '">' +
@@ -7137,11 +7423,11 @@
 
         // ── Transition: skeleton hides, cards + sidebar appear ──
         var investigationDoc = skeleton.querySelector('.investigation-doc');
-        var hasSidebar = documentFullText && !isCompareMode;
+        var hasSidebar = !!documentFullText;
         if (investigationDoc && hasSidebar) {
             swooshBriefingToCardNav(skeleton, viewport, investigationDoc);
         } else {
-            // No sidebar (compare mode) — instant transition
+            // No sidebar — instant transition
             skeleton.classList.add('hidden');
             viewport.classList.remove('hidden');
             resultsArea.classList.remove('hidden');
@@ -7197,12 +7483,6 @@
         }, 350);
     }
 
-    // ── Verdict teaser: extract first compelling sentence from each Opus stream ──
-    var _teaserExtracted = {};
-    function updateVerdictTeaser(source) {
-        // Single-thread: no teaser strip needed (verdict is one screen)
-    }
-
     // ── Tab title + notification when verdict is ready ──
     var _originalTitle = document.title;
 
@@ -7249,14 +7529,6 @@
     }
 
     // ── Verdict column helpers (4-section live report) ─────────────────
-    function showVerdictCol() {
-        verdictCol.classList.add('visible');
-        verdictCol.classList.add('writing');
-        // On mobile, auto-show bottom sheet in peek state
-        if (window.innerWidth <= 900 && window._setSheetState) {
-            window._setSheetState('peek');
-        }
-    }
     function hideVerdictCol() {
         verdictCol.classList.remove('visible');
         // On mobile, close bottom sheet
@@ -7467,9 +7739,8 @@
             }
         }
         // ── Expert Mind: stream thinking into loading screen ──
+        // narrateFromThinking() is called inside updateExpertMind — not here too
         updateExpertMind(text, tokens);
-        // Live narration continues even after skeleton hides (feeds verdict strip)
-        if (cardViewTransitioned) narrateFromThinking(text);
     }
 
     // ── Expert Briefing: narrated AI progress ──
@@ -7479,7 +7750,6 @@
     var _lastNarrationTime = 0;       // rate-limit: don't update faster than every 3.5s
     var _shownNarrations = {};        // dedup: don't repeat the same narration
     var _narrateMinInterval = 3000;    // ms between narration updates
-    var _briefingStartTime = 0;
     var _workerDotsReady = 0;
 
     // ── Live narration: show real sentences from Opus thinking stream ──
@@ -7538,12 +7808,11 @@
     function updateExpertMind(newText, tokenCount) {
         var panel = $('expertBriefing');
         var skeleton = $('skeletonCard');
-        if (!panel || !skeleton || skeleton.classList.contains('hidden') || isCompareMode) return;
+        if (!panel || !skeleton || skeleton.classList.contains('hidden')) return;
 
         // Reveal briefing on first thinking content
         if (!_briefingRevealed) {
             _briefingRevealed = true;
-            _briefingStartTime = Date.now();
             panel.classList.add('visible');
             // Compress investigation phases (hide them)
             var phases = $('skeletonActs');
@@ -7593,7 +7862,7 @@
         capTicker.classList.add('fade-swap');
         setTimeout(function() {
             var short = text.length > 90 ? text.substring(0, 88) + '\u2026' : text;
-            capTicker.innerHTML = '<span class="cap-label">THINKING</span> ' + short;
+            capTicker.innerHTML = '<span class="cap-label">THINKING</span> ' + escapeHtml(short);
             capTicker.classList.remove('fade-swap');
         }, 300);
     }
@@ -7625,10 +7894,6 @@
         if (readersInd) readersInd.classList.remove('done');
         var expertInd = $('trackExpert');
         if (expertInd) expertInd.classList.remove('done');
-    }
-
-    function initWorkerDots(count) {
-        // No-op: worker dots replaced by track indicators
     }
 
     function markWorkerDone() {
@@ -7910,7 +8175,6 @@
 
     // ── Flash verdict: quick summary from card data while Opus runs ──
     function buildFlashVerdict() {
-        if (isCompareMode) return;
         var cards = flipCardContainer.querySelectorAll('.flip-card');
         if (cards.length === 0) return;
         var counts = { red: 0, yellow: 0, green: 0 };
@@ -7921,17 +8185,13 @@
             var r = cards[i].getAttribute('data-risk-level') || 'green';
             if (counts[r] !== undefined) counts[r]++;
             var title = cards[i].querySelector('h3');
-            var scoreEl = cards[i].querySelector('.card-risk-score');
-            var trickEl = cards[i].querySelector('.card-trick-chip');
-            var score = scoreEl ? parseInt(scoreEl.textContent) : 0;
+            var score = parseInt(cards[i].getAttribute('data-score') || '0');
+            var trickName = cards[i].getAttribute('data-trick') || '';
             if (score > worstScore) {
                 worstScore = score;
                 worstCard = title ? title.textContent.trim() : 'Clause ' + (i + 1);
             }
-            if (trickEl) {
-                var trickName = trickEl.textContent.trim();
-                if (trickName) tricks[trickName] = (tricks[trickName] || 0) + 1;
-            }
+            if (trickName) tricks[trickName] = (tricks[trickName] || 0) + 1;
         }
         var total = cards.length;
         var html = '<div class="flash-verdict">';
@@ -8044,6 +8304,14 @@
         // Also save honey toggle state
         var honeyToggles = document.querySelectorAll('.back-honey-toggle.expanded');
         _expandedVerdictLayers._honeyCount = honeyToggles.length;
+        // Save which deep dive panel is open (survives verdict re-renders)
+        _expandedVerdictLayers._openDeepDive = null;
+        DEEP_DIVE_SOURCES.forEach(function(s) {
+            var panel = $('depthPanel_' + s);
+            if (panel && panel.classList.contains('visible')) {
+                _expandedVerdictLayers._openDeepDive = s;
+            }
+        });
     }
 
     function _restoreVerdictLayerState() {
@@ -8053,6 +8321,17 @@
             if (el && _expandedVerdictLayers[id]) {
                 el.classList.remove('collapsed');
             }
+        }
+        // Restore open deep dive panel + re-render its content
+        var openDD = _expandedVerdictLayers._openDeepDive;
+        if (openDD) {
+            var panel = $('depthPanel_' + openDD);
+            var btn = document.querySelector('.verdict-depth-btn[data-depth="' + openDD + '"]');
+            if (panel) {
+                panel.classList.add('visible');
+                updateDeepDivePanel(openDD);
+            }
+            if (btn) btn.classList.add('active');
         }
     }
 
@@ -8306,10 +8585,11 @@
         html += '<div class="ask-flipside-result" id="askFlipsideResult"></div>';
         html += '</div>';
 
-        // ── 4 Go Deeper buttons (on-demand — click to start Opus 4.6) ──
+        // ── 5 Expert Reports (parallel Opus 4.6 — auto-streaming) ──
         html += '<div class="verdict-depth-buttons" id="verdictDepthButtons">';
-        html += '<div class="verdict-depth-label">Go deeper &mdash; powered by Opus 4.6</div>';
+        html += '<div class="verdict-depth-label" id="deepDiveProgressLabel">Expert reports building<span class="pulsing-dots"><span></span><span></span><span></span></span></div>';
         var depthOptions = [
+            { key: 'archaeology', icon: '\uD83D\uDD0D', title: 'Document Archaeology', desc: 'Boilerplate vs. custom-drafted clauses' },
             { key: 'scenario', icon: '\uD83C\uDFAC', title: 'What Could Happen', desc: 'Worst-case scenario simulation' },
             { key: 'walkaway', icon: '\uD83D\uDCB0', title: 'Walk-Away Number', desc: 'Your maximum financial exposure' },
             { key: 'combinations', icon: '\uD83D\uDD17', title: 'Hidden Combinations', desc: 'Cross-clause compound traps' },
@@ -8318,15 +8598,15 @@
         depthOptions.forEach(function(opt) {
             var dd = deepDiveResults[opt.key];
             var isReady = dd && dd.done;
-            var isLocked = !deepTextComplete && !isDoneRendering;
-            html += '<button class="verdict-depth-btn' + (isReady ? ' ready' : '') + (isLocked ? ' locked' : '') + '" data-depth="' + opt.key + '">';
+            var hasContent = dd && dd.text.length > 0;
+            html += '<button class="verdict-depth-btn' + (isReady ? ' ready' : '') + (hasContent && !isReady ? ' building' : '') + '" data-depth="' + opt.key + '">';
             html += '<span class="verdict-depth-btn-icon">' + opt.icon + '</span>';
             html += '<span class="verdict-depth-btn-text">';
             html += '<span class="verdict-depth-btn-title">' + opt.title + '</span>';
             html += '<span class="verdict-depth-btn-desc">' + opt.desc + '</span>';
             html += '</span>';
             html += '<span class="verdict-depth-btn-status" id="depthStatus_' + opt.key + '">';
-            html += isReady ? '\u2713' : '\u25B6';
+            html += isReady ? '\u2713' : (hasContent ? '<span class="pulsing-dots"><span></span><span></span><span></span></span>' : '\u2022');
             html += '</span>';
             html += '</button>';
             html += '<div class="depth-result-panel" id="depthPanel_' + opt.key + '"></div>';
@@ -8346,6 +8626,70 @@
             btn.classList.add('ready');
             if (statusEl) statusEl.innerHTML = '\u2713';
         }
+    }
+
+    // ── Deep Dive: render scenario with timeline layout ──
+    function hasScenarioTags(text) {
+        return /\[SCENARIO_TITLE\]/.test(text) || /\[TIMELINE_STEP/.test(text);
+    }
+    function renderScenarioResult(text) {
+        var html = '';
+        // Title
+        var titleM = text.match(/\[SCENARIO_TITLE\]([\s\S]*?)\[\/SCENARIO_TITLE\]/);
+        var title = titleM ? titleM[1].trim() : 'What Could Happen';
+        html += '<div class="scenario-title">' + escapeHtml(title) + '</div>';
+
+        // Setup
+        var setupM = text.match(/\[SCENARIO_SETUP\]([\s\S]*?)\[\/SCENARIO_SETUP\]/);
+        if (setupM) html += '<div class="scenario-setup">' + safeMd2Html(setupM[1].trim()) + '</div>';
+
+        // Timeline steps
+        var stepRe = /\[TIMELINE_STEP\s+title="([^"]*?)"\]([\s\S]*?)\[\/TIMELINE_STEP\]/g;
+        var stepMatch;
+        var hasSteps = false;
+        html += '<div class="scenario-timeline">';
+        while ((stepMatch = stepRe.exec(text)) !== null) {
+            hasSteps = true;
+            html += '<div class="scenario-step">';
+            html += '<div class="scenario-step-marker"></div>';
+            html += '<div class="scenario-step-content">';
+            html += '<div class="scenario-step-title">' + escapeHtml(stepMatch[1]) + '</div>';
+            html += '<div class="scenario-step-body">' + safeMd2Html(stepMatch[2].trim()) + '</div>';
+            html += '</div></div>';
+        }
+        html += '</div>';
+
+        // Total
+        var totalM = text.match(/\[SCENARIO_TOTAL\]([\s\S]*?)\[\/SCENARIO_TOTAL\]/);
+        if (totalM) html += '<div class="scenario-total">' + safeMd2Html(totalM[1].trim()) + '</div>';
+
+        // Actions
+        var actionsM = text.match(/\[SCENARIO_ACTIONS\]([\s\S]*?)\[\/SCENARIO_ACTIONS\]/);
+        if (actionsM) {
+            html += '<div class="scenario-actions">';
+            html += '<div class="scenario-actions-title">What You Could Do Before Signing</div>';
+            html += safeMd2Html(actionsM[1].trim());
+            html += '</div>';
+        }
+
+        // Ready-to-send message
+        var messageM = text.match(/\[SCENARIO_MESSAGE\]([\s\S]*?)\[\/SCENARIO_MESSAGE\]/);
+        if (messageM) {
+            var msgText = messageM[1].trim();
+            html += '<div class="scenario-message">';
+            html += '<div class="scenario-message-title">Ready-to-Send Message</div>';
+            html += '<div class="scenario-message-body">' + safeMd2Html(msgText) + '</div>';
+            html += '<div class="scenario-message-actions">';
+            html += '<button class="scenario-copy-btn" onclick="navigator.clipboard.writeText(this.closest(\'.scenario-message\').querySelector(\'.scenario-message-body\').innerText);this.textContent=\'Copied\';var b=this;setTimeout(function(){b.textContent=\'Copy text\'},1500)">Copy text</button>';
+            html += '<button class="scenario-email-btn" onclick="var t=this.closest(\'.scenario-message\').querySelector(\'.scenario-message-body\').innerText;window.location.href=\'mailto:?subject=\'+encodeURIComponent(\'Contract Review — Requested Changes\')+\'&body=\'+encodeURIComponent(t)">Open in email</button>';
+            html += '</div></div>';
+        }
+
+        // Fallback
+        if (!hasSteps && !totalM) {
+            return '<div class="depth-result-content">' + safeMd2Html(text) + '</div>';
+        }
+        return '<div class="depth-result-content scenario-layout">' + html + '</div>';
     }
 
     // ── Deep Dive: render walk-away number with hero treatment ──
@@ -8381,6 +8725,60 @@
         return html;
     }
 
+    // ── Deep Dive: detect and render [FINDING] tagged content ──
+    function hasFindingTags(text) {
+        return /\[FINDING[\s\]]/i.test(text) || /\[SUMMARY_CONTRIBUTION\]/i.test(text);
+    }
+
+    function renderFindingsResult(text) {
+        var html = '';
+
+        // Summary contribution
+        var summary = parseTag(text, 'SUMMARY_CONTRIBUTION');
+        if (summary) {
+            html += '<div class="finding-summary">' + safeMd2Html(summary) + '</div>';
+        }
+
+        // Parse all [FINDING]...[/FINDING] blocks
+        var findingRegex = /\[FINDING[^\]]*\]([\s\S]*?)\[\/FINDING\]/g;
+        var match;
+        var idx = 0;
+        while ((match = findingRegex.exec(text)) !== null) {
+            idx++;
+            var block = match[1];
+            var title = parseTag(block, 'FINDING_TITLE');
+            var src = parseTag(block, 'FINDING_SOURCE');
+            var explanation = parseTag(block, 'FINDING_EXPLANATION');
+            var severity = parseTag(block, 'FINDING_SEVERITY').toLowerCase().trim();
+            var sevContext = parseTag(block, 'FINDING_SEVERITY_CONTEXT');
+            var action = parseTag(block, 'FINDING_ACTION');
+
+            html += '<div class="finding-card">';
+            html += '<div class="finding-header">';
+            html += '<span class="finding-number">' + idx + '</span>';
+            if (title) html += '<h4 class="finding-title">' + escapeHtml(title) + '</h4>';
+            if (severity) html += '<span class="finding-severity finding-severity-' + escapeHtml(severity) + '">' + escapeHtml(severity) + '</span>';
+            html += '</div>';
+            if (src) html += '<blockquote class="finding-source">' + escapeHtml(src) + '</blockquote>';
+            if (explanation) html += '<div class="finding-explanation">' + safeMd2Html(explanation) + '</div>';
+            if (sevContext) html += '<div class="finding-severity-context">' + escapeHtml(sevContext) + '</div>';
+            if (action) html += '<div class="finding-action"><strong>What to do:</strong> ' + escapeHtml(action) + '</div>';
+            html += '</div>';
+        }
+
+        // Deep content (narrative section)
+        var deep = parseTag(text, 'DEEP_CONTENT');
+        if (deep) {
+            html += '<div class="finding-deep-content">' + safeMd2Html(deep) + '</div>';
+        }
+
+        // Fallback: if no tags found, render as markdown
+        if (!html) {
+            return '<div class="depth-result-content">' + safeMd2Html(text) + '</div>';
+        }
+        return '<div class="depth-result-content">' + html + '</div>';
+    }
+
     // ── Deep Dive: render result content into panel ──
     function renderDepthResult(source) {
         var panel = $('depthPanel_' + source);
@@ -8394,84 +8792,75 @@
         }
         if (source === 'walkaway') {
             panel.innerHTML = renderWalkawayResult(text);
+        } else if (source === 'scenario' && hasScenarioTags(text)) {
+            panel.innerHTML = renderScenarioResult(text);
+        } else if (hasFindingTags(text)) {
+            panel.innerHTML = renderFindingsResult(text);
         } else {
             panel.innerHTML = '<div class="depth-result-content">' + safeMd2Html(text) + '</div>';
         }
     }
 
-    // ── Deep Dive: on-demand click handler ──
-    // Active EventSource connections for deep dives
-    var _deepDiveSources = {};
+    // ── Deep Dive: update streaming panel content ──
+    function updateDeepDivePanel(source) {
+        var panel = $('depthPanel_' + source);
+        if (!panel || !panel.classList.contains('visible')) return;
+        var dd = deepDiveResults[source];
+        if (!dd || !dd.text) return;
+        var buildingFooter = dd.done ? '' : '<div class="depth-result-loading" style="margin-top:0.75rem"><span class="pulsing-dots"><span></span><span></span><span></span></span> Still building\u2026</div>';
+        if (source === 'walkaway') {
+            panel.innerHTML = renderWalkawayResult(dd.text) + buildingFooter;
+        } else if (source === 'scenario' && hasScenarioTags(dd.text)) {
+            panel.innerHTML = renderScenarioResult(dd.text) + buildingFooter;
+        } else if (hasFindingTags(dd.text)) {
+            panel.innerHTML = renderFindingsResult(dd.text) + buildingFooter;
+        } else {
+            panel.innerHTML = '<div class="depth-result-content">' + safeMd2Html(dd.text) + '</div>' + buildingFooter;
+        }
+    }
 
-    function startDeepDive(key) {
-        var dd = deepDiveResults[key];
-        if (dd.loading || dd.done) return; // Already running or completed
-        dd.loading = true;
-        dd.text = '';
-
-        var panel = $('depthPanel_' + key);
-        var btn = document.querySelector('.verdict-depth-btn[data-depth="' + key + '"]');
-        var statusEl = $('depthStatus_' + key);
-        if (statusEl) statusEl.innerHTML = '<span class="pulsing-dots"><span></span><span></span><span></span></span>';
-
-        panel.innerHTML = '<div class="depth-result-loading"><span class="pulsing-dots"><span></span><span></span><span></span></span> Opus 4.6 is analyzing...</div>';
-
-        var es = new EventSource(BASE_URL + '/deepdive/' + currentDocId + '/' + key);
-        _deepDiveSources[key] = es;
-
-        es.onmessage = function(e) {
-            var msg;
-            try { msg = JSON.parse(e.data); } catch(err) { return; }
-
-            if (msg.type === 'text') {
-                dd.text += msg.content;
-                // Live-render as text streams in
-                if (key === 'walkaway') {
-                    panel.innerHTML = renderWalkawayResult(dd.text);
-                } else {
-                    panel.innerHTML = '<div class="depth-result-content">' + safeMd2Html(dd.text) + '</div>';
-                }
-            } else if (msg.type === 'thinking') {
-                // Show brief thinking indicator (optional)
-            } else if (msg.type === 'done') {
-                dd.done = true;
-                dd.loading = false;
-                if (btn) btn.classList.add('ready');
-                if (statusEl) statusEl.innerHTML = '\u2713';
-                es.close();
-                delete _deepDiveSources[key];
-                renderDepthResult(key);
-            } else if (msg.type === 'error') {
-                dd.loading = false;
-                panel.innerHTML = '<div class="depth-result-content" style="color:var(--accent)">Error: ' + escapeHtml(msg.content) + '</div>';
-                if (statusEl) statusEl.innerHTML = '\u2717';
-                es.close();
-                delete _deepDiveSources[key];
+    // ── Deep Dive: update progress label and status text ──
+    function updateDeepDiveProgress() {
+        var doneCount = DEEP_DIVE_SOURCES.filter(function(s) { return deepDiveResults[s].done; }).length;
+        var total = DEEP_DIVE_SOURCES.length;
+        var label = $('deepDiveProgressLabel');
+        if (label) {
+            if (doneCount >= total) {
+                label.innerHTML = 'All ' + total + ' expert reports ready \u2713';
+                // Now update main status to fully complete
+                statusText.textContent = 'Analysis complete';
+                stopStatusRotation();
+                if (_briefingTimer) { clearInterval(_briefingTimer); _briefingTimer = null; }
+                showBriefingSentence('All expert reports are ready');
+            } else {
+                label.innerHTML = doneCount + ' of ' + total + ' expert reports ready<span class="pulsing-dots"><span></span><span></span><span></span></span>';
             }
-        };
-
-        es.onerror = function() {
-            dd.loading = false;
-            if (!dd.done) {
-                panel.innerHTML = '<div class="depth-result-content" style="color:var(--text-muted)">Connection lost. Click to retry.</div>';
-                if (statusEl) statusEl.innerHTML = '\u21BB';
-                // Allow retry
-                dd.done = false;
+        }
+        // Update button states for any newly done
+        DEEP_DIVE_SOURCES.forEach(function(s) {
+            var btn = document.querySelector('.verdict-depth-btn[data-depth="' + s + '"]');
+            var statusEl = $('depthStatus_' + s);
+            var dd = deepDiveResults[s];
+            if (!btn || !statusEl) return;
+            if (dd.done) {
+                btn.classList.remove('building');
+                btn.classList.add('ready');
+                statusEl.innerHTML = '\u2713';
+            } else if (dd.text.length > 0) {
+                btn.classList.add('building');
+                statusEl.innerHTML = '<span class="pulsing-dots"><span></span><span></span><span></span></span>';
             }
-            es.close();
-            delete _deepDiveSources[key];
-        };
+        });
     }
 
     document.addEventListener('click', function(e) {
         var btn = e.target.closest('.verdict-depth-btn');
         if (!btn) return;
-        // Block until final verdict is ready
-        if (!deepTextComplete && !isDoneRendering) return;
         var key = btn.getAttribute('data-depth');
         if (!key) return;
         var panel = $('depthPanel_' + key);
         if (!panel) return;
+        var dd = deepDiveResults[key];
 
         // Toggle: if already visible, collapse
         if (panel.classList.contains('visible')) {
@@ -8480,7 +8869,7 @@
             return;
         }
 
-        // Collapse other panels (but don't stop their streams)
+        // Collapse other panels
         DEEP_DIVE_SOURCES.forEach(function(s) {
             var otherPanel = $('depthPanel_' + s);
             var otherBtn = document.querySelector('.verdict-depth-btn[data-depth="' + s + '"]');
@@ -8492,14 +8881,16 @@
         panel.classList.add('visible');
         btn.classList.add('active');
 
-        // If already done, just render
-        if (deepDiveResults[key].done) {
+        // Render whatever content we have (streaming or complete)
+        if (dd.done) {
             renderDepthResult(key);
-        } else if (!deepDiveResults[key].loading) {
-            // Start on-demand deep dive
-            startDeepDive(key);
+        } else if (dd.text.length > 0) {
+            // Streaming — show partial content
+            updateDeepDivePanel(key);
+        } else {
+            // Not started yet or no content — show waiting state
+            panel.innerHTML = '<div class="depth-result-loading"><span class="pulsing-dots"><span></span><span></span><span></span></span> Opus 4.6 is analyzing...</div>';
         }
-        // If loading, the stream handler will update the panel
 
         // Scroll panel into view
         setTimeout(function() {
@@ -8508,8 +8899,6 @@
     });
 
     // ── Ask FlipSide: follow-up question with tool use ──
-    var _askEventSource = null;
-
     var TOOL_LABELS = {
         search_document: { icon: '\uD83D\uDD0D', label: 'Searching document' },
         get_clause_analysis: { icon: '\uD83D\uDCC4', label: 'Reading clause analysis' },
@@ -8525,8 +8914,6 @@
         btnEl.disabled = true;
         inputEl.disabled = true;
         resultEl.innerHTML = '<div class="ask-tool-call"><span class="ask-tool-call-icon">\uD83E\uDDE0</span> Thinking...</div>';
-
-        if (_askEventSource) { _askEventSource.close(); _askEventSource = null; }
 
         var answerText = '';
 
@@ -8557,7 +8944,7 @@
                         try { msg = JSON.parse(line.slice(6)); } catch(e) { return; }
 
                         if (msg.type === 'tool_call') {
-                            var tc = JSON.parse(msg.content);
+                            var tc; try { tc = JSON.parse(msg.content); } catch(e) { return; }
                             var info = TOOL_LABELS[tc.tool] || { icon: '\uD83D\uDD27', label: tc.tool };
                             var detail = '';
                             if (tc.input && tc.input.query) detail = ' for "' + tc.input.query + '"';
@@ -8676,7 +9063,7 @@
                 renderDeepAnalysisContent();
                 buildSummaryCard();
                 buildPlaybookCard();
-                if (!isCompareMode) counterDraftSection.classList.remove('hidden');
+                counterDraftSection.classList.remove('hidden');
             }
             if (userInitiated) {
                 setTimeout(function() { inlineVerdict.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
@@ -8710,23 +9097,24 @@
 
     // ── Clause whoosh: ghost pill flies from sidebar highlight → pill on card ──
     function whooshClauseToCard(cardIndex, cardEl) {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            // Still reveal the pill, just without animation
-            var pillNoAnim = cardEl.querySelector('.front-quote-pill[data-card-pill="' + cardIndex + '"]');
-            if (pillNoAnim) pillNoAnim.classList.add('revealed');
-            return;
-        }
-        var previewEl = $('editorialLoadingText');
-        if (!previewEl) return;
-        var highlight = previewEl.querySelector('.doc-highlight[data-card-index="' + cardIndex + '"]');
-
         // Target: the quote pill on the card front
         var pill = cardEl.querySelector('.front-quote-pill[data-card-pill="' + cardIndex + '"]');
         if (!pill) return;
 
+        // Helper: ensure pill is always visible (safety net)
+        function revealPill() { pill.classList.remove('whoosh-pending'); pill.classList.add('revealed'); }
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            revealPill();
+            return;
+        }
+        var previewEl = $('editorialLoadingText');
+        if (!previewEl) { revealPill(); return; }
+        var highlight = previewEl.querySelector('.doc-highlight[data-card-index="' + cardIndex + '"]');
+
         // If no sidebar highlight found, just reveal the pill directly
         if (!highlight) {
-            pill.classList.add('revealed');
+            revealPill();
             return;
         }
 
@@ -8771,9 +9159,10 @@
         ], { duration: 900, easing: 'ease-in-out', fill: 'forwards' })
         .onfinish = function() {
             ghost.remove();
-            // Reveal the pill — ghost "deposited" the quote into the card
-            pill.classList.add('revealed');
+            revealPill();
         };
+        // Safety: if animation somehow doesn't finish, reveal after timeout
+        setTimeout(revealPill, 1200);
     }
 
     function showCardAtIndex(index) {
@@ -8817,12 +9206,11 @@
 
         // Whoosh ghost from sidebar to card on first appearance (desktop)
         if (isFirstAppearance && window.innerWidth > 900) {
+            // Hide pill for whoosh entrance, then animate it in
+            var whooshPill = visibleCard.querySelector('.front-quote-pill');
+            if (whooshPill) whooshPill.classList.add('whoosh-pending');
             // Small delay so card is visible and positioned before we read rects
             setTimeout(function() { whooshClauseToCard(index, visibleCard); }, 150);
-        } else {
-            // Revisited card or mobile — just ensure pill is visible
-            var pill = visibleCard.querySelector('.front-quote-pill');
-            if (pill && !pill.classList.contains('revealed')) pill.classList.add('revealed');
         }
 
         // Update bottom-next button label on current card
@@ -8992,23 +9380,6 @@
     // ── Tricks detected bar — hidden from card nav, rendered inside verdict instead ──
     function updateTricksDetectedBar() {
         // Tricks data accumulates in _detectedTricks; rendered in renderOneScreenVerdict()
-        return;
-        if (flipCardsBuilt) {
-            label.textContent = trickNames.length + ' trick' + (trickNames.length !== 1 ? 's' : '') + ' detected';
-        } else {
-            label.textContent = 'Tricks detected';
-        }
-        // Sort by count descending, limit to 10
-        var sorted = trickNames.sort(function(a, b) { return _detectedTricks[b] - _detectedTricks[a]; }).slice(0, 10);
-        pills.innerHTML = '';
-        sorted.forEach(function(name) {
-            var pill = document.createElement('span');
-            pill.className = 'verdict-trick-item';
-            pill.innerHTML = (TRICK_ICONS[name] ? '<span class="verdict-trick-icon">' + TRICK_ICONS[name] + '</span>' : '') +
-                '<span class="verdict-trick-name">' + escapeHtml(name) + '</span>' +
-                (_detectedTricks[name] > 1 ? '<span class="verdict-trick-count">\u00d7' + _detectedTricks[name] + '</span>' : '');
-            pills.appendChild(pill);
-        });
     }
 
     function updateCardDots(cards, total) {
@@ -9277,12 +9648,17 @@
         var cards = flipCardContainer.querySelectorAll('.flip-card');
         var clauses = [];
         cards.forEach(function(card) {
+            var blEl = card.querySelector('.back-bottom-line');
             clauses.push({
                 title: card.getAttribute('data-clause-title') || '',
                 section: card.getAttribute('data-section-ref') || '',
                 level: card.getAttribute('data-risk-level') || '',
                 score: parseInt(card.getAttribute('data-score') || '0'),
-                trick: card.getAttribute('data-trick') || ''
+                trick: card.getAttribute('data-trick') || '',
+                bottomLine: blEl ? blEl.textContent.trim() : '',
+                shouldRead: card.getAttribute('data-should-read') || '',
+                figure: card.getAttribute('data-figure') || '',
+                quote: card.getAttribute('data-quote') || ''
             });
         });
         return clauses;
@@ -9375,7 +9751,7 @@
     }
 
     function applyFilters() {
-        var container = flipCardsBuilt && !isCompareMode ? flipCardContainer : resultsContent;
+        var container = flipCardsBuilt ? flipCardContainer : resultsContent;
         var selector = '.clause-card, .flip-card';
         var noFilters = activeFilters.size === 0 && activeTrickFilters.size === 0;
 
@@ -9383,7 +9759,7 @@
             container.querySelectorAll(selector).forEach(function(card) {
                 card.style.display = '';
             });
-            if (flipCardsBuilt && !isCompareMode) showCardAtIndex(0);
+            if (flipCardsBuilt) showCardAtIndex(0);
             return;
         }
 
@@ -9404,7 +9780,7 @@
         });
 
         // Show first visible card in card viewport mode
-        if (flipCardsBuilt && !isCompareMode && visibleCards.length > 0) {
+        if (flipCardsBuilt && visibleCards.length > 0) {
             var idx = parseInt(visibleCards[0].getAttribute('data-clause-index')) || 0;
             showCardAtIndex(idx);
         }
@@ -9549,7 +9925,7 @@
                     .slice(0, 5);
 
                 var concernsList = topConcerns.map(function(c) {
-                    return '- ' + c.title + ' (Trick: ' + (c.trick || 'unknown') + '): ' + (c.bottomLine || c.reveal || '');
+                    return '- ' + c.title + ' (Trick: ' + (c.trick || 'unknown') + '): ' + (c.bottomLine || c.figure || '');
                 }).join('\n');
 
                 var roleMatch = responseContent.match(/\*\*Your Role\*\*[:\s]*([^\n*]+)/i);
@@ -9802,7 +10178,9 @@
         if (_verdictPollTimer) { clearTimeout(_verdictPollTimer); _verdictPollTimer = null; }
         stopStatusRotation();
         stopEditorialStatusRotation();
+        stopInvestigationScroll();
         resetVerdictCol();
+        stopVerdictCountdown();
 
         analysisScreen.classList.add('hidden');
         uploadScreen.classList.remove('hidden');
@@ -9820,7 +10198,7 @@
         layoutEl.classList.remove('sidebar-visible');
 
         // Reset upload UI
-        analyzeBtn.textContent = isCompareMode ? 'Compare documents' : 'Flip it';
+        analyzeBtn.textContent = 'Flip it';
         updateAnalyzeBtn();
     });
 
@@ -9829,7 +10207,7 @@
 
     // ── Copy all ──────────────────────────────────────────────
     $('copyAllBtn').addEventListener('click', function() {
-        var text = flipCardsBuilt && !isCompareMode
+        var text = flipCardsBuilt
             ? (flipCardContainer.innerText + '\n\n' + deepAnalysisEl.innerText)
             : resultsContent.innerText;
         navigator.clipboard.writeText(text).then(function() {
@@ -9933,16 +10311,31 @@
             });
         }
 
-        // Expert Verdict (4 expert sections + synthesis, with plain-language headings)
-        var deepText = assembleDeepText();
-        if (deepText.trim()) {
+        // Expert Verdict
+        var verdictText = (opusSections.overall.text || '').trim();
+        if (verdictText) {
             body += '<hr><h2>Expert Verdict</h2>';
-            var verdictText = opusSections.overall.text.trim();
-            if (verdictText) {
-                var html = safeMd2Html(verdictText.replace(/^# .+$/gm, '').replace(/\[\/?[A-Z_]+\]/g, ''));
-                body += '<div class="verdict">' + html + '</div>';
-            }
+            var html = safeMd2Html(verdictText.replace(/^# .+$/gm, '').replace(/\[\/?[A-Z_]+\]/g, ''));
+            body += '<div class="verdict">' + html + '</div>';
         }
+
+        // Deep Dive Reports
+        var deepDiveLabels = {
+            archaeology: 'Document Archaeology',
+            scenario: 'What Could Happen',
+            walkaway: 'Walk-Away Number',
+            combinations: 'Hidden Combinations',
+            playbook: 'Negotiation Playbook'
+        };
+        DEEP_DIVE_SOURCES.forEach(function(source) {
+            var dd = deepDiveResults[source];
+            if (!dd || !dd.text || !dd.text.trim()) return;
+            var label = deepDiveLabels[source] || source;
+            body += '<hr><h2>' + escapeHtml(label) + '</h2>';
+            // Strip tags like [SCENARIO_TITLE], [TIMELINE_STEP], etc.
+            var cleaned = dd.text.replace(/\[\/?[A-Z_]+(?:\s+[^\]]+)?\]/g, '').trim();
+            body += '<div class="verdict">' + safeMd2Html(cleaned) + '</div>';
+        });
 
         // Source Text (with page numbers)
         if (documentFullText) {
@@ -10039,7 +10432,7 @@
         }
     });
 
-    // ── Email to Lawyer ─────────────────────────────────────────
+    // ── All flags via mail ─────────────────────────────────────────
     $('emailLawyerBtn').addEventListener('click', function() {
         var docName = 'FlipSide Analysis';
         var meta = metadataLine.textContent;
@@ -10085,7 +10478,7 @@
         }
         body += 'I have the full analysis saved as an HTML report (use "Save Report" in FlipSide to download).\n\n' +
             'Could you review this and let me know which clauses I should push back on?\n\n' +
-            'Generated by FlipSide — The dark side of small print.\n' +
+            'Generated by FlipSide — The dark side of very small print.\n' +
             'Powered by Claude Opus 4.6 extended thinking.';
 
         window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
@@ -10105,10 +10498,10 @@
         var clauses = extractClausesFromResponse();
         clauses.forEach(function(c) {
             reportParts.push('### ' + c.title + (c.section ? ' (' + c.section + ')' : ''));
-            if (c.reveal) reportParts.push(c.reveal);
+            if (c.figure) reportParts.push(c.figure);
             if (c.bottomLine) reportParts.push('**Bottom line:** ' + c.bottomLine);
             if (c.shouldRead) reportParts.push('**What you should read:** ' + c.shouldRead);
-            if (c.figure) reportParts.push('**Figure:** ' + c.figure);
+            if (c.quote) reportParts.push('> ' + c.quote);
             reportParts.push('');
         });
         // Opus verdict sections
@@ -10155,7 +10548,7 @@
                             '</style></head><body>' +
                             '<h1>' + escapeHtml(docName) + '</h1>' +
                             safeMd2Html(translatedText) +
-                            '<div class="footer">Generated by FlipSide — The dark side of small print.<br>Powered by Claude Opus 4.6.</div>' +
+                            '<div class="footer">Generated by FlipSide — The dark side of very small print.<br>Powered by Claude Opus 4.6.</div>' +
                             '</body></html>';
                         var blob = new Blob([exportHtml], { type: 'text/html' });
                         var blobUrl = URL.createObjectURL(blob);
@@ -10453,7 +10846,6 @@
             var scrollContainer = uploadMain;
             var onScroll = function() {
                 if (faqWrapper.classList.contains('hidden')) return;
-                var scrollTop = scrollContainer.scrollTop || window.scrollY;
                 var current = '';
                 faqSections.forEach(function(section) {
                     var rect = section.getBoundingClientRect();
@@ -10469,18 +10861,22 @@
         }
     }
 
-    // Inline FAQ link (replaces sidebar nav on all screens)
-    var inlineFaqLink = $('faqLink');
-    if (inlineFaqLink) {
-        inlineFaqLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            faqWrapper.classList.remove('hidden');
-            uploadMain.classList.add('has-faq');
-            var target = document.querySelector('#faq-what');
-            if (target) {
-                setTimeout(function() {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
+
+    // FAQ back button — returns to analysis if that's where user came from
+    // _faqCameFromAnalysis declared at window scope for cross-IIFE access
+    var faqBackBtn = $('faqBack');
+    if (faqBackBtn) {
+        faqBackBtn.addEventListener('click', function() {
+            faqWrapper.classList.add('hidden');
+            uploadMain.classList.remove('has-faq');
+            if (_faqCameFromAnalysis) {
+                _faqCameFromAnalysis = false;
+                var us = $('upload-screen');
+                var as = $('analysis-screen');
+                if (us) us.classList.add('hidden');
+                if (as) as.classList.remove('hidden');
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
     }

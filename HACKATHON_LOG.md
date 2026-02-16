@@ -2,7 +2,7 @@
 
 ## Built with Opus 4.6 — Claude Code Hackathon, February 2026
 
-> This log documents the complete decision process from hackathon kickoff to product selection. Every methodology, failure, and pivot is documented in the [docs/](https://github.com/voelspriet/flipside/tree/main/docs) folder. This file is the timeline — the docs contain the detail.
+> 78 entries in 5 days. 5 documented AI failures -- all caught by the human. 7 architecture pivots. 222 pages stress-tested with 36/36 planted traps caught. This is the full build story. Every methodology, failure, and pivot links to a detailed document in the [docs/](https://github.com/voelspriet/flipside/tree/main/docs) folder.
 
 ---
 
@@ -13,6 +13,18 @@
 Upload a document you didn't write — a contract, Terms of Service, insurance policy, loan agreement, employee handbook. Opus 4.6 adopts the perspective of the party who drafted it and reveals what each clause strategically accomplishes for them.
 
 **Problem Statement:** Break the Barriers — take something locked behind expertise (legal document analysis) and put it in everyone's hands.
+
+---
+
+**Highlights for judges:**
+- **#9** Anchoring bias failure -- AI scored uniqueness 10/10 across three documents despite known competitor. Human caught it.
+- **#36** Postel's Law for LLMs -- Haiku silently broke every parser. The fix: be strict in what you prompt, liberal in what you parse.
+- **#58** Opus card backs never rendered -- 3 hours lost to DOM mutation inside GPU-cached 3D transforms. Kill your darlings moment.
+- **#74** Frisian language test -- 500K-speaker language, zero degradation, correct Dutch jurisdiction law cited.
+- **#76** 222-page cross-clause test -- 36/36 planted traps caught, including interaction between clause 3 and clause 297.
+- **#77** Playwright QC pipeline -- 48 findings in 3 rounds of dual-expert review. LLM compliance plateau documented at ~80-90%.
+
+**Five AI failures, one thesis:** Training vocabulary bias (#6), anchoring/confirmation bias (#9), framing/recency bias (#14), adjective bias in meta-analysis (#33), format rigidity across models (#36). The first four are the same error at different scales: the AI uses itself as the measurement of things, rather than observing what must be there. All five caught by the human.
 
 ---
 
@@ -28,8 +40,18 @@ Instead of asking Claude to build a documentation agent, we asked it to *design 
 Researched all 5 judges before choosing a project. Caught a critical factual error: Claude's training data incorrectly linked judge Thariq Shihipar to Upsolve (a nonprofit). Live web research proved this was wrong — Thariq is a serial entrepreneur (One More Multiverse, $17M raised). This correction changed the entire strategic direction.
 → [docs/JURY_RESEARCH_LIVE.md](https://github.com/voelspriet/flipside/tree/main/docs/JURY_RESEARCH_LIVE.md)
 
-**Entry 3 — Omission Test**
-Deliberately withheld the judging criteria to test whether Opus 4.6 would identify it as a missing variable. It did, unprompted. This validated that the model reasons about problem structure, not just surface inputs.
+**Entry 3 — Omission Test: Testing Opus 4.6's Gap Awareness**
+A deliberate test. The human explained the two-input decision approach (personal strengths + jury interests) but intentionally withheld the hackathon's official judging criteria. Opus 4.6 independently identified it as a missing variable and presented this table:
+
+| Input | Source | Status |
+|-------|--------|--------|
+| Your strengths | Other Claude session | Done |
+| Jury interests | Research agent | In progress |
+| Judging criteria | ? | **Missing** |
+
+The human acknowledged: *"On purpose, I didn't give you this. Wanted to see if 4.6 came up with it."*
+
+This demonstrates that the model reasons about **what it doesn't know** — not just answering questions, but identifying which questions haven't been asked. You don't always test an AI by what you ask — sometimes you test it by what you *don't* say.
 
 **Entry 4 — Criteria Analysis**
 Full hackathon brief analyzed: Demo 30%, Opus 4.6 Use 25%, Impact 25%, Depth 20%. Two special prizes identified as targets: "Most Creative Opus 4.6 Exploration" and "The Keep Thinking Prize."
@@ -58,11 +80,11 @@ Seven real before/after prompt examples collected as an educational resource. Sh
 ### Phase 2: Product Selection (and Three AI Failures)
 
 **Entry 8 — Initial Decision Matrix**
-Four ideas evaluated against three inputs (strengths × jury × criteria). An initial winner was selected based on a proprietary dataset advantage.
+Four ideas evaluated against three inputs (strengths × jury × criteria). **CiteGuard** — a legal citation hallucination verifier — scored highest on every dimension: 46/50 jury fit, 9.1/10 criteria fit, 10/10 uniqueness. The team's 731-document hallucination corpus was the competitive moat.
 → [docs/DECISION_MATRIX.md](https://github.com/voelspriet/flipside/tree/main/docs/DECISION_MATRIX.md)
 
 **Entry 9 — FAILURE: Anchoring Bias**
-The human had flagged an existing competitor that already solved the same problem. Despite this, Claude scored the initial winner's uniqueness at 10/10 across three subsequent documents. The competitor evidence was acknowledged but never integrated into the scoring. Recommendation invalidated.
+The human had flagged Damien Charlotin's hallucination database (907 cases + PelAIkan verification tool) as a direct competitor to CiteGuard. Despite this, Claude scored CiteGuard's uniqueness at 10/10 across three subsequent documents. The competitor evidence was acknowledged in conversation but never propagated into the scoring. CiteGuard recommendation invalidated. Product decision reopened.
 → [docs/ANCHORING_FAILURE.md](https://github.com/voelspriet/flipside/tree/main/docs/ANCHORING_FAILURE.md)
 
 **Entry 10 — New Concepts via "Think Like a Document"**
@@ -134,7 +156,21 @@ Language rule added to all prompts: respond in the same language as the document
 First user test revealed `claude-opus-4-6-20250219` (dated model ID) returned 404. Fixed to alias `claude-opus-4-6`. Also discovered `thinking.type: 'enabled'` is deprecated for Opus 4.6 — switched to `thinking.type: 'adaptive'`, which lets the model decide when and how deeply to think based on prompt complexity.
 
 **Entry 29 — The Meta-Prompting Discovery (Cat Wu AMA)**
-During the hackathon AMA, asked Cat Wu (Product Lead, Claude Code co-creator) about meta-prompting: why does "generate a prompt for X" then "execute it" consistently outperform directly asking "do X"? Cat mentioned the effect is known but the exact mechanism isn't fully understood internally. Our hypothesis: the two-step approach forces the model to reflect on *the task itself* (what makes a good analysis, what biases to avoid) rather than just reflecting on *what the user wants* (which is what plan mode does). We validated this with 30 agent-tested comparisons and 7 documented before/after cases — see [meta-prompting-strategy.md](meta-prompting-strategy.md). FlipSide's entire architecture is a productized version of this discovery.
+During the hackathon AMA, asked Cat Wu (Product Lead, Claude Code co-creator) two questions about meta-prompting.
+
+**Question 1**: "What's the Claude Code team's approach to meta-prompting?"
+
+**Question 2 (follow-up)**: "Give me a prompt to analyze [topic]" and then "execute prompt" works way better than "analyze this topic" — why is that?
+
+**Cat Wu's answer** (34:12–35:41 in AMA recording):
+
+> "I'm not totally sure why it is, but we have noticed this as well, which is why we've shipped things like prompt improver. I wish I had a great answer for you on this.
+>
+> My best guess is that it's changing the model from doing fast thinking to slow thinking. Like if you ask a coworker, 'Hey, can you take a quick look at X?' — they might just do an 80% pass and give it back to you. Whereas if you meet with that coworker live for 30 minutes and you say, 'Hey, we really need to do this, this is why it's important,' then they might go back, do a bit more thorough work given that they understand how important it is.
+>
+> I don't think this is a fully satisfying explanation because it's not an exact parallel, but I'll just echo that. We definitely see this as well. We're not totally sure why it happens. I think it's possible that you asking the model to elaborate actually causes the — like you asking the model to improve the prompt causes the model to believe that this is a more important thing to do, that it should be more comprehensive in."
+
+Our hypothesis: the two-step approach forces the model to reflect on *the task itself* (what makes a good analysis, what biases to avoid) rather than just reflecting on *what the user wants* (which is what plan mode does). We validated this with 30 agent-tested comparisons and 7 documented before/after cases — see [meta-prompting-strategy.md](meta-prompting-strategy.md). FlipSide's entire architecture is a productized version of this discovery.
 
 ---
 
@@ -462,8 +498,8 @@ Also locked "Go Deeper" buttons (`.locked` class: 45% opacity, `cursor: not-allo
 
 | Artifact | Lines | Status |
 |----------|-------|--------|
-| `app.py` | 3,975 | Backend: Flask, SSE, parallel processing, vision, tool use, follow-up, prompt caching, dynamic token budget, suitability gate, 14 sample docs |
-| `templates/index.html` | 10,319 | Card-first frontend: instant flip cards, live thinking narration, one-screen verdict with risk summary + tricks + 4 Go Deeper buttons, clean export, confidence badges, follow-up UI, DOMPurify |
+| `app.py` | 3,861 | Backend: Flask, SSE, parallel processing, vision, tool use, follow-up, prompt caching, dynamic token budget, suitability gate, 14 sample docs |
+| `templates/index.html` | 10,748 | Card-first frontend: instant flip cards, live thinking narration, one-screen verdict with risk summary + tricks + 4 Go Deeper buttons, clean export, confidence badges, follow-up UI, DOMPurify |
 | `decision_monitor.py` | 352 | Hackathon strategy tracker: reads git/strategy/log files |
 | `test_ux_flow.py` | 230 | Automated UX flow test: simulates user session, validates parsing |
 | `maintain_docs.py` | 230 | Doc maintenance agent: detects stale info in .md files |
@@ -513,14 +549,24 @@ The first four are the same error at different scales: **the AI uses itself as t
 
 10. **Confirmation bias compounds across documents.** A biased conclusion in Document 1 becomes an invisible assumption in Document 3.
 
+11. **The first decision sets the tone.** We chose methodology over code for the first 45 minutes. Zero lines of product code, 15 process decisions. That discipline compounded through the rest of the build.
+
+12. **Test your AI collaborator's judgment.** The omission test (Entry 3) built justified trust — not blind trust. If the model catches what you expect, you can hand it more autonomy later.
+
+13. **Read the scoring rubric before you build.** Demo is 30% of the score. That single number eliminates entire categories of projects — CLI tools, invisible backends, anything hard to show in 3 minutes.
+
+14. **Cross-reference all inputs before deciding.** Strengths alone → DeepVerify. Criteria alone → ElectionShield. Only by crossing all three inputs did CiteGuard emerge — and then fail on a fourth input the AI ignored.
+
+15. **Format matters for different audiences.** The same content was published as PDF (for presentations) and Markdown (for GitHub). Thinking about distribution early prevents rework later.
+
 ---
 
 ## What Exists
 
 | Artifact | Purpose |
 |----------|---------|
-| `app.py` (3,975 lines) | Flask backend: prompts, parallel processing, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
-| `templates/index.html` (10,319 lines) | Card-first frontend: instant flip cards, one-screen verdict, 4 Go Deeper buttons, live thinking narration, clean export, confidence badges, follow-up UI with tool calls, DOMPurify |
+| `app.py` (3,861 lines) | Flask backend: prompts, parallel processing, vision, tool use, follow-up, prompt caching, SSE streaming, suitability gate, 14 sample docs |
+| `templates/index.html` (10,748 lines) | Card-first frontend: instant flip cards, one-screen verdict, 4 Go Deeper buttons, live thinking narration, clean export, confidence badges, follow-up UI with tool calls, DOMPurify |
 | `decision_monitor.py` (352 lines) | Hackathon strategy tracker |
 | `test_ux_flow.py` (230 lines) | Automated UX flow test |
 | `maintain_docs.py` (230 lines) | Doc maintenance agent |
@@ -528,6 +574,17 @@ The first four are the same error at different scales: **the AI uses itself as t
 | [docs/](https://github.com/voelspriet/flipside/tree/main/docs) | 18 methodology and decision documents |
 | [BUILDER_PROFILE.md](https://github.com/voelspriet/flipside/blob/main/BUILDER_PROFILE.md) | Who built this and what they bring |
 | This file | 78 entries, complete process timeline |
+
+## What Remains
+
+- Demo video (3 minutes, scripted narrative) — script ready (DEMO_SCRIPT.md)
+- ~~100-200 word summary~~ Done (173 words)
+- ~~Update README.md to match current state~~ Done
+- ~~Reduce perceived Opus wait time~~ Addressed: verdict progress strip, live thinking narration (Expert Mind), 10s auto-reveal, one-screen verdict
+- ~~Save Report broken (SVG dump)~~ Fixed: clean HTML export from structured data
+- ~~Non-applicable docs show verdict~~ Fixed: verdict column hides
+
+**Deadline: February 16, 3:00 PM EST**
 
 ## 14 Opus 4.6 Capabilities Used
 
@@ -547,17 +604,6 @@ The first four are the same error at different scales: **the AI uses itself as t
 | 12 | Long-context retrieval | Cross-clause interaction detection across full documents (no truncation) |
 | 13 | Low over-refusals | Gullible reader, villain voice, drafter perspective — all sustained without self-censoring |
 | 14 | English-only + download in language | All output in English (universal access); download full report translated to document's original language |
-
-## What Remains
-
-- Demo video (3 minutes, scripted narrative) — script ready (DEMO_SCRIPT.md)
-- ~~100-200 word summary~~ Done (173 words)
-- ~~Update README.md to match current state~~ Done
-- ~~Reduce perceived Opus wait time~~ Addressed: verdict progress strip, live thinking narration (Expert Mind), 10s auto-reveal, one-screen verdict
-- ~~Save Report broken (SVG dump)~~ Fixed: clean HTML export from structured data
-- ~~Non-applicable docs show verdict~~ Fixed: verdict column hides
-
-**Deadline: February 16, 3:00 PM EST**
 
 ---
 

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All the ideas I had</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #8a8a8a;
+    --accent: #c44b28;
+    --red: #c62828; --red-bg: #ffeaea;
+    --gray: #78909c; --gray-bg: #eceff1;
+    --blue: #1565c0; --blue-bg: #e3f2fd;
+    --purple: #6a1b9a; --purple-bg: #f3e5f5;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ── Phase 1: Title ── */
+.phase1 {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    z-index: 10;
+    opacity: 0;
+}
+.phase1.in {
+    animation: titleIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.phase1 h1 {
+    font-size: 3rem; font-weight: 800; letter-spacing: -1.5px;
+    text-align: center; line-height: 1.1;
+    color: var(--text);
+}
+.phase1.out {
+    animation: fadeOut 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ── Phase 2: Grid ── */
+.phase2 {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    opacity: 0; pointer-events: none;
+}
+.phase2.active {
+    animation: fadeIn 0.3s ease forwards;
+    pointer-events: auto;
+}
+.phase2.dimming .grid-wrap {
+    animation: dimAll 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.grid-top {
+    text-align: center; padding: 0.7rem 1rem 0.2rem; flex-shrink: 0;
+}
+.grid-top h2 {
+    font-size: 0.85rem; font-weight: 600; color: var(--muted);
+    letter-spacing: 0.5px; text-transform: uppercase;
+}
+
+.grid-wrap {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 0.35rem;
+    padding: 0.25rem 0.7rem 0.7rem;
+    align-content: stretch;
+    overflow: hidden;
+}
+
+/* ── Tile ── */
+.t {
+    background: var(--card);
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid rgba(0,0,0,0.04);
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    display: flex; flex-direction: column; justify-content: center;
+    cursor: default; position: relative; overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+.t.in {
+    animation: tileIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.t::after {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; border-radius: 8px 0 0 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.t.in::after { opacity: 1; }
+.t.cat-k::after { background: var(--red); }
+.t.cat-c::after { background: var(--gray); }
+.t.cat-n::after { background: var(--blue); }
+.t.cat-f::after { background: var(--purple); }
+
+.t-top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.3rem; margin-bottom: 0.06rem;
+}
+.t-name {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: -0.3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.t-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.42rem; font-weight: 600;
+    padding: 1px 5px; border-radius: 100px;
+    white-space: nowrap; flex-shrink: 0;
+    text-transform: uppercase; letter-spacing: 0.6px;
+}
+.b-k { background: var(--red-bg); color: var(--red); }
+.b-c { background: var(--gray-bg); color: var(--gray); }
+.b-n { background: var(--blue-bg); color: var(--blue); }
+.b-f { background: var(--purple-bg); color: var(--purple); }
+.t-sub {
+    font-size: 0.58rem; color: var(--muted); line-height: 1.35;
+    letter-spacing: -0.1px;
+}
+
+/* ── Phase 3: The reveal ── */
+.phase3 {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    z-index: 20;
+    opacity: 0; pointer-events: none;
+    gap: 1.8rem;
+}
+.phase3.active { opacity: 1; pointer-events: auto; }
+
+.reveal-text {
+    text-align: center;
+    opacity: 0;
+    transform: translateY(24px);
+}
+.reveal-text.in {
+    animation: slideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.reveal-text h2 {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.8px;
+    line-height: 1.15; color: var(--text);
+}
+.reveal-text p {
+    font-size: 1.05rem; color: var(--muted); margin-top: 0.6rem;
+    font-style: italic; letter-spacing: -0.2px;
+}
+
+.winner-card {
+    background: var(--card);
+    border: 2.5px solid var(--accent);
+    border-radius: 16px;
+    padding: 1.8rem 2.2rem;
+    max-width: 540px;
+    width: 90%;
+    box-shadow: 0 8px 40px rgba(196, 75, 40, 0.12);
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+    position: relative;
+    overflow: hidden;
+}
+.winner-card.in {
+    animation: cardReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.winner-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: var(--accent);
+}
+
+.wc-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+.wc-name { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.8px; }
+.wc-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+    background: #fff0eb; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 1px;
+}
+.wc-tagline {
+    font-size: 0.8rem; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 0.35rem;
+}
+.wc-pitch {
+    font-size: 1rem; line-height: 1.5; color: #333;
+    margin-bottom: 0.7rem;
+}
+.wc-stats {
+    font-size: 0.7rem; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.2px;
+}
+
+/* ── Keyframes ── */
+@keyframes titleIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes tileIn {
+    0%   { opacity: 0; transform: translateY(12px) scale(0.96); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes dimAll {
+    to { opacity: 0.06; filter: blur(3px); }
+}
+@keyframes slideUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cardReveal {
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- Phase 1: Opening title -->
+<div class="phase1" id="phase1">
+    <h1>All the ideas<br>I had.</h1>
+</div>
+
+<!-- Phase 2: Grid of ideas -->
+<div class="phase2" id="phase2">
+    <div class="grid-top"><h2>All the ideas I had</h2></div>
+    <div class="grid-wrap" id="grid"></div>
+</div>
+
+<!-- Phase 3: The reveal -->
+<div class="phase3" id="phase3">
+    <div class="reveal-text" id="revealText">
+        <h2>But the idea that won<br>wasn't one of them.</h2>
+        <p>It came from the conversation between man and machine.</p>
+    </div>
+    <div class="winner-card" id="winnerCard">
+        <div class="wc-top">
+            <div class="wc-name">FlipSide</div>
+            <div class="wc-badge">Built</div>
+        </div>
+        <div class="wc-tagline">The dark side of fine print.</div>
+        <div class="wc-pitch">Upload your gym contract, lease, insurance, or any terms of service. See what the other side intended you to miss — and how to push back.</div>
+        <div class="wc-stats">14,600 lines &middot; 89 commits &middot; 14 samples &middot; 18 trick types &middot; 6 parallel Opus 4.6 threads &middot; 0 lines written by a human</div>
+    </div>
+</div>
+
+<script>
+var ideas = [
+{n:"CiteGuard",s:"Legal citation hallucination detector — 731-case corpus",b:"k"},
+{n:"DeepVerify",s:"Multi-layer deepfake & misinfo pipeline",b:"c"},
+{n:"ElectionShield",s:"Election integrity deepfake detection",b:"c"},
+{n:"SearchForTruth",s:"Investigation strategy from evidence perspective",b:"c"},
+{n:"SourceSight",s:"\"If this is true, what documents MUST exist?\"",b:"c"},
+{n:"GrantWhisperer",s:"Map grant language to funder\u2019s scoring vocabulary",b:"c"},
+{n:"SourceFlipper",s:"Read the source FIRST, then compare with the claim",b:"c"},
+{n:"SmallPrintGuard",s:"Browser extension \u2014 scan ToS before \u2018I Agree\u2019",b:"n"},
+{n:"FairDraft",s:"Generate symmetrical contracts \u2014 every clause equal",b:"n"},
+{n:"TermsTracker",s:"Monitor ToS changes weekly \u2014 intent, not diffs",b:"n"},
+{n:"ClauseBank",s:"Open database of legal tricks across industries",b:"n"},
+{n:"NegotiateAI",s:"Theory-of-mind negotiation coach",b:"n"},
+{n:"PerspectiveAPI",s:"Document analysis as REST API",b:"n"},
+{n:"ReadFirst",s:"Gamified legal literacy \u2014 spot tricks before AI",b:"n"},
+{n:"DocumentRadar",s:"Crowdsourced fairness rankings",b:"n"},
+{n:"FairScore",s:"Benchmark your lease \u2014 \u201Charsher than 82%\u201D",b:"n"},
+{n:"PolicyFlip",s:"Government regulation \u2014 who benefits, who pays",b:"f"},
+{n:"HealthFlip",s:"Medical consent \u2014 liabilities that shift to you",b:"f"},
+{n:"FinFlip",s:"Credit cards & mortgages \u2014 hidden margins",b:"f"},
+{n:"HireFlip",s:"Job offers \u2014 what \u201Cunlimited PTO\u201D really means",b:"f"},
+{n:"RentFlip",s:"Airbnb \u2014 cleaning fees, deposits, checkout traps",b:"f"},
+{n:"EduFlip",s:"University enrollment \u2014 withdrawal penalties",b:"f"},
+{n:"AppFlip",s:"App permissions \u2014 why a flashlight needs contacts",b:"f"},
+{n:"CarFlip",s:"Dealership F&I \u2014 400% margin add-ons",b:"f"},
+{n:"FreelanceShield",s:"Client contracts \u2014 \u201Cwork for hire\u201D vs your rights",b:"f"},
+{n:"ClaimFlip",s:"Insurance denials \u2014 which exclusion, how to appeal",b:"f"},
+{n:"VoteFlip",s:"Ballot measures \u2014 what a \u201Cyes\u201D actually funds",b:"f"},
+{n:"StartupFlip",s:"VC term sheets \u2014 anti-dilution, board control",b:"f"},
+{n:"DivorceFlip",s:"Settlements \u2014 below-market valuations, loopholes",b:"f"},
+{n:"SaaSGuard",s:"Enterprise software \u2014 SLA penalties uncollectable",b:"f"},
+{n:"WarrantyFlip",s:"Product warranties \u2014 \u201Cnormal wear\u201D excludes all",b:"f"},
+{n:"TravelFlip",s:"Airlines & hotels \u2014 non-refundable refund paths",b:"f"},
+{n:"CryptoFlip",s:"Token agreements \u2014 insider vesting, governance traps",b:"f"},
+{n:"ElderGuard",s:"Nursing homes \u2014 arbitration blocking neglect suits",b:"f"},
+{n:"GigFlip",s:"Uber/DoorDash \u2014 contractor classification tricks",b:"f"},
+{n:"BuildFlip",s:"Contractor proposals \u2014 $30K kitchen becomes $55K",b:"f"},
+{n:"DataFlip",s:"Data broker opt-outs \u2014 \u201Cdelete\u201D doesn\u2019t mean delete",b:"f"},
+];
+
+var badges = {k:'KILLED',c:'EXPLORED',w:'BUILT',n:'IDEA',f:'SOMEDAY'};
+var bcls   = {k:'b-k',c:'b-c',w:'b-w',n:'b-n',f:'b-f'};
+
+// ── Build grid (hidden) ──
+var grid = document.getElementById('grid');
+var tiles = [];
+ideas.forEach(function(idea) {
+    var el = document.createElement('div');
+    el.className = 't cat-' + idea.b;
+    el.innerHTML =
+        '<div class="t-top">' +
+            '<div class="t-name">' + idea.n + '</div>' +
+            '<div class="t-badge ' + bcls[idea.b] + '">' + badges[idea.b] + '</div>' +
+        '</div>' +
+        '<div class="t-sub">' + idea.s + '</div>';
+    grid.appendChild(el);
+    tiles.push(el);
+});
+
+// ── Timeline ──
+var T = {
+    titleHold:    2000,  // title stays
+    titleToGrid:  400,   // gap
+    cardStagger:  55,    // ms between each tile (slightly slower = smoother)
+    gridHold:     2800,  // full grid stays before dimming
+    dimToReveal:  800,   // gap between dim start and reveal
+    textToCard:   900,   // gap between reveal text and winner card
+};
+
+// Phase 1: title entrance
+setTimeout(function() {
+    document.getElementById('phase1').classList.add('in');
+}, 100);
+
+// Phase 1 → Phase 2
+setTimeout(function() {
+    document.getElementById('phase1').classList.add('out');
+
+    setTimeout(function() {
+        document.getElementById('phase2').classList.add('active');
+
+        // Cascade tiles with stagger
+        tiles.forEach(function(tile, i) {
+            setTimeout(function() { tile.classList.add('in'); }, i * T.cardStagger);
+        });
+
+        // After all tiles + hold → dim
+        var allTilesTime = tiles.length * T.cardStagger + T.gridHold;
+        setTimeout(function() {
+            document.getElementById('phase2').classList.add('dimming');
+
+            // Phase 3: reveal
+            setTimeout(function() {
+                document.getElementById('phase3').classList.add('active');
+                document.getElementById('revealText').classList.add('in');
+
+                setTimeout(function() {
+                    document.getElementById('winnerCard').classList.add('in');
+                }, T.textToCard);
+            }, T.dimToReveal);
+        }, allTilesTime);
+
+    }, T.titleToGrid);
+}, T.titleHold);
+</script>
+
+</body>
+</html>

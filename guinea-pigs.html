@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guinea Pigs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #8a8a8a;
+    --accent: #c44b28;
+    --green: #2e7d32;
+    --green-bg: #e8f5e9;
+    --red: #c62828;
+    --red-bg: #ffeaea;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+
+/* ── All phases ── */
+.phase {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    opacity: 0; pointer-events: none;
+}
+.phase.active { opacity: 1; pointer-events: auto; }
+.phase.fade-in { animation: fadeIn 0.5s ease forwards; }
+.phase.fade-out { animation: fadeOut 0.4s ease forwards; }
+
+/* ── Phase 1+2: Title cards ── */
+.title-text {
+    text-align: center;
+    padding: 0 2rem;
+}
+.title-text h1 {
+    font-size: 2.4rem; font-weight: 800; letter-spacing: -1px;
+    line-height: 1.2;
+}
+.title-text p {
+    font-size: 1.1rem; color: var(--muted); margin-top: 0.6rem;
+    font-style: italic;
+}
+
+/* ── Phase 3+4: Flip card ── */
+.card-phase {
+    perspective: 1200px;
+}
+.flip-container {
+    width: 480px;
+    height: 320px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.flip-container.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    width: 100%;
+    height: 100%;
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    overflow: hidden;
+    backface-visibility: hidden;
+    position: absolute; top: 0; left: 0;
+}
+.card-back {
+    transform: rotateY(180deg);
+}
+
+/* Front */
+.card-header {
+    background: var(--green-bg);
+    border-left: 4px solid var(--green);
+    padding: 0.7rem 1rem;
+}
+.card-header-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 600; color: var(--green);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 0.15rem;
+}
+.card-header-text {
+    font-size: 0.95rem; font-weight: 700; color: var(--green);
+}
+.card-clause {
+    padding: 0.8rem 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.card-quote {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem; color: #555;
+    font-style: italic;
+    border-left: 3px solid #ddd;
+    margin: 0.5rem 1rem;
+    line-height: 1.5;
+}
+.card-glance-label {
+    padding: 0.3rem 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.card-glance {
+    padding: 0.4rem 1rem 0.6rem;
+    font-size: 0.85rem; color: #444;
+    line-height: 1.55;
+}
+.card-glance .redacted {
+    background: #e0e0e0;
+    color: #e0e0e0;
+    border-radius: 2px;
+    user-select: none;
+}
+.card-trigger {
+    padding: 0.6rem 1rem;
+    border-top: 1px solid #f0f0f0;
+    font-size: 0.8rem; font-weight: 600; color: var(--accent);
+    cursor: pointer;
+}
+
+/* Back */
+.card-back-header {
+    background: var(--red-bg);
+    border-left: 4px solid var(--red);
+    padding: 0.7rem 1rem;
+}
+.card-back-headline {
+    font-size: 0.95rem; font-weight: 700; color: var(--red);
+}
+.card-big-number {
+    text-align: center;
+    padding: 1.2rem 1rem 0.2rem;
+}
+.card-big-number .amount {
+    font-size: 3.2rem; font-weight: 800; color: var(--red);
+    letter-spacing: -2px;
+}
+.card-big-number .label {
+    font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem;
+}
+.card-back-text {
+    padding: 0.6rem 1.2rem 0.5rem;
+    font-size: 0.8rem; color: #444;
+    line-height: 1.55;
+}
+.card-back-text .redacted {
+    background: #e0e0e0;
+    color: #e0e0e0;
+    border-radius: 2px;
+    user-select: none;
+}
+.card-bottom {
+    padding: 0.5rem 1rem 0.8rem;
+    font-size: 0.75rem; font-weight: 600; color: var(--red);
+    line-height: 1.5;
+}
+.trick-chip {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 100px;
+    background: var(--red-bg); color: var(--red);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-top: 0.4rem;
+}
+
+/* ── Phase 5: Black slide ── */
+.black-slide {
+    background: #111;
+}
+.black-slide h1 {
+    color: #fff;
+    font-size: 2.4rem; font-weight: 800; letter-spacing: -1px;
+}
+
+/* ── Phase 6: WhatsApp ── */
+.wa-phase {
+    background: #e5ddd5;
+}
+.wa-phone {
+    width: 380px;
+    background: #e5ddd5;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    border: 8px solid #1a1a1a;
+}
+.wa-header {
+    background: #075e54;
+    color: #fff;
+    padding: 0.6rem 0.8rem;
+    display: flex; align-items: center; gap: 0.6rem;
+}
+.wa-avatar {
+    width: 32px; height: 32px;
+    background: #128c7e;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700; color: #fff;
+}
+.wa-name { font-size: 0.9rem; font-weight: 600; }
+.wa-sub { font-size: 0.6rem; opacity: 0.7; }
+
+.wa-chat {
+    padding: 0.8rem;
+    min-height: 340px;
+    display: flex; flex-direction: column; gap: 0.35rem;
+}
+.wa-msg {
+    max-width: 82%;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    position: relative;
+    opacity: 0;
+    transform: translateY(10px);
+}
+.wa-msg.in { animation: msgIn 0.3s ease forwards; }
+
+.wa-msg.received {
+    background: #fff;
+    align-self: flex-start;
+    border-top-left-radius: 2px;
+}
+.wa-msg.sent {
+    background: #dcf8c6;
+    align-self: flex-end;
+    border-top-right-radius: 2px;
+}
+.wa-sender {
+    font-size: 0.7rem; font-weight: 700; margin-bottom: 0.1rem;
+}
+.wa-sender.sarah { color: #075e54; }
+.wa-sender.ronny { color: #6a1b9a; }
+.wa-sender.henk { color: #c44b28; }
+.wa-time {
+    font-size: 0.55rem; color: #999;
+    text-align: right; margin-top: 0.1rem;
+}
+.wa-check { color: #53bdeb; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes msgIn { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- Phase 1: Guinea pigs intro -->
+<div class="phase" id="p1">
+    <div class="title-text">
+        <h1>I let my family test it.</h1>
+    </div>
+</div>
+
+<!-- Phase 2: What they clicked -->
+<div class="phase" id="p2">
+    <div class="title-text">
+        <h1>They picked the gym contract.</h1>
+    </div>
+</div>
+
+<!-- Phase 3+4: The flip card -->
+<div class="phase card-phase" id="p3">
+    <div class="flip-container" id="flipCard">
+        <!-- FRONT -->
+        <div class="card-face card-front">
+            <div class="card-header">
+                <div class="card-header-label">Everything looks fine</div>
+                <div class="card-header-text">Cancel anytime with straightforward notice</div>
+            </div>
+            <div class="card-quote">"Early termination fee: remaining months' dues multiplied by 75%, due immediately."</div>
+            <div class="card-glance-label">At first glance</div>
+            <div class="card-glance">
+                I just need to give them notice and I'm out. There's a fee, which makes sense. Feels pretty normal for a gym.
+            </div>
+            <div class="card-trigger">See what this really means ›</div>
+        </div>
+        <!-- BACK -->
+        <div class="card-face card-back">
+            <div class="card-back-header">
+                <div class="card-back-headline">One month's regret could cost you hundreds.</div>
+            </div>
+            <div class="card-big-number">
+                <div class="amount">$539.93</div>
+                <div class="label">total penalty from a 9-month early exit</div>
+            </div>
+            <div class="card-back-text">
+                You pay 75% of all remaining dues immediately — charged to your card the moment you cancel.
+            </div>
+            <div class="card-bottom">
+                <div class="trick-chip">Penalty Disguise</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Phase 5: Black slide -->
+<div class="phase black-slide" id="p4">
+    <div class="title-text">
+        <h1 style="color:#fff;">And then it all went wrong.</h1>
+    </div>
+</div>
+
+<!-- Phase 6: WhatsApp messages -->
+<div class="phase wa-phase" id="p5">
+    <div class="wa-phone">
+        <div class="wa-header">
+            <div class="wa-avatar">F</div>
+            <div>
+                <div class="wa-name">Family</div>
+                <div class="wa-sub">Sarah, Ronny, You</div>
+            </div>
+        </div>
+        <div class="wa-chat" id="waChat">
+            <div class="wa-msg received" id="msg1">
+                <div class="wa-sender sarah">Sarah</div>
+                WTF &amp;@*&amp;!
+                <div class="wa-time">10:30 AM <span class="wa-check">✓✓</span></div>
+            </div>
+            <div class="wa-msg received" id="msg2">
+                <div class="wa-sender ronny">Ronny</div>
+                Henk, you scared us to hell. Why did you make us trick into a subscription?
+                <div class="wa-time">10:31 AM <span class="wa-check">✓✓</span></div>
+            </div>
+            <div class="wa-msg sent" id="msg3">
+                <div class="wa-sender henk">Henk</div>
+                I'm going to call you right now, this really can't be happening.
+                <div class="wa-time">10:32 AM <span class="wa-check">✓✓</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var T = {
+    introHold:    1600,   // "I let my family test it."
+    introToClick: 350,    // gap
+    clickHold:    1400,   // "They picked the gym contract."
+    clickToCard:  400,    // gap
+    cardFrontHold:4000,   // hold on card front
+    flipHold:     4000,   // hold on card back after flip
+    cardToBlack:  400,    // gap
+    blackHold:    2500,   // "And then it all went wrong."
+    blackToWa:    400,    // gap
+    msg1Delay:    600,    // first WhatsApp message
+    msg2Delay:    1800,   // second message after first
+    msg3Delay:    2200,   // third message after second
+};
+
+function show(id) { document.getElementById(id).classList.add('active'); document.getElementById(id).classList.add('fade-in'); }
+function hide(id) {
+    var el = document.getElementById(id);
+    el.classList.remove('fade-in');
+    el.classList.add('fade-out');
+    setTimeout(function() { el.classList.remove('active','fade-out'); }, 400);
+}
+
+// Phase 1: Intro
+setTimeout(function() { show('p1'); }, 200);
+
+// Phase 2: What they clicked
+setTimeout(function() {
+    hide('p1');
+    setTimeout(function() { show('p2'); }, T.introToClick);
+}, T.introHold);
+
+var t2 = T.introHold + T.introToClick + T.clickHold;
+
+// Phase 3: Card front
+setTimeout(function() {
+    hide('p2');
+    setTimeout(function() { show('p3'); }, T.clickToCard);
+}, t2);
+
+var t3 = t2 + T.clickToCard + T.cardFrontHold;
+
+// Phase 4: Flip
+setTimeout(function() {
+    document.getElementById('flipCard').classList.add('flipped');
+}, t3);
+
+var t4 = t3 + T.flipHold;
+
+// Phase 5: Black slide
+setTimeout(function() {
+    hide('p3');
+    setTimeout(function() { show('p4'); }, T.cardToBlack);
+}, t4);
+
+var t5 = t4 + T.cardToBlack + T.blackHold;
+
+// Phase 6: WhatsApp
+setTimeout(function() {
+    hide('p4');
+    setTimeout(function() {
+        show('p5');
+        setTimeout(function() { document.getElementById('msg1').classList.add('in'); }, T.msg1Delay);
+        setTimeout(function() { document.getElementById('msg2').classList.add('in'); }, T.msg1Delay + T.msg2Delay);
+        setTimeout(function() { document.getElementById('msg3').classList.add('in'); }, T.msg1Delay + T.msg2Delay + T.msg3Delay);
+    }, T.blackToWa);
+}, t5);
+</script>
+
+</body>
+</html>

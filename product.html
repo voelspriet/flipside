@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlipSide — What It Does</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0a0a0a;
+    --text: #f0f0f0;
+    --muted: #666;
+    --opus: #c9a0ff;
+    --haiku: #5cd67b;
+    --accent: #ffa657;
+    --red: #ff6b6b;
+    --green: #5cd67b;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    padding: 2rem;
+}
+.slide.active { animation: slideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.slide.out { animation: slideOut 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+.s-title h1 {
+    font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+    text-align: center; line-height: 1.05;
+}
+.s-title p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--muted);
+    margin-top: 0.6rem; letter-spacing: 0.5px;
+}
+.fact {
+    max-width: 620px; width: 100%; text-align: left;
+}
+.fact-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 1px;
+    display: inline-block; margin-bottom: 0.7rem;
+    background: rgba(201,160,255,0.15); color: var(--opus);
+}
+.fact-name {
+    font-size: 2rem; font-weight: 800; letter-spacing: -1px;
+    margin-bottom: 0.5rem; line-height: 1.1;
+}
+.fact-desc {
+    font-size: 1.05rem; color: #bbb; line-height: 1.6;
+    margin-bottom: 0.8rem;
+}
+.fact-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; color: var(--accent);
+    letter-spacing: 0.3px; padding: 0.5rem 0.7rem;
+    background: rgba(255,166,87,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+}
+.stats-row {
+    display: flex; gap: 3rem; text-align: center;
+}
+.stat-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 3rem; font-weight: 800; color: var(--accent);
+    letter-spacing: -2px; line-height: 1;
+}
+.stat-label {
+    font-size: 0.65rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-top: 0.3rem;
+}
+/* Deep dive mini list */
+.dive-list {
+    max-width: 560px; width: 100%;
+    display: flex; flex-direction: column; gap: 0.45rem;
+}
+.dive-item {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.45rem 0.7rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    border-left: 3px solid var(--opus);
+}
+.dive-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; font-weight: 700; color: var(--opus);
+    min-width: 16px;
+}
+.dive-name {
+    font-size: 0.85rem; font-weight: 700;
+    min-width: 170px;
+}
+.dive-desc {
+    font-size: 0.68rem; color: #888; line-height: 1.4;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; } to { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- s0: Title -->
+<div class="slide s-title" id="s0">
+    <h1>FlipSide</h1>
+    <p>the dark side of small print</p>
+</div>
+
+<!-- s1: Upload -->
+<div class="slide" id="s1">
+    <div class="fact">
+        <div class="fact-label">Step 1</div>
+        <div class="fact-name">Upload any document<br>someone else wrote</div>
+        <div class="fact-desc">PDF, DOCX, paste text, paste a URL — or pick from 14 built-in samples. Gym, lease, insurance, Coca-Cola sweepstakes, the hackathon waiver we all signed.</div>
+        <div class="fact-detail">Treats a $2 coupon with the same seriousness as a $500,000 lease</div>
+    </div>
+</div>
+
+<!-- s2: Card front -->
+<div class="slide" id="s2">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(92,214,123,0.15);color:var(--green);">Card front · what you'd think</div>
+        <div class="fact-name" style="color:var(--green);">"Comprehensive coverage<br>for your peace of mind"</div>
+        <div class="fact-desc" style="font-style:italic;color:#999;">OK, so my house is covered for "direct physical loss" — that sounds like everything. Water damage, fire, theft. That's exactly what I'm paying for.</div>
+        <div class="fact-detail" style="border-color:var(--green);color:var(--green);background:rgba(92,214,123,0.06);">Gullible reader voice — this is how the drafter WANTS you to feel</div>
+    </div>
+</div>
+
+<!-- s3: Card back -->
+<div class="slide" id="s3">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(255,107,107,0.15);color:var(--red);">Card back · what it really means</div>
+        <div class="fact-name" style="color:var(--red);">$0 payout on a<br>$50,000 claim</div>
+        <div class="fact-desc">Two exclusion clauses interact to deny virtually all residential water damage. The broad coverage on the front is a psychological anchor — it makes you stop reading before the exclusions.</div>
+        <div class="fact-detail" style="border-color:var(--red);color:var(--red);background:rgba(255,107,107,0.06);">Score: 82 · Trick: PHANTOM PROTECTION · 18-type taxonomy</div>
+    </div>
+</div>
+
+<!-- s4: Verdict -->
+<div class="slide" id="s4">
+    <div class="fact">
+        <div class="fact-label" style="background:rgba(201,160,255,0.15);color:var(--opus);">Opus 4.6 verdict</div>
+        <div class="fact-name">One-screen expert verdict</div>
+        <div class="fact-desc">Tier rating, the main risk in plain language, power ratio (their rights vs. yours — counted from the document), auto-detected jurisdiction with local law violations flagged.</div>
+        <div class="fact-detail">Streams from t=0 with adaptive thinking · auto-reveals at 10s if cards haven't arrived</div>
+    </div>
+</div>
+
+<!-- s5: 5 deep dives -->
+<div class="slide" id="s5">
+    <div class="dive-list">
+        <div style="font-size:1.1rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.3rem;">5 Opus threads in parallel</div>
+        <div class="dive-item">
+            <div class="dive-num">1</div>
+            <div class="dive-name">Document Archaeology</div>
+            <div class="dive-desc">Boilerplate vs. custom-drafted — reveals drafter's priorities</div>
+        </div>
+        <div class="dive-item">
+            <div class="dive-num">2</div>
+            <div class="dive-name">What Could Happen</div>
+            <div class="dive-desc">Month-by-month worst case with your actual numbers</div>
+        </div>
+        <div class="dive-item">
+            <div class="dive-num">3</div>
+            <div class="dive-name">Walk-Away Number</div>
+            <div class="dive-desc">Maximum financial exposure — one hero figure + breakdown</div>
+        </div>
+        <div class="dive-item">
+            <div class="dive-num">4</div>
+            <div class="dive-name">Hidden Combinations</div>
+            <div class="dive-desc">Cross-clause traps invisible when reading linearly</div>
+        </div>
+        <div class="dive-item">
+            <div class="dive-num">5</div>
+            <div class="dive-name">Negotiation Playbook</div>
+            <div class="dive-desc">What to push, what to skip — with a ready-to-send message</div>
+        </div>
+    </div>
+</div>
+
+<!-- s6: Ask FlipSide -->
+<div class="slide" id="s6">
+    <div class="fact">
+        <div class="fact-label">Follow-up</div>
+        <div class="fact-name">"What happens if I'm<br>3 months late on rent?"</div>
+        <div class="fact-desc">Opus runs as a tool-use agent — searches the document, retrieves card analyses, traces the answer through every relevant clause. Up to 6 reasoning rounds.</div>
+        <div class="fact-detail">+ Message the company · counter-draft unfair clauses · download full report</div>
+    </div>
+</div>
+
+<!-- s7: Pipeline -->
+<div class="slide" id="s7">
+    <div class="stats-row">
+        <div>
+            <div class="stat-big">8</div>
+            <div class="stat-label">Parallel threads</div>
+        </div>
+        <div>
+            <div class="stat-big" style="color:var(--haiku);">~8s</div>
+            <div class="stat-label">First card</div>
+        </div>
+        <div>
+            <div class="stat-big" style="color:var(--opus);">6</div>
+            <div class="stat-label">Opus threads</div>
+        </div>
+        <div>
+            <div class="stat-big">$0.54</div>
+            <div class="stat-label">Per analysis</div>
+        </div>
+    </div>
+</div>
+
+<!-- s8: Close -->
+<div class="slide s-title" id="s8">
+    <h1>Everyone deserves to see<br>the other side.</h1>
+    <p>flipside · the dark side of small print</p>
+</div>
+
+<script>
+var T = { hold: 3200, gap: 150, titleHold: 2200, cardHold: 3400, listHold: 4200 };
+
+var slides = ['s0','s1','s2','s3','s4','s5','s6','s7','s8'];
+
+function getHold(num) {
+    if (num === 0 || num === 8) return T.titleHold;
+    if (num === 2 || num === 3) return T.cardHold;
+    if (num === 5) return T.listHold;
+    return T.hold;
+}
+
+function showSlide(idx) {
+    if (idx >= slides.length) return;
+    var el = document.getElementById(slides[idx]);
+    el.classList.add('active');
+    setTimeout(function() {
+        el.classList.remove('active');
+        el.classList.add('out');
+        setTimeout(function() {
+            el.classList.remove('out');
+            showSlide(idx + 1);
+        }, T.gap);
+    }, getHold(idx));
+}
+
+setTimeout(function() { showSlide(0); }, 200);
+</script>
+
+</body>
+</html>

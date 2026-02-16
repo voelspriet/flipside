@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>FlipSide — Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #141420;
+    --bg-card: #1c1c30;
+    --bg-card-hover: #222240;
+    --cream: #f0ece4;
+    --cream-dim: #a09a8e;
+    --rust: #c44b28;
+    --rust-glow: #c44b2833;
+    --haiku: #4ecdc4;
+    --haiku-dim: #4ecdc433;
+    --opus: #d4a03c;
+    --opus-dim: #d4a03c33;
+    --green: #5cb85c;
+    --green-dim: #5cb85c22;
+    --red: #e74c3c;
+    --purple: #9b59b6;
+    --blue: #5dade2;
+    --border: #2a2a45;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    width: 1920px;
+    min-height: 1080px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Subtle grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* Grid lines background */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 120px 120px;
+    opacity: 0.12;
+    pointer-events: none;
+  }
+
+  .slide {
+    width: 1920px;
+    min-height: 1080px;
+    padding: 48px 72px 40px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── Title ─── */
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cream);
+  }
+
+  .title-accent {
+    width: 60px;
+    height: 3px;
+    background: var(--rust);
+    border-radius: 2px;
+    position: relative;
+    top: -3px;
+  }
+
+  .title-sub {
+    font-size: 15px;
+    color: var(--cream-dim);
+    letter-spacing: 0.04em;
+  }
+
+  /* ─── Timeline ─── */
+  .timeline {
+    display: flex;
+    align-items: center;
+    margin-bottom: 36px;
+    position: relative;
+    padding: 0 8px;
+  }
+
+  .timeline-track {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--haiku) 0%, var(--haiku) 35%, var(--opus) 35%, var(--opus) 100%);
+    position: relative;
+    opacity: 0.5;
+  }
+
+  .timeline-markers {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    position: absolute;
+    top: -8px;
+    left: 0;
+  }
+
+  .tmark {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .tmark-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 2px solid var(--bg);
+    position: relative;
+    z-index: 2;
+  }
+
+  .tmark-dot.haiku { background: var(--haiku); }
+  .tmark-dot.opus { background: var(--opus); }
+
+  .tmark-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--cream-dim);
+    margin-top: 10px;
+    white-space: nowrap;
+  }
+
+  .tmark-label strong {
+    color: var(--cream);
+    font-weight: 500;
+  }
+
+  /* ─── Main grid ─── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 20px;
+    flex: 1;
+  }
+
+  /* ─── Phase cards ─── */
+  .phase {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-card);
+    padding: 24px 28px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phase::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    border-radius: 12px 0 0 12px;
+  }
+
+  .phase.haiku-phase::before { background: var(--haiku); }
+  .phase.opus-phase::before { background: var(--opus); }
+  .phase.opus-phase { border-color: var(--opus-dim); }
+  .phase.haiku-phase { border-color: var(--haiku-dim); }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .phase-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+  }
+
+  .phase-label .num { color: var(--rust); font-weight: 700; }
+  .phase-label .timing { color: var(--cream-dim); font-weight: 400; opacity: 0.7; margin-left: 8px; }
+
+  .model-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.06em;
+  }
+
+  .model-badge.haiku {
+    background: var(--haiku-dim);
+    color: var(--haiku);
+    border: 1px solid var(--haiku);
+  }
+
+  .model-badge.opus {
+    background: var(--opus-dim);
+    color: var(--opus);
+    border: 1px solid var(--opus);
+  }
+
+  .phase-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .phase-desc {
+    font-size: 14px;
+    color: var(--cream-dim);
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+
+  .phase-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--rust);
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+
+  /* ─── Capability pills ─── */
+  .caps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .cap-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 100px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .cap-pill .cap-num {
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    flex-shrink: 0;
+  }
+
+  /* Capability color coding by type */
+  .cap-pill.thinking {
+    background: #6c3fa022;
+    color: #c4a0f0;
+    border: 1px solid #6c3fa044;
+  }
+  .cap-pill.thinking .cap-num { background: #6c3fa044; }
+
+  .cap-pill.context {
+    background: #2980b922;
+    color: #7dc4e8;
+    border: 1px solid #2980b944;
+  }
+  .cap-pill.context .cap-num { background: #2980b944; }
+
+  .cap-pill.safety {
+    background: #27ae6022;
+    color: #6dcea8;
+    border: 1px solid #27ae6044;
+  }
+  .cap-pill.safety .cap-num { background: #27ae6044; }
+
+  .cap-pill.structure {
+    background: #d4a03c22;
+    color: #d4a03c;
+    border: 1px solid #d4a03c44;
+  }
+  .cap-pill.structure .cap-num { background: #d4a03c44; }
+
+  .cap-pill.reasoning {
+    background: #c44b2822;
+    color: #e8845c;
+    border: 1px solid #c44b2844;
+  }
+  .cap-pill.reasoning .cap-num { background: #c44b2844; }
+
+  .cap-pill.parallel {
+    background: #4ecdc422;
+    color: #4ecdc4;
+    border: 1px solid #4ecdc444;
+  }
+  .cap-pill.parallel .cap-num { background: #4ecdc444; }
+
+  .cap-pill.selfcorr {
+    background: #e67e2222;
+    color: #e8a85c;
+    border: 1px solid #e67e2244;
+  }
+  .cap-pill.selfcorr .cap-num { background: #e67e2244; }
+
+  .cap-pill.mind {
+    background: #8e44ad22;
+    color: #c492db;
+    border: 1px solid #8e44ad44;
+  }
+  .cap-pill.mind .cap-num { background: #8e44ad44; }
+
+  /* ─── Layout specifics ─── */
+  .phase-1 { grid-column: 1 / -1; }
+  .phase-2 { grid-column: 1 / -1; }
+
+  .verdict-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 20px;
+  }
+
+  .verdict-main { flex: 1; }
+
+  .parallel-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .parallel-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .parallel-label .kw { color: var(--opus); }
+
+  /* ─── Deep dives grid ─── */
+  .deep-section {
+    grid-column: 1 / -1;
+  }
+
+  .deep-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+  }
+
+  .deep-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-card);
+    padding: 18px 18px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .deep-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--opus);
+    border-radius: 10px 0 0 10px;
+    opacity: 0.6;
+  }
+
+  .deep-card .model-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 9px;
+    padding: 2px 7px;
+  }
+
+  .deep-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    padding-right: 70px;
+  }
+
+  .deep-desc {
+    font-size: 12px;
+    color: var(--cream-dim);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .deep-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--rust);
+    line-height: 1.4;
+  }
+
+  .deep-card .caps { margin-top: 10px; }
+
+  /* ─── Stats bar ─── */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    padding: 28px 0 0;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-num.haiku-c { color: var(--haiku); }
+  .stat-num.opus-c { color: var(--opus); }
+  .stat-num.rust-c { color: var(--rust); }
+  .stat-num.cream-c { color: var(--cream); }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+  }
+
+  /* ─── Connector: "runs in parallel" arrow */
+  .parallel-indicator {
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--opus);
+    opacity: 0.5;
+  }
+
+  /* ─── Capability legend ─── */
+  .cap-legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+
+  .cap-legend-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--cream-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .cap-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .cap-legend-dot.t { background: #6c3fa0; }
+  .cap-legend-dot.c { background: #2980b9; }
+  .cap-legend-dot.s { background: #27ae60; }
+  .cap-legend-dot.r { background: #c44b28; }
+  .cap-legend-dot.p { background: #4ecdc4; }
+  .cap-legend-dot.m { background: #8e44ad; }
+  .cap-legend-dot.sc { background: #e67e22; }
+  .cap-legend-dot.st { background: #d4a03c; }
+</style>
+</head>
+<body>
+<div class="slide">
+
+  <!-- Title -->
+  <div class="title-row">
+    <h1>What happens when you upload a document</h1>
+    <div class="title-accent"></div>
+    <span class="title-sub">11 Opus 4.6 capabilities across 8 parallel threads</span>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline">
+    <div class="timeline-track">
+      <div class="timeline-markers">
+        <div class="tmark">
+          <div class="tmark-dot"></div>
+          <div class="tmark-label"><strong>t = 0s</strong></div>
+        </div>
+        <div class="tmark">
+          <div class="tmark-dot haiku"></div>
+          <div class="tmark-label">~7s <strong>pre-scan done</strong></div>
+        </div>
+        <div class="tmark">
+          <div class="tmark-dot haiku"></div>
+          <div class="tmark-label">~8s <strong>first card</strong></div>
+        </div>
+        <div class="tmark">
+          <div class="tmark-dot opus"></div>
+          <div class="tmark-label">~15s <strong>deep dives arrive</strong></div>
+        </div>
+        <div class="tmark">
+          <div class="tmark-dot opus"></div>
+          <div class="tmark-label">~20s <strong>verdict ready</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-grid">
+
+    <!-- Phase 1 + Phase 2 row -->
+    <div class="phase haiku-phase phase-1" style="grid-column: 1;">
+      <div class="phase-header">
+        <span class="phase-label"><span class="num">Phase 1</span><span class="timing">T=0 → ~7s (hidden from user)</span></span>
+        <span class="model-badge haiku">Haiku 4.5</span>
+      </div>
+      <div class="phase-title">Pre-scan</div>
+      <div class="phase-desc">Identifies every clause worth examining. Groups overlapping sections. Orders by severity.</div>
+      <div class="phase-meta">Outputs N clause IDs → spawns N parallel workers</div>
+      <div class="caps">
+        <span class="cap-pill parallel"><span class="cap-num">#10</span> Split-model parallel</span>
+      </div>
+    </div>
+
+    <div class="phase haiku-phase phase-2" style="grid-column: 2;">
+      <div class="phase-header">
+        <span class="phase-label"><span class="num">Phase 2</span><span class="timing">~7s → ~12s (cards stream to user)</span></span>
+        <span class="model-badge haiku">Haiku 4.5</span>
+      </div>
+      <div class="phase-title">N × Flip Cards</div>
+      <div class="phase-desc">Each clause gets its own Haiku worker. Front: reassurance + gullible reader. Back: real risk, dollar figure, trick classification.</div>
+      <div class="phase-meta">N simultaneous threads · 18-type trick taxonomy · ~$0.08 total</div>
+      <div class="caps">
+        <span class="cap-pill structure"><span class="cap-num">#7</span> Structured output</span>
+        <span class="cap-pill safety"><span class="cap-num">#3</span> Low over-refusals</span>
+      </div>
+    </div>
+
+    <!-- Verdict row -->
+    <div class="verdict-row">
+      <div class="phase opus-phase verdict-main">
+        <div class="parallel-label"><span class="kw">Opus verdict</span> runs from t=0 in parallel with everything above</div>
+        <div class="phase-header">
+          <span class="phase-label"><span class="timing">Adaptive thinking · streams from t=0 · auto-reveals at 10s</span></span>
+          <span class="model-badge opus">Opus 4.6</span>
+        </div>
+        <div class="phase-title">Expert Verdict</div>
+        <div class="phase-desc">One-screen verdict: tier rating, main risk, power ratio (their rights vs. yours, counted), auto-detected jurisdiction with local law flags.</div>
+        <div class="phase-meta">Model decides its own reasoning depth — spends more on cross-clause traps, less on boilerplate</div>
+        <div class="caps">
+          <span class="cap-pill thinking"><span class="cap-num">#1</span> Adaptive thinking</span>
+          <span class="cap-pill context"><span class="cap-num">#2</span> Long-context retrieval</span>
+          <span class="cap-pill selfcorr"><span class="cap-num">#9</span> Self-correction</span>
+          <span class="cap-pill safety"><span class="cap-num">#3</span> Low over-refusals</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deep dives -->
+    <div class="deep-section">
+      <div class="parallel-label"><span class="kw">5 × deep dives</span> fire from t=0 in parallel · arrive ~15–20s</div>
+      <div class="deep-grid">
+        <div class="deep-card">
+          <span class="model-badge opus">Opus 4.6</span>
+          <div class="deep-title">Document Archaeology</div>
+          <div class="deep-desc">Classifies every section as boilerplate vs. custom-drafted. Profiles the drafter's intent.</div>
+          <div class="deep-meta">Which parts were written FOR you vs. ABOUT you</div>
+          <div class="caps">
+            <span class="cap-pill structure"><span class="cap-num">#13</span> Stylistic deduction</span>
+          </div>
+        </div>
+
+        <div class="deep-card">
+          <span class="model-badge opus">Opus 4.6</span>
+          <div class="deep-title">What Could Happen</div>
+          <div class="deep-desc">Worst-case narrative using the document's actual numbers, dates, and deadlines.</div>
+          <div class="deep-meta">$X,XXX total exposure timeline — not hypothetical</div>
+          <div class="caps">
+            <span class="cap-pill reasoning"><span class="cap-num">#15</span> Causal chain reasoning</span>
+          </div>
+        </div>
+
+        <div class="deep-card">
+          <span class="model-badge opus">Opus 4.6</span>
+          <div class="deep-title">Walk-Away Number</div>
+          <div class="deep-desc">Maximum financial exposure: every fee, penalty, and obligation compounded into one figure.</div>
+          <div class="deep-meta">Hero number + line-by-line breakdown</div>
+          <div class="caps">
+            <span class="cap-pill reasoning"><span class="cap-num">#16</span> Forensic arithmetic</span>
+          </div>
+        </div>
+
+        <div class="deep-card">
+          <span class="model-badge opus">Opus 4.6</span>
+          <div class="deep-title">Hidden Combinations</div>
+          <div class="deep-desc">Cross-clause compound traps that are invisible when reading linearly.</div>
+          <div class="deep-meta">Clause 4 + Clause 11 = trap no single reading finds</div>
+          <div class="caps">
+            <span class="cap-pill context"><span class="cap-num">#2</span> Long-context retrieval</span>
+          </div>
+        </div>
+
+        <div class="deep-card">
+          <span class="model-badge opus">Opus 4.6</span>
+          <div class="deep-title">Negotiation Playbook</div>
+          <div class="deep-desc">What to push on, what to mention, what to skip — with theory of mind about the drafter.</div>
+          <div class="deep-meta">Leverage map · "they'll concede X if you accept Y"</div>
+          <div class="caps">
+            <span class="cap-pill mind"><span class="cap-num">#12</span> Theory of mind</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num haiku-c">8</div>
+      <div class="stat-label">Parallel threads</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num opus-c">~$0.54</div>
+      <div class="stat-label">Cost per run</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num haiku-c">~8s</div>
+      <div class="stat-label">First card</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num rust-c">11</div>
+      <div class="stat-label">Opus capabilities</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num cream-c">0</div>
+      <div class="stat-label">Lines by a human</div>
+    </div>
+  </div>
+
+  <!-- Capability color legend -->
+  <div class="cap-legend">
+    <div class="cap-legend-item"><div class="cap-legend-dot t"></div>Thinking</div>
+    <div class="cap-legend-item"><div class="cap-legend-dot c"></div>Context</div>
+    <div class="cap-legend-item"><div class="cap-legend-dot s"></div>Safety</div>
+    <div class="cap-legend-item"><div class="cap-legend-dot st"></div>Structure</div>
+    <div class="cap-legend-item"><div class="cap-legend-dot r"></div>Reasoning</div>
+    <div class="cap-legend-item"><div class="cap-legend-dot p"></div>Parallel</div>
+    <div class="cap-legend-item"><div class="cap-legend-dot sc"></div>Self-review</div>
+    <div class="cap-legend-item"><div class="cap-legend-dot m"></div>Theory of mind</div>
+  </div>
+
+</div>
+</body>
+</html>

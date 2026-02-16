@@ -362,7 +362,7 @@ body {
             <div class="jury-stat-label">Reviewed</div>
         </div>
         <div class="jury-stat">
-            <div class="jury-stat-num">500</div>
+            <div class="jury-stat-num">8</div>
             <div class="jury-stat-label">Submissions</div>
         </div>
         <div class="jury-stat">
@@ -379,17 +379,17 @@ body {
 <div class="jury-layout">
     <!-- Sidebar: submission list -->
     <aside class="jury-sidebar">
-        <div class="sidebar-title">Submissions — sorted by FlipSide Risk Score</div>
+        <div class="sidebar-title">Submissions — sorted by weighted score</div>
         <div id="submissionList"></div>
     </aside>
 
     <!-- Main: detail view -->
     <main class="jury-main" id="mainPanel">
         <div class="detail-empty" id="emptyState">
-            <div class="detail-empty-icon">&#x1F50D;</div>
+            <div class="detail-empty-icon" style="font-size:1.8rem;font-family:'JetBrains Mono',monospace;opacity:0.3">&#x2194;</div>
             <div class="detail-empty-text">
-                Click a submission to FlipSide it.<br>
-                <span style="font-size:0.72rem;color:var(--text-muted)">We read their README so you don't have to.</span>
+                Select a submission to FlipSide it.<br>
+                <span style="font-size:0.72rem;color:var(--text-muted)">Same methodology, different document.</span>
             </div>
         </div>
         <div id="detailView" style="display:none"></div>
@@ -416,16 +416,16 @@ var TRICKS = {
 // ── Mock Submissions ──
 var submissions = [
     {
-        id: 1, name: 'FlipSide', team: 'Henk van Ess (solo)', track: 'Break Barriers',
+        id: 1, name: 'FlipSide', team: 'Henk van Ess — OSINT expert, zero coding experience', track: 'Break Barriers',
         score: 91, tier: 'top6', tierLabel: 'Top 6 Material',
         tricks: [],
         front: {
-            reassurance: 'A thorough contract analysis tool with comprehensive documentation',
-            reader: 'I\'d think: OK another legal AI tool, there are dozens of these. Probably just sends a PDF to Claude and shows the response. Nice README though — wait, is that a flip card? Let me just try one sample...'
+            reassurance: 'Gym memberships, app terms, pet adoptions, sweepstakes entries — the things you sign with a shrug',
+            reader: 'I\'d think: OK, another legal AI tool — there are dozens of these. Probably just sends a PDF to Claude and shows the response. The README is long but the builder says he doesn\'t code? That\'s either impressive or a red flag. Let me try a sample...'
         },
         back: {
-            reveal: 'This is not a document summarizer. It\'s a perspective engine. The flip card mechanic forces the jury to experience the product\'s core insight — you can\'t understand what you agreed to until you see it from the other side. And the jury just proved it by flipping this card.',
-            figure: '14 Opus 4.6 capabilities documented with receipts',
+            reveal: 'Built by someone who doesn\'t write code — 14,000 lines, all conversation with Opus 4.6. Not a document summarizer: a perspective engine. Haiku 4.5 builds flip cards in 8 seconds showing what the drafter wants you to think. Opus 4.6 builds the expert verdict in parallel — adaptive thinking, 1M context window for cross-clause traps, low over-refusals for the perspective flip. Stress-tested on West Frisian (500K speakers, zero degradation) and a 222-page document with 36 planted traps (36/36 caught, including clause 3 interacting with clause 297). 14 real sample documents from gym memberships to a real Coca-Cola sweepstakes. The builder\'s CHI 2026 methodology — "Think Like a Document" — is the product\'s core mechanic: read from the drafter\'s perspective, not yours.',
+            figure: '14 Opus 4.6 capabilities, 14 sample docs, 0 lines written by human',
             trick: null
         },
         tricksDetected: [],
@@ -668,8 +668,8 @@ function selectSubmission(id) {
         '</div>' +
 
         '<div class="ai-note">' +
-            'FlipSide Jury uses the same "Think Like a Document" methodology on hackathon submissions.<br>' +
-            'The submission is the document. The contestant is the drafter. You are the reader.<br>' +
+            'FlipSide Jury applies the same perspective flip to hackathon submissions.<br>' +
+            'The submission is the document. The contestant is the drafter. You are the reader who signed with a shrug.<br>' +
             '<strong>Now flip the card.</strong>' +
         '</div>';
 

@@ -3,7 +3,7 @@ FlipSide — The dark side of small print.
 Upload a document you didn't write. See what the other side intended.
 
 Optimized for Claude Opus 4.6 extended thinking:
-- Meta-prompting framework for adversarial document analysis
+- Meta-prompting framework for multi-perspective document analysis
 - 32K thinking budget (deep mode) for multi-pass cross-clause reasoning
 - Drafter's Playbook: reveals the strategic architecture behind the document
 - Phased SSE streaming with real-time phase detection
@@ -47,13 +47,12 @@ def store_document(doc_id, doc):
     doc['_ts'] = time.time()
     with _documents_lock:
         documents[doc_id] = doc
-    # Pre-scan + pre-generate cards during upload (skip compare mode)
-    if doc.get('mode') != 'compare':
-        doc['_prescan_event'] = threading.Event()
-        doc['_precards_event'] = threading.Event()
-        threading.Thread(
-            target=_prescan_document, args=(doc_id,), daemon=True
-        ).start()
+    # Pre-scan + pre-generate cards during upload
+    doc['_prescan_event'] = threading.Event()
+    doc['_precards_event'] = threading.Event()
+    threading.Thread(
+        target=_prescan_document, args=(doc_id,), daemon=True
+    ).start()
 
 
 def _prescan_document(doc_id):
@@ -230,7 +229,7 @@ def _prescan_document(doc_id):
 
     except Exception as e:
         print(f'[prescan] {doc_id[:8]}: Error: {e}')
-        doc['_prescan'] = doc.get('_prescan')
+        # Preserve any partial prescan data; default to None if absent
         if not doc.get('_prescan'):
             doc['_prescan'] = None
     finally:
@@ -292,7 +291,6 @@ def _build_claims_summary(prescan, precards):
 
 MODEL = os.environ.get('FLIPSIDE_MODEL', 'claude-opus-4-6')
 FAST_MODEL = os.environ.get('FLIPSIDE_FAST_MODEL', 'claude-haiku-4-5-20251001')
-SYNTHESIS_MAX_TOKENS = 8000  # ~1500 words + thinking for expert panel synthesis
 
 # Module-level client for utility functions (text cleaning etc.)
 _client = None
@@ -301,46 +299,6 @@ def get_client():
     if _client is None:
         _client = anthropic.Anthropic()
     return _client
-
-ROLES = {
-    'tenant': 'a tenant signing a lease agreement',
-    'freelancer': 'a freelancer signing a client contract',
-    'policyholder': 'a policyholder reviewing an insurance policy',
-    'employee': 'an employee reviewing an employee handbook or employment agreement',
-    'app_user': 'a user agreeing to Terms of Service or a privacy policy',
-    'borrower': 'a borrower reviewing a loan agreement',
-    'patient': 'a patient reviewing a medical consent form',
-    'buyer': 'a buyer reviewing a purchase agreement',
-    'other': 'a party who did NOT draft this document',
-}
-
-# Analysis depth presets — token budget per depth level
-DEPTH_PRESETS = {
-    'quick':    {'max_tokens': 16000},
-    'standard': {'max_tokens': 32000},
-    'deep':     {'max_tokens': 64000},
-}
-
-TRICK_TAXONOMY = {
-    'Silent Waiver': '\U0001f910',
-    'Burden Shift': '\u2696\ufe0f',
-    'Time Trap': '\u23f0',
-    'Escape Hatch': '\U0001f6aa',
-    'Moving Target': '\U0001f3af',
-    'Forced Arena': '\U0001f3db\ufe0f',
-    'Phantom Protection': '\U0001f47b',
-    'Cascade Clause': '\U0001f4a5',
-    'Sole Discretion': '\U0001f451',
-    'Liability Cap': '\U0001f6e1\ufe0f',
-    'Reverse Shield': '\U0001f4b8',
-    'Auto-Lock': '\U0001f512',
-    'Content Grab': '\U0001f58a\ufe0f',
-    'Data Drain': '\U0001f441\ufe0f',
-    'Penalty Disguise': '\U0001f3ad',
-    'Gag Clause': '\U0001f507',
-    'Scope Creep': '\U0001f578\ufe0f',
-    'Ghost Standard': '\U0001f4c4',
-}
 
 PHASE_MARKERS = [
     ('Document Profile', 'profile'),
@@ -1263,19 +1221,24 @@ def index():
     return resp
 
 
+@app.route('/jury')
+def jury():
+    return render_template('jury.html')
+
+
 @app.route('/upload', methods=['POST'])
 def upload():
     try:
         text = ''
         filename = ''
         page_images = []
+        ocr_used = False
 
         if 'file' in request.files and request.files['file'].filename:
             file = request.files['file']
             filename = file.filename
             ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
 
-            ocr_used = False
             if ext == 'pdf':
                 text, page_images, ocr_used = extract_pdf(file)
             elif ext == 'docx':
@@ -1335,7 +1298,7 @@ def upload():
         return jsonify(resp)
 
     except Exception as e:
-        print(f'[upload/compare] Error: {e}')
+        print(f'[upload] Error: {e}')
         return jsonify({'error': 'An internal error occurred. Please try again.'}), 500
 
 
@@ -1368,72 +1331,6 @@ def sample():
         'full_text': text,
         'thumbnail': SAMPLE_THUMBNAILS.get(sample_type),
     })
-
-
-def build_compare_prompt():
-    """System prompt for document comparison mode."""
-    return """You are a senior attorney with 20 years of experience comparing contracts, offers, and agreements. You analyze two documents side-by-side from the perspective of someone choosing between them.
-
-## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the documents' language. Keep quotes from the documents in their original language with English translations in parentheses.
-
-## REQUIRED OUTPUT FORMAT
-
-### Section 1
-## Document Comparison Overview
-
-- **Document A**: [name/type] — [1-line summary of what it offers]
-- **Document B**: [name/type] — [1-line summary of what it offers]
-- **Key Difference**: [the most important difference in 1-2 sentences]
-
-### Section 2
-## Side-by-Side Analysis
-
-For each comparable area (price, scope, liability, warranties, payment terms, timelines, etc.):
-
-### [Area Name]
-
-**Document A says:** [what Document A specifies]
-
-**Document B says:** [what Document B specifies]
-
-**Advantage:** [A or B] — [why, in plain language]
-
-[GREEN/YELLOW/RED] · Score: [0-100]/100
-
----
-
-### Section 3
-## Hidden Differences
-
-Things present in one document but MISSING from the other. These absences are often more revealing than what's written.
-
-### [Missing Item]
-
-**Present in:** [A or B]
-**Missing from:** [A or B]
-**Why it matters:** [plain-language explanation]
-
-[YELLOW/RED] · Score: [0-100]/100
-
----
-
-### Section 4
-## Recommendation
-
-**Better deal overall:** [A or B]
-**Why:** [2-3 sentences]
-
-**Watch out for in the winner:** [specific concerns even in the better document]
-
-**If you choose the other:** [what to negotiate or watch for]
-
-## RULES
-- Compare like-for-like where possible
-- Flag items present in one but missing from the other — absences reveal intent
-- Think like each document: what is each drafter trying to achieve?
-- Write for a non-lawyer audience — plain, direct language
-- Be specific about prices, dates, percentages — numbers matter in comparisons"""
 
 
 def build_card_scan_prompt():
@@ -1474,7 +1371,7 @@ For multi-product documents (coupon books, product bundles): specify WHICH produ
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
-[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts.
+[READER]: [3-5 sentences — aim for at least 3 full sentences every time. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts. Mention what the clause seems to cover, why it feels normal, and what you'd casually tell a friend about it.
 
 ABSOLUTELY FORBIDDEN words/patterns — if ANY appear in your READER output, STOP and REWRITE that entire field:
 "waiv" / "waiving" / "waiver" / "waive", "surrender", "legal" (including "legal fees", "legal costs"), "rights", "recourse", "no recourse", "argue", "dispute", "sole discretion", "liable", "liability", "indemnif" (any form), "perpetual", "irrevocable", "jurisdiction", "clause", "provision", "stipulate", "binding", "enforceable", "forfeit", "signing away", "give up", "lose my", "no cap", "no limit", "unlimited", "adds up", "that's $X", question marks expressing concern, bullet-point lists.
@@ -1487,11 +1384,11 @@ REPLACEMENTS the reader would actually use:
 
 The reader has ZERO legal literacy — they don't know what a waiver IS, what "indemnification" means, or what "perpetual license" implies. They talk like a normal person: "sounds fine," "makes sense," "no big deal," "whatever." Always end with breezy certainty, never with analysis.]
 
-[HONEY]: [OPTIONAL — only if this clause uses warm, friendly, or reassuring language immediately before or around a punitive/restrictive term. Quote the exact honey phrase from the document, then → the sting it masks. If the clause is purely neutral/technical with no emotional framing, omit this field entirely.]
+[HONEY]: [OPTIONAL — only if this clause uses warm, friendly, or reassuring language immediately before or around a one-sided or burdensome term. Quote the exact honey phrase from the document, then → what it actually enables in plain words (max 8 words, no analysis, no "sounds X until you realize"). If the clause is purely neutral/technical with no emotional framing, omit this field entirely.]
 
 [TEASER]: [One cryptic sentence that creates tension without revealing the risk. Make the reader WANT to flip. Keep under 12 words. For GREEN clauses: "No surprises here — genuinely."]
 
-[REVEAL]: [One punchy analytical sentence (max 15 words) that hits the reader when the card flips. The sharp truth that contrasts the reassurance on the front. NEVER vague: no "some", "certain", "conditions", "limitations". Be specific. Test: Would someone feel a gut reaction reading this? Examples: "Your deposit funds their legal fees" / "Uncapped daily penalties: $2,250 in fees from one missed month". For GREEN clauses: "This one is genuinely what it promises."]
+[REVEAL]: [One concise analytical sentence (max 15 words) that hits the reader when the card flips. The sharp truth that contrasts the reassurance on the front. NEVER vague: no "some", "certain", "conditions", "limitations". Be specific. Test: Would someone feel a strong reaction reading this? Examples: "Your deposit funds their legal fees" / "Uncapped daily penalties: $2,250 in fees from one missed month". For GREEN clauses: "This one is genuinely what it promises."]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
 Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
@@ -1504,7 +1401,7 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 
 **What does this mean for you:**
 [FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "30 days or you lose all rights".]
-[EXAMPLE]: [One concrete scenario using the document's own figures. Walk through step by step. 2-3 sentences max.]
+[EXAMPLE]: [One concrete scenario assuming the drafter seeks maximum advantage — what does this clause let them attempt? Use the document's own figures. Walk through step by step. 2-3 sentences max. Your scenario must stay within what the clause text actually permits — don't invent powers the clause doesn't grant, and don't ignore the clause's own exceptions or carve-outs.]
 
 ---
 
@@ -1535,7 +1432,7 @@ After all RED and YELLOW cards, add exactly ONE final block:
 ---
 ### Fair Clauses Summary
 [REASSURANCE]: These clauses are what they promise
-[READER]: [List each fair clause in everyday language — "the part about timing is fine," "the cancellation thing is totally normal." Same gullible voice, same forbidden words apply. NO legal jargon.]
+[READER]: [List each fair clause in everyday language — "the part about timing is fine," "the cancellation thing is totally normal." Same trusting voice, same forbidden words apply. NO legal jargon.]
 [TEASER]: These are actually what they look like.
 [REVEAL]: These clauses are genuinely what they promise.
 [GREEN] · Score: 10/100 · Trick: None
@@ -1550,10 +1447,10 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 3. Every clause MUST have ALL fields: title, [REASSURANCE], quote, [READER], [TEASER], [REVEAL], risk+score+trick, confidence, bottom line, small print, should read, [FIGURE], [EXAMPLE]. [HONEY] is OPTIONAL
 4. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
 5. Keep each field to ONE sentence. Cards must be scannable, not essays
-6. The [READER] is GULLIBLE with ZERO legal literacy. The reader signs without reading twice
+6. The [READER] trusts without questioning and has ZERO legal literacy. The reader signs without reading twice
 7. Do NOT include cross-clause interactions — identify each clause independently
-8. The [REVEAL] is the TITLE of the card back — make it sharp, specific, gut-punching
-9. "What you should read" is the core insight — make it visceral
+8. The [REVEAL] is the TITLE of the card back — make it sharp, specific, immediately clear
+9. "What you should read" is the core insight — make it concrete and direct
 10. Confidence: HIGH = clear language; MEDIUM = some ambiguity; LOW = multiple interpretations
 11. The Document Profile must appear BEFORE the first clause, followed by ---
 12. The section reference in parentheses MUST provide document context
@@ -1564,7 +1461,8 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 17. MERGE OVERLAPPING CLAUSES — MANDATORY: Before outputting ANY card, check: does this cover the same RIGHT or RISK as a card you already output? If YES, do NOT create a separate card — merge it into the earlier card's section reference. This especially applies to: (a) multiple IP/license grants from different sections, (b) multiple liability waivers, (c) clauses from the SAME named section. Two cards must NEVER reference the same section name. Each card must reveal something the user hasn't seen yet.
 18. TEASER VARIETY: Each [TEASER] must use a DIFFERENT rhetorical angle. NEVER repeat the same keyword (e.g., "forever") in more than 2 teasers. Vary: question vs statement, time-based vs money-based vs rights-based, personal vs systemic.
 19. EXAMPLE VARIETY: Do NOT repeat "you have no recourse" or "you cannot" as the conclusion of every [EXAMPLE]. Each example must end with a DIFFERENT concrete consequence — a dollar amount, a missed deadline, a specific scenario. The phrase "no recourse" may appear at most ONCE across all cards.
-20. CLAUSE ORDERING: As you output clauses, avoid long runs of the same risk level. If you have multiple RED and YELLOW clauses to output, INTERLEAVE them — output a RED, then a YELLOW, then a RED, etc. If you must output consecutive RED cards, vary the TRICK TYPE so they feel distinct, not repetitive. Never output more than 3 RED cards in a row without a YELLOW break."""
+20. MAXIMUM ENFORCEMENT TEST — MANDATORY: Every [EXAMPLE] must answer: "If the drafter sought maximum advantage, what does this clause let them attempt?" Stay within what the clause text actually permits — don't invent powers it doesn't grant, and don't ignore its own exceptions or carve-outs. If the clause has a "unless/except/tenzij" protection, your scenario must work AROUND it, not pretend it doesn't exist.
+21. CLAUSE ORDERING: As you output clauses, avoid long runs of the same risk level. If you have multiple RED and YELLOW clauses to output, INTERLEAVE them — output a RED, then a YELLOW, then a RED, etc. If you must output consecutive RED cards, vary the TRICK TYPE so they feel distinct, not repetitive. Never output more than 3 RED cards in a row without a YELLOW break."""
 
 
 def build_clause_id_prompt():
@@ -1631,7 +1529,7 @@ For multi-product documents (coupon books, product bundles): specify WHICH produ
 
 > "[Copy-paste the most revealing sentence or phrase from this clause exactly as written in the document. Do NOT paraphrase.]"
 
-[READER]: [2-4 sentences. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts.
+[READER]: [3-5 sentences — aim for at least 3 full sentences every time. You ARE a trusting person who just skims and signs. Think out loud in FIRST PERSON ("I") and SHRUG EVERYTHING OFF. You see basic facts but they don't worry you at all. You NEVER do math, NEVER calculate totals, NEVER question fairness, NEVER express doubt, NEVER recognize legal concepts. Mention what the clause seems to cover, why it feels normal, and what you'd casually tell a friend about it.
 
 ABSOLUTELY FORBIDDEN words/patterns — if ANY appear in your READER output, STOP and REWRITE that entire field:
 "waiv" / "waiving" / "waiver" / "waive", "surrender", "legal" (including "legal fees", "legal costs"), "rights", "recourse", "no recourse", "argue", "dispute", "sole discretion", "liable", "liability", "indemnif" (any form), "perpetual", "irrevocable", "jurisdiction", "clause", "provision", "stipulate", "binding", "enforceable", "forfeit", "signing away", "give up", "lose my", "no cap", "no limit", "unlimited", "adds up", "that's $X", question marks expressing concern, bullet-point lists.
@@ -1644,11 +1542,11 @@ REPLACEMENTS the reader would actually use:
 
 The reader has ZERO legal literacy — they don't know what a waiver IS, what "indemnification" means, or what "perpetual license" implies. They talk like a normal person: "sounds fine," "makes sense," "no big deal," "whatever." Always end with breezy certainty, never with analysis.]
 
-[HONEY]: [OPTIONAL — only if this clause uses warm, friendly, or reassuring language immediately before or around a punitive/restrictive term. Quote the exact honey phrase from the document, then → the sting it masks. If the clause is purely neutral/technical with no emotional framing, omit this field entirely.]
+[HONEY]: [OPTIONAL — only if this clause uses warm, friendly, or reassuring language immediately before or around a one-sided or burdensome term. Quote the exact honey phrase from the document, then → what it actually enables in plain words (max 8 words, no analysis, no "sounds X until you realize"). If the clause is purely neutral/technical with no emotional framing, omit this field entirely.]
 
 [TEASER]: [One cryptic sentence that creates tension without revealing the risk. Make the reader WANT to flip. Keep under 12 words. For GREEN clauses: "No surprises here — genuinely."]
 
-[REVEAL]: [One punchy analytical sentence (max 15 words) that hits the reader when the card flips. The sharp truth that contrasts the reassurance on the front. NEVER vague: no "some", "certain", "conditions", "limitations". Be specific. Test: Would someone feel a gut reaction reading this? Examples: "Your deposit funds their legal fees" / "Uncapped daily penalties: $2,250 in fees from one missed month". For GREEN clauses: "This one is genuinely what it promises."]
+[REVEAL]: [One concise analytical sentence (max 15 words) that hits the reader when the card flips. The sharp truth that contrasts the reassurance on the front. NEVER vague: no "some", "certain", "conditions", "limitations". Be specific. Test: Would someone feel a strong reaction reading this? Examples: "Your deposit funds their legal fees" / "Uncapped daily penalties: $2,250 in fees from one missed month". For GREEN clauses: "This one is genuinely what it promises."]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
 Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
@@ -1661,7 +1559,7 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 
 **What does this mean for you:**
 [FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "30 days or you lose all rights".]
-[EXAMPLE]: [One concrete scenario using the document's own figures. Walk through step by step. 2-3 sentences max.]
+[EXAMPLE]: [One concrete scenario assuming the drafter seeks maximum advantage — what does this clause let them attempt? Use the document's own figures. Walk through step by step. 2-3 sentences max. Your scenario must stay within what the clause text actually permits — don't invent powers the clause doesn't grant, and don't ignore the clause's own exceptions or carve-outs.]
 
 ## TRICK CATEGORIES (pick exactly one per clause, best match):
 - Silent Waiver — Quietly surrenders your legal rights
@@ -1687,13 +1585,14 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 1. Every field is MANDATORY: title, REASSURANCE, quote, READER, TEASER, REVEAL, risk+score+trick, confidence, bottom line, small print, should read, FIGURE, EXAMPLE. HONEY is optional.
 2. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
 3. Keep each field to ONE sentence. Cards must be scannable, not essays
-4. The [READER] is GULLIBLE with ZERO legal literacy. The reader signs without reading twice
-5. The [REVEAL] is the TITLE of the card back — make it sharp, specific, gut-punching
-6. "What you should read" is the core insight — make it visceral
+4. The [READER] trusts without questioning and has ZERO legal literacy. The reader signs without reading twice
+5. The [REVEAL] is the TITLE of the card back — make it sharp, specific, immediately clear
+6. "What you should read" is the core insight — make it concrete and direct
 7. Confidence: HIGH = clear language; MEDIUM = some ambiguity; LOW = multiple interpretations
 8. Do NOT output --- separators or any text outside the card format
 9. YELLOW/RED clauses MUST have a trick from the 18 categories above — NEVER leave it blank or write "N/A"
 10. [FIGURE] and [EXAMPLE] must be mathematically consistent — the headline number in [FIGURE] MUST be derivable from the step-by-step calculation in [EXAMPLE]. Write [EXAMPLE] first in your head, THEN extract the summary number for [FIGURE]. Never round differently between the two.
+11. MAXIMUM ENFORCEMENT TEST — MANDATORY: Every [EXAMPLE] must answer: "If the drafter sought maximum advantage, what does this clause let them attempt?" Stay within what the clause text actually permits — don't invent powers it doesn't grant, and don't ignore its own exceptions. If the clause has a "unless/except" protection, your scenario must work AROUND it, not pretend it doesn't exist.
 
 ## DOCUMENT:
 
@@ -1716,7 +1615,7 @@ Use EXACTLY this format:
 
 [REASSURANCE]: These clauses are what they promise
 
-[READER]: [List each fair clause in everyday language — "the part about timing is fine," "the cancellation thing is totally normal." Same gullible voice, same forbidden words apply. NO legal jargon.]
+[READER]: [List each fair clause in everyday language — "the part about timing is fine," "the cancellation thing is totally normal." Same trusting voice, same forbidden words apply. NO legal jargon.]
 
 [TEASER]: These are actually what they look like.
 
@@ -1825,162 +1724,6 @@ def _parse_clause_line(line):
 
 
 
-def build_interactions_prompt(has_images=False):
-    """Opus thread 1: Cross-clause compound risks. Findings + deep content."""
-    visual_block = ""
-    if has_images:
-        visual_block = """
-
-## VISUAL FORMATTING ANALYSIS
-Page images are included. Look for visual tricks: fine print, buried placement, dense tables, light-gray disclaimers. Include visual tricks as cross-clause interactions with trick categories. Reference page numbers."""
-
-    return f"""You are a senior attorney. Find clause COMBINATIONS that create compound risks invisible when reading linearly. This is your ONLY job — cross-clause interactions.
-{visual_block}
-## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
-
-## OUTPUT FORMAT — TAGGED SECTIONS
-
-You MUST use the exact tags below. The frontend parses these tags to build a layered report.
-
-[SUMMARY_CONTRIBUTION]
-One sentence summarizing cross-clause risks for a non-expert. Example: "Three clause combinations create compounding penalties that could cost you thousands if you're ever late on a single payment." No jargon. No clause numbers. Concrete consequence.
-[/SUMMARY_CONTRIBUTION]
-
-For each cross-clause interaction, emit a [FINDING] block:
-
-[FINDING id="interactions_1"]
-[FINDING_TITLE]Human-readable title that passes the "would you text this to a friend?" test. NOT legal jargon. Example: "If you're late once, you might never catch up"[/FINDING_TITLE]
-[FINDING_SOURCE]Quote the EXACT text from EACH clause involved. Label each:
-Clause A (Section X): "verbatim text..."
-Clause B (Section Y): "verbatim text..."
-Use the document's actual words, not a paraphrase.[/FINDING_SOURCE]
-[FINDING_EXPLANATION]2-3 sentences in plain language. Concrete. With numbers from the document. Example: "Separately, each clause looks normal — a $50 late fee and a payment priority order. Together, your late fee gets paid BEFORE your rent, so next month you're 'short' again. The cycle never ends."[/FINDING_EXPLANATION]
-[FINDING_SEVERITY]standard | aggressive | unusual[/FINDING_SEVERITY]
-[FINDING_SEVERITY_CONTEXT]One sentence: why this severity. "Standard" = typical for this document type. "Aggressive" = goes further than usual. "Unusual" = rarely seen.[/FINDING_SEVERITY_CONTEXT]
-[FINDING_ACTION]One concrete action. The most effective thing the reader can do about THIS specific risk.[/FINDING_ACTION]
-[/FINDING]
-
-Emit one [FINDING] block per interaction. Find at least 3.
-
-[DEEP_CONTENT]
-## Cross-Clause Interactions — Deep Analysis
-
-For each interaction above, provide the deep read:
-
-### [Same title as the FINDING]
-
-**Read separately, you'd see:** What these clauses appear to say independently. One sentence.
-
-**Read together, you'd realize:** What they ACTUALLY do when combined. One sentence, visceral.
-
-**Clauses involved:** [list specific sections WITH context]
-
-**How they interact:** [2-3 sentences. The mechanism.]
-
-[RED/YELLOW] · Trick: [TRICK_CATEGORY]
-
-**If they meant well:** [1-2 sentences, generous interpretation]
-
-**If they meant every word:** [2-3 sentences, adversarial, villain voice — deliberately exaggerated, the user expects this framing]
-
-→ YOUR MOVE: [One concrete action]
-
----
-[/DEEP_CONTENT]
-
-## TRICK CATEGORIES:
-- Silent Waiver — Quietly surrenders your legal rights
-- Burden Shift — Moves proof/action duty onto you
-- Time Trap — Tight deadlines that forfeit your rights
-- Escape Hatch — Drafter can exit, you can't
-- Moving Target — Can change terms unilaterally
-- Forced Arena — Disputes in drafter's chosen forum
-- Phantom Protection — Broad coverage eaten by exceptions
-- Cascade Clause — One trigger activates penalties in others
-- Sole Discretion — Drafter decides everything
-- Liability Cap — Limits payout regardless of harm
-- Reverse Shield — You cover their costs
-- Auto-Lock — Auto-renewal with hard cancellation
-- Content Grab — Claims rights over your content
-- Data Drain — Expansive hidden data permissions
-- Penalty Disguise — Punitive charges disguised as fees
-- Gag Clause — Prohibits negative reviews
-- Scope Creep — Vague terms stretch beyond expectation
-- Ghost Standard — References external docs not included
-
-## RULES
-- Every [FINDING] MUST include verbatim source text from the document — this is non-negotiable
-- [FINDING_TITLE] must be human language a friend would understand — NO legal jargon
-- [FINDING_SEVERITY] must be exactly one of: standard, aggressive, unusual
-- [DEEP_CONTENT] contains the villain voice — NEVER put villain voice in [FINDING] blocks
-- The bad intentions voice is deliberately adversarial and exaggerated — the user expects this framing
-- Use your full extended thinking budget to reason across the entire document
-- Be thorough — connect clauses that the reader would never connect on their own
-"""
-
-
-def build_asymmetry_prompt(has_images=False):
-    """Opus thread 2: Power asymmetry + fair standard comparison. Findings + deep content."""
-    visual_block = ""
-    if has_images:
-        visual_block = "\n\nPage images are included. Reference visual tricks (fine print, buried placement) in your analysis."
-
-    return f"""You are a senior attorney. Measure the power imbalance in this document and compare its worst clauses against industry norms. This is your ONLY job.
-{visual_block}
-## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
-
-## OUTPUT FORMAT — TAGGED SECTIONS
-
-You MUST use the exact tags below. The frontend parses these tags to build a layered report.
-
-[SUMMARY_CONTRIBUTION]
-One sentence about the power balance. Include the power ratio as one number. Example: "They have 4× more rights than you, and 3 clauses go further than what's standard for this type of agreement." No jargon.
-[/SUMMARY_CONTRIBUTION]
-
-For each unfair clause compared against industry norms, emit a [FINDING] block:
-
-[FINDING id="asymmetry_1"]
-[FINDING_TITLE]Human-readable title. NOT "Unlimited Indemnification Flowing One Way Against a $100 Wall". YES: "If you get hurt on their trip, you pay their lawyer"[/FINDING_TITLE]
-[FINDING_SOURCE]Quote the EXACT clause text from the document. Use the document's actual words, not a paraphrase. If multiple clauses are involved, label each.[/FINDING_SOURCE]
-[FINDING_EXPLANATION]2-3 sentences. What this means in concrete terms. With numbers from the document where possible. Example: "If you trip on their trip and break your leg, you pay their legal bills — not the other way around. There's no cap on what you'd owe. Meanwhile, if they cancel the trip entirely, the most they'd give you is $100."[/FINDING_EXPLANATION]
-[FINDING_SEVERITY]standard | aggressive | unusual[/FINDING_SEVERITY]
-[FINDING_SEVERITY_CONTEXT]One sentence. For "standard": "This is typical for [document type]. Most [type] have this." For "aggressive": "This goes further than usual. A fair version would [what's standard]." For "unusual": "This is rarely seen. In a fair version, [what you'd expect]."[/FINDING_SEVERITY_CONTEXT]
-[FINDING_ACTION]One concrete action the reader can take about THIS specific imbalance.[/FINDING_ACTION]
-[/FINDING]
-
-Emit 2-3 [FINDING] blocks for the worst imbalances.
-
-[DEEP_CONTENT]
-## Power Balance — Deep Analysis
-
-**Your rights:** [count] · **Your obligations:** [count] · **Their rights:** [count] · **Their obligations:** [count] · **"Sole discretion" (them):** [count]×
-
-**Power Ratio: [Their rights]:[Your rights]** — [one sentence]
-
-## Fair Standard Comparison
-
-For each comparison (2-3 max):
-
-### [Clause/Area]
-**This document says:** [what the clause actually states — one sentence]
-**A fair version would say:** [what a balanced, industry-standard clause would look like — one sentence]
-**The gap:** [why the difference matters to the reader — one sentence]
-
-This section answers: "Is this document UNUSUALLY aggressive, or is this just how these documents work?"
-[/DEEP_CONTENT]
-
-## RULES
-- Every [FINDING] MUST include verbatim source text from the document — this is non-negotiable
-- [FINDING_TITLE] must be human language a friend would understand — NO legal jargon
-- [FINDING_SEVERITY] must be exactly one of: standard, aggressive, unusual
-- Power Asymmetry: count precisely from the document, don't estimate or round
-- Fair Standard: be specific about industry norms — cite what's standard
-- Use your full extended thinking budget
-"""
-
-
 def build_archaeology_prompt(has_images=False):
     """Opus thread 3: Document archaeology (boilerplate vs custom) + drafter profile. Findings + deep content."""
     visual_block = ""
@@ -2020,7 +1763,7 @@ For each major section, one word: **Boilerplate** or **Custom**. Then 1-2 senten
 
 ## Who Drafted This
 
-[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. The drafter profile should predict BEHAVIOR, not just describe structure. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, aggressive deposit deductions, and form-letter communication."]
+[2-3 sentences profiling what TYPE of drafter produces this document structure and what it signals about how they will behave. The drafter profile should predict BEHAVIOR, not just describe structure. Example: "This lease pattern is typical of high-volume property management companies optimizing for automated enforcement and minimal tenant interaction. Expect slow repair responses, one-sided deposit deductions, and form-letter communication."]
 [/DEEP_CONTENT]
 
 ## RULES
@@ -2042,26 +1785,27 @@ ALWAYS respond in ENGLISH regardless of the document's language. When quoting te
 
 ## OUTPUT FORMAT
 
-## What Could Happen
+[SCENARIO_TITLE]What Could Happen[/SCENARIO_TITLE]
+
+[SCENARIO_SETUP]One paragraph: who you are in this scenario, the key facts, and what triggers the cascade. Set the scene.[/SCENARIO_SETUP]
 
 Pick the trigger that a reasonable person would MOST LIKELY experience (missed payment, illness, schedule conflict, minor damage, late notice, job change, etc.) — not a contrived edge case.
 
-Tell it as a story. Use second person ("you").
+Tell it as a story. Use second person ("you"). Each timeline step is tagged. EACH STEP MUST BE 2-3 SENTENCES MAX — concise, not essays. Lead with the clause reference, then the consequence. 4 steps maximum.
 
-**Month 1 — [Trigger Event]:** [What happens. Reference actual clause figures and section names.]
-**Month 2 — [Escalation]:** [How other clauses activate. Show the math with the document's real numbers.]
-**Month 3 — [Compound Effect]:** [The situation you're now locked into. Which clauses chain together.]
-[Continue 3-6 months — stop when the scenario reaches its conclusion.]
+[TIMELINE_STEP title="Month 1 — Trigger Event"]2-3 sentences. What happens. Cite the clause.[/TIMELINE_STEP]
+[TIMELINE_STEP title="Month 3 — Escalation"]2-3 sentences. How other clauses activate. Show the math.[/TIMELINE_STEP]
+[TIMELINE_STEP title="Month 6 — Compound Effect"]2-3 sentences. The situation you're locked into.[/TIMELINE_STEP]
+[TIMELINE_STEP title="Month 12 — Final Impact"]2-3 sentences. Where you end up.[/TIMELINE_STEP]
 
-**Total exposure after [N] months: $[figure] [or concrete non-financial consequence]**
+[SCENARIO_TOTAL]Total exposure after [N] months: $[figure] [or concrete non-financial consequence]. Include a markdown table if there are multiple line items.[/SCENARIO_TOTAL]
 
----
+[SCENARIO_ACTIONS]2-3 bullet points: specific actions the reader could take BEFORE signing to protect against this scenario. Be concrete — reference specific clauses to negotiate or remove.[/SCENARIO_ACTIONS]
 
-## What You Could Do Before Signing
-
-[2-3 bullet points: specific actions the reader could take BEFORE signing to protect against this scenario. Be concrete — reference specific clauses to negotiate or remove.]
+[SCENARIO_MESSAGE]A ready-to-send message (email or letter) the reader could send to the other party requesting the changes from SCENARIO_ACTIONS. Professional but firm tone. 1-2 short paragraphs.[/SCENARIO_MESSAGE]
 
 ## RULES
+- MAXIMUM ENFORCEMENT TEST: assume the drafter seeks maximum advantage — what does this contract let them attempt? Stay within what the clause text actually permits — don't ignore exceptions or carve-outs
 - Use the document's OWN numbers — do not invent figures
 - Pick the MOST LIKELY trigger, not the most dramatic
 - Show how clauses compound — reference specific sections by name
@@ -2069,7 +1813,8 @@ Tell it as a story. Use second person ("you").
 - The math must be correct — add up fees, penalties, and compounding costs accurately
 - Use your full extended thinking budget to trace every clause chain
 - Self-check: verify the total exposure equals the sum of all individual fees, penalties, and costs in the timeline. If any number doesn't trace back to a specific clause, remove it
-- Realism is what makes it hit"""
+- Realism is what makes it hit
+- BUDGET: Timeline steps are 40% of output. Reserve 60% for SCENARIO_TOTAL (with table), SCENARIO_ACTIONS, and SCENARIO_MESSAGE — these are the most actionable parts. Keep steps SHORT"""
 
 
 def build_walkaway_prompt():
@@ -2122,7 +1867,7 @@ Key assumptions behind this calculation (1-3 bullet points):
 
 
 def build_combinations_prompt():
-    """Deep dive: Cross-clause compound traps."""
+    """Deep dive: Cross-clause compound effects."""
     return """You are a senior attorney specializing in cross-clause analysis. Find clause COMBINATIONS that create compound risks invisible when reading each clause alone.
 
 ## LANGUAGE RULE
@@ -2132,7 +1877,7 @@ ALWAYS respond in ENGLISH regardless of the document's language. When quoting, k
 
 ## Hidden Combinations
 
-For each dangerous combination (find 3-5):
+For each significant combination (find 3-5):
 
 ### [Human-friendly title — something you'd text to a friend]
 
@@ -2144,7 +1889,7 @@ For each dangerous combination (find 3-5):
 
 **Read separately:** [One sentence — what each clause appears to mean on its own. Innocent-sounding.]
 
-**Read together:** [One sentence — what they ACTUALLY do when combined. The trap. Concrete, with numbers if possible.]
+**Read together:** [One sentence — what they ACTUALLY do when combined. The compound effect. Concrete, with numbers if possible.]
 
 **Severity:** [Standard / Aggressive / Unusual]
 
@@ -2156,14 +1901,14 @@ For each dangerous combination (find 3-5):
 
 ## The Compound Effect
 
-[2-3 sentences summarizing the overall pattern. Do any combinations chain together into a triple or quadruple trap? Is there a central clause that appears in multiple combinations — a "hub" that connects many traps?]
+[2-3 sentences summarizing the overall pattern. Do any combinations chain together into a triple or quadruple compound effect? Is there a central clause that appears in multiple combinations — a "hub" that connects multiple risks?]
 
 ## RULES
 - Every combination MUST quote verbatim text from BOTH clauses — this is non-negotiable
 - The title must be plain language a friend would understand — NO legal jargon
 - Focus on combinations the reader would NEVER notice reading linearly
 - Prioritize combinations with financial consequences or rights forfeiture
-- "Read separately" should sound reassuring; "Read together" should be the gut punch
+- "Read separately" should sound reassuring; "Read together" should be the key finding
 - Use your full extended thinking budget to systematically check clause pairs
 - Be thorough — connect clauses that are far apart in the document
 - Self-check: for each combination, verify that the quoted clause text actually supports the compound effect you describe. If the "Read together" consequence doesn't follow from the two quotes, revise or remove it"""
@@ -2224,11 +1969,11 @@ def build_verdict_prompt(has_images=False):
     in one coherent pass. Auto-detects jurisdiction from document text."""
     visual_block = ""
     if has_images:
-        visual_block = "\n\nPage images are included. Look for visual tricks: fine print, buried placement, dense tables, light-gray disclaimers."
+        visual_block = "\n\nPage images are included. Look for visual formatting choices that reduce readability: fine print, buried placement, dense tables, light-gray disclaimers."
 
     return f"""You are a senior attorney writing a verdict for someone who NEVER reads contracts. They will read ONE screen and then close the tab. Make every word count.
 
-Your job: analyze this ENTIRE document — cross-clause interactions, power balance, drafter intent, and overall risk — in ONE coherent report. You are the only expert. Be thorough in your thinking, ruthlessly concise in your output.
+Your job: analyze this ENTIRE document — cross-clause interactions, power balance, drafter intent, and overall risk — in ONE coherent report. You are the only expert. Be thorough in your thinking, rigorously concise in your output.
 {visual_block}
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
@@ -2357,132 +2102,6 @@ Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, 
 """
 
 
-def build_synthesis_prompt():
-    """Opus thread 5: Expert Panel Synthesis — reads all 4 expert reports and produces a 4-voice synthesis."""
-    return """You are the SYNTHESIS CHAIR of a 4-expert panel that just analyzed a legal document. You have access to ALL four expert reports. Your job: produce a unified synthesis that NO individual expert could write alone.
-
-## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document or expert reports, keep quotes in the original language and add an English translation in parentheses if the quote is not in English.
-
-## YOUR 4 VOICES — output ALL four sections in this exact order:
-
-## What You Need to Know
-
-Plain-language briefing for a non-expert. 8th-grade reading level. THIS IS YOUR LARGEST SECTION (400-600 words).
-
-Structure:
-1. **One-sentence verdict** — what this document IS, in plain terms
-2. **The 3 biggest risks** — explain each in simple language. No jargon. Cite which expert flagged it.
-3. **What to do right now** — numbered action list (5-7 items), specific and concrete
-4. **Email you can send** — a ready-to-copy paragraph the reader can send to the other party. Professional tone, cites specific clause numbers, requests specific changes. Start with "Dear [Other Party],"
-
-## If They Meant Well
-
-Good-faith interpretation. Steelman the drafter's position (200-300 words).
-- For each major flagged clause, explain WHY it might exist for legitimate business reasons
-- Reference which expert flagged it and provide the charitable counter-reading
-- Acknowledge industry norms that might explain harsh-looking language
-- End with: "The most charitable reading of this document is that..."
-
-## If They Meant Every Word
-
-Bad-faith interpretation — villain voice applied to the WHOLE DOCUMENT as a system (200-300 words).
-- Do NOT go clause-by-clause — treat the document as one coordinated strategy
-- What is the document DESIGNED to achieve if every clause is enforced to maximum effect?
-- Use vivid, specific language: "This isn't a lease — it's a revenue optimization machine with a bed attached"
-- Reference findings from multiple experts to build the systemic picture
-- End with the single most devastating sentence about what signing means
-
-## Cross-Expert Connections
-
-Where the 4 expert reports converge, contradict, or reveal hidden patterns (200-300 words).
-- **Convergences**: Which risks did multiple experts independently flag? (This strengthens the signal)
-- **Contradictions**: Did experts disagree on severity or interpretation? Why?
-- **Hidden patterns**: What emerges ONLY when you read all 4 reports together? (e.g., custom-drafted sections correlating with the harshest terms, boilerplate providing cover for bespoke traps)
-- **The one thing everyone missed**: Is there a risk that falls between expert domains?
-
-## RULES
-- DO NOT repeat or summarize the 4 expert reports — the user has already read them
-- Every claim MUST reference specific findings from specific experts (e.g., "The Archaeology expert found...", "Both the Interactions and Asymmetry experts flagged...")
-- "What You Need to Know" MUST be the longest section
-- Total output target: 1000-1500 words
-- COMPLETION IS MANDATORY — never truncate
-- Use your full extended thinking budget to find cross-expert patterns before writing
-"""
-
-
-def build_synthesis_user_content(user_msg, thread_texts):
-    """Build user message for synthesis: original document + all 4 expert reports."""
-    parts = [user_msg]
-    labels = {
-        'interactions': 'CROSS-CLAUSE INTERACTIONS EXPERT',
-        'asymmetry': 'POWER ASYMMETRY EXPERT',
-        'archaeology': 'DOCUMENT ARCHAEOLOGY EXPERT',
-        'overall': 'OVERALL ASSESSMENT EXPERT',
-    }
-    for source in ['interactions', 'asymmetry', 'archaeology', 'overall']:
-        text = thread_texts.get(source, '').strip()
-        if text:
-            parts.append(f"\n\n---BEGIN {labels[source]} REPORT---\n\n{text}\n\n---END {labels[source]} REPORT---")
-    return '\n'.join(parts)
-
-
-@app.route('/compare', methods=['POST'])
-def compare():
-    """Upload two documents for comparison."""
-    try:
-        texts = []
-        filenames = []
-
-        for key in ['file1', 'file2']:
-            if key in request.files and request.files[key].filename:
-                file = request.files[key]
-                fname = file.filename
-                ext = fname.rsplit('.', 1)[-1].lower() if '.' in fname else ''
-                if ext == 'pdf':
-                    text, _ = extract_pdf(file)
-                elif ext == 'docx':
-                    text = extract_docx(file)
-                elif ext in ('txt', 'text', 'md'):
-                    text = file.read().decode('utf-8', errors='replace')
-                else:
-                    return jsonify({'error': f'Unsupported file type for {key}: .{ext}'}), 400
-                texts.append(text)
-                filenames.append(fname)
-            else:
-                tkey = 'text1' if key == 'file1' else 'text2'
-                txt = request.form.get(tkey, '').strip()
-                if txt:
-                    texts.append(txt)
-                    filenames.append('Document ' + key[-1])
-
-        if len(texts) < 2:
-            return jsonify({'error': 'Please provide two documents to compare.'}), 400
-
-        depth = request.form.get('depth', 'standard')
-        doc_id = str(uuid.uuid4())
-        store_document(doc_id, {
-            'text': texts[0],
-            'text2': texts[1],
-            'filename': filenames[0],
-            'filename2': filenames[1],
-            'depth': depth,
-            'mode': 'compare',
-        })
-
-        return jsonify({
-            'doc_id': doc_id,
-            'filename': filenames[0] + ' vs ' + filenames[1],
-            'text_length': len(texts[0]) + len(texts[1]),
-            'preview': texts[0][:150] + '\n---\n' + texts[1][:150],
-            'full_text': texts[0],
-            'mode': 'compare',
-        })
-    except Exception as e:
-        print(f'[upload/compare] Error: {e}')
-        return jsonify({'error': 'An internal error occurred. Please try again.'}), 500
-
-
 @app.route('/analyze/<doc_id>')
 def analyze(doc_id):
     if doc_id not in documents:
@@ -2538,39 +2157,8 @@ def analyze(doc_id):
             state['current_block'] = None
         return chunks
 
-    def run_single_stream(client, user_msg, system_prompt, preset):
-        """Single API call — used for comparison mode."""
-        state = {
-            'current_block': None,
-            'phase_buffer': '',
-            'detected_phases': set(),
-            'current_tool_name': None,
-            'current_tool_input_json': '',
-            'tool_results': [],
-        }
-        stream = None
-        try:
-            yield sse('phase', 'thinking')
-            create_kwargs = {
-                'model': MODEL,
-                'max_tokens': preset['max_tokens'],
-                'thinking': {'type': 'adaptive'},
-                'system': [{'type': 'text', 'text': system_prompt, 'cache_control': {'type': 'ephemeral'}}],
-                'messages': [{'role': 'user', 'content': user_msg}],
-                'stream': True,
-            }
-            stream = client.messages.create(**create_kwargs)
-            for event in stream:
-                for chunk in process_stream_event(event, state):
-                    yield chunk
-                if event.type == 'message_stop':
-                    yield sse('done')
-        finally:
-            if stream:
-                stream.close()
-
-    def run_parallel(client, user_msg, preset):
-        """Two parallel API calls: Haiku full cards + single Opus verdict."""
+    def run_parallel(client, user_msg):
+        """7-thread parallel analysis: 1 Opus verdict + 5 Opus deep-dive threads + 1 Haiku card pipeline."""
         q = queue_module.Queue()
         timings = {}
         cancel = threading.Event()  # Signal to cancel Opus threads (e.g. doc not applicable)
@@ -2607,11 +2195,8 @@ def analyze(doc_id):
                 timings[label] = round(time.time() - t0, 1)
                 q.put((f'{label}_done', None))
 
-        # Deep analysis token budget
-        deep_max_tokens = max(preset['max_tokens'], 80000)
-
         # Build vision content for deep analysis if page images exist
-        page_images = doc.get('page_images', [])
+        page_images = [img for img in doc.get('page_images', []) if img]
         deep_user_content = None
         if page_images:
             deep_user_content = [{'type': 'text', 'text': user_msg}]
@@ -2654,8 +2239,21 @@ def analyze(doc_id):
         )
         t_opus.start()
 
-        # ── Deep dives removed from parallel pipeline ──
-        # Now on-demand via /deepdive/<doc_id>/<type> endpoint
+        # ── 5 parallel Opus deep-dive threads — all fire at t=0 ──
+        deep_dive_threads = {
+            'archaeology': (build_archaeology_prompt(has_images=has_images), 16000),
+            'scenario':    (build_scenario_prompt(), 16000),
+            'walkaway':    (build_walkaway_prompt(), 16000),
+            'combinations':(build_combinations_prompt(), 16000),
+            'playbook':    (build_playbook_prompt(), 16000),
+        }
+        for dd_label, (dd_prompt, dd_max) in deep_dive_threads.items():
+            threading.Thread(
+                target=worker,
+                args=(dd_label, dd_prompt, dd_max, MODEL, True),
+                kwargs={'user_content': deep_user_content or user_msg},
+                daemon=True,
+            ).start()
 
         # ── FAST PATH: pre-generated cards already available (non-blocking) ──
         if precards_event and precards_event.is_set():
@@ -2694,7 +2292,6 @@ def analyze(doc_id):
             """Background thread: waits for prescan/precards, starts card
             workers, pushes pipeline events to the shared queue."""
             try:
-                _precards_ev = doc.get('_precards_event')
                 _prescan_ev = doc.get('_prescan_event')
 
                 # Wait for prescan (Phase 1: clause identification, ~7s)
@@ -2795,12 +2392,18 @@ def analyze(doc_id):
                         q.put(('cards_profile', _profile))
                     q.put(('cards_started', _card_total))
                     print(f'[pipeline] Forwarding {_card_total} cards individually')
+                    _received = 0
                     for _ in range(_card_total):
                         try:
                             idx, text = _card_queue.get(timeout=60)
                             q.put(('card_ready', (idx, text)))
+                            _received += 1
                         except queue_module.Empty:
                             print(f'[pipeline] Timed out waiting for card')
+                            break
+                    # If some cards timed out, tell main loop the real count
+                    if _received < _card_total:
+                        q.put(('cards_started', _received))
                     return
 
                 # Fallback: no card queue — start fresh card workers
@@ -2855,7 +2458,7 @@ def analyze(doc_id):
         """Event loop for parallel per-clause card generation + Opus verdict.
         Cards are buffered and emitted in order as they complete."""
 
-        OPUS_SOURCES = {'overall'}
+        OPUS_SOURCES = {'overall', 'archaeology', 'scenario', 'walkaway', 'combinations', 'playbook'}
 
         start_time = time.time()
         card_texts = {}
@@ -2970,8 +2573,9 @@ def analyze(doc_id):
                     elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
                         yield sse(f'{source}_thinking', delta.thinking)
 
-        # ── Save verdict for follow-up & deep dives ──
+        # ── Save verdict + deep dives for follow-up agent ──
         doc['_verdict_text'] = thread_texts.get('overall', '')
+        doc['_deep_dive_texts'] = {k: v for k, v in thread_texts.items() if k != 'overall'}
 
         # ── Final done event ──
         yield sse('done', json.dumps({
@@ -2985,7 +2589,7 @@ def analyze(doc_id):
         control events (cards_instant, cards_started, cards_not_applicable,
         cards_fallback, cards_profile) alongside normal card/Opus events."""
 
-        OPUS_SOURCES = {'overall'}
+        OPUS_SOURCES = {'overall', 'archaeology', 'scenario', 'walkaway', 'combinations', 'playbook'}
 
         start_time = time.time()
         card_texts = {}
@@ -3204,155 +2808,14 @@ def analyze(doc_id):
                     elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
                         yield sse(f'{source}_thinking', delta.thinking)
 
-        # ── Save verdict for follow-up & deep dives ──
+        # ── Save verdict + deep dives for follow-up agent ──
         doc['_verdict_text'] = thread_texts.get('overall', '')
+        doc['_deep_dive_texts'] = {k: v for k, v in thread_texts.items() if k != 'overall'}
 
         # ── Final done event ──
         yield sse('done', json.dumps({
             'quick_seconds': timings.get('scan', timings.get('quick', 0)),
             'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
-            'model': MODEL}))
-
-    def _run_parallel_fallback(q, timings, cancel):
-        """Fallback event loop: single Haiku stream + single Opus verdict.
-        Used when Phase 1 identification scan fails."""
-
-        OPUS_SOURCES = {'overall'}
-
-        start_time = time.time()
-        state_quick = _make_stream_state()
-        quick_text = ''
-        quick_done = False
-        done_flags = {s: False for s in OPUS_SOURCES}
-        thread_texts = {s: '' for s in OPUS_SOURCES}  # Accumulate for synthesis
-        synthesis_started = False
-        synthesis_done = False
-
-        def all_done():
-            base = quick_done and all(done_flags.values())
-            if not base:
-                return False
-            if synthesis_started:
-                return synthesis_done
-            return True
-
-        while not all_done():
-            # ── Wall-clock timeout: fires even if queue has events ──
-            if time.time() - start_time > 300:
-                cancel.set()
-                yield sse('error', 'Analysis timed out after 5 minutes')
-                yield sse('done', json.dumps({
-                    'quick_seconds': timings.get('quick', 0),
-                    'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
-                    'model': MODEL}))
-                return
-
-            try:
-                source, event = q.get(timeout=1.0)
-            except queue_module.Empty:
-                continue
-
-            # ── Accumulate Haiku text for suitability check ──
-            if source == 'quick' and hasattr(event, 'type'):
-                if event.type == 'content_block_delta':
-                    delta = event.delta
-                    if hasattr(delta, 'type') and delta.type == 'text_delta':
-                        quick_text += delta.text
-
-            # ── Error handling ──
-            if source == 'error':
-                error_msg = str(event)
-                error_source = error_msg.split(':')[0] if ':' in error_msg else ''
-                yield sse('error', error_msg)
-                if error_source == 'quick':
-                    cancel.set()
-                    yield sse('done', json.dumps({
-                        'quick_seconds': 0, 'deep_seconds': 0, 'model': MODEL}))
-                    return
-                elif error_source in OPUS_SOURCES:
-                    done_flags[error_source] = True
-                elif error_source == 'synthesis':
-                    synthesis_done = True  # Don't block completion on synthesis failure
-                continue
-
-            # ── Quick (Haiku full cards) done ──
-            if source == 'quick_done':
-                quick_done = True
-                qt = timings.get('quick', 0)
-                yield sse('quick_done', json.dumps({
-                    'seconds': qt, 'model': FAST_MODEL}))
-
-                doc_not_applicable = '**Not Applicable**' in quick_text
-                clause_count = max(0, len(re.findall(r'\n---\n', quick_text)) - 1)
-
-                yield sse('handoff', json.dumps({
-                    'tricks_found': 0,
-                    'summary': '',
-                    'clause_count': clause_count,
-                    'not_applicable': doc_not_applicable,
-                }))
-
-                if doc_not_applicable:
-                    cancel.set()
-                    yield sse('done', json.dumps({
-                        'quick_seconds': qt, 'deep_seconds': 0, 'model': MODEL}))
-                    return
-                continue
-
-            # ── Opus source done ──
-            if source.endswith('_done') and source[:-5] in OPUS_SOURCES:
-                opus_label = source[:-5]
-                done_flags[opus_label] = True
-                yield sse(f'{opus_label}_done', json.dumps({
-                    'seconds': timings.get(opus_label, 0)}))
-
-                # Synthesis skipped — single verdict thread covers everything
-
-                continue
-
-            # ── Synthesis done ──
-            if source == 'synthesis_done':
-                synthesis_done = True
-                yield sse('synthesis_done', json.dumps({
-                    'seconds': timings.get('synthesis', 0)}))
-                continue
-
-            # ── Stream events ──
-            if source == 'quick':
-                for chunk in process_stream_event(event, state_quick):
-                    yield chunk
-
-            elif source in OPUS_SOURCES:
-                # Each Opus source dispatches to its own SSE channel
-                if not hasattr(event, 'type'):
-                    continue
-                if event.type == 'content_block_delta':
-                    delta = event.delta
-                    if hasattr(delta, 'type') and delta.type == 'text_delta':
-                        thread_texts[source] += delta.text  # Accumulate for synthesis
-                        yield sse(f'{source}_text', delta.text)
-                    elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
-                        yield sse(f'{source}_thinking', delta.thinking)
-
-            elif source == 'synthesis':
-                # Synthesis thread streams its own SSE channel
-                if not hasattr(event, 'type'):
-                    continue
-                if event.type == 'content_block_delta':
-                    delta = event.delta
-                    if hasattr(delta, 'type') and delta.type == 'text_delta':
-                        yield sse('synthesis_text', delta.text)
-                    elif hasattr(delta, 'type') and delta.type == 'thinking_delta':
-                        yield sse('synthesis_thinking', delta.thinking)
-
-        # ── Save verdict for follow-up & deep dives ──
-        doc['_verdict_text'] = thread_texts.get('overall', '')
-
-        # ── Final done event ──
-        yield sse('done', json.dumps({
-            'quick_seconds': timings.get('quick', 0),
-            'deep_seconds': max((timings.get(s, 0) for s in OPUS_SOURCES), default=0),
-            'synthesis_seconds': timings.get('synthesis', 0),
             'model': MODEL}))
 
     def _make_stream_state():
@@ -3371,31 +2834,14 @@ def analyze(doc_id):
             client = anthropic.Anthropic(
                 timeout=180.0  # 3 min per call
             )
-            is_compare = doc.get('mode') == 'compare'
-            depth = doc.get('depth', 'standard')
-            preset = DEPTH_PRESETS.get(depth, DEPTH_PRESETS['standard'])
-
-            if is_compare:
-                user_msg = (
-                    "Compare the following two documents side by side.\n\n"
-                    "---BEGIN DOCUMENT A---\n\n"
-                    f"{doc['text']}\n\n"
-                    "---END DOCUMENT A---\n\n"
-                    "---BEGIN DOCUMENT B---\n\n"
-                    f"{doc.get('text2', '')}\n\n"
-                    "---END DOCUMENT B---"
-                )
-                yield from run_single_stream(
-                    client, user_msg, build_compare_prompt(), preset)
-            else:
-                user_msg = (
-                    "Analyze the following document from the drafter's "
-                    "strategic perspective.\n\n"
-                    "---BEGIN DOCUMENT---\n\n"
-                    f"{doc['text']}\n\n"
-                    "---END DOCUMENT---"
-                )
-                yield from run_parallel(client, user_msg, preset)
+            user_msg = (
+                "Analyze the following document from the drafter's "
+                "strategic perspective.\n\n"
+                "---BEGIN DOCUMENT---\n\n"
+                f"{doc['text']}\n\n"
+                "---END DOCUMENT---"
+            )
+            yield from run_parallel(client, user_msg)
 
         except anthropic.AuthenticationError:
             yield sse('error',
@@ -3595,8 +3041,8 @@ def _execute_tool(tool_name, tool_input, doc):
 
     elif tool_name == 'get_clause_analysis':
         clause_num = tool_input.get('clause_number', 0)
-        precards = doc.get('_precards', {})
-        cards = precards.get('cards', [])
+        precards = doc.get('_precards') or {}
+        cards = precards.get('cards') or []
         if 1 <= clause_num <= len(cards):
             return cards[clause_num - 1]
         return f"Clause {clause_num} not found. This document has {len(cards)} clauses."
@@ -3745,7 +3191,7 @@ For each YELLOW or RED clause in the document (skip GREEN clauses), output:
 ## RULES
 - Only redraft clauses that are genuinely unfair (YELLOW/RED) — do not touch fair clauses
 - The rewrite must be realistic — something a reasonable counterparty might actually accept
-- Preserve the drafter's legitimate interests while removing exploitation
+- Preserve the drafter's legitimate interests while removing one-sided provisions
 - Keep rewrites approximately the same length as originals — don't bloat them
 - Use plain language but maintain legal precision
 - Order clauses by severity: most problematic first
@@ -3919,6 +3365,16 @@ def fetch_url():
             return jsonify({'error': 'No URL provided.'}), 400
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
+
+        # Block private/internal URLs (SSRF prevention)
+        from urllib.parse import urlparse
+        hostname = urlparse(url).hostname or ''
+        if hostname in ('localhost', '127.0.0.1', '0.0.0.0', '::1') or \
+           hostname.startswith(('10.', '172.16.', '172.17.', '172.18.', '172.19.',
+                                '172.20.', '172.21.', '172.22.', '172.23.', '172.24.',
+                                '172.25.', '172.26.', '172.27.', '172.28.', '172.29.',
+                                '172.30.', '172.31.', '192.168.', '169.254.')):
+            return jsonify({'error': 'Internal URLs are not allowed.'}), 400
 
         import requests as req
         from bs4 import BeautifulSoup

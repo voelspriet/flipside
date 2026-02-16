@@ -2,12 +2,12 @@
 
 **FlipSide — The dark side of small print.**
 
-Every contract has two sides. You've only seen one.
+Gym memberships, app terms, pet adoptions, sweepstakes entries — the things you sign with a shrug. They weren't written with one.
 
-FlipSide reads any document you didn't write — leases, insurance policies, gym memberships, terms of service — and shows you what the drafter intended. Upload a document. Browse flip cards: the front shows what the drafter wants you to feel. Flip it to see what an expert catches. Risk scores, trick classifications, concrete dollar figures.
+Built entirely through conversation with Claude Code by a non-coder. 14,600+ lines. 89 commits. 5 days.
 
-Split-model architecture: Haiku 4.5 generates flip cards in parallel (~8 seconds), while Opus 4.6 builds a one-screen expert verdict with jurisdiction detection, power ratio analysis, and four on-demand deep dives. Follow-up questions use Opus 4.6 with document search tools — the model autonomously traces answers through every relevant clause.
+FlipSide reads any document you didn't write and shows you what the drafter intended. Upload a PDF, paste a URL, or try one of 14 built-in samples. Browse flip cards: the front shows what the drafter wants you to feel. Flip it to see what an expert catches. Risk scores, trick classifications, concrete dollar figures.
 
-14 built-in sample documents. 6 input formats. 18-type trick taxonomy.
+Haiku 4.5 builds flip cards in 8 seconds. Opus 4.6 builds the expert verdict in the background — jurisdiction detection, power ratio, risk checklist. Follow-up questions use Opus 4.6 with document search tools, autonomously tracing answers through every relevant clause.
 
-Built entirely through conversation with Claude Code by a journalist with zero coding experience. 14,294 lines. 86 commits. 5 days. The flip card makes legal analysis feel human — not legal advice, legal awareness. For everyone.
+6 input formats. 18-type trick taxonomy. The flip card makes legal analysis feel human — not legal advice, legal awareness. For everyone.
