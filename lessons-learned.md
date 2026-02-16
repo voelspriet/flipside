@@ -72,9 +72,9 @@ The development method that made this possible: screenshot the current state, as
 
 **What the user sees:** A polished product that went through 7 complete rethinks — from single-model to split-model, from sequential to parallel, from blocking to streaming — each time getting faster and more useful. The final product feels like it was built by a team, not iterated by one person and one model.
 
-**The lesson:** Opus 4.6 doesn't just write code — it translates between visual thinking and technical implementation. The screenshot-to-vocabulary workflow replaced the IDE entirely. And with a 1M token context window, the entire codebase fits in working memory during every edit.
+**The lesson:** Opus 4.6 doesn't just write code — it translates between visual thinking and technical implementation. The screenshot-to-vocabulary workflow replaced the IDE entirely. And with Opus 4.6's improved long-context retrieval, the entire codebase stays consistent during every edit.
 
-**Why Opus 4.6:** Any model can write a function. But rethinking a system 7 times — while maintaining consistency across 14,000+ lines, understanding imprecise intent from three misspelled words and a screenshot — requires the combination of Terminal-Bench 65.4% (agentic coding), MRCR 76% (long-context retrieval across code), and GDPval-AA +144 Elo (understanding intent from imprecise input).
+**Why Opus 4.6:** Any model can write a function. But rethinking a system 7 times — while maintaining consistency across 14,000+ lines, understanding imprecise intent from three misspelled words and a screenshot — requires the combination of Terminal-Bench 65.4% (agentic coding) and MRCR 76% (long-context retrieval across code).
 
 ---
 
