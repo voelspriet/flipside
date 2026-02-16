@@ -173,6 +173,22 @@ FlipSide uses 16 Opus 4.6 capabilities — including three that Anthropic [speci
 
 ---
 
+### Engineering Highlights
+
+**Mid-stream thread spawning** — Card workers launch while the clause identification scan is still streaming. The moment a `CLAUSE:` line arrives in Haiku's response, a card generation thread spawns — before the scan is finished. First cards appear seconds faster than a serial pipeline.
+
+**Upload-time pre-computation** — LLM calls begin during file upload, hiding latency inside the UX dead zone (screen transition + loading animation). If cards finish before the SSE connection opens, they emit instantly — zero wait.
+
+**Vocabulary-constrained personas** — The Reader voice uses a forbidden-word list with morphological roots (`"waiv"` catches waive/waiver/waiving) plus plain-language replacements. This makes it structurally impossible for the model to leak legal awareness into what should be a trusting, non-expert voice — more reliable than persona instructions alone.
+
+**Each Haiku card serves three purposes** — The same card output is (1) a user-facing flip card, (2) input to an instant flash verdict while Opus works, and (3) structured context injected into the Opus prompt so expert analysis builds on findings rather than rediscovering them.
+
+**Interaction-gated onboarding** — Navigation, keyboard shortcuts, and the verdict strip stay hidden until the user physically flips their first card. Every user must experience the reassurance → reveal moment before browsing freely. The product thesis is communicated through the mechanic, not explanation.
+
+**Prompt caching across parallel workers** — The card generation system prompt (instructions, trick taxonomy, formatting rules) is shared across all N parallel Haiku workers with `cache_control: ephemeral`. Workers 2–N get Anthropic prompt cache hits on the system prompt — the document text is per-card in the user message.
+
+---
+
 ## Quick Start
 
 ```bash
