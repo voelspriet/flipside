@@ -5,10 +5,10 @@
 | Metric | Value |
 | --- | --- |
 | Lines written by a human | 0 |
-| Total commits | 111 |
+| Total commits | 116 |
 | Total insertions | 46,062 lines |
 | Total deletions | 18,571 lines |
-| Net codebase | 14,000+ lines (3,469 backend + 10,594 frontend) |
+| Net codebase | 14,000+ lines (3,469 backend + 10,603 frontend) |
 | Development period | 6 days (Feb 10–16, 2026) |
 | Average velocity | ~5,700 lines/day |
 | Architecture pivots | 7 major restructurings (>500 lines changed) |
@@ -92,7 +92,7 @@ This produced `swooshBriefingToCardNav()` — a FLIP animation that captures sou
 
 **The benchmark:** Terminal-Bench 2.0 65.4% (agentic coding), up from 59.8% for Opus 4.5.
 
-**What happened in FlipSide:** The entire frontend is a single 10,594-line HTML file containing CSS, HTML, and JavaScript inline. The backend is a single 3,469-line Python file containing Flask routes, 9+ prompt templates, SSE streaming, and parallel thread management. Every change requires understanding both files simultaneously.
+**What happened in FlipSide:** The entire frontend is a single 10,603-line HTML file containing CSS, HTML, and JavaScript inline. The backend is a single 3,469-line Python file containing Flask routes, 9+ prompt templates, SSE streaming, and parallel thread management. Every change requires understanding both files simultaneously.
 
 **Grounded example:** Commit `0cc0c33` (stream-first pipeline) changed 962 lines across both files. The backend restructuring (new `_card_pipeline()`, `_run_parallel_streaming()`, streaming prescan) required matching SSE event types (`card_ready`, `cards_started`, `cards_instant`) with frontend handlers (`tryExtractNewClauses()`, `transitionToCardView()`, auto-reveal timer). A single mismatched event name or data format would silently break the pipeline. Opus 4.6 held the full 14,000+ lines in working memory and kept the cross-file contract consistent.
 
@@ -258,7 +258,7 @@ Opus 4.6 didn't write better functions. It built a better system — and rebuilt
 - [What's New in Claude 4.6](https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-6) — Claude API Docs
 - [Opus 4.6 vs 4.5 Benchmarks](https://ssntpl.com/blog-claude-opus-4-6-vs-4-5-benchmarks-testing/) — Real-world testing results
 - [Opus 4.6: A Step Change for the Enterprise](https://thenewstack.io/anthropics-opus-4-6-is-a-step-change-for-the-enterprise/) — The New Stack
-- FlipSide git history: 111 commits, Feb 10–16 2026
+- FlipSide git history: 116 commits, Feb 10–16 2026
 ---
 
 **Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)
