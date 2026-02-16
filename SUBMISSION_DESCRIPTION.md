@@ -1,13 +1,13 @@
-# Submission Description (175 words)
+# Submission Description
 
 **FlipSide — The dark side of small print.**
 
-Gym memberships, app terms, pet adoptions, sweepstakes entries — the things you sign with a shrug. They weren't written with one.
+Every contract has a drafter. The drafter wrote it for a reason. FlipSide shows you that reason.
 
-Built entirely through conversation with Claude Code by a non-coder. 14,600+ lines. 89 commits. 5 days.
+Upload any document you didn't write — gym membership, app terms, employment contract, insurance policy — or try one of 14 built-in samples. Browse flip cards: the front shows what the drafter wants you to feel. Flip it to see what an expert catches. Risk scores, trick classifications, concrete dollar figures.
 
-FlipSide reads any document you didn't write and shows you what the drafter intended. Upload a PDF, paste a URL, or try one of 14 built-in samples. Browse flip cards: the front shows what the drafter wants you to feel. Flip it to see what an expert catches. Risk scores, trick classifications, concrete dollar figures.
+Why Opus 4.6? Haiku 4.5 builds the flip cards — fast, structured, parallel. But the verdict requires what only Opus delivers: cross-clause reasoning that connects a liability waiver on page 2 to an arbitration clause on page 8. Adaptive thinking that scales its depth to the document's complexity. Theory of mind that reconstructs the drafter's intent from the language they chose.
 
-Haiku 4.5 builds flip cards in seconds. Opus 4.6 builds the expert verdict in the background — jurisdiction detection, power ratio, risk checklist. Follow-up questions use Opus 4.6 with document search tools, autonomously tracing answers through every relevant clause.
+250M+ people sign one-sided documents every year without understanding the other side. FlipSide makes legal awareness free and human — not legal advice, but the other side of the story.
 
-6 input formats. 18-type trick taxonomy. The flip card makes legal analysis feel human — not legal advice, legal awareness. For everyone.
+Built by a non-coder through conversation with Claude Code. 14,600 lines. 89 commits. 7 architecture pivots. 5 days.
