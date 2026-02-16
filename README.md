@@ -333,7 +333,7 @@ The user never sees this meta-prompt. They just see better results.
 
 ## Builder
 
-**Henk van Ess** — Investigation trainer (BBC, NYT, Reuters), tool builder. Assessor for IFCN and EFCSN. Early Bellingcat contributor. 20+ years verification methodology. 10,000+ newsletter subscribers from BBC, NYT, Reuters, Europol, Harvard, MIT, NATO. See [BUILDER_PROFILE.md](BUILDER_PROFILE.md).
+**Henk van Ess** — See [BUILDER_PROFILE.md](BUILDER_PROFILE.md).
 
 ## Hackathon
 
