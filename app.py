@@ -2251,11 +2251,11 @@ def analyze(doc_id):
 
         # ── 5 parallel Opus deep-dive threads — all fire at t=0 ──
         deep_dive_threads = {
-            'archaeology': (build_archaeology_prompt(has_images=has_images), 16000),
-            'scenario':    (build_scenario_prompt(), 16000),
-            'walkaway':    (build_walkaway_prompt(), 16000),
-            'combinations':(build_combinations_prompt(), 16000),
-            'playbook':    (build_playbook_prompt(), 16000),
+            'archaeology': (build_archaeology_prompt(has_images=has_images), 32000),
+            'scenario':    (build_scenario_prompt(), 32000),
+            'walkaway':    (build_walkaway_prompt(), 32000),
+            'combinations':(build_combinations_prompt(), 32000),
+            'playbook':    (build_playbook_prompt(), 32000),
         }
         for dd_label, (dd_prompt, dd_max) in deep_dive_threads.items():
             threading.Thread(
@@ -2926,10 +2926,10 @@ ALWAYS respond in ENGLISH regardless of the document's language. When quoting te
 
 # ── On-demand deep dive endpoint ──────────────────────────────────
 DEEP_DIVE_PROMPTS = {
-    'scenario': (build_scenario_prompt, 16000),
-    'walkaway': (build_walkaway_prompt, 12000),
-    'combinations': (build_combinations_prompt, 16000),
-    'playbook': (build_playbook_prompt, 16000),
+    'scenario': (build_scenario_prompt, 32000),
+    'walkaway': (build_walkaway_prompt, 32000),
+    'combinations': (build_combinations_prompt, 32000),
+    'playbook': (build_playbook_prompt, 32000),
 }
 
 
