@@ -10,7 +10,7 @@
 
 Gym memberships, app terms, pet adoptions, sweepstakes entries — the things you sign with a shrug. They weren't written with one.
 
-*0% of the code was written by a human. 14,700+ lines of application code, 143 commits, 6 days — built entirely through conversation with [Claude Code](https://claude.ai/claude-code) and Opus 4.6.* See [coding.md](coding.md).
+*0% of the code was written by a human. 14,700+ lines of application code, 147 commits, 6 days — built entirely through conversation with [Claude Code](https://claude.ai/claude-code) and Opus 4.6.* See [coding.md](coding.md).
 
 ![FlipSide upload screen](screenshots/readme_dropfile.jpg)
 
@@ -105,7 +105,7 @@ No document handy? Pick a life moment:
 | <img src="static/thumb_sweepstakes.jpg" width="20"> **Trip of a Lifetime** | Sweepstakes official rules (real Coca-Cola) | Accepting the prize grants perpetual, worldwide rights to your name, likeness, and story — with no compensation |
 | <img src="static/tile_hackathon.jpg" width="20"> **The Hackathon** | Event waiver we all signed (real) | You grant a perpetual, irrevocable license to all your Materials — code, ideas, feedback — with no confidentiality obligation |
 
-Plus: **paste text directly** or upload your own PDF, DOCX, or TXT.
+Plus: **paste text directly** or upload your own PDF, DOCX, TXT, or photo.
 
 ### Stress Tests
 
@@ -194,6 +194,8 @@ FlipSide uses 14 Opus 4.6 capabilities — including three that Anthropic [speci
 **Vocabulary-constrained personas** — The Reader voice uses a forbidden-word list with morphological roots (`"waiv"` catches waive/waiver/waiving) plus plain-language replacements. This makes it structurally impossible for the model to leak legal awareness into what should be a trusting, non-expert voice — more reliable than persona instructions alone.
 
 **Each Haiku card serves three purposes** — The same card output is (1) a user-facing flip card, (2) input to an instant flash verdict while Opus works, and (3) structured context injected into the Opus verdict prompt so expert analysis builds on findings rather than rediscovering them.
+
+**Side-by-side upload** — The upload card and a live example flip card sit side by side, so 14 demo tiles are visible without scrolling. Drop file or paste text on the left; flip the example on the right to understand the product before uploading anything.
 
 **Interaction-gated onboarding** — Navigation, keyboard shortcuts, and the verdict strip stay hidden until the user physically flips their first card. Every user must experience the reassurance → reveal moment before browsing freely. The product thesis is communicated through the mechanic, not explanation.
 
@@ -298,7 +300,7 @@ FlipSide supports subdirectory deployment via `X-Forwarded-Prefix`.
 
 **Key architectural insight:** We originally put Opus 4.6 on the card backs — assuming the flip needed the most powerful model. Haiku does a great job on cards. Opus's real value is in the work Haiku *can't* do: cross-clause reasoning, power analysis, jurisdiction detection, and self-correction. We started with 4 parallel Opus threads, consolidated to 1 verdict + 4 on-demand deep dives, then expanded to 6 parallel threads when we realized the wall-clock cost of running them all at t=0 is zero (parallel) while the UX gain is enormous (everything arrives together). Each thread exercises a different Opus 4.6 capability — see the capabilities table above. See [strategy.md](strategy.md) for the full decision story.
 
-**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 for cards + Opus 4.6 for verdict with adaptive thinking, vision, prompt caching). Single-file frontend (10,800+ lines) by design — zero build step, instant deploy, hackathon velocity. Modular backend: prompts in `prompts/` package (4 modules, 13 builders), samples in `data/samples.json`, 74 unit tests. CSS custom properties, ease-out-expo animations, SSE streaming for real-time card rendering, and DOMPurify for XSS defense on all LLM output. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with `ProxyFix` + `FLIPSIDE_PREFIX`.
+**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 for cards + Opus 4.6 for verdict with adaptive thinking, vision, prompt caching). Single-file frontend (10,800 lines) by design — zero build step, instant deploy, hackathon velocity. Modular backend: prompts in `prompts/` package (4 modules, 13 builders), samples in `data/samples.json`, 74 unit tests. CSS custom properties, ease-out-expo animations, SSE streaming for real-time card rendering, and DOMPurify for XSS defense on all LLM output. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with `ProxyFix` + `FLIPSIDE_PREFIX`.
 
 ---
 
@@ -437,7 +439,7 @@ Third-party licenses: Flask (BSD-3), Anthropic SDK (MIT), python-docx (MIT), pdf
 
 ---
 
-0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,800-line frontend, the modular prompt architecture, 74 unit tests — built through conversation with Claude Code and Opus 4.6.
+0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,800-line frontend, the modular prompt architecture, 74 unit tests — built through conversation with Claude Code and Opus 4.6. 147 commits across 6 days.
 
 *FlipSide. Everyone deserves to see the other side.*
 ---
