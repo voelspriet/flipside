@@ -159,6 +159,20 @@ This is the meta-prompting pattern applied recursively. The Prewash Method says:
 
 Direct Action would never have caught this. You'd run the prompts and get plausible output — cards with figures and examples that *look* consistent but have no rule enforcing consistency. Plan Mode would have surfaced options ("should we audit the prompts?") but wouldn't have produced the 77-cell scorecard. The meta-prompting approach — "check every prompt against every principle" — forced systematic coverage.
 
+**Update (Feb 17): The output instructions had the same problem.**
+
+The first audit caught concept words in the *input* prompts ("worry," "significant"). A second round caught concept words in the *output* instructions — the rules that shape what the model writes on each card:
+
+| Output instruction | Concept word | Document-literal replacement |
+|---|---|---|
+| [REVEAL]: "sharp truth that hits the reader" | "hits" — primes for shock | "names what the clause permits and what protection is absent" |
+| [FIGURE]: "worst-case number" | "worst-case" — prediction | "maximum financial exposure the clause text permits" |
+| [EXAMPLE]: scenario ends with prediction | "your $7,400 is gone" — what will happen | "This clause contains no [force majeure exception]" — what's written |
+
+The new rule (OMISSION TEST): every example must end by naming a specific protection the clause does NOT contain. This is structural — "the clause contains no X" is a fact about the text, not a prediction about courts or likelihood. The reader calibrates the alarm themselves.
+
+The pattern: the prewash caught bias in input prompts (Cycle 1), then in output instructions (Cycle 2). Same principle applied one layer deeper each time.
+
 ---
 
 ### Case 3: The Research Prompt That Caught Its Own Bias

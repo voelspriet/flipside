@@ -56,7 +56,7 @@ The reader has ZERO legal literacy — they don't know what a waiver IS, what "i
 
 [TEASER]: [One cryptic sentence that creates tension without revealing the risk. Make the reader WANT to flip. Keep under 12 words. For GREEN clauses: "No surprises here — genuinely."]
 
-[REVEAL]: [One concise analytical sentence (max 15 words) that hits the reader when the card flips. The sharp truth that contrasts the reassurance on the front. NEVER vague: no "some", "certain", "conditions", "limitations". Be specific. Test: Would someone feel a strong reaction reading this? Examples: "Your deposit funds their legal fees" / "Uncapped daily penalties: $2,250 in fees from one missed month". For GREEN clauses: "This one is genuinely what it promises."]
+[REVEAL]: [One concise analytical sentence (max 15 words) that names what the clause permits and what protection is absent. NEVER vague: no "some", "certain", "conditions", "limitations". Test: does this sentence describe a structural feature of the clause text, or a prediction about what will happen? Only structural features pass. Examples: "Non-refundable deposit — no carve-out if venue cancels first" / "Uncapped daily penalties with no notice requirement or cure period". For GREEN clauses: "This one is genuinely what it promises."]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
 Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
@@ -68,8 +68,8 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 **What you should read:** [One sentence. What this ACTUALLY means. If alarming, be alarming.]
 
 **What does this mean for you:**
-[FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "30 days or you lose all rights".]
-[EXAMPLE]: [One concrete scenario assuming the drafter seeks maximum advantage — what does this clause let them attempt? Use the document's own figures. Walk through step by step. 2-3 sentences max. Your scenario must stay within what the clause text actually permits — don't invent powers the clause doesn't grant, and don't ignore the clause's own exceptions or carve-outs.]
+[FIGURE]: [The maximum financial exposure or deadline the clause text permits — just the stat with brief label. Examples: "$4,100 total exposure from one missed payment" / "30 days or you lose all rights".]
+[EXAMPLE]: [One concrete scenario where the drafter exercises the maximum rights this clause grants. Use the document's own figures. Walk through step by step. 2-3 sentences. End with: "This clause contains no [name the specific absent protection — e.g., force majeure exception, mutual cancellation right, pro-rata refund, cap on penalties, notice-and-cure period]." Your scenario must stay within what the clause text actually permits — don't invent powers the clause doesn't grant, and don't ignore the clause's own exceptions or carve-outs.]
 
 ---
 
@@ -131,22 +131,21 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 19. EXAMPLE VARIETY: Do NOT repeat "you have no recourse" or "you cannot" as the conclusion of every [EXAMPLE]. Each example must end with a DIFFERENT concrete consequence — a dollar amount, a missed deadline, a specific scenario. The phrase "no recourse" may appear at most ONCE across all cards.
 20. MAXIMUM ENFORCEMENT TEST — MANDATORY: Every [EXAMPLE] must answer: "If the drafter sought maximum advantage, what does this clause let them attempt?" Stay within what the clause text actually permits — don't invent powers it doesn't grant, and don't ignore its own exceptions or carve-outs. If the clause has a "unless/except/tenzij" protection, your scenario must work AROUND it, not pretend it doesn't exist.
 21. CLAUSE ORDERING: As you output clauses, avoid long runs of the same risk level. If you have multiple RED and YELLOW clauses to output, INTERLEAVE them — output a RED, then a YELLOW, then a RED, etc. If you must output consecutive RED cards, vary the TRICK TYPE so they feel distinct, not repetitive. Never output more than 3 RED cards in a row without a YELLOW break.
-22. NEVER-GREEN LIST: The following clause types are ALWAYS at least YELLOW, never GREEN, never bundled into the fair clauses summary: (a) unilateral amendment of financial terms — any clause allowing one party to change interest rates, fees, or pricing after signing; (b) silence-as-consent — any clause where inaction or continued use = agreement to new terms; (c) sole discretion over financial terms — any clause giving one party unchecked power over what you pay. These are "Moving Target" tricks even when they include a notice period."""
+22. NEVER-GREEN LIST: The following clause types are ALWAYS at least YELLOW, never GREEN, never bundled into the fair clauses summary: (a) unilateral amendment of financial terms — any clause allowing one party to change interest rates, fees, or pricing after signing; (b) silence-as-consent — any clause where inaction or continued use = agreement to new terms; (c) sole discretion over financial terms — any clause giving one party unchecked power over what you pay. These are "Moving Target" tricks even when they include a notice period.
+23. OMISSION TEST — MANDATORY: Every [EXAMPLE] must end by naming one specific protection the clause does NOT contain. State it as a structural fact about the text: "This clause contains no [force majeure exception / mutual cancellation right / pro-rata refund / cap on penalties / notice-and-cure period]." This is the gap between what a reasonable signer would expect and what's written. Never state likelihood, never predict what courts would do, never write "in practice." The omission IS the finding."""
 
 
 def build_clause_id_prompt():
     """Phase 1: Lightweight identification scan. Minimal output for speed.
     Optimized: CLAUSE lines first (before profile) so card workers launch ASAP.
-    Includes RISK + TRICK so card workers get severity guidance."""
+    Stripped to clause titles only — card workers do their own risk assessment."""
     return """Speed-scan this contract. Output CLAUSE lines IMMEDIATELY — no preamble, no headers before them. English only.
 
 Your VERY FIRST output token must be "CLAUSE:" — start with the worst clause you find.
 
-CLAUSE: [Descriptive Title] ([Section/Context]) | RISK: [RED/YELLOW] | TRICK: [category]
+CLAUSE: [Descriptive Title] ([Section/Context])
 
 Output one CLAUSE per line. Maximum 12. Worst first. Title must describe the clause topic. Section ref must name the topic (e.g. "Early Termination, §4.2" not just "§4.2").
-
-TRICK categories (pick one): Silent Waiver, Burden Shift, Time Trap, Escape Hatch, Moving Target, Forced Arena, Phantom Protection, Cascade Clause, Sole Discretion, Liability Cap, Reverse Shield, Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, Ghost Standard
 
 After all CLAUSE lines, output on one line:
 GREEN_CLAUSES: [ref]: [description]; [ref]: [description]; ...
@@ -162,7 +161,7 @@ After GREEN_CLAUSES, output:
 
 Target: clauses with asymmetric rights, one-sided penalties, cascading exposure, discretion imbalance, unilateral amendment of financial terms (interest rates, fees, pricing), silence-as-consent mechanisms, or definitions that alter plain meaning. Severity order — worst first.
 
-NEVER classify these as GREEN: (a) clauses allowing one party to change rates, fees, or terms after signing, (b) clauses where inaction = consent, (c) clauses granting sole discretion over financial terms. These are always at least YELLOW.
+NEVER put these in GREEN_CLAUSES — always output as CLAUSE: (a) clauses allowing one party to change rates, fees, or terms after signing, (b) clauses where inaction = consent, (c) clauses granting sole discretion over financial terms.
 
 If the document has NO terms or obligations (recipe, novel, article), output ONLY:
 ## Document Profile
@@ -209,7 +208,7 @@ The reader has ZERO legal literacy — they don't know what a waiver IS, what "i
 
 [TEASER]: [One cryptic sentence that creates tension without revealing the risk. Make the reader WANT to flip. Keep under 12 words. For GREEN clauses: "No surprises here — genuinely."]
 
-[REVEAL]: [One concise analytical sentence (max 15 words) that hits the reader when the card flips. The sharp truth that contrasts the reassurance on the front. NEVER vague: no "some", "certain", "conditions", "limitations". Be specific. Test: Would someone feel a strong reaction reading this? Examples: "Your deposit funds their legal fees" / "Uncapped daily penalties: $2,250 in fees from one missed month". For GREEN clauses: "This one is genuinely what it promises."]
+[REVEAL]: [One concise analytical sentence (max 15 words) that names what the clause permits and what protection is absent. NEVER vague: no "some", "certain", "conditions", "limitations". Test: does this sentence describe a structural feature of the clause text, or a prediction about what will happen? Only structural features pass. Examples: "Non-refundable deposit — no carve-out if venue cancels first" / "Uncapped daily penalties with no notice requirement or cure period". For GREEN clauses: "This one is genuinely what it promises."]
 
 [GREEN/YELLOW/RED] · Score: [0-100]/100 · Trick: [CATEGORY]
 Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
@@ -221,8 +220,8 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 **What you should read:** [One sentence. What this ACTUALLY means. If alarming, be alarming.]
 
 **What does this mean for you:**
-[FIGURE]: [The single worst-case number or deadline — just the stat with brief label. Examples: "$4,100 total debt from one missed payment" / "30 days or you lose all rights".]
-[EXAMPLE]: [One concrete scenario assuming the drafter seeks maximum advantage — what does this clause let them attempt? Use the document's own figures. Walk through step by step. 2-3 sentences max. Your scenario must stay within what the clause text actually permits — don't invent powers the clause doesn't grant, and don't ignore the clause's own exceptions or carve-outs.]
+[FIGURE]: [The maximum financial exposure or deadline the clause text permits — just the stat with brief label. Examples: "$4,100 total exposure from one missed payment" / "30 days or you lose all rights".]
+[EXAMPLE]: [One concrete scenario where the drafter exercises the maximum rights this clause grants. Use the document's own figures. Walk through step by step. 2-3 sentences. End with: "This clause contains no [name the specific absent protection — e.g., force majeure exception, mutual cancellation right, pro-rata refund, cap on penalties, notice-and-cure period]." Your scenario must stay within what the clause text actually permits — don't invent powers the clause doesn't grant, and don't ignore the clause's own exceptions or carve-outs.]
 
 ## TRICK CATEGORIES (pick exactly one per clause, best match):
 - Silent Waiver — Quietly surrenders your legal rights
@@ -258,6 +257,7 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 11. MAXIMUM ENFORCEMENT TEST — MANDATORY: Every [EXAMPLE] must answer: "If the drafter sought maximum advantage, what does this clause let them attempt?" Stay within what the clause text actually permits — don't invent powers it doesn't grant, and don't ignore its own exceptions. If the clause has a "unless/except" protection, your scenario must work AROUND it, not pretend it doesn't exist.
 12. NEVER-GREEN LIST: These clause types are ALWAYS at least YELLOW, never GREEN: (a) unilateral amendment of financial terms — one party can change interest rates, fees, or pricing after signing; (b) silence-as-consent — inaction or continued use = agreement to new terms; (c) sole discretion over financial terms. These are "Moving Target" tricks even when they include a notice period.
 13. NO GREEN OUTPUT: You are generating a single card for a clause that was flagged during pre-scan. Your output MUST be RED or YELLOW — never GREEN. If you genuinely believe the clause is fair, output YELLOW with Score: 15/100 and Trick: None. Green clauses are handled separately.
+14. OMISSION TEST — MANDATORY: Every [EXAMPLE] must end by naming one specific protection the clause does NOT contain. State it as a structural fact about the text: "This clause contains no [force majeure exception / mutual cancellation right / pro-rata refund / cap on penalties / notice-and-cure period]." This is the gap between what a reasonable signer would expect and what's written. Never state likelihood, never predict what courts would do, never write "in practice." The omission IS the finding.
 
 ## DOCUMENT:
 

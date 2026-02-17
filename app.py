@@ -66,6 +66,11 @@ def store_document(doc_id, doc):
     doc['_precards_event'] = threading.Event()
     with _documents_lock:
         documents[doc_id] = doc
+    # Skip prescan for cached samples — replay doesn't need it
+    if doc.get('_sample_type') and doc['_sample_type'] in _sample_cache:
+        doc['_prescan_event'].set()
+        doc['_precards_event'].set()
+        return
     # Pre-scan + pre-generate cards during upload
     threading.Thread(
         target=_prescan_document, args=(doc_id,), daemon=True
@@ -361,6 +366,28 @@ for _key in SAMPLE_DOCUMENTS:
     if os.path.exists(_path):
         with open(_path, 'rb') as _f:
             SAMPLE_THUMBNAILS[_key] = base64.b64encode(_f.read()).decode()
+
+
+# ---------------------------------------------------------------------------
+# Sample cache — pre-recorded SSE streams for offline demos
+# ---------------------------------------------------------------------------
+
+_SAMPLE_CACHE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'sample_cache.json')
+_sample_cache = {}
+if os.path.exists(_SAMPLE_CACHE_PATH):
+    try:
+        with open(_SAMPLE_CACHE_PATH, 'r') as _f:
+            _sample_cache = json.load(_f)
+        print(f'  Loaded sample cache: {len(_sample_cache)} samples cached')
+    except Exception as e:
+        print(f'  Warning: could not load sample cache: {e}')
+
+
+def _save_sample_cache():
+    """Persist sample cache to disk."""
+    with open(_SAMPLE_CACHE_PATH, 'w') as f:
+        json.dump(_sample_cache, f)
+    print(f'  Sample cache saved: {len(_sample_cache)} samples')
 
 
 # ---------------------------------------------------------------------------
@@ -694,6 +721,7 @@ def sample():
     doc_store = {
         'text': text,
         'filename': filename,
+        '_sample_type': sample_type,
     }
     if 'doc_context' in doc:
         doc_store['_doc_context'] = doc['doc_context']
@@ -1227,7 +1255,7 @@ def analyze(doc_id):
                                 if _profile_fb:
                                     q.put(('cards_profile', _profile_fb))
                                 _card_sys = build_single_card_system(doc['text'])
-                                _total = len(_clauses) + (1 if _green else 0)
+                                _total = len(_clauses)
                                 print(f'[pipeline] Starting {_total} card workers (blocking scan path)')
                                 for i, ci in enumerate(_clauses):
                                     cu = (
@@ -1243,13 +1271,6 @@ def analyze(doc_id):
                                         target=worker,
                                         args=(f'card_{i}', _card_sys, 3000, FAST_MODEL, False),
                                         kwargs={'user_content': cu},
-                                        daemon=True,
-                                    ).start()
-                                if _green:
-                                    threading.Thread(
-                                        target=worker,
-                                        args=(f'card_{len(_clauses)}', _card_sys, 2000, FAST_MODEL, False),
-                                        kwargs={'user_content': build_green_summary_user(_green)},
                                         daemon=True,
                                     ).start()
                                 q.put(('cards_started', _total))
@@ -1284,7 +1305,7 @@ def analyze(doc_id):
                             _clauses = _prescan['clauses']
                             _green = _prescan['green_text']
                             _card_sys = build_single_card_system(doc['text'])
-                            _total = len(_clauses) + (1 if _green else 0)
+                            _total = len(_clauses)
                             print(f'[pipeline] Starting {_total} card workers (prescan path)')
                             for i, ci in enumerate(_clauses):
                                 cu = (
@@ -1300,13 +1321,6 @@ def analyze(doc_id):
                                     target=worker,
                                     args=(f'card_{i}', _card_sys, 3000, FAST_MODEL, False),
                                     kwargs={'user_content': cu},
-                                    daemon=True,
-                                ).start()
-                            if _green:
-                                threading.Thread(
-                                    target=worker,
-                                    args=(f'card_{len(_clauses)}', _card_sys, 2000, FAST_MODEL, False),
-                                    kwargs={'user_content': build_green_summary_user(_green)},
                                     daemon=True,
                                 ).start()
                             q.put(('cards_started', _total))
@@ -1784,6 +1798,39 @@ def analyze(doc_id):
         }
 
     def generate():
+        sample_type = doc.get('_sample_type')
+
+        # ── Cache hit: replay pre-recorded SSE stream ──
+        if sample_type and sample_type in _sample_cache:
+            print(f'[cache] Replaying cached stream for sample: {sample_type}')
+            events = _sample_cache[sample_type]
+            batch = 0
+            for chunk in events:
+                yield chunk
+                # Compressed timing: ~10s total for full replay
+                try:
+                    payload = json.loads(chunk.split('data: ', 1)[1])
+                    etype = payload.get('type', '')
+                except Exception:
+                    etype = ''
+                if etype == 'quick_done':
+                    time.sleep(0.2)
+                elif etype == 'phase':
+                    time.sleep(0.05)
+                elif etype in ('overall_thinking', 'clause_preview'):
+                    batch += 1
+                    if batch % 5 == 0:  # Only sleep every 5th thinking token
+                        time.sleep(0.002)
+                elif etype == 'done':
+                    pass
+                else:
+                    time.sleep(0.001)
+            if doc_id in documents:
+                documents[doc_id]['analyzed'] = True
+            return
+
+        # ── Normal flow: run live analysis ──
+        recording = [] if sample_type else None
         try:
             client = anthropic.Anthropic(
                 timeout=180.0  # 3 min per call
@@ -1795,7 +1842,10 @@ def analyze(doc_id):
                 f"{doc['text']}\n\n"
                 "---END DOCUMENT---"
             )
-            yield from run_parallel(client, user_msg)
+            for chunk in run_parallel(client, user_msg):
+                if recording is not None:
+                    recording.append(chunk)
+                yield chunk
 
         except anthropic.AuthenticationError:
             yield sse('error',
@@ -1809,6 +1859,11 @@ def analyze(doc_id):
             # Keep document + analysis results for follow-up & deep dives
             if doc_id in documents:
                 documents[doc_id]['analyzed'] = True
+            # Save to cache if this was a sample run
+            if recording and sample_type:
+                _sample_cache[sample_type] = recording
+                _save_sample_cache()
+                print(f'[cache] Saved {len(recording)} events for sample: {sample_type}')
 
     return Response(
         generate(),
@@ -1819,6 +1874,77 @@ def analyze(doc_id):
             'Connection': 'keep-alive',
         },
     )
+
+
+# ── Warmup: pre-cache all sample SSE streams ─────────────────────
+
+@app.route('/warmup')
+def warmup():
+    """Run all 14 samples and cache their SSE streams for offline demos."""
+    import requests as req_lib
+
+    already = list(_sample_cache.keys())
+    to_run = [k for k in SAMPLE_DOCUMENTS if k not in _sample_cache]
+
+    if not to_run:
+        return jsonify({
+            'status': 'already cached',
+            'cached': already,
+            'message': f'All {len(already)} samples already cached. Hit /warmup?force=1 to re-cache.'
+        })
+
+    if request.args.get('force'):
+        to_run = list(SAMPLE_DOCUMENTS.keys())
+
+    base = request.url_root.rstrip('/')
+    results = {}
+
+    for i, sample_type in enumerate(to_run):
+        print(f'[warmup] ({i+1}/{len(to_run)}) Running {sample_type}...')
+        try:
+            # Create sample document
+            resp = req_lib.post(f'{base}/sample',
+                                json={'type': sample_type}, timeout=10)
+            doc_id = resp.json()['doc_id']
+
+            # Consume the SSE stream (this triggers recording)
+            event_count = 0
+            with req_lib.get(f'{base}/analyze/{doc_id}',
+                             stream=True, timeout=300) as sse_resp:
+                for line in sse_resp.iter_lines(decode_unicode=True):
+                    if line and line.startswith('data: '):
+                        event_count += 1
+
+            results[sample_type] = f'OK ({event_count} events)'
+        except Exception as e:
+            results[sample_type] = f'Error: {e}'
+            print(f'[warmup] {sample_type} failed: {e}')
+
+    return jsonify({
+        'status': 'done',
+        'cached': list(_sample_cache.keys()),
+        'results': results,
+    })
+
+
+@app.route('/cache-status')
+def cache_status():
+    """Check which samples are cached."""
+    return jsonify({
+        'cached': list(_sample_cache.keys()),
+        'total_samples': len(SAMPLE_DOCUMENTS),
+        'missing': [k for k in SAMPLE_DOCUMENTS if k not in _sample_cache],
+        'total_events': sum(len(v) for v in _sample_cache.values()),
+    })
+
+
+@app.route('/clear-cache')
+def clear_cache():
+    """Clear all cached samples."""
+    _sample_cache.clear()
+    if os.path.exists(_SAMPLE_CACHE_PATH):
+        os.remove(_SAMPLE_CACHE_PATH)
+    return jsonify({'status': 'cleared'})
 
 
 # ── On-demand deep dive endpoint ──────────────────────────────────

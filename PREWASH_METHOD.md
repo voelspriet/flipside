@@ -156,6 +156,24 @@ Every architecture decision traces to a principle. The pre-scan IS the prewash. 
 | The control trick — verify | Tool-use agent searches actual document, doesn't answer from memory |
 | Source language | Auto-jurisdiction from governing law clauses; analysis in English; quotes in original |
 | Think like the document | Word-level search matches what's literally written, not conceptual synonyms |
+| Describe structure, not predictions | REVEAL names what the clause permits + what's absent — never what "will happen" |
+| The omission IS the finding | EXAMPLE ends with "This clause contains no [absent protection]" — the gap between expectation and text |
+
+---
+
+### The Calibration: Prewash Audits Its Own Output (Feb 17)
+
+The card prompts followed Law 1 in the *input* ("find clauses where obligations are asymmetric") but violated it in the *output*. The [REVEAL] instruction said "sharp truth that hits the reader" — priming for maximum alarm. The [FIGURE] said "worst-case number" — a prediction, not a structural fact. The [EXAMPLE] produced scenarios that read as definitive outcomes ("your $7,400 is gone") rather than structural analysis ("the clause permits forfeiture because it contains no X").
+
+| Before (subjective) | After (document-literal) |
+|---|---|
+| "Sharp truth that hits the reader" | "Names what the clause permits and what protection is absent" |
+| "Worst-case number" | "Maximum financial exposure the clause text permits" |
+| Scenario ends with prediction | Scenario ends with "This clause contains no [absent protection]" |
+
+The fix: the OMISSION TEST. Every example must name one specific protection the clause does NOT contain. "This clause contains no force majeure exception." "This clause contains no mutual cancellation right." The omission is a structural fact about the text — not an opinion about what courts would do, not a prediction about likelihood. The reader calibrates the alarm themselves.
+
+This is the same pattern as Case 2 (the pre-scan that said "worry" instead of "asymmetric"). The prewash caught concept words in the input prompts. This round caught concept words in the output instructions. Same principle, one layer deeper.
 
 ---
 
