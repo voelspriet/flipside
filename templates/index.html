@@ -589,6 +589,9 @@
             box-shadow: 0 4px 12px rgba(44, 40, 37, 0.08);
             border-color: var(--accent);
         }
+        .demo-tile-unavailable {
+            opacity: 0.45; cursor: default; pointer-events: none;
+        }
         .demo-tile:hover .demo-tile-label { color: var(--accent); }
         .demo-tile:hover .demo-tile-icon { color: var(--accent); }
         .demo-tile-icon { width: 26px; height: 26px; margin-bottom: 0.5rem; color: var(--text-muted); transition: color 0.25s ease; }
@@ -4444,7 +4447,7 @@
                 <div class="demo-grid">
                     <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div><div class="demo-tile-label">Staying Connected</div><div class="demo-tile-desc">You agreed to more than you think</div></div>
                     <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="demo-tile-label">Peace of Mind</div><div class="demo-tile-desc">What&rsquo;s not covered?</div></div>
-
+                    <div class="demo-tile demo-tile-unavailable" data-sample="loan" data-unavailable="true"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18V11"/><path d="M10 18V11"/><path d="M14 18V11"/><path d="M18 18V11"/><path d="M4 7h16l-8-5z"/></svg></div><div class="demo-tile-label">Future Fund</div><div class="demo-tile-desc">Not available</div></div>
                     <div class="demo-tile" data-sample="lease"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"/><path d="M12 11l9-9"/><path d="M17 6l4-4"/><path d="M18.5 7.5L22 7l-3-3"/></svg></div><div class="demo-tile-label">My New Place</div><div class="demo-tile-desc">Your landlord&rsquo;s favorite clause</div></div>
                     <div class="demo-tile" data-sample="gym"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div class="demo-tile-label">Morning Workout</div><div class="demo-tile-desc">Good luck canceling</div></div>
                     <div class="demo-tile" data-sample="pet"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="4.5" cy="9" r="2"/><circle cx="17.5" cy="9" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M12 18c-2.5 2-6 2-6-.5C6 15 9 14 12 17c3-3 6-2 6 .5 0 2.5-3.5 2.5-6 .5z"/></svg></div><div class="demo-tile-label">Furry Friend</div><div class="demo-tile-desc">More than a promise</div></div>
