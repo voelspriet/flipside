@@ -10,7 +10,7 @@
 
 Gym memberships, app terms, pet adoptions, sweepstakes entries — the things you sign with a shrug. They weren't written with one.
 
-*0% of the code was written by a human. 14,000+ lines, 134 commits, 6 days — built entirely through conversation with [Claude Code](https://claude.ai/claude-code) and Opus 4.6.* See [coding.md](coding.md).
+*0% of the code was written by a human. 14,700+ lines of application code, 143 commits, 6 days — built entirely through conversation with [Claude Code](https://claude.ai/claude-code) and Opus 4.6.* See [coding.md](coding.md).
 
 ![FlipSide upload screen](screenshots/readme_dropfile.jpg)
 
@@ -153,7 +153,7 @@ FlipSide uses 14 Opus 4.6 capabilities — including three that Anthropic [speci
 | 3 | **Low over-refusals** | Reads adversarial role-play in the verdict where the analysis adopts the drafter's perspective. The gullible reader voice on card fronts is deliberately naive; the card backs reveal what the drafter intended. Example: *"The math does the work. Two weeks late once and you'll never catch up."* | The card scan prompt creates a gullible reader who trusts the drafter completely. The verdict prompt analyzes from the drafter's strategic perspective; card backs adopt an adversarial voice revealing what the drafter intended. Previous models would self-censor, add disclaimers, or refuse. Opus 4.6 fully commits to the perspective flip — the core product mechanic. |
 | 4 | **Follow-up Q&A** | After analysis, types questions like "What happens if I'm 3 months late on rent?" or "Which clauses can I negotiate?" and gets traced answers with tool-call indicators visible on screen. | Each follow-up runs Opus as a tool-use agent with three tools: `search_document` (full-text search of the contract), `get_clause_analysis` (retrieves a specific flip card's analysis), and `get_verdict_summary` (retrieves the verdict). Opus autonomously decides which tools to call, searches the document server-side, and traces answers through relevant clauses — up to 6 reasoning rounds per question. Each question starts fresh (no accumulated history between questions). |
 | 5 | **Vision / multimodal** | Uploads a PDF. Sees findings about visual tricks — fine print, buried placement, dense tables, light-gray disclaimers — that text extraction alone would miss. | PDF pages are rendered as JPEG images (150 DPI, up to 10 pages, max 4MB each) and sent as multimodal content blocks alongside the extracted text to the Opus verdict thread. The prompt includes: "Page images are included. Look for visual tricks: fine print, buried placement, dense tables, light-gray disclaimers." Opus processes both the text and the visual layout simultaneously. |
-| 6 | **Structured output via prompts** | Sees consistently structured flip cards with risk scores, trick types (from a taxonomy of 18), confidence levels, figures, and examples — every clause in the same format. | Rather than using formal tool definitions, FlipSide achieves structured output through detailed prompt engineering. The card scan prompt specifies an exact output format with tagged fields (`[REASSURANCE]`, `[REVEAL]`, `Score:`, `Trick:`, etc.) and a constrained vocabulary of 18 trick types. The frontend parses these fields with regex. *The original plan included `assess_risk` and `flag_interaction` tool schemas, but prompt-based structuring proved more reliable for streaming.* |
+| 6 | **Structured output via prompts** | Sees consistently structured flip cards with risk scores, trick types (from a taxonomy of 18), confidence levels, figures, and examples — every clause in the same format. | Rather than using formal tool definitions, FlipSide achieves structured output through detailed prompt engineering. 13 prompt builders in a `prompts/` package specify exact output formats with tagged fields (`[REASSURANCE]`, `[REVEAL]`, `Score:`, `Trick:`, etc.) and a constrained vocabulary of 18 trick types. Every prompt includes a PLANNING STEP, LANGUAGE RULE, and self-check verification — audited against 7 Prewash principles (74 unit tests enforce structural invariants). *The original plan included `assess_risk` and `flag_interaction` tool schemas, but prompt-based structuring proved more reliable for streaming.* |
 | 7 | **Self-correction** | Reads the "Quality Check" in the verdict's colophon — where the analysis reviews itself for false positives and blind spots before the user acts on it. | The Opus verdict prompt (`build_verdict_prompt`) includes a dedicated `[COLOPHON]` section with methodology notes and self-review. The prompt instructs: "Be genuinely self-critical. Users trust uncertainty over false certainty." This runs as part of Opus's single output pass for the verdict. |
 | 8 | **Split-model parallel** | First flip card appears within seconds; verdict + 5 expert reports stream from t=0. Progress counter shows "3 of 5 expert reports ready." | Two-model pipeline: Haiku 4.5 pre-scans during upload, then N parallel Haiku workers build flip cards. Six Opus 4.6 threads fire at t=0 in parallel: verdict + archaeology + scenario + walk-away + combinations + playbook. SSE stream is never blocked. Deep dives arrive as collapsible sections with live progress tracking. Haiku for instant structured cards, Opus for cross-clause reasoning, causal chains, financial arithmetic, drafter modeling, and self-correction. |
 | 9 | **Prompt caching** | Analyzes multiple documents without paying full price each time. The system prompts (which are identical across runs) are cached by Anthropic's API. | All analysis API calls use `cache_control: {type: 'ephemeral'}` on the system prompt, activating Anthropic's prompt caching (5-minute TTL). Cached input tokens cost 90% less than uncached. The actual per-run savings depend on the ratio of system prompt tokens (cached) to document tokens (not cached) — significant for repeated analyses but less than 90% of total cost. |
@@ -183,7 +183,7 @@ FlipSide uses 14 Opus 4.6 capabilities — including three that Anthropic [speci
 
 ### Engineering Highlights
 
-**Prefilled assistant turn** — The clause identification scan uses a prefilled `CLAUSE:` assistant turn, forcing Haiku's very first output token to be a clause — zero preamble, zero wasted tokens. Combined with a stripped identification format (title + section only, no risk/score/trick), the prescan runs faster and card workers determine risk independently.
+**Prefilled assistant turn** — The clause identification scan uses a prefilled `CLAUSE:` assistant turn, forcing Haiku's very first output token to be a clause — zero preamble, zero wasted tokens. Each clause line includes RISK level and TRICK category (`CLAUSE: Late Fees (§1) | RISK: RED | TRICK: Penalty Disguise`), giving card workers severity guidance from the start.
 
 **Mid-stream thread spawning** — Card workers launch while the clause identification scan is still streaming. The moment a `CLAUSE:` line arrives in Haiku's response, a card generation thread spawns — before the scan is finished. Clause titles stream to the loading screen as live previews ("Found: Non-Compete Clause") while workers run in parallel.
 
@@ -193,11 +193,17 @@ FlipSide uses 14 Opus 4.6 capabilities — including three that Anthropic [speci
 
 **Vocabulary-constrained personas** — The Reader voice uses a forbidden-word list with morphological roots (`"waiv"` catches waive/waiver/waiving) plus plain-language replacements. This makes it structurally impossible for the model to leak legal awareness into what should be a trusting, non-expert voice — more reliable than persona instructions alone.
 
-**Each Haiku card serves three purposes** — The same card output is (1) a user-facing flip card, (2) input to an instant flash verdict while Opus works, and (3) structured context injected into the Opus prompt so expert analysis builds on findings rather than rediscovering them.
+**Each Haiku card serves three purposes** — The same card output is (1) a user-facing flip card, (2) input to an instant flash verdict while Opus works, and (3) structured context injected into the Opus verdict prompt so expert analysis builds on findings rather than rediscovering them.
 
 **Interaction-gated onboarding** — Navigation, keyboard shortcuts, and the verdict strip stay hidden until the user physically flips their first card. Every user must experience the reassurance → reveal moment before browsing freely. The product thesis is communicated through the mechanic, not explanation.
 
 **Prompt caching across parallel workers** — The card generation system prompt (instructions, trick taxonomy, formatting rules) is shared across all N parallel Haiku workers with `cache_control: ephemeral`. Workers 2–N get Anthropic prompt cache hits on the system prompt — the document text is per-card in the user message.
+
+**Never-Green guardrails** — A `NEVER-GREEN LIST` prevents the model from classifying inherently risky clauses as fair: unilateral fee amendments, silence-as-consent mechanisms, and sole discretion over financial terms are always at least YELLOW, even when they include a notice period. This catches the Moving Target tricks that look standard at first glance.
+
+**Modular prompt architecture** — All 13 prompt builders live in a `prompts/` package (card_prompts, deep_dive_prompts, verdict_prompt, followup_prompts). Every prompt includes a PLANNING STEP (structured pre-analysis in thinking), a LANGUAGE RULE (English output with original-language quotes), and a self-check verification rule. Compliance with the [Prewash Method](meta-prompting-strategy.md) is enforced by 74 unit tests.
+
+**Reverse proxy support** — `ProxyFix` middleware + `FLIPSIDE_PREFIX` env var. Deploy at any subdirectory path (e.g., `/flipside`) without changing code.
 
 ---
 
@@ -292,7 +298,7 @@ FlipSide supports subdirectory deployment via `X-Forwarded-Prefix`.
 
 **Key architectural insight:** We originally put Opus 4.6 on the card backs — assuming the flip needed the most powerful model. Haiku does a great job on cards. Opus's real value is in the work Haiku *can't* do: cross-clause reasoning, power analysis, jurisdiction detection, and self-correction. We started with 4 parallel Opus threads, consolidated to 1 verdict + 4 on-demand deep dives, then expanded to 6 parallel threads when we realized the wall-clock cost of running them all at t=0 is zero (parallel) while the UX gain is enormous (everything arrives together). Each thread exercises a different Opus 4.6 capability — see the capabilities table above. See [strategy.md](strategy.md) for the full decision story.
 
-**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 for cards + Opus 4.6 for verdict with adaptive thinking, vision, prompt caching). Single-file frontend by design — zero build step, instant deploy, hackathon velocity. CSS custom properties, ease-out-expo animations, SSE streaming for real-time card rendering, and DOMPurify for XSS defense on all LLM output. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with URL prefix.
+**Tech stack:** Python/Flask, Server-Sent Events, Anthropic API (Haiku 4.5 for cards + Opus 4.6 for verdict with adaptive thinking, vision, prompt caching). Single-file frontend (10,800+ lines) by design — zero build step, instant deploy, hackathon velocity. Modular backend: prompts in `prompts/` package (4 modules, 13 builders), samples in `data/samples.json`, 74 unit tests. CSS custom properties, ease-out-expo animations, SSE streaming for real-time card rendering, and DOMPurify for XSS defense on all LLM output. 14 built-in sample documents with generated thumbnails (including a real Coca-Cola sweepstakes and the real hackathon event waiver). No external APIs beyond Anthropic. No database required. Deployable behind a reverse proxy with `ProxyFix` + `FLIPSIDE_PREFIX`.
 
 ---
 
@@ -355,7 +361,7 @@ Cat's answer:
 
 Our hypothesis: the two-step approach forces the model to reflect on the task itself (what makes good analysis, what biases to avoid) rather than just what the user wants.
 
-We validated the pattern by running 30 Opus 4.6 agents (10 tasks x 3 approaches: direct action, plan mode, meta-prompt) and documented 7 real before/after cases from the build. The full analysis — including methodology caveats and an honest limitations section — is in [meta-prompting-strategy.md](meta-prompting-strategy.md).
+We validated the pattern by running 30 Opus 4.6 agents (10 tasks x 3 approaches: direct action, plan mode, meta-prompt) and documented 7 real before/after cases from the build. The full analysis — including methodology caveats and an honest limitations section — is in [meta-prompting-strategy.md](meta-prompting-strategy.md). All 13 prompts are audited against the 7 Prewash principles (see [PROMPTS.md](PROMPTS.md) for the full prompt reference).
 
 FlipSide's entire architecture is a **productized version of this discovery**. The system prompt teaches Claude *how to think about documents*: adopt the drafter's perspective, apply a taxonomy of 18 legal trick types (Silent Waiver, Time Trap, Cascade Clause, Phantom Protection, Honey Trap...), contrast "what the small print says" against "what you should read." The prompt is a pre-built reasoning framework that every uploaded document executes against.
 
@@ -431,7 +437,7 @@ Third-party licenses: Flask (BSD-3), Anthropic SDK (MIT), python-docx (MIT), pdf
 
 ---
 
-0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,708-line frontend — built through conversation with Claude Code and Opus 4.6.
+0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,800-line frontend, the modular prompt architecture, 74 unit tests — built through conversation with Claude Code and Opus 4.6.
 
 *FlipSide. Everyone deserves to see the other side.*
 ---
