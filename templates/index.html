@@ -315,11 +315,6 @@
             font-size: 3.2rem; font-weight: 800;
             letter-spacing: -0.04em; color: var(--text-primary); line-height: 1.1;
         }
-        .brand-hook {
-            font-size: 1.15rem; color: var(--text-body);
-            margin-top: 0.75rem; font-weight: 400; line-height: 1.6;
-            letter-spacing: -0.01em;
-        }
         .brand-shrug {
             font-size: 1rem; color: var(--text-body); margin-top: 0.9rem;
             line-height: 1.55; max-width: 560px; margin-left: auto; margin-right: auto;
@@ -331,12 +326,20 @@
             text-align: center;
         }
 
-        /* ── Hero stacked: upload full-width, then demo card ──── */
+        /* ── Hero row: upload + example side by side ──── */
+        .hero-row {
+            display: flex; gap: 2rem; align-items: flex-start;
+            max-width: 940px; margin: 0 auto; width: 100%;
+        }
         .hero-upload {
-            max-width: 640px; margin: 0 auto; width: 100%;
+            flex: 1 1 55%; min-width: 0; width: 100%;
         }
         .hero-demo {
-            max-width: 480px; margin: 2rem auto 0; text-align: center;
+            flex: 0 0 320px; text-align: center;
+        }
+        @media (max-width: 800px) {
+            .hero-row { flex-direction: column; gap: 1.5rem; }
+            .hero-demo { flex: none; width: 100%; max-width: 400px; margin: 0 auto; }
         }
         .hero-demo-label {
             font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
@@ -437,9 +440,9 @@
             line-height: 1.5; text-align: center; margin: 0 0 1.25rem;
         }
 
-        /* 3-column input methods */
+        /* 2-column input methods */
         .upload-methods {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
         }
         .upload-method { display: flex; flex-direction: column; }
         .upload-method .drop-zone {
@@ -557,7 +560,7 @@
             margin: 1.25rem -2rem; /* bleed to card edges */
         }
         /* Demo document grid */
-        .demo-grid-section { margin-bottom: 0; margin-top: 2.5rem; }
+        .demo-grid-section { margin-bottom: 0; margin-top: 1.75rem; }
         .demo-grid-title {
             font-size: 0.88rem; font-weight: 400; color: var(--text-secondary);
             text-align: center; margin: 1rem 0 0.9rem;
@@ -574,20 +577,6 @@
         .demo-grid {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
         }
-        .demo-grid:not(.expanded) .demo-tile:nth-child(n+5) {
-            display: none;
-        }
-        .demo-grid-expand {
-            display: block; margin: 0.8rem auto 0; padding: 0.35rem 1rem;
-            background: none; border: 1px solid var(--border); border-radius: 100px;
-            font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
-            color: var(--text-muted); cursor: pointer;
-            transition: all 0.2s ease; letter-spacing: 0.02em;
-        }
-        .demo-grid-expand:hover {
-            border-color: var(--accent); color: var(--accent);
-        }
-        .demo-grid.expanded + .demo-grid-expand { display: none; }
         .demo-tile {
             background: var(--bg-surface); border: 1px solid var(--border);
             border-radius: var(--radius-sm); padding: 0.9rem 0.5rem 0.7rem;
@@ -4367,15 +4356,15 @@
     <div class="upload-container">
         <div class="brand fade-up">
             <h1>FlipSide</h1>
-            <p class="brand-hook">You sign so many things with a shrug.<br>They weren&rsquo;t written with one.</p>
         </div>
 
         <!-- Upload card: full width -->
+        <div class="hero-row">
         <div class="hero-upload fade-up fade-up-d1">
         <div class="upload-card">
-            <p class="upload-headline">Drop any contract, terms, or policy you didn&rsquo;t write.<br>See what the other side intended you to miss &mdash; and how to push back.</p>
+            <p class="upload-headline">Drop any contract, terms, or policy you didn&rsquo;t write.<br>See what the other side intended you to miss &mdash;</p>
 
-            <!-- Single document upload: 3-column input methods -->
+            <!-- Single document upload: 2-column input methods -->
             <div id="singleUpload">
                 <div class="upload-methods" id="uploadMethods">
                     <div class="upload-method" id="methodDrop">
@@ -4400,12 +4389,6 @@
                         </div>
                         <textarea id="pasteArea" class="paste-area hidden" placeholder="Paste contract text here..."></textarea>
                     </div>
-                    <div class="upload-method" id="methodDemo">
-                        <div class="drop-zone method-zone" id="demoZone">
-                            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M9 9h6v6H9z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="7.5" cy="16.5" r=".5" fill="currentColor"/><circle cx="16.5" cy="16.5" r=".5" fill="currentColor"/></svg></span>
-                            <div class="dz-title">Try a demo</div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -4426,7 +4409,7 @@
         </div><!-- .upload-card -->
         </div><!-- .hero-upload -->
 
-        <!-- Demo flip card: centered below upload -->
+        <!-- Demo flip card: beside upload -->
         <div class="hero-demo fade-up fade-up-d2">
             <div class="hero-demo-label">EXAMPLE</div>
             <div class="hero-flip-card" id="heroFlipCard" tabindex="0" role="button" aria-label="Flip this example card to see the hidden side">
@@ -4454,6 +4437,7 @@
                 </div>
             </div>
         </div>
+        </div><!-- .hero-row -->
 
             <div class="demo-grid-section" id="demoGridSection">
                 <div class="demo-grid-shrug">Real documents. Real fine print. Pick one and see what&rsquo;s hiding.</div>
@@ -4473,7 +4457,6 @@
                     <div class="demo-tile" data-sample="hoa"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="demo-tile-label">Dream Home</div><div class="demo-tile-desc">Your house, their rules</div></div>
                     <div class="demo-tile" data-sample="timeshare"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="demo-tile-label">Dream Getaway</div><div class="demo-tile-desc">Check-out is forever</div></div>
                 </div>
-                <button class="demo-grid-expand" id="demoGridExpand">See all 14 samples &#8250;</button>
             </div>
 
         </div>
@@ -5739,8 +5722,7 @@
         if (md) md.classList.add('active-input');
         var mp = $('methodPaste');
         if (mp) mp.classList.add('hidden');
-        var mde = $('methodDemo');
-        if (mde) mde.classList.add('hidden');
+        // methodDemo removed — only 2-column grid now
         updateAnalyzeBtn();
     }
 
@@ -5756,12 +5738,12 @@
         updateAnalyzeBtn();
     });
 
-    // ── 3-column input method toggles ─────────────────────────────────
+    // ── 2-column input method toggles ─────────────────────────────────
     var methodPaste = $('methodPaste');
     var uploadMethods = $('uploadMethods');
 
     function resetUploadMethods() {
-        // Collapse all methods back to 3-column grid
+        // Collapse all methods back to 2-column grid
         var methods = uploadMethods.querySelectorAll('.upload-method');
         for (var i = 0; i < methods.length; i++) {
             methods[i].classList.remove('active-input', 'hidden');
@@ -5777,8 +5759,6 @@
             resetUploadMethods();
             methodPaste.classList.add('active-input');
             $('methodDrop').classList.add('hidden');
-            var methodDemo = $('methodDemo');
-            if (methodDemo) methodDemo.classList.add('hidden');
             pasteArea.classList.remove('hidden');
             pasteArea.focus();
             if (selectedFile) { selectedFile = null; fileInput.value = ''; fileInfo.classList.add('hidden'); uploadPrompt.classList.remove('hidden'); }
@@ -5786,17 +5766,7 @@
         });
     }
 
-    // Click on "Try a demo" zone → pick random sample and launch
-    var demoZone = $('demoZone');
-    if (demoZone) {
-        var SAMPLE_KEYS = ['lease','insurance','tos','employment','loan','gym','medical','hoa','coupon','wedding','pet','sweepstakes','timeshare','hackathon'];
-        demoZone.addEventListener('click', function() {
-            var pick = SAMPLE_KEYS[Math.floor(Math.random() * SAMPLE_KEYS.length)];
-            startSampleAnalysis(pick);
-        });
-    }
-
-    // Escape or empty → reset to 3-column grid
+    // Escape or empty → reset to 2-column grid
     pasteArea.addEventListener('input', updateAnalyzeBtn);
     pasteArea.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') { resetUploadMethods(); updateAnalyzeBtn(); }
@@ -5812,13 +5782,6 @@
 
     // ── Demo grid tile clicks ───────────────────────────────────
     demoGridSection.addEventListener('click', function(e) {
-        // Expand button
-        if (e.target.id === 'demoGridExpand') {
-            var grid = demoGridSection.querySelector('.demo-grid');
-            if (grid) grid.classList.add('expanded');
-            e.target.style.display = 'none';
-            return;
-        }
         var tile = e.target.closest('.demo-tile');
         if (!tile) return;
         startSampleAnalysis(tile.getAttribute('data-sample') || 'lease');
