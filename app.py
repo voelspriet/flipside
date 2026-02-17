@@ -20,6 +20,7 @@ import base64
 from io import BytesIO
 
 from flask import Flask, request, jsonify, render_template, Response
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 import anthropic
 
@@ -44,6 +45,24 @@ load_dotenv()
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+# ── Reverse proxy support ──────────────────────────────────
+# Reads X-Forwarded-For/Proto/Host/Prefix headers from the proxy.
+# For subdirectory deployments (e.g. /flipside), the proxy must set
+# X-Forwarded-Prefix so Flask generates correct URLs.
+# Fallback: set FLIPSIDE_PREFIX=/flipside in environment.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+_manual_prefix = os.environ.get('FLIPSIDE_PREFIX', '').rstrip('/')
+if _manual_prefix:
+    _inner_wsgi = app.wsgi_app
+    def _prefix_wsgi(environ, start_response):
+        environ['SCRIPT_NAME'] = _manual_prefix
+        path = environ.get('PATH_INFO', '')
+        if path.startswith(_manual_prefix):
+            environ['PATH_INFO'] = path[len(_manual_prefix):] or '/'
+        return _inner_wsgi(environ, start_response)
+    app.wsgi_app = _prefix_wsgi
 
 documents = {}
 _documents_lock = threading.Lock()

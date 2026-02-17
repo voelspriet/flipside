@@ -6116,7 +6116,14 @@
     var _sseRetryCount = 0;
     var _sseMaxRetries = 2;
     function connectStream(docId) {
-        eventSource = new EventSource(BASE_URL + '/analyze/' + docId);
+        var sseUrl = BASE_URL + '/analyze/' + docId;
+        try {
+            eventSource = new EventSource(sseUrl);
+        } catch (e) {
+            console.error('[FlipSide] EventSource failed for URL:', sseUrl, e);
+            showError('Connection failed — check if the server is reachable at this URL.');
+            return;
+        }
 
         // ── Auto-reveal: if no cards after 10s, show verdict early ──
         if (_autoRevealTimer) clearTimeout(_autoRevealTimer);

@@ -18,11 +18,22 @@ class TestParseClauseLine:
 
     def test_basic_title_and_section(self):
         result = _parse_clause_line('CLAUSE: Late Fees (Section 1)')
-        assert result == {'title': 'Late Fees', 'section': 'Section 1'}
+        assert result['title'] == 'Late Fees'
+        assert result['section'] == 'Section 1'
+        assert result['risk'] == 'RED'  # default when no RISK field
+        assert result['trick'] == ''
 
     def test_title_without_section(self):
         result = _parse_clause_line('CLAUSE: Unlimited Liability')
-        assert result == {'title': 'Unlimited Liability', 'section': ''}
+        assert result['title'] == 'Unlimited Liability'
+        assert result['section'] == ''
+
+    def test_pipe_format_with_risk_and_trick(self):
+        result = _parse_clause_line('CLAUSE: Late Fees (§1) | RISK: YELLOW | TRICK: Penalty Disguise')
+        assert result['title'] == 'Late Fees'
+        assert result['section'] == '§1'
+        assert result['risk'] == 'YELLOW'
+        assert result['trick'] == 'Penalty Disguise'
 
     def test_descriptive_section_reference(self):
         result = _parse_clause_line('CLAUSE: Uncapped Daily Penalties (Rent and Late Fees, §1)')
