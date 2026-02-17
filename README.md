@@ -208,8 +208,38 @@ git clone https://github.com/voelspriet/flipside.git
 cd flipside
 pip install -r requirements.txt
 echo "ANTHROPIC_API_KEY=your-key-here" > .env
-python app.py  # opens on http://localhost:5001
+python app.py  # opens on http://localhost:8093
 ```
+
+### Deploy Behind a Reverse Proxy (e.g. `/flipside`)
+
+FlipSide supports subdirectory deployment via `X-Forwarded-Prefix`.
+
+1. Add to `.env`:
+   ```
+   FLIPSIDE_PREFIX=/flipside
+   ```
+
+2. Configure your nginx location block:
+   ```nginx
+   location /flipside {
+       proxy_pass http://127.0.0.1:8093/;
+       proxy_set_header Host $host;
+       proxy_set_header X-Forwarded-For $remote_addr;
+       proxy_set_header X-Forwarded-Proto $scheme;
+       proxy_set_header X-Forwarded-Prefix /flipside;
+
+       # SSE streaming support
+       proxy_buffering off;
+       proxy_cache off;
+       proxy_read_timeout 300s;
+   }
+   ```
+
+3. Test and reload:
+   ```bash
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
 
 ---
 
