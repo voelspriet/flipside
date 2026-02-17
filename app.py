@@ -84,27 +84,37 @@ def _prescan_document(doc_id):
         card_results = {}
         card_events = {}
         card_queue = queue_module.Queue()
+        clause_preview_queue = queue_module.Queue()
+        card_stream_queue = queue_module.Queue()  # streaming chunks
         doc['_card_events'] = card_events
         doc['_card_results'] = card_results
         doc['_card_queue'] = card_queue
+        doc['_clause_preview_queue'] = clause_preview_queue
+        doc['_card_stream_queue'] = card_stream_queue
 
         def card_worker(idx, user_content):
             try:
-                resp = client.messages.create(
+                full_text = ''
+                with client.messages.stream(
                     model=fast_model,
-                    max_tokens=4000,
+                    max_tokens=1500,
                     system=[{
                         'type': 'text',
                         'text': card_system,
                         'cache_control': {'type': 'ephemeral'},
                     }],
                     messages=[{'role': 'user', 'content': user_content}],
-                )
-                card_results[idx] = resp.content[0].text
-                card_queue.put((idx, resp.content[0].text))
+                ) as stream:
+                    for chunk in stream.text_stream:
+                        full_text += chunk
+                        card_stream_queue.put(('chunk', idx, chunk))
+                card_stream_queue.put(('done', idx))
+                card_results[idx] = full_text
+                card_queue.put((idx, full_text))
             except Exception as e:
                 print(f'[precard] {doc_id[:8]} card {idx}: Error: {e}')
                 card_results[idx] = ''
+                card_stream_queue.put(('done', idx))
                 card_queue.put((idx, ''))
             finally:
                 card_events[idx].set()
@@ -112,21 +122,24 @@ def _prescan_document(doc_id):
         # ── Phase 1: STREAMING identification scan ──
         # Card workers start as each CLAUSE: line arrives, overlapping with scan
         t0 = time.time()
-        scan_text = ''
+        scan_text = 'CLAUSE:'  # Prefilled assistant turn
         clauses = []
         clause_idx = 0
-        line_buffer = ''
+        line_buffer = 'CLAUSE:'  # Prefilled assistant turn
         not_applicable = False
 
         with client.messages.stream(
             model=fast_model,
-            max_tokens=4000,
+            max_tokens=2000,
             system=[{
                 'type': 'text',
                 'text': build_clause_id_prompt(),
                 'cache_control': {'type': 'ephemeral'},
             }],
-            messages=[{'role': 'user', 'content': user_msg}],
+            messages=[
+                {'role': 'user', 'content': user_msg},
+                {'role': 'assistant', 'content': 'CLAUSE:'},
+            ],
         ) as stream:
             for chunk in stream.text_stream:
                 scan_text += chunk
@@ -149,17 +162,19 @@ def _prescan_document(doc_id):
                             card_user_msg = (
                                 f"Generate a complete flip card for this specific clause:\n\n"
                                 f"Title: {clause['title']}\n"
-                                f"Section Reference: {clause.get('section', 'Not specified')}\n"
-                                f"Risk Level: {clause['risk']}\n"
-                                f"Score: {clause['score']}/100\n"
-                                f"Trick Category: {clause['trick']}\n"
-                                f"Key Quote: \"{clause['quote']}\"\n\n"
-                                f"Analyze the clause in the document and output the COMPLETE flip card."
+                                f"Section Reference: {clause.get('section', 'Not specified')}\n\n"
+                                f"Find this clause in the document and output the COMPLETE flip card."
                             )
                             threading.Thread(
                                 target=card_worker, args=(i, card_user_msg), daemon=True
                             ).start()
                             clause_idx += 1
+                            # Push preview for frontend loading screen
+                            clause_preview_queue.put({
+                                'index': i,
+                                'title': clause['title'],
+                                'section': clause.get('section', ''),
+                            })
                             print(f'[prescan] {doc_id[:8]} clause {i}: '
                                   f'{clause["title"][:40]} — card worker started at '
                                   f'{round(time.time() - t0, 1)}s')
@@ -174,12 +189,8 @@ def _prescan_document(doc_id):
                 card_user_msg = (
                     f"Generate a complete flip card for this specific clause:\n\n"
                     f"Title: {clause['title']}\n"
-                    f"Section Reference: {clause.get('section', 'Not specified')}\n"
-                    f"Risk Level: {clause['risk']}\n"
-                    f"Score: {clause['score']}/100\n"
-                    f"Trick Category: {clause['trick']}\n"
-                    f"Key Quote: \"{clause['quote']}\"\n\n"
-                    f"Analyze the clause in the document and output the COMPLETE flip card."
+                    f"Section Reference: {clause.get('section', 'Not specified')}\n\n"
+                    f"Find this clause in the document and output the COMPLETE flip card."
                 )
                 threading.Thread(
                     target=card_worker, args=(i, card_user_msg), daemon=True
@@ -1455,16 +1466,15 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 
 def build_clause_id_prompt():
     """Phase 1: Lightweight identification scan. Minimal output for speed.
-    Optimized: CLAUSE lines first (before profile) so card workers launch ASAP."""
+    Optimized: CLAUSE lines first (before profile) so card workers launch ASAP.
+    Stripped format — card workers independently determine RISK/SCORE/TRICK/QUOTE."""
     return """Speed-scan this contract. Output CLAUSE lines IMMEDIATELY — no preamble, no headers before them. English only.
 
 Your VERY FIRST output token must be "CLAUSE:" — start with the worst clause you find.
 
-CLAUSE: [Title] ([Section/Context]) | RISK: [RED/YELLOW] | SCORE: [0-100] | TRICK: [category] | QUOTE: "[exact sentence from document]"
+CLAUSE: [Descriptive Title] ([Section/Context])
 
-Output one CLAUSE per line. Maximum 12. Worst first. Quotes must be exact copy-paste from the document.
-
-TRICK categories (pick one): Silent Waiver, Burden Shift, Time Trap, Escape Hatch, Moving Target, Forced Arena, Phantom Protection, Cascade Clause, Sole Discretion, Liability Cap, Reverse Shield, Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, Ghost Standard
+Output one CLAUSE per line. Maximum 12. Worst first. Title must describe the clause topic. Section ref must name the topic (e.g. "Early Termination, §4.2" not just "§4.2").
 
 After all CLAUSE lines, output on one line:
 GREEN_CLAUSES: [ref]: [description]; [ref]: [description]; ...
@@ -1478,7 +1488,7 @@ After GREEN_CLAUSES, output:
 - **Language**: [language]
 - **Sections**: [count]
 
-Target: clauses with asymmetric rights, one-sided penalties, cascading exposure, discretion imbalance, or definitions that alter plain meaning. Section refs must name the topic (e.g. "Early Termination, §4.2" not just "§4.2"). Severity order — worst first.
+Target: clauses with asymmetric rights, one-sided penalties, cascading exposure, discretion imbalance, or definitions that alter plain meaning. Severity order — worst first.
 
 If the document has NO terms or obligations (recipe, novel, article), output ONLY:
 ## Document Profile
@@ -1665,38 +1675,27 @@ def parse_identification_output(text):
 
 
 def _parse_clause_line(line):
-    """Parse a single CLAUSE: line into a dict."""
+    """Parse a single CLAUSE: line into a dict.
+    Minimal format: CLAUSE: Title (Section)
+    Also handles legacy format with | RISK: | SCORE: | TRICK: | QUOTE: fields."""
     try:
         content = line[len('CLAUSE:'):].strip()
-        parts = [p.strip() for p in content.split('|')]
 
-        result = {'title': '', 'section': '', 'risk': 'RED', 'score': 50, 'trick': '', 'quote': ''}
+        # Check for legacy pipe-delimited format
+        if '|' in content:
+            parts = [p.strip() for p in content.split('|')]
+            title_part = parts[0]
+        else:
+            title_part = content
 
-        # First part: Title (Section)
-        title_part = parts[0] if parts else ''
+        result = {'title': '', 'section': ''}
+
         paren_match = re.search(r'\(([^)]+)\)\s*$', title_part)
         if paren_match:
             result['section'] = paren_match.group(1)
             result['title'] = title_part[:paren_match.start()].strip()
         else:
             result['title'] = title_part
-
-        for i, part in enumerate(parts[1:]):
-            if part.startswith('RISK:'):
-                result['risk'] = part[5:].strip()
-            elif part.startswith('SCORE:'):
-                try:
-                    result['score'] = int(re.search(r'\d+', part).group())
-                except (AttributeError, ValueError):
-                    pass
-            elif part.startswith('TRICK:'):
-                result['trick'] = part[6:].strip()
-            elif part.startswith('QUOTE:'):
-                # Rejoin remaining parts — quote text may contain | chars
-                quote = '|'.join(parts[1 + i:])
-                quote = quote[6:].strip().strip('"').strip('\u201c').strip('\u201d')
-                result['quote'] = quote
-                break
 
         return result if result['title'] else None
     except Exception as e:
@@ -2290,38 +2289,89 @@ def analyze(doc_id):
         # ── STREAMING PATH: cards not ready, run pipeline in background ──
         # Opus events flow to the browser from t=0 while cards build.
         def _card_pipeline():
-            """Background thread: forwards cards to SSE as they arrive,
-            WITHOUT waiting for full prescan to finish first."""
+            """Background thread: streams card chunks to SSE as they generate.
+            First card streams token-by-token (~4-5s), others flush when done."""
             try:
                 t_pipeline_start = time.time()
                 _prescan_ev = doc.get('_prescan_event')
+                _stream_q = doc.get('_card_stream_queue')
                 _card_queue = doc.get('_card_queue')
+                _preview_queue = doc.get('_clause_preview_queue')
 
-                # ── EAGER FORWARDING: push cards to SSE as they arrive ──
-                # Card workers were spawned during prescan streaming, so
-                # cards may already be in the queue before prescan finishes.
-                _received = 0
                 _profile_sent = False
                 _started_sent = False
+                _streaming_idx = None      # card currently streaming to frontend
+                _card_buffers = {}         # {idx: accumulated_text} for buffered cards
+                _done_cards = set()        # card indices that finished generating
+                _emitted_cards = set()     # card indices already sent to frontend
+
+                def _flush_buffered():
+                    """Emit any buffered complete cards and pick next to stream."""
+                    nonlocal _streaming_idx
+                    # Flush complete buffered cards
+                    for buf_idx in sorted(_card_buffers.keys()):
+                        if buf_idx in _done_cards and buf_idx not in _emitted_cards:
+                            ct = _card_buffers[buf_idx].strip().strip('-').strip()
+                            if ct:
+                                q.put(('card_text', ct + '\n\n---\n\n'))
+                            _emitted_cards.add(buf_idx)
+                    # Pick next incomplete card to stream (if any)
+                    for buf_idx in sorted(_card_buffers.keys()):
+                        if buf_idx not in _done_cards and buf_idx not in _emitted_cards:
+                            _streaming_idx = buf_idx
+                            # Flush already-buffered chunks for this card
+                            if _card_buffers.get(buf_idx):
+                                q.put(('card_text', _card_buffers[buf_idx]))
+                            return
+                    _streaming_idx = None
 
                 while True:
-                    # Check if prescan has finished
                     prescan_done = _prescan_ev and _prescan_ev.is_set()
 
-                    # Try to grab a card from the queue (short timeout)
-                    if _card_queue:
+                    # Forward clause previews
+                    if _preview_queue:
+                        while not _preview_queue.empty():
+                            try:
+                                q.put(('clause_preview', _preview_queue.get_nowait()))
+                            except queue_module.Empty:
+                                break
+
+                    # Read streaming chunks from card workers
+                    if _stream_q:
                         try:
-                            idx, text = _card_queue.get(timeout=0.3)
-                            # On first card, emit cards_started with preliminary count
-                            if not _started_sent:
-                                q.put(('cards_started', 20))  # Upper bound; corrected later
-                                _started_sent = True
-                            q.put(('card_ready', (idx, text)))
-                            _received += 1
+                            msg = _stream_q.get(timeout=0.05)
+                            msg_type, idx = msg[0], msg[1]
+
+                            if msg_type == 'chunk':
+                                chunk = msg[2]
+                                # First chunk from any card → signal cards_started
+                                if not _started_sent:
+                                    q.put(('cards_started', 20))
+                                    _started_sent = True
+
+                                # First card to produce → stream directly
+                                if _streaming_idx is None:
+                                    _streaming_idx = idx
+
+                                if idx == _streaming_idx:
+                                    q.put(('card_text', chunk))
+                                else:
+                                    _card_buffers.setdefault(idx, '')
+                                    _card_buffers[idx] += chunk
+
+                            elif msg_type == 'done':
+                                _done_cards.add(idx)
+                                if idx == _streaming_idx:
+                                    # Current streaming card finished
+                                    q.put(('card_text', '\n\n---\n\n'))
+                                    _emitted_cards.add(idx)
+                                    _streaming_idx = None
+                                    _flush_buffered()
+
                         except queue_module.Empty:
                             pass
 
-                    # Once prescan is done, check if we're finished
+                    # Once prescan is done, handle profile + check completion
                     if prescan_done:
                         _prescan = doc.get('_prescan')
 
@@ -2342,26 +2392,28 @@ def analyze(doc_id):
                             if _profile:
                                 q.put(('cards_profile', _profile))
 
-                        # No prescan or failed — blocking scan
+                        # No prescan or failed — blocking scan fallback
                         if not _prescan or not _prescan.get('clauses'):
-                            if _received > 0:
-                                # Some cards arrived but prescan reported failure —
-                                # keep what we have
-                                q.put(('cards_started', _received))
+                            if len(_emitted_cards) > 0 or len(_done_cards) > 0:
+                                # Some cards arrived — signal completion
+                                q.put(('cards_all_done', len(_emitted_cards) or len(_done_cards)))
                                 return
                             t0_scan = time.time()
                             try:
                                 scan_response = client.messages.create(
                                     model=FAST_MODEL,
-                                    max_tokens=4000,
+                                    max_tokens=2000,
                                     system=[{
                                         'type': 'text',
                                         'text': build_clause_id_prompt(),
                                         'cache_control': {'type': 'ephemeral'},
                                     }],
-                                    messages=[{'role': 'user', 'content': user_msg}],
+                                    messages=[
+                                        {'role': 'user', 'content': user_msg},
+                                        {'role': 'assistant', 'content': 'CLAUSE:'},
+                                    ],
                                 )
-                                _scan_text = scan_response.content[0].text
+                                _scan_text = 'CLAUSE:' + scan_response.content[0].text
                                 timings['scan'] = round(time.time() - t0_scan, 1)
                                 _profile_fb, _clauses, _green = parse_identification_output(_scan_text)
 
@@ -2373,7 +2425,7 @@ def analyze(doc_id):
                                     }))
                                     return
 
-                                # Start Phase 2 card workers
+                                # Start Phase 2 card workers (uses streaming worker())
                                 if _profile_fb:
                                     q.put(('cards_profile', _profile_fb))
                                 _card_sys = build_single_card_system(doc['text'])
@@ -2383,16 +2435,12 @@ def analyze(doc_id):
                                     cu = (
                                         f"Generate a complete flip card for this specific clause:\n\n"
                                         f"Title: {ci['title']}\n"
-                                        f"Section Reference: {ci.get('section', 'Not specified')}\n"
-                                        f"Risk Level: {ci['risk']}\n"
-                                        f"Score: {ci['score']}/100\n"
-                                        f"Trick Category: {ci['trick']}\n"
-                                        f"Key Quote: \"{ci['quote']}\"\n\n"
-                                        f"Analyze the clause in the document and output the COMPLETE flip card."
+                                        f"Section Reference: {ci.get('section', 'Not specified')}\n\n"
+                                        f"Find this clause in the document and output the COMPLETE flip card."
                                     )
                                     threading.Thread(
                                         target=worker,
-                                        args=(f'card_{i}', _card_sys, 4000, FAST_MODEL, False),
+                                        args=(f'card_{i}', _card_sys, 1500, FAST_MODEL, False),
                                         kwargs={'user_content': cu},
                                         daemon=True,
                                     ).start()
@@ -2417,16 +2465,21 @@ def analyze(doc_id):
                                 q.put(('cards_fallback', None))
                                 return
 
-                        # Prescan succeeded — check if all cards are in
+                        # Prescan succeeded — check if all cards streamed
                         _card_total = doc.get('_card_total', 0)
-                        if _card_total > 0 and _received >= _card_total:
-                            # All cards forwarded
-                            q.put(('cards_started', _card_total))
-                            print(f'[pipeline] All {_card_total} cards forwarded (eager)')
+                        if _card_total > 0 and len(_done_cards) >= _card_total:
+                            # All cards generated — flush any remaining
+                            if _streaming_idx is not None and _streaming_idx in _done_cards:
+                                q.put(('card_text', '\n\n---\n\n'))
+                                _emitted_cards.add(_streaming_idx)
+                                _streaming_idx = None
+                            _flush_buffered()
+                            q.put(('cards_all_done', _card_total))
+                            print(f'[pipeline] All {_card_total} cards streamed')
                             return
 
-                        # Cards still pending — if no queue, start fresh workers
-                        if not _card_queue:
+                        # Cards still pending — if no stream queue, start fresh workers
+                        if not _stream_q and not _card_queue:
                             _clauses = _prescan['clauses']
                             _green = _prescan['green_text']
                             _card_sys = build_single_card_system(doc['text'])
@@ -2436,16 +2489,12 @@ def analyze(doc_id):
                                 cu = (
                                     f"Generate a complete flip card for this specific clause:\n\n"
                                     f"Title: {ci['title']}\n"
-                                    f"Section Reference: {ci.get('section', 'Not specified')}\n"
-                                    f"Risk Level: {ci['risk']}\n"
-                                    f"Score: {ci['score']}/100\n"
-                                    f"Trick Category: {ci['trick']}\n"
-                                    f"Key Quote: \"{ci['quote']}\"\n\n"
-                                    f"Analyze the clause in the document and output the COMPLETE flip card."
+                                    f"Section Reference: {ci.get('section', 'Not specified')}\n\n"
+                                    f"Find this clause in the document and output the COMPLETE flip card."
                                 )
                                 threading.Thread(
                                     target=worker,
-                                    args=(f'card_{i}', _card_sys, 4000, FAST_MODEL, False),
+                                    args=(f'card_{i}', _card_sys, 1500, FAST_MODEL, False),
                                     kwargs={'user_content': cu},
                                     daemon=True,
                                 ).start()
@@ -2459,21 +2508,22 @@ def analyze(doc_id):
                             q.put(('cards_started', _total))
                             return
 
-                        # Keep polling — cards still arriving from queue
+                        # Keep polling
                         continue
 
                     # Prescan not done yet — keep polling
-                    if not _card_queue:
-                        # No queue yet (prescan hasn't started card workers)
-                        time.sleep(0.3)
+                    if not _stream_q and not _card_queue:
+                        time.sleep(0.05)
+                        _stream_q = doc.get('_card_stream_queue')
                         _card_queue = doc.get('_card_queue')
                         continue
 
                     # Safety: 60s total timeout
                     if time.time() - t_pipeline_start > 60:
-                        print(f'[pipeline] Timed out after 60s, {_received} cards forwarded')
-                        if _received > 0:
-                            q.put(('cards_started', _received))
+                        print(f'[pipeline] Timed out after 60s, {len(_emitted_cards)} cards streamed')
+                        if len(_emitted_cards) > 0 or len(_done_cards) > 0:
+                            _flush_buffered()
+                            q.put(('cards_all_done', len(_emitted_cards)))
                         return
 
             except Exception as e:
@@ -2685,12 +2735,17 @@ def analyze(doc_id):
                 total_cards = 0
                 continue
 
+            # ── Pipeline: clause preview during loading ──
+            if source == 'clause_preview':
+                yield sse('clause_preview', json.dumps(event))
+                continue
+
             # ── Pipeline: document profile text ──
             if source == 'cards_profile':
                 yield sse('text', str(event) + '\n\n---\n\n')
                 continue
 
-            # ── Pipeline: Phase 2 card workers started ──
+            # ── Pipeline: Phase 2 card workers started (fallback path) ──
             if source == 'cards_started':
                 total_cards = event
                 if total_cards == 0:
@@ -2712,7 +2767,25 @@ def analyze(doc_id):
                             'not_applicable': False}))
                 continue
 
-            # ── Pipeline: individual pre-built card ready ──
+            # ── Pipeline: streaming card text chunk ──
+            if source == 'card_text':
+                yield sse('text', str(event))
+                continue
+
+            # ── Pipeline: all cards streamed ──
+            if source == 'cards_all_done':
+                cards_all_done = True
+                total_cards = event
+                total_quick = round(time.time() - start_time, 1)
+                yield sse('quick_done', json.dumps({
+                    'seconds': total_quick, 'model': FAST_MODEL}))
+                yield sse('handoff', json.dumps({
+                    'tricks_found': 0, 'summary': '',
+                    'clause_count': max(total_cards - 1, 0),
+                    'not_applicable': False}))
+                continue
+
+            # ── Pipeline: individual pre-built card ready (legacy/fallback) ──
             if source == 'card_ready':
                 idx, card_text = event
                 card_done_flags[idx] = True

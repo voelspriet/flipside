@@ -6061,6 +6061,18 @@
                     handlePhase(msg.content);
                     break;
 
+                case 'clause_preview':
+                    var cp = {};
+                    try { cp = JSON.parse(msg.content); } catch(_) {}
+                    if (cp.title) {
+                        var cpCount = (cp.index || 0) + 1;
+                        var cpLabel = cp.title;
+                        if (cp.section) cpLabel += ' (' + cp.section + ')';
+                        setInvestPhase(1, 'active', cpCount + ' found: ' + cpLabel);
+                        showBriefingSentence('Found: ' + cp.title);
+                    }
+                    break;
+
                 case 'thinking_start':
                     if (!quickDone) {
                         startStatusRotation('thinking');
@@ -7555,6 +7567,49 @@
 
     // ── Live narration: show real sentences from Opus thinking stream ──
 
+    function scoreNarration(s) {
+        var score = 0;
+        // Boost: specific numbers (dollar, percent, duration)
+        if (/\$[\d,]+|\d+\s*%|\d+\s*(month|year|day|week|hour)/i.test(s)) score += 3;
+        // Boost: document structure references
+        if (/section|clause|article|paragraph|page/i.test(s)) score += 2;
+        // Boost: names a party or role
+        if (/employer|employee|tenant|landlord|company|customer|organizer|participant|borrower|lender|insurer|policyholder|licensor|licensee|vendor|buyer|seller/i.test(s)) score += 2;
+        // Boost: identifies a finding or risk
+        if (/restrict|limit|prohibit|require|waive|forfeit|penalty|fee|terminate|liable|risk|broad|unusual|significant|hidden|buried|one-sided|uncapped|compound/i.test(s)) score += 2;
+        // Boost: concrete legal concept
+        if (/non-?compete|indemnif|arbitrat|auto-?renew|confidential|intellectual property|force majeure|governing law|liability cap|severab|sublicens|perpetual|irrevocab/i.test(s)) score += 2;
+        // Penalize: meta-reasoning / self-talk that survived cleanup
+        if (/^(This is|There is|It is|That's|These are) /i.test(s)) score -= 1;
+        if (/^(The document|The contract|The agreement|According to) /i.test(s)) score -= 1;
+        return score;
+    }
+
+    function cleanNarrationSentence(s) {
+        // Strip bullets, dashes, numbering, markdown bold/headers
+        s = s.replace(/^[-*•]\s*/, '').replace(/^\d+[.)]\s*/, '').replace(/\*+/g, '').replace(/^#+\s*/, '').trim();
+        if (s.length < 20 || s.length > 220) return null;
+        // Skip ALL-CAPS headers
+        if (/^[A-Z\s]{8,}$/.test(s)) return null;
+        // Strip label prefixes (RED FLAG:, NOTE:, etc)
+        if (/^(RED FLAG|GREEN FLAG|YELLOW FLAG|NOTE|WARNING|SUMMARY):/i.test(s)) {
+            s = s.replace(/^[^:]+:\s*/, '');
+            if (s.length < 15) return null;
+        }
+        // Strip LLM self-talk prefixes
+        s = s.replace(/^(Hmm,?\s*|OK,?\s*|Well,?\s*|So,?\s*|Now,?\s*|Right,?\s*|Let me\s+\w+\s*[,.]?\s*|I need to\s+|I should\s+|I think\s+|I notice\s+|I see\s+|I'm \w+ing\s+|Actually,?\s*|Wait,?\s*|About\s+what's\s+)/i, '');
+        // Strip reasoning connectors
+        s = s.replace(/^(This means that|This indicates that|This suggests that|This is because|It's worth noting that|Importantly,|Notably,|Interestingly,)\s*/i, '');
+        if (s.length < 15) return null;
+        // Capitalize first letter
+        s = s.charAt(0).toUpperCase() + s.slice(1);
+        // Trim trailing period
+        s = s.replace(/\.\s*$/, '');
+        // Truncate if still long
+        if (s.length > 120) s = s.substring(0, 118) + '\u2026';
+        return s;
+    }
+
     function narrateFromThinking(chunk) {
         _narrateBuffer += chunk;
 
@@ -7569,41 +7624,24 @@
         var tail = parts.pop();
         _narrateBuffer = tail;
 
-        // Walk backwards through complete sentences, pick the first usable one
-        for (var i = parts.length - 1; i >= Math.max(0, parts.length - 3); i--) {
-            var s = parts[i].trim();
-            // Strip bullets, dashes, numbering, markdown bold/headers
-            s = s.replace(/^[-*•]\s*/, '').replace(/^\d+[.)]\s*/, '').replace(/\*+/g, '').replace(/^#+\s*/, '').trim();
-            if (s.length < 20 || s.length > 220) continue;
-            // Skip ALL-CAPS headers
-            if (/^[A-Z\s]{8,}$/.test(s)) continue;
-            // Skip lines that are just labels (RED FLAG:, NOTE:, etc)
-            if (/^(RED FLAG|GREEN FLAG|YELLOW FLAG|NOTE|WARNING|SUMMARY):/i.test(s)) {
-                s = s.replace(/^[^:]+:\s*/, '');
-                if (s.length < 15) continue;
-            }
-
-            // Light cleanup: strip LLM self-talk prefixes
-            s = s.replace(/^(Hmm,?\s*|OK,?\s*|Well,?\s*|So,?\s*|Now,?\s*|Right,?\s*|Let me\s+\w+\s*[,.]?\s*|I need to\s+|I should\s+|I think\s+|I notice\s+|I see\s+|I'm \w+ing\s+|Actually,?\s*|Wait,?\s*|About\s+what's\s+)/i, '');
-            if (s.length < 15) continue;
-
-            // Capitalize first letter
-            s = s.charAt(0).toUpperCase() + s.slice(1);
-            // Trim trailing period
-            s = s.replace(/\.\s*$/, '');
-            // Truncate if still long
-            if (s.length > 120) s = s.substring(0, 118) + '\u2026';
-
-            // Dedup
+        // Score all recent candidates, pick the best
+        var best = null, bestScore = -Infinity;
+        for (var i = parts.length - 1; i >= Math.max(0, parts.length - 5); i--) {
+            var s = cleanNarrationSentence(parts[i].trim());
+            if (!s) continue;
+            // Dedup check
             var key = s.substring(0, 40);
             if (_shownNarrations[key]) continue;
-            _shownNarrations[key] = true;
-
-            showBriefingSentence(s);
-            showCapTickerNarration(s);
-            _lastNarrationTime = Date.now();
-            return;
+            var sc = scoreNarration(s);
+            if (sc > bestScore) { best = s; bestScore = sc; }
         }
+
+        if (!best || bestScore < 1) return; // nothing specific enough
+
+        _shownNarrations[best.substring(0, 40)] = true;
+        showBriefingSentence(best);
+        showCapTickerNarration(best);
+        _lastNarrationTime = Date.now();
     }
 
     function updateExpertMind(newText, tokenCount) {
