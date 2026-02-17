@@ -109,29 +109,40 @@ def _prescan_document(doc_id):
         doc['_card_stream_queue'] = card_stream_queue
 
         def card_worker(idx, user_content):
+            max_retries = 3
             try:
-                full_text = ''
-                with client.messages.stream(
-                    model=fast_model,
-                    max_tokens=1500,
-                    system=[{
-                        'type': 'text',
-                        'text': card_system,
-                        'cache_control': {'type': 'ephemeral'},
-                    }],
-                    messages=[{'role': 'user', 'content': user_content}],
-                ) as stream:
-                    for chunk in stream.text_stream:
-                        full_text += chunk
-                        card_stream_queue.put(('chunk', idx, chunk))
-                card_stream_queue.put(('done', idx))
-                card_results[idx] = full_text
-                card_queue.put((idx, full_text))
-            except Exception as e:
-                print(f'[precard] {doc_id[:8]} card {idx}: Error: {e}')
-                card_results[idx] = ''
-                card_stream_queue.put(('done', idx))
-                card_queue.put((idx, ''))
+                for attempt in range(max_retries):
+                    try:
+                        full_text = ''
+                        with client.messages.stream(
+                            model=fast_model,
+                            max_tokens=3000,
+                            system=[{
+                                'type': 'text',
+                                'text': card_system,
+                                'cache_control': {'type': 'ephemeral'},
+                            }],
+                            messages=[{'role': 'user', 'content': user_content}],
+                        ) as stream:
+                            for chunk in stream.text_stream:
+                                full_text += chunk
+                                card_stream_queue.put(('chunk', idx, chunk))
+                        card_stream_queue.put(('done', idx))
+                        card_results[idx] = full_text
+                        card_queue.put((idx, full_text))
+                        return  # success
+                    except Exception as e:
+                        is_overloaded = 'overload' in str(e).lower() or '529' in str(e) or '429' in str(e)
+                        if is_overloaded and attempt < max_retries - 1:
+                            wait = (attempt + 1) * 5  # 5s, 10s
+                            print(f'[precard] {doc_id[:8]} card {idx}: Overloaded, retry {attempt+1} in {wait}s')
+                            time.sleep(wait)
+                            continue
+                        print(f'[precard] {doc_id[:8]} card {idx}: Error: {e}')
+                        card_results[idx] = ''
+                        card_stream_queue.put(('done', idx))
+                        card_queue.put((idx, ''))
+                        return
             finally:
                 card_events[idx].set()
 
@@ -178,8 +189,11 @@ def _prescan_document(doc_id):
                             card_user_msg = (
                                 f"Generate a complete flip card for this specific clause:\n\n"
                                 f"Title: {clause['title']}\n"
-                                f"Section Reference: {clause.get('section', 'Not specified')}\n\n"
-                                f"Find this clause in the document and output the COMPLETE flip card."
+                                f"Section Reference: {clause.get('section', 'Not specified')}\n"
+                                f"Prescan Risk: {clause.get('risk', 'RED')}\n"
+                                f"Prescan Trick: {clause.get('trick', '')}\n\n"
+                                f"Find this clause in the document and output the COMPLETE flip card. "
+                                f"Make your own independent risk assessment — the prescan hints above are guidance only."
                             )
                             threading.Thread(
                                 target=card_worker, args=(i, card_user_msg), daemon=True
@@ -205,8 +219,11 @@ def _prescan_document(doc_id):
                 card_user_msg = (
                     f"Generate a complete flip card for this specific clause:\n\n"
                     f"Title: {clause['title']}\n"
-                    f"Section Reference: {clause.get('section', 'Not specified')}\n\n"
-                    f"Find this clause in the document and output the COMPLETE flip card."
+                    f"Section Reference: {clause.get('section', 'Not specified')}\n"
+                    f"Prescan Risk: {clause.get('risk', 'RED')}\n"
+                    f"Prescan Trick: {clause.get('trick', '')}\n\n"
+                    f"Find this clause in the document and output the COMPLETE flip card. "
+                    f"Make your own independent risk assessment — the prescan hints above are guidance only."
                 )
                 threading.Thread(
                     target=card_worker, args=(i, card_user_msg), daemon=True
@@ -516,6 +533,68 @@ def extract_docx(file_storage):
     return '\n\n'.join(p.text for p in doc.paragraphs if p.text.strip())
 
 
+def extract_image(file_storage):
+    """Extract text from a photo/image using Haiku Vision.
+
+    Returns (text, [image_base64]) — text for the pipeline, image for Opus vision.
+    """
+    from PIL import Image
+
+    img_bytes = file_storage.read()
+    img = Image.open(BytesIO(img_bytes))
+
+    # Convert to RGB (handles RGBA PNGs, palette images, etc.)
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+
+    # Resize if needed (same constraints as PDF page images)
+    if max(img.size) > MAX_IMAGE_DIMENSION:
+        img.thumbnail((MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION), Image.LANCZOS)
+
+    # Encode as JPEG
+    buf = BytesIO()
+    img.save(buf, format='JPEG', quality=80)
+    if buf.tell() > MAX_IMAGE_BYTES:
+        buf = BytesIO()
+        img.save(buf, format='JPEG', quality=50)
+
+    image_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    # Use Haiku Vision to transcribe the text
+    try:
+        result = get_client().messages.create(
+            model=FAST_MODEL,
+            max_tokens=4096,
+            messages=[{
+                'role': 'user',
+                'content': [
+                    {
+                        'type': 'image',
+                        'source': {
+                            'type': 'base64',
+                            'media_type': 'image/jpeg',
+                            'data': image_b64,
+                        },
+                    },
+                    {
+                        'type': 'text',
+                        'text': (
+                            'Transcribe ALL text from this image exactly as written. '
+                            'Preserve layout, headings, numbering, bullet points, and paragraph breaks. '
+                            'Output only the transcribed text, no commentary or descriptions.'
+                        ),
+                    },
+                ],
+            }],
+        )
+        text = result.content[0].text.strip()
+    except Exception as e:
+        print(f'[extract_image] Haiku Vision extraction failed: {e}')
+        text = ''
+
+    return text, [image_b64]
+
+
 # ---------------------------------------------------------------------------
 # Prompt — optimized for Opus 4.6 extended thinking
 # ---------------------------------------------------------------------------
@@ -555,6 +634,10 @@ def upload():
                 text = extract_docx(file)
             elif ext in ('txt', 'text', 'md'):
                 text = file.read().decode('utf-8', errors='replace')
+            elif ext in ('jpg', 'jpeg', 'png', 'webp') or (
+                file.content_type and file.content_type.startswith('image/')
+            ):
+                text, page_images = extract_image(file)
             else:
                 return jsonify({'error': f'Unsupported file type: .{ext}'}), 400
 
@@ -616,10 +699,13 @@ def sample():
     filename = doc['filename']
 
     doc_id = str(uuid.uuid4())
-    store_document(doc_id, {
+    doc_store = {
         'text': text,
         'filename': filename,
-    })
+    }
+    if 'doc_context' in doc:
+        doc_store['_doc_context'] = doc['doc_context']
+    store_document(doc_id, doc_store)
 
     return jsonify({
         'doc_id': doc_id,
@@ -683,19 +769,20 @@ def parse_identification_output(text):
 
 def _parse_clause_line(line):
     """Parse a single CLAUSE: line into a dict.
-    Minimal format: CLAUSE: Title (Section)
-    Also handles legacy format with | RISK: | SCORE: | TRICK: | QUOTE: fields."""
+    Format: CLAUSE: Title (Section) | RISK: RED | TRICK: Moving Target
+    Also handles minimal format without pipe-delimited fields."""
     try:
         content = line[len('CLAUSE:'):].strip()
 
-        # Check for legacy pipe-delimited format
+        # Check for pipe-delimited format
         if '|' in content:
             parts = [p.strip() for p in content.split('|')]
             title_part = parts[0]
         else:
             title_part = content
+            parts = [title_part]
 
-        result = {'title': '', 'section': ''}
+        result = {'title': '', 'section': '', 'risk': 'RED', 'trick': ''}
 
         paren_match = re.search(r'\(([^)]+)\)\s*$', title_part)
         if paren_match:
@@ -703,6 +790,13 @@ def _parse_clause_line(line):
             result['title'] = title_part[:paren_match.start()].strip()
         else:
             result['title'] = title_part
+
+        # Extract RISK and TRICK from pipe-delimited fields
+        for part in parts[1:]:
+            if part.startswith('RISK:'):
+                result['risk'] = part[5:].strip()
+            elif part.startswith('TRICK:'):
+                result['trick'] = part[6:].strip()
 
         return result if result['title'] else None
     except Exception as e:
@@ -775,35 +869,52 @@ def analyze(doc_id):
 
         def worker(label, system_prompt, max_out,
                    model=MODEL, use_thinking=True, user_content=None, tools=None):
-            stream = None
             t0 = time.time()
-            try:
-                msg_content = user_content if user_content is not None else user_msg
-                create_kwargs = {
-                    'model': model,
-                    'max_tokens': max_out,
-                    'system': [{'type': 'text', 'text': system_prompt, 'cache_control': {'type': 'ephemeral'}}],
-                    'messages': [{'role': 'user', 'content': msg_content}],
-                    'stream': True,
-                }
-                if use_thinking:
-                    create_kwargs['thinking'] = {'type': 'adaptive'}
-                if tools:
-                    create_kwargs['tools'] = tools
-                stream = client.messages.create(**create_kwargs)
-                for event in stream:
-                    if cancel.is_set():
-                        break
-                    q.put((label, event))
-            except anthropic.APIError as e:
-                q.put(('error', f'{label}: {e.message}'))
-            except Exception as e:
-                q.put(('error', f'{label}: {str(e)}'))
-            finally:
-                if stream:
-                    stream.close()
-                timings[label] = round(time.time() - t0, 1)
-                q.put((f'{label}_done', None))
+            max_retries = 3
+            for attempt in range(max_retries):
+                stream = None
+                try:
+                    msg_content = user_content if user_content is not None else user_msg
+                    create_kwargs = {
+                        'model': model,
+                        'max_tokens': max_out,
+                        'system': [{'type': 'text', 'text': system_prompt, 'cache_control': {'type': 'ephemeral'}}],
+                        'messages': [{'role': 'user', 'content': msg_content}],
+                        'stream': True,
+                    }
+                    if use_thinking:
+                        create_kwargs['thinking'] = {'type': 'adaptive'}
+                    if tools:
+                        create_kwargs['tools'] = tools
+                    stream = client.messages.create(**create_kwargs)
+                    for event in stream:
+                        if cancel.is_set():
+                            break
+                        q.put((label, event))
+                    break  # success
+                except anthropic.APIError as e:
+                    is_overloaded = e.status_code in (429, 529) or 'overload' in str(e).lower()
+                    if is_overloaded and attempt < max_retries - 1:
+                        wait = (attempt + 1) * 5
+                        print(f'[worker] {label}: Overloaded, retry {attempt+1} in {wait}s')
+                        time.sleep(wait)
+                        continue
+                    q.put(('error', f'{label}: {e.message}'))
+                    break
+                except Exception as e:
+                    is_overloaded = 'overload' in str(e).lower() or '529' in str(e)
+                    if is_overloaded and attempt < max_retries - 1:
+                        wait = (attempt + 1) * 5
+                        print(f'[worker] {label}: Overloaded, retry {attempt+1} in {wait}s')
+                        time.sleep(wait)
+                        continue
+                    q.put(('error', f'{label}: {str(e)}'))
+                    break
+                finally:
+                    if stream:
+                        stream.close()
+            timings[label] = round(time.time() - t0, 1)
+            q.put((f'{label}_done', None))
 
         # Build vision content for deep analysis if page images exist
         page_images = [img for img in doc.get('page_images', []) if img]
@@ -884,6 +995,57 @@ def analyze(doc_id):
                 daemon=True,
             ).start()
 
+        # ── Document context: metadata for loading screen ──
+        pre_ctx = doc.get('_doc_context')
+        if pre_ctx:
+            # Pre-computed (sample documents) — emit immediately, no API call
+            filtered = {k: v for k, v in pre_ctx.items()
+                        if v and v.lower() not in ('not specified', 'unknown', 'n/a')}
+            if filtered:
+                q.put(('doc_context', filtered))
+        else:
+            # Real uploads — lightweight Haiku extraction
+            def _doc_context_worker():
+                try:
+                    full = doc['text']
+                    text_preview = full[:3000]
+                    if len(full) > 5000:
+                        text_preview += '\n\n[...]\n\n' + full[-1500:]
+                    resp = client.messages.create(
+                        model=FAST_MODEL,
+                        max_tokens=300,
+                        messages=[{
+                            'role': 'user',
+                            'content': (
+                                'Extract factual metadata from this document excerpt. '
+                                'Respond ONLY with these fields, one per line. '
+                                'If unknown, write "Unknown".\n\n'
+                                'TYPE: [document type, e.g. "Residential Lease", "Gym Membership", "Insurance Policy"]\n'
+                                'DRAFTER: [organization/company name that drafted this]\n'
+                                'OTHER_PARTY: [who signs/receives this, e.g. "Tenant", "Member", "Policyholder"]\n'
+                                'JURISDICTION: [country or state from governing law clause, registered address, or company HQ — e.g. "California, USA", "England & Wales"]\n'
+                                'DATE: [document date or effective date if stated]\n'
+                                'DURATION: [contract duration if stated, e.g. "12 months", "24 months"]\n'
+                                'KEY_AMOUNT: [main financial figure, e.g. "$1,450/month", "$350 adoption fee"]\n\n'
+                                f'DOCUMENT:\n{text_preview}'
+                            ),
+                        }],
+                    )
+                    result = {}
+                    for line in resp.content[0].text.strip().split('\n'):
+                        if ':' in line:
+                            key, val = line.split(':', 1)
+                            key = key.strip().upper().replace(' ', '_')
+                            val = val.strip()
+                            if val and val.lower() != 'unknown' and val != 'N/A':
+                                result[key] = val
+                    if result:
+                        q.put(('doc_context', result))
+                except Exception as e:
+                    print(f'[doc_context] Error: {e}')
+
+            threading.Thread(target=_doc_context_worker, daemon=True).start()
+
         # ── FAST PATH: pre-generated cards already available (non-blocking) ──
         if precards_event and precards_event.is_set():
             prescan = doc.get('_prescan')
@@ -942,10 +1104,6 @@ def analyze(doc_id):
 
                     if msg_type == 'chunk':
                         chunk = msg[2]
-                        # Track for peek extraction
-                        _peek_buffers.setdefault(idx, '')
-                        _peek_buffers[idx] += chunk
-                        _try_send_peek(idx)
                         if not _started_sent:
                             q.put(('cards_started', 20))
                             _started_sent = True
@@ -1005,11 +1163,6 @@ def analyze(doc_id):
                             # (frontend expects profile as first text segment)
                             if not _profile_sent:
                                 _held_msgs.append(msg)
-                                # Extract peeks from held chunks
-                                if msg[0] == 'chunk':
-                                    _peek_buffers.setdefault(msg[1], '')
-                                    _peek_buffers[msg[1]] += msg[2]
-                                    _try_send_peek(msg[1])
                             else:
                                 # Process this message (and any held ones)
                                 msgs_to_process = _held_msgs + [msg] if _held_msgs else [msg]
@@ -1088,12 +1241,15 @@ def analyze(doc_id):
                                     cu = (
                                         f"Generate a complete flip card for this specific clause:\n\n"
                                         f"Title: {ci['title']}\n"
-                                        f"Section Reference: {ci.get('section', 'Not specified')}\n\n"
-                                        f"Find this clause in the document and output the COMPLETE flip card."
+                                        f"Section Reference: {ci.get('section', 'Not specified')}\n"
+                                        f"Prescan Risk: {ci.get('risk', 'RED')}\n"
+                                        f"Prescan Trick: {ci.get('trick', '')}\n\n"
+                                        f"Find this clause in the document and output the COMPLETE flip card. "
+                                        f"Make your own independent risk assessment — the prescan hints above are guidance only."
                                     )
                                     threading.Thread(
                                         target=worker,
-                                        args=(f'card_{i}', _card_sys, 1500, FAST_MODEL, False),
+                                        args=(f'card_{i}', _card_sys, 3000, FAST_MODEL, False),
                                         kwargs={'user_content': cu},
                                         daemon=True,
                                     ).start()
@@ -1142,12 +1298,15 @@ def analyze(doc_id):
                                 cu = (
                                     f"Generate a complete flip card for this specific clause:\n\n"
                                     f"Title: {ci['title']}\n"
-                                    f"Section Reference: {ci.get('section', 'Not specified')}\n\n"
-                                    f"Find this clause in the document and output the COMPLETE flip card."
+                                    f"Section Reference: {ci.get('section', 'Not specified')}\n"
+                                    f"Prescan Risk: {ci.get('risk', 'RED')}\n"
+                                    f"Prescan Trick: {ci.get('trick', '')}\n\n"
+                                    f"Find this clause in the document and output the COMPLETE flip card. "
+                                    f"Make your own independent risk assessment — the prescan hints above are guidance only."
                                 )
                                 threading.Thread(
                                     target=worker,
-                                    args=(f'card_{i}', _card_sys, 1500, FAST_MODEL, False),
+                                    args=(f'card_{i}', _card_sys, 3000, FAST_MODEL, False),
                                     kwargs={'user_content': cu},
                                     daemon=True,
                                 ).start()
@@ -1219,6 +1378,11 @@ def analyze(doc_id):
             try:
                 source, event = q.get(timeout=1.0)
             except queue_module.Empty:
+                continue
+
+            # ── Document context (lightweight metadata) ──
+            if source == 'doc_context':
+                yield sse('doc_context', json.dumps(event))
                 continue
 
             # ── Error handling ──
@@ -1393,9 +1557,9 @@ def analyze(doc_id):
                 yield sse('clause_preview', json.dumps(event))
                 continue
 
-            # ── Pipeline: card peek (reassurance preview during loading) ──
-            if source == 'card_peek':
-                yield sse('card_peek', json.dumps(event))
+            # ── Pipeline: document context metadata ──
+            if source == 'doc_context':
+                yield sse('doc_context', json.dumps(event))
                 continue
 
             # ── Pipeline: document profile text ──

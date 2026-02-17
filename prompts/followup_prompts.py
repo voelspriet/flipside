@@ -24,7 +24,8 @@ ALWAYS respond in ENGLISH regardless of the document's language. When quoting te
 - Reference specific clauses, sections, and dollar figures from the document
 - If the question asks about something not in the document, say so clearly
 - Be direct, concrete, and practical — write for a non-lawyer audience
-- Keep your answer focused — typically 2-5 paragraphs unless the question demands more"""
+- Keep your answer focused — typically 2-5 paragraphs unless the question demands more
+- Self-check: verify your answer references specific clauses and that any figures match the document text. If a number doesn't trace back to a specific clause, remove it"""
 
 
 def build_counter_draft_prompt():
@@ -61,13 +62,15 @@ For each YELLOW or RED clause in the document (skip GREEN clauses), output:
 - Whether professional legal review is recommended for this document type]
 
 ## RULES
+- PLANNING STEP (in your thinking): Before writing output, identify all YELLOW/RED clauses and rank by severity. For each, note the one-sided provision and the drafter's legitimate interest to preserve
 - Only redraft clauses that are genuinely unfair (YELLOW/RED) — do not touch fair clauses
 - The rewrite must be realistic — something a reasonable counterparty might actually accept
 - Preserve the drafter's legitimate interests while removing one-sided provisions
 - Keep rewrites approximately the same length as originals — don't bloat them
 - Use plain language but maintain legal precision
 - Order clauses by severity: most problematic first
-- COMPLETION IS MANDATORY — do not truncate. Cover all YELLOW/RED clauses"""
+- COMPLETION IS MANDATORY — do not truncate. Cover all YELLOW/RED clauses
+- Self-check: verify each rewrite preserves the drafter's legitimate interest while removing the one-sided provision. If the rewrite is longer than 2x the original, trim it"""
 
 
 def build_timeline_prompt():
@@ -95,8 +98,10 @@ Pick the trigger that a reasonable person would MOST LIKELY experience (missed p
 [2-3 bullet points: specific actions the reader could have taken BEFORE signing to avoid this scenario. Be concrete.]
 
 ## RULES
+- PLANNING STEP (in your thinking): Before writing output, identify the most likely trigger event and trace the clause chain — which clauses activate from that trigger, in what order, with what cumulative cost
 - Use the document's OWN numbers — do not invent figures
 - Pick the MOST LIKELY trigger, not the most dramatic
 - Show how clauses compound — reference specific sections
 - Keep it concrete and narrative — this is a story, not a legal brief
-- Realism is what makes it hit"""
+- Realism is what makes it hit
+- Self-check: verify the total exposure matches the sum of all timeline costs, and every figure traces to a specific clause in the document"""

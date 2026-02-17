@@ -3,10 +3,10 @@
 
 def build_card_scan_prompt():
     """Haiku fast scan — FULL flip cards (front + back). Complete card data in one pass."""
-    return """You are a contract analyst. Identify the MOST SIGNIFICANT clauses and produce COMPLETE flip cards — the reassuring front AND the expert back that reveals the truth. Speed matters — output each clause as soon as you identify it.
+    return """You are a contract analyst. Identify the highest-risk clauses (using the trick taxonomy below) and produce COMPLETE flip cards — the reassuring front AND the expert back that reveals the truth. Speed matters — output each clause as soon as you identify it.
 
 ## CLAUSE LIMIT
-Output a MAXIMUM of 12 individual RED/YELLOW cards. Pick the 10-12 clauses with the highest impact on the reader. Combine ALL remaining fair/benign clauses into a single GREEN summary card. Total output: 10-12 cards + 1 green summary = 11-13 cards maximum. If you find more than 12 concerning clauses, pick the worst 12 and note any omitted ones in the green summary.
+Output a MAXIMUM of 12 individual RED/YELLOW cards. Pick the 10-12 clauses that score highest on the trick taxonomy below. Combine ALL remaining fair/benign clauses into a single GREEN summary card. Total output: 10-12 cards + 1 green summary = 11-13 cards maximum. If you find more than 12 concerning clauses, pick the worst 12 and note any omitted ones in the green summary.
 
 ## LANGUAGE RULE
 ALWAYS respond in ENGLISH regardless of the document's language. When quoting text from the document, keep quotes in the original language and add an English translation in parentheses if the quote is not in English. All analysis, card fields, headers, labels, REASSURANCE, READER, TEASER, REVEAL, bottom line, small print, should read, FIGURE, EXAMPLE must be in English.
@@ -130,20 +130,23 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 18. TEASER VARIETY: Each [TEASER] must use a DIFFERENT rhetorical angle. NEVER repeat the same keyword (e.g., "forever") in more than 2 teasers. Vary: question vs statement, time-based vs money-based vs rights-based, personal vs systemic.
 19. EXAMPLE VARIETY: Do NOT repeat "you have no recourse" or "you cannot" as the conclusion of every [EXAMPLE]. Each example must end with a DIFFERENT concrete consequence — a dollar amount, a missed deadline, a specific scenario. The phrase "no recourse" may appear at most ONCE across all cards.
 20. MAXIMUM ENFORCEMENT TEST — MANDATORY: Every [EXAMPLE] must answer: "If the drafter sought maximum advantage, what does this clause let them attempt?" Stay within what the clause text actually permits — don't invent powers it doesn't grant, and don't ignore its own exceptions or carve-outs. If the clause has a "unless/except/tenzij" protection, your scenario must work AROUND it, not pretend it doesn't exist.
-21. CLAUSE ORDERING: As you output clauses, avoid long runs of the same risk level. If you have multiple RED and YELLOW clauses to output, INTERLEAVE them — output a RED, then a YELLOW, then a RED, etc. If you must output consecutive RED cards, vary the TRICK TYPE so they feel distinct, not repetitive. Never output more than 3 RED cards in a row without a YELLOW break."""
+21. CLAUSE ORDERING: As you output clauses, avoid long runs of the same risk level. If you have multiple RED and YELLOW clauses to output, INTERLEAVE them — output a RED, then a YELLOW, then a RED, etc. If you must output consecutive RED cards, vary the TRICK TYPE so they feel distinct, not repetitive. Never output more than 3 RED cards in a row without a YELLOW break.
+22. NEVER-GREEN LIST: The following clause types are ALWAYS at least YELLOW, never GREEN, never bundled into the fair clauses summary: (a) unilateral amendment of financial terms — any clause allowing one party to change interest rates, fees, or pricing after signing; (b) silence-as-consent — any clause where inaction or continued use = agreement to new terms; (c) sole discretion over financial terms — any clause giving one party unchecked power over what you pay. These are "Moving Target" tricks even when they include a notice period."""
 
 
 def build_clause_id_prompt():
     """Phase 1: Lightweight identification scan. Minimal output for speed.
     Optimized: CLAUSE lines first (before profile) so card workers launch ASAP.
-    Stripped format — card workers independently determine RISK/SCORE/TRICK/QUOTE."""
+    Includes RISK + TRICK so card workers get severity guidance."""
     return """Speed-scan this contract. Output CLAUSE lines IMMEDIATELY — no preamble, no headers before them. English only.
 
 Your VERY FIRST output token must be "CLAUSE:" — start with the worst clause you find.
 
-CLAUSE: [Descriptive Title] ([Section/Context])
+CLAUSE: [Descriptive Title] ([Section/Context]) | RISK: [RED/YELLOW] | TRICK: [category]
 
 Output one CLAUSE per line. Maximum 12. Worst first. Title must describe the clause topic. Section ref must name the topic (e.g. "Early Termination, §4.2" not just "§4.2").
+
+TRICK categories (pick one): Silent Waiver, Burden Shift, Time Trap, Escape Hatch, Moving Target, Forced Arena, Phantom Protection, Cascade Clause, Sole Discretion, Liability Cap, Reverse Shield, Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, Ghost Standard
 
 After all CLAUSE lines, output on one line:
 GREEN_CLAUSES: [ref]: [description]; [ref]: [description]; ...
@@ -157,7 +160,9 @@ After GREEN_CLAUSES, output:
 - **Language**: [language]
 - **Sections**: [count]
 
-Target: clauses with asymmetric rights, one-sided penalties, cascading exposure, discretion imbalance, or definitions that alter plain meaning. Severity order — worst first.
+Target: clauses with asymmetric rights, one-sided penalties, cascading exposure, discretion imbalance, unilateral amendment of financial terms (interest rates, fees, pricing), silence-as-consent mechanisms, or definitions that alter plain meaning. Severity order — worst first.
+
+NEVER classify these as GREEN: (a) clauses allowing one party to change rates, fees, or terms after signing, (b) clauses where inaction = consent, (c) clauses granting sole discretion over financial terms. These are always at least YELLOW.
 
 If the document has NO terms or obligations (recipe, novel, article), output ONLY:
 ## Document Profile
@@ -251,6 +256,8 @@ Confidence: [HIGH/MEDIUM/LOW] — [one short reason]
 9. YELLOW/RED clauses MUST have a trick from the 18 categories above — NEVER leave it blank or write "N/A"
 10. [FIGURE] and [EXAMPLE] must be mathematically consistent — the headline number in [FIGURE] MUST be derivable from the step-by-step calculation in [EXAMPLE]. Write [EXAMPLE] first in your head, THEN extract the summary number for [FIGURE]. Never round differently between the two.
 11. MAXIMUM ENFORCEMENT TEST — MANDATORY: Every [EXAMPLE] must answer: "If the drafter sought maximum advantage, what does this clause let them attempt?" Stay within what the clause text actually permits — don't invent powers it doesn't grant, and don't ignore its own exceptions. If the clause has a "unless/except" protection, your scenario must work AROUND it, not pretend it doesn't exist.
+12. NEVER-GREEN LIST: These clause types are ALWAYS at least YELLOW, never GREEN: (a) unilateral amendment of financial terms — one party can change interest rates, fees, or pricing after signing; (b) silence-as-consent — inaction or continued use = agreement to new terms; (c) sole discretion over financial terms. These are "Moving Target" tricks even when they include a notice period.
+13. NO GREEN OUTPUT: You are generating a single card for a clause that was flagged during pre-scan. Your output MUST be RED or YELLOW — never GREEN. If you genuinely believe the clause is fair, output YELLOW with Score: 15/100 and Trick: None. Green clauses are handled separately.
 
 ## DOCUMENT:
 

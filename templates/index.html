@@ -315,9 +315,10 @@
             font-size: 3.2rem; font-weight: 800;
             letter-spacing: -0.04em; color: var(--text-primary); line-height: 1.1;
         }
-        .brand .tagline {
-            font-size: 1.05rem; color: var(--text-secondary);
-            margin-top: 0.5rem; font-weight: 400; font-style: italic;
+        .brand-hook {
+            font-size: 1.15rem; color: var(--text-body);
+            margin-top: 0.75rem; font-weight: 400; line-height: 1.6;
+            letter-spacing: -0.01em;
         }
         .brand-shrug {
             font-size: 1rem; color: var(--text-body); margin-top: 0.9rem;
@@ -476,9 +477,10 @@
         .drop-zone { position: relative; }
         .drop-zone .filetypes {
             position: absolute; bottom: 0.6rem; left: 0; right: 0;
-            font-size: 0.65rem; color: var(--text-dim);
-            letter-spacing: 0.14em; text-transform: uppercase;
+            font-size: 0.6rem; color: var(--text-muted);
+            letter-spacing: 0.06em; text-transform: uppercase;
             font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
         }
 
         .file-selected {
@@ -2963,58 +2965,59 @@
             color: var(--accent);
             font-weight: 600;
         }
-        /* Card peeks — reassurance previews during loading */
-        .card-peeks {
-            margin-top: 0.75rem;
-            display: none;
+        /* Document context card — under title */
+        .doc-context {
+            margin: 0 0 1.2rem;
+            padding: 0.65rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.5s ease, transform 0.5s var(--ease-out-expo);
         }
-        .card-peeks.visible {
-            display: block;
+        .doc-context.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
-        .peek-label {
+        .doc-context-label {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.5rem;
+            font-size: 0.48rem;
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--text-dim);
             margin-bottom: 0.4rem;
         }
-        .peek-strip {
+        .doc-context-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.25rem 1.2rem;
+        }
+        .doc-context-item {
             display: flex;
-            flex-wrap: wrap;
+            align-items: baseline;
             gap: 0.35rem;
         }
-        .peek-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.3rem 0.65rem;
-            border: 1px solid var(--green-border);
-            border-left: 3px solid var(--green);
-            border-radius: var(--radius);
-            background: linear-gradient(135deg, rgba(80,140,80,0.04), rgba(80,140,80,0.01));
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.7rem;
-            color: var(--text-body);
-            line-height: 1.4;
-            opacity: 0;
-            transform: translateY(6px);
-            animation: peekIn 0.5s var(--ease-out-expo) forwards;
-        }
-        .peek-chip .peek-num {
+        .doc-context-key {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.5rem;
+            font-size: 0.52rem;
             font-weight: 600;
-            color: var(--green-text);
-            opacity: 0.7;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
+            white-space: nowrap;
             flex-shrink: 0;
         }
-        .peek-chip .peek-quote {
-            font-style: italic;
+        .doc-context-val {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.72rem;
+            color: var(--text-body);
+            line-height: 1.4;
         }
-        @keyframes peekIn {
-            to { opacity: 1; transform: translateY(0); }
+        .doc-context-flag {
+            font-size: 1rem;
+            line-height: 1;
         }
         /* Compress investigation phases when briefing is showing */
         .skeleton-card .investigation-phases.compressed {
@@ -4364,24 +4367,24 @@
     <div class="upload-container">
         <div class="brand fade-up">
             <h1>FlipSide</h1>
-            <div class="tagline">Fight back against fine print.</div>
+            <p class="brand-hook">You sign so many things with a shrug.<br>They weren&rsquo;t written with one.</p>
         </div>
 
         <!-- Upload card: full width -->
         <div class="hero-upload fade-up fade-up-d1">
         <div class="upload-card">
-            <p class="upload-headline">Upload your gym contract, lease, insurance, or any terms of service.<br>See what the other side intended you to miss &mdash; and how to push back.</p>
+            <p class="upload-headline">Drop any contract, terms, or policy you didn&rsquo;t write.<br>See what the other side intended you to miss &mdash; and how to push back.</p>
 
             <!-- Single document upload: 3-column input methods -->
             <div id="singleUpload">
                 <div class="upload-methods" id="uploadMethods">
                     <div class="upload-method" id="methodDrop">
                         <div class="drop-zone" id="dropZone">
-                            <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.text,.md" class="sr-only">
+                            <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.text,.md,image/*" capture="environment" class="sr-only">
                             <div id="uploadPrompt">
                                 <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span>
                                 <div class="dz-title">Drop file</div>
-                                <div class="filetypes">PDF &middot; DOCX &middot; TXT</div>
+                                <div class="filetypes">PDF &middot; DOCX &middot; TXT &middot; Photo</div>
                             </div>
                             <div id="fileInfo" class="file-selected hidden">
                                 <span class="file-name" id="fileName"></span>
@@ -4453,7 +4456,7 @@
         </div>
 
             <div class="demo-grid-section" id="demoGridSection">
-                <div class="demo-grid-shrug">Gym memberships, app terms, pet adoptions, sweepstakes entries &mdash;<br>the things you sign with a shrug. They weren&rsquo;t written with one.</div>
+                <div class="demo-grid-shrug">Real documents. Real fine print. Pick one and see what&rsquo;s hiding.</div>
                 <div class="demo-grid">
                     <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div><div class="demo-tile-label">Staying Connected</div><div class="demo-tile-desc">You agreed to more than you think</div></div>
                     <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="demo-tile-label">Peace of Mind</div><div class="demo-tile-desc">What&rsquo;s not covered?</div></div>
@@ -4730,6 +4733,8 @@
                     </div>
                 </div>
             </nav>
+            <!-- Document profile: who/what/where/when (appears ~2s from Haiku) -->
+            <div class="doc-context hidden" id="docContext"></div>
             <!-- Risk summary strip — removed from card nav, lives in verdict -->
             <!-- Investigation loading screen — loupe scanning document -->
             <div class="skeleton-card hidden" id="skeletonCard">
@@ -4813,9 +4818,6 @@
                         </div>
                     </div>
                     <div class="briefing-depth" id="briefingDepth"></div>
-                    <div class="card-peeks" id="cardPeeks">
-                        <div class="peek-label">The drafter wants you to believe</div>
-                    </div>
                 </div>
 
                 <div class="skeleton-waiting hidden" id="skeletonMessage"></div>
@@ -5700,8 +5702,9 @@
 
     function handleFile(file) {
         var ext = file.name.split('.').pop().toLowerCase();
-        if (['pdf', 'docx', 'txt', 'text', 'md'].indexOf(ext) === -1) {
-            showError('Unsupported file type. Please use PDF, DOCX, or TXT.');
+        var isImage = file.type && file.type.startsWith('image/');
+        if (['pdf', 'docx', 'txt', 'text', 'md', 'jpg', 'jpeg', 'png', 'webp'].indexOf(ext) === -1 && !isImage) {
+            showError('Unsupported file type. Please use PDF, DOCX, TXT, or a photo.');
             return;
         }
         selectedFile = file;
@@ -5710,6 +5713,25 @@
         fileSizeEl.textContent = formatSize(file.size);
         uploadPrompt.classList.add('hidden');
         fileInfo.classList.remove('hidden');
+        // Show image thumbnail preview
+        if (isImage || ['jpg','jpeg','png','webp'].indexOf(ext) !== -1) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var preview = document.getElementById('imagePreview');
+                if (!preview) {
+                    preview = document.createElement('img');
+                    preview.id = 'imagePreview';
+                    preview.style.cssText = 'max-width:120px;max-height:160px;border-radius:8px;margin-top:8px;object-fit:cover;border:1px solid var(--border);';
+                    fileInfo.appendChild(preview);
+                }
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            var preview = document.getElementById('imagePreview');
+            if (preview) preview.classList.add('hidden');
+        }
         pasteArea.classList.add('hidden');
         pasteArea.value = '';
         // Expand drop zone full-width, hide other methods
@@ -5726,6 +5748,8 @@
         e.preventDefault(); e.stopPropagation();
         selectedFile = null; fileInput.value = '';
         fileInfo.classList.add('hidden');
+        var preview = document.getElementById('imagePreview');
+        if (preview) preview.classList.add('hidden');
         uploadPrompt.classList.remove('hidden');
         // Reset grid back to 3 columns
         resetUploadMethods();
@@ -6129,12 +6153,10 @@
                     }
                     break;
 
-                case 'card_peek':
-                    var pk = {};
-                    try { pk = JSON.parse(msg.content); } catch(_) {}
-                    if (pk.reassurance) {
-                        addCardPeek(pk.reassurance, pk.title || '');
-                    }
+                case 'doc_context':
+                    var dc = {};
+                    try { dc = JSON.parse(msg.content); } catch(_) {}
+                    renderDocContext(dc);
                     break;
 
                 case 'thinking_start':
@@ -6804,6 +6826,8 @@
             stopVerdictCountdown();
             var heroEl2 = $('docTitleHero');
             if (heroEl2) heroEl2.classList.add('hidden');
+            var dcEl2 = $('docContext');
+            if (dcEl2) { dcEl2.classList.remove('visible'); dcEl2.classList.add('hidden'); }
             // Hide sidebar
             var sidebar2 = $('analysisSidebar');
             if (sidebar2) sidebar2.classList.add('hidden');
@@ -6962,6 +6986,12 @@
     // ── Build and append one flip card ───────────────────────
     function buildSingleFlipCard(clause, index) {
         var risk = clause.risk;
+        // Individual cards must be RED or YELLOW — only the Fair Clauses Summary is GREEN
+        var isGreenSummaryTitle = clause.title === 'Fair Clauses Summary' || (clause.title && clause.title.indexOf('Fair Clauses') >= 0);
+        if (risk === 'green' && !isGreenSummaryTitle) {
+            risk = 'yellow';
+            clause.risk = 'yellow';
+        }
         var trickDesc = TRICK_DESCRIPTIONS[clause.trick] || '';
         var borderColor = risk === 'red' ? 'var(--red)' : risk === 'yellow' ? 'var(--yellow)' : 'var(--green-border)';
 
@@ -6983,7 +7013,7 @@
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
             '</div>' +
             '</div>' +
-            '<button class="flip-trigger" aria-label="Flip card to reveal hidden clause details"><span class="flip-trigger-cta">Flip it!</span> <span>See what this really means</span><span class="flip-trigger-arrow" style="margin-left:0.4rem">&rsaquo;</span></button>' +
+            '<button class="flip-trigger" aria-label="Flip card to reveal hidden clause details"><span class="flip-trigger-cta">Flip it!</span> <span>' + (risk === 'green' ? 'Verify what\u2019s behind this' : 'See what this really means') + '</span><span class="flip-trigger-arrow" style="margin-left:0.4rem">&rsaquo;</span></button>' +
             '</div>';
 
         // ── Back body: full reveal — teaser headline, figure, example, bottom line ──
@@ -7270,6 +7300,9 @@
                 top: Math.max(0, relativeTop - centerOffset),
                 behavior: 'smooth'
             });
+        } else if (cardIndex === 0) {
+            // First card: always scroll sidebar to top so user sees the beginning
+            previewEl.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
@@ -7756,39 +7789,60 @@
         }, 300);
     }
 
-    var _peekCount = 0;
-    function addCardPeek(reassurance, title) {
-        var container = $('cardPeeks');
-        if (!container) return;
-        // Show container on first peek
-        if (!container.classList.contains('visible')) {
-            container.classList.add('visible');
-            // Add the strip if not present
-            if (!container.querySelector('.peek-strip')) {
-                var strip = document.createElement('div');
-                strip.className = 'peek-strip';
-                container.appendChild(strip);
-            }
-        }
-        var strip = container.querySelector('.peek-strip');
-        if (!strip) return;
-        _peekCount++;
-        var chip = document.createElement('div');
-        chip.className = 'peek-chip';
-        chip.style.animationDelay = (_peekCount * 0.1) + 's';
-        chip.innerHTML =
-            '<span class="peek-num">' + String(_peekCount).padStart(2, '0') + '</span>' +
-            '<span class="peek-quote">\u201c' + escapeHtml(reassurance) + '\u201d</span>';
-        strip.appendChild(chip);
+    // ── Document context card on loading screen ──
+    function flagForJurisdiction(j) {
+        if (!j) return '';
+        var flag = jurisdictionFlag(j);
+        return flag || '\ud83c\udf10'; // globe fallback
     }
 
-    function resetCardPeeks() {
-        _peekCount = 0;
-        var container = $('cardPeeks');
-        if (container) {
-            container.classList.remove('visible');
-            var strip = container.querySelector('.peek-strip');
-            if (strip) strip.innerHTML = '';
+    function renderDocContext(data) {
+        var el = $('docContext');
+        if (!el || !data || Object.keys(data).length === 0) return;
+
+        var flag = flagForJurisdiction(data.JURISDICTION || '');
+        var items = [];
+
+        var fields = [
+            ['TYPE', 'Document'],
+            ['DRAFTER', 'Drafted by'],
+            ['OTHER_PARTY', 'Signed by'],
+            ['JURISDICTION', 'Jurisdiction'],
+            ['DURATION', 'Duration'],
+            ['KEY_AMOUNT', 'Key amount'],
+            ['DATE', 'Date'],
+        ];
+        for (var i = 0; i < fields.length; i++) {
+            var val = data[fields[i][0]];
+            if (val) {
+                var display = escapeHtml(val);
+                if (fields[i][0] === 'JURISDICTION' && flag) {
+                    display = '<span class="doc-context-flag">' + flag + '</span> ' + display;
+                }
+                items.push(
+                    '<div class="doc-context-item">' +
+                    '<span class="doc-context-key">' + fields[i][1] + '</span>' +
+                    '<span class="doc-context-val">' + display + '</span>' +
+                    '</div>'
+                );
+            }
+        }
+
+        if (items.length === 0) return;
+
+        el.innerHTML =
+            '<div class="doc-context-label">Document profile</div>' +
+            '<div class="doc-context-grid">' + items.join('') + '</div>';
+        el.classList.remove('hidden');
+        el.classList.add('visible');
+    }
+
+    function resetDocContext() {
+        var el = $('docContext');
+        if (el) {
+            el.innerHTML = '';
+            el.classList.add('hidden');
+            el.classList.remove('visible');
         }
     }
 
@@ -7812,7 +7866,7 @@
         _shownNarrations = {};
         _lastNarrationTime = 0;
         _workerDotsReady = 0;
-        resetCardPeeks();
+        resetDocContext();
         var panel = $('expertBriefing');
         if (panel) panel.classList.remove('visible');
         var sentence = $('briefingSentence');
@@ -9228,7 +9282,7 @@
         var stickyNav = $('cardNavSticky');
         if (!nav) return;
 
-        if (total === 0 || !hasFlippedOnce) {
+        if (total === 0) {
             nav.classList.add('hidden');
             if (stickyNav) stickyNav.classList.remove('visible');
             return;

@@ -147,9 +147,11 @@ The fallback path had a mandatory planning step (Rule 1: "Before outputting any 
 |-------|--------|-------|
 | FIGURE/EXAMPLE verification | Only in fallback path | Added to `build_single_card_system()` Rule 10 |
 | Pre-scan concept gap | "clauses that a consumer should worry about" | "clauses where rights, obligations, or financial exposure are asymmetric" |
+| Card scan concept gap | "Identify the MOST SIGNIFICANT clauses" | "Identify the highest-risk clauses (using the trick taxonomy below)" |
 | Pre-scan planning step | None | "Before outputting anything, classify each section as symmetric, asymmetric, or neutral" |
-| Translation rule | Missing from 4 deep dive prompts | Added to scenario, walkaway, playbook, synthesis |
-| Verification steps | Only in walkaway | Added self-check rules to scenario, combinations, playbook |
+| Translation rule | Missing from 4 deep dive prompts | Added to ALL 13 prompts |
+| Verification steps | Only in walkaway | Added self-check rules to ALL analysis prompts (scenario, combinations, playbook, archaeology, followup, counter_draft, timeline) |
+| Planning steps | Only in card_scan + verdict | Added "PLANNING STEP (in your thinking)" to archaeology, scenario, walkaway, combinations, playbook, counter_draft, timeline |
 
 **Why this matters for meta-prompting:**
 

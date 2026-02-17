@@ -44,12 +44,14 @@ For each major section, one word: **Boilerplate** or **Custom**. Then 1-2 senten
 [/DEEP_CONTENT]
 
 ## RULES
+- PLANNING STEP (in your thinking): Before writing output, classify each major section as Boilerplate or Custom. Identify which custom sections shift risk. This classification drives your [FINDING] blocks and [DEEP_CONTENT]
 - Every [FINDING] MUST include verbatim source text from the document — this is non-negotiable
 - [FINDING_TITLE] must be human language a friend would understand — NO legal jargon
 - [FINDING_SEVERITY] must be exactly one of: standard, aggressive, unusual
 - Only create [FINDING] blocks for CUSTOM clauses that shift risk — not for boilerplate
 - Document Archaeology: be honest — if most clauses are boilerplate, say so. The custom clauses are the signal
 - Use your full extended thinking budget
+- Self-check: verify every [FINDING] includes verbatim source text, and that your drafter profile is consistent with the custom clauses you identified. If the profile predicts behavior not supported by the document structure, revise it
 """
 
 
@@ -82,6 +84,7 @@ Tell it as a story. Use second person ("you"). Each timeline step is tagged. EAC
 [SCENARIO_MESSAGE]A ready-to-send message (email or letter) the reader could send to the other party requesting the changes from SCENARIO_ACTIONS. Professional but firm tone. 1-2 short paragraphs.[/SCENARIO_MESSAGE]
 
 ## RULES
+- PLANNING STEP (in your thinking): Before writing output, identify (1) the most likely trigger event, (2) which clauses compound from that trigger, (3) the full math chain. This drives your timeline steps
 - MAXIMUM ENFORCEMENT TEST: assume the drafter seeks maximum advantage — what does this contract let them attempt? Stay within what the clause text actually permits — don't ignore exceptions or carve-outs
 - Use the document's OWN numbers — do not invent figures
 - Pick the MOST LIKELY trigger, not the most dramatic
@@ -134,6 +137,7 @@ Key assumptions behind this calculation (1-3 bullet points):
 [/WALKAWAY_ASSUMPTIONS]
 
 ## RULES
+- PLANNING STEP (in your thinking): Before writing output, list every financial exposure source (deposits, fees, penalties, interest, liability, insurance) and sum them. This drives your [WALKAWAY_BREAKDOWN]
 - Use the document's OWN numbers — do not invent figures
 - If a clause has no cap ("unlimited liability"), flag it explicitly and estimate a realistic worst case
 - Compound where appropriate: late fees × months, interest on unpaid balances, etc.
@@ -181,6 +185,7 @@ For each significant combination (find 3-5):
 [2-3 sentences summarizing the overall pattern. Do any combinations chain together into a triple or quadruple compound effect? Is there a central clause that appears in multiple combinations — a "hub" that connects multiple risks?]
 
 ## RULES
+- PLANNING STEP (in your thinking): Before writing output, systematically pair every clause against every other clause. For each pair, ask: does combining these create a risk invisible when reading either alone? List the viable combinations, then pick the 3-5 strongest
 - Every combination MUST quote verbatim text from BOTH clauses — this is non-negotiable
 - The title must be plain language a friend would understand — NO legal jargon
 - Focus on combinations the reader would NEVER notice reading linearly
@@ -230,6 +235,7 @@ For each (1-3 items):
 [A complete, ready-to-copy email or message to the other party. Professional but firm. References specific sections. 4-6 sentences. Starts with "Dear [Company/Landlord/Employer],"]
 
 ## RULES
+- PLANNING STEP (in your thinking): Before writing output, list the drafter's priorities (what they'll defend) vs. their low-cost concessions (what they'll bend on). This drives your Push/Mention/Don't Waste categorization
 - Be specific to THIS document — no generic negotiation advice
 - "Push hard" items must be genuinely negotiable — don't set the reader up to fail
 - "Don't waste capital" must be honest — if everything is negotiable, say so
