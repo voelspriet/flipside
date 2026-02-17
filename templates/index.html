@@ -2963,6 +2963,59 @@
             color: var(--accent);
             font-weight: 600;
         }
+        /* Card peeks — reassurance previews during loading */
+        .card-peeks {
+            margin-top: 0.75rem;
+            display: none;
+        }
+        .card-peeks.visible {
+            display: block;
+        }
+        .peek-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 0.4rem;
+        }
+        .peek-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+        .peek-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.65rem;
+            border: 1px solid var(--green-border);
+            border-left: 3px solid var(--green);
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, rgba(80,140,80,0.04), rgba(80,140,80,0.01));
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-body);
+            line-height: 1.4;
+            opacity: 0;
+            transform: translateY(6px);
+            animation: peekIn 0.5s var(--ease-out-expo) forwards;
+        }
+        .peek-chip .peek-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            font-weight: 600;
+            color: var(--green-text);
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+        .peek-chip .peek-quote {
+            font-style: italic;
+        }
+        @keyframes peekIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
         /* Compress investigation phases when briefing is showing */
         .skeleton-card .investigation-phases.compressed {
             margin-top: 0.5rem;
@@ -4760,6 +4813,9 @@
                         </div>
                     </div>
                     <div class="briefing-depth" id="briefingDepth"></div>
+                    <div class="card-peeks" id="cardPeeks">
+                        <div class="peek-label">The drafter wants you to believe</div>
+                    </div>
                 </div>
 
                 <div class="skeleton-waiting hidden" id="skeletonMessage"></div>
@@ -6070,6 +6126,14 @@
                         if (cp.section) cpLabel += ' (' + cp.section + ')';
                         setInvestPhase(1, 'active', cpCount + ' found: ' + cpLabel);
                         showBriefingSentence('Found: ' + cp.title);
+                    }
+                    break;
+
+                case 'card_peek':
+                    var pk = {};
+                    try { pk = JSON.parse(msg.content); } catch(_) {}
+                    if (pk.reassurance) {
+                        addCardPeek(pk.reassurance, pk.title || '');
                     }
                     break;
 
@@ -7692,6 +7756,42 @@
         }, 300);
     }
 
+    var _peekCount = 0;
+    function addCardPeek(reassurance, title) {
+        var container = $('cardPeeks');
+        if (!container) return;
+        // Show container on first peek
+        if (!container.classList.contains('visible')) {
+            container.classList.add('visible');
+            // Add the strip if not present
+            if (!container.querySelector('.peek-strip')) {
+                var strip = document.createElement('div');
+                strip.className = 'peek-strip';
+                container.appendChild(strip);
+            }
+        }
+        var strip = container.querySelector('.peek-strip');
+        if (!strip) return;
+        _peekCount++;
+        var chip = document.createElement('div');
+        chip.className = 'peek-chip';
+        chip.style.animationDelay = (_peekCount * 0.1) + 's';
+        chip.innerHTML =
+            '<span class="peek-num">' + String(_peekCount).padStart(2, '0') + '</span>' +
+            '<span class="peek-quote">\u201c' + escapeHtml(reassurance) + '\u201d</span>';
+        strip.appendChild(chip);
+    }
+
+    function resetCardPeeks() {
+        _peekCount = 0;
+        var container = $('cardPeeks');
+        if (container) {
+            container.classList.remove('visible');
+            var strip = container.querySelector('.peek-strip');
+            if (strip) strip.innerHTML = '';
+        }
+    }
+
     function showCapTickerNarration(text) {
         // Replace canned capability messages with real thinking
         if (!capTicker) return;
@@ -7712,6 +7812,7 @@
         _shownNarrations = {};
         _lastNarrationTime = 0;
         _workerDotsReady = 0;
+        resetCardPeeks();
         var panel = $('expertBriefing');
         if (panel) panel.classList.remove('visible');
         var sentence = $('briefingSentence');

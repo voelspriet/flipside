@@ -52,7 +52,7 @@ The fix that mattered most: replacing Rule 1 ("output each clause immediately") 
 
 **What happened:** The loading screen originally showed generic rotating messages like "Building a mental model of the entire agreement" on a 4-second timer. Meanwhile, Opus was generating document-specific reasoning in its thinking stream — but that stream was hidden.
 
-We replaced the generic messages with live narration extracted from the thinking stream. The system filters for document-specific sentences (those mentioning dollar amounts, party names, or legal concepts) and suppresses model self-talk. Updates appear every 3.5 seconds.
+We replaced the generic messages with live narration extracted from the thinking stream. A scoring function ranks each candidate sentence: dollar amounts and durations (+3), document structure references (+2), party names (+2), legal concepts (+2), risk language (+2). Generic self-talk is penalized. The highest-scoring sentence wins. Updates appear every 3 seconds.
 
 **What the user sees:** Instead of "Building a mental model of the entire agreement," the loading screen now shows real-time insights like "Non-compete restricts working anywhere in North America for 24 months" or "Late fees compound monthly on the outstanding balance." The narration is specific to THEIR document, not a generic placeholder — and it costs zero additional API calls.
 
@@ -66,7 +66,7 @@ We replaced the generic messages with live narration extracted from the thinking
 
 > For the full development story with grounded examples from the git history, see [coding.md](coding.md).
 
-**What happened:** Every line of FlipSide was written by Claude Code — 0% by a human. 116 commits over 6 days. 7 major architecture pivots where the entire system was restructured.
+**What happened:** Every line of FlipSide was written by Claude Code — 0% by a human. 134 commits over 6 days. 7 major architecture pivots where the entire system was restructured.
 
 The development method that made this possible: screenshot the current state, ask Claude to label every visible element with its name, then use those names to direct changes. For bugs: show the screenshot, say "it flickers," give NO hypothesis — let the model trace from evidence.
 
@@ -99,8 +99,8 @@ The shift from 4.5 to 4.6 isn't "better code generation." It's the difference be
 - [BigLaw Bench: 90.2%](https://www.anthropic.com/news/claude-opus-4-6#benchmarks) — Expert-level legal reasoning
 - [Terminal-Bench 2.0: 65.4%](https://www.anthropic.com/news/claude-opus-4-6#benchmarks) — Agentic coding
 - [Adaptive Thinking](https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-6) — Model-controlled reasoning depth
-- FlipSide git history: 116 commits, Feb 10–16, 2026
-- FlipSide architecture: `app.py` (3,469 lines), `templates/index.html` (10,603 lines)
+- FlipSide git history: 134 commits, Feb 10–16, 2026
+- FlipSide architecture: `app.py` (3,514 lines), `templates/index.html` (10,708 lines)
 ---
 
 **Henk van Ess** — [imagewhisperer.org](https://www.imagewhisperer.org) · [searchwhisperer.ai](https://searchwhisperer.ai) · [digitaldigging.org](https://digitaldigging.org)

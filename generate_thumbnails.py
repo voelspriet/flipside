@@ -8,6 +8,7 @@ Each thumbnail looks like a miniature first page of the document:
 """
 import base64
 import json
+import os
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 
@@ -132,7 +133,9 @@ for key, doc in DOCS.items():
     thumbnails[key] = base64.b64encode(buf.getvalue()).decode()
 
     # Also save as file for preview
-    img.save(f'/Users/henkvaness/Documents/flipside/static/thumb_{key}.jpg', quality=75)
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    os.makedirs(static_dir, exist_ok=True)
+    img.save(os.path.join(static_dir, f'thumb_{key}.jpg'), quality=75)
 
 # Output as Python dict literal
 print("SAMPLE_THUMBNAILS = {")

@@ -106,7 +106,7 @@ That sentence is also the core of "Think Like a Document." The methodology I tau
 
 ## What This Produced
 
-8+ hours of planning. 116 commits. 7 architecture pivots. 14,000+ lines of code (3,469 backend + 10,603 frontend — [coding.md](coding.md)). [29 strategic decisions](strategy.md). 5 documented AI failures. Zero lines written by a human.
+8+ hours of planning. 134 commits. 7 architecture pivots. 14,000+ lines of code (3,514 backend + 10,708 frontend — [coding.md](coding.md)). [29 strategic decisions](strategy.md). 5 documented AI failures. Zero lines written by a human.
 
 Not because the human didn't contribute — because the human's contribution was the thinking, not the typing.
 

@@ -10,7 +10,7 @@
 
 Gym memberships, app terms, pet adoptions, sweepstakes entries — the things you sign with a shrug. They weren't written with one.
 
-*0% of the code was written by a human. 14,000+ lines, 116 commits, 6 days — built entirely through conversation with [Claude Code](https://claude.ai/claude-code) and Opus 4.6.* See [coding.md](coding.md).
+*0% of the code was written by a human. 14,000+ lines, 134 commits, 6 days — built entirely through conversation with [Claude Code](https://claude.ai/claude-code) and Opus 4.6.* See [coding.md](coding.md).
 
 ![FlipSide upload screen](screenshots/readme_dropfile.jpg)
 
@@ -183,9 +183,13 @@ FlipSide uses 14 Opus 4.6 capabilities — including three that Anthropic [speci
 
 ### Engineering Highlights
 
-**Mid-stream thread spawning** — Card workers launch while the clause identification scan is still streaming. The moment a `CLAUSE:` line arrives in Haiku's response, a card generation thread spawns — before the scan is finished. First cards appear seconds faster than a serial pipeline.
+**Prefilled assistant turn** — The clause identification scan uses a prefilled `CLAUSE:` assistant turn, forcing Haiku's very first output token to be a clause — zero preamble, zero wasted tokens. Combined with a stripped identification format (title + section only, no risk/score/trick), the prescan runs faster and card workers determine risk independently.
+
+**Mid-stream thread spawning** — Card workers launch while the clause identification scan is still streaming. The moment a `CLAUSE:` line arrives in Haiku's response, a card generation thread spawns — before the scan is finished. Clause titles stream to the loading screen as live previews ("Found: Non-Compete Clause") while workers run in parallel.
 
 **Upload-time pre-computation** — LLM calls begin during file upload, hiding latency inside the UX dead zone (screen transition + loading animation). If cards finish before the SSE connection opens, they emit instantly — zero wait.
+
+**Scored narration from thinking stream** — The loading screen shows real sentences from Opus's thinking, not canned placeholders. A scoring function ranks candidate sentences by specificity: dollar amounts (+3), party names (+2), legal concepts (+2), risk language (+2). Generic LLM self-talk is suppressed. The user sees *"Non-compete restricts employees for 24 months"* instead of *"Building a mental model of the agreement."*
 
 **Vocabulary-constrained personas** — The Reader voice uses a forbidden-word list with morphological roots (`"waiv"` catches waive/waiver/waiving) plus plain-language replacements. This makes it structurally impossible for the model to leak legal awareness into what should be a trusting, non-expert voice — more reliable than persona instructions alone.
 
@@ -270,7 +274,7 @@ The solution: **never let the user wait for something they can't interact with.*
 
 | Time | What the user sees | What's actually happening |
 | --- | --- | --- |
-| **0–7s** | Investigation screen: document text scrolling, scanning loupe sweeping, clause markers lighting up. **Expert Mind**: live narrated sentences from Opus's thinking stream ("Scanning for cascading penalty structures...") | Haiku pre-scan identifies clauses. N parallel Haiku card workers launch. Opus verdict thread starts with adaptive thinking. 5 specialist Opus threads fire in parallel. |
+| **0–7s** | Investigation screen: document text scrolling, scanning loupe sweeping, clause titles appearing live ("Found: Non-Compete Clause"). **Expert Mind**: scored narration from Opus's thinking stream — real document-specific sentences, not canned text. | Haiku pre-scan with prefilled assistant turn identifies clauses instantly. Clause previews stream to loading screen. N parallel card workers launch mid-scan. Opus verdict thread starts with adaptive thinking. 5 specialist Opus threads fire in parallel. |
 | **~8s** | Cards whoosh in. First flip card appears. Navigation hidden — forcing the user to flip. | Pre-scan complete. Parallel card workers returning results. |
 | **8–20s** | User flips cards. Each flip dims the sidebar, reveals the back: risk score, trick name, dollar figure. Green cards prove calibration ("not everything is a trap"). **Verdict progress strip** glows below the nav: "Expert verdict building..." | Remaining card workers finish. Opus verdict thread streaming. Progressive tag rendering: core verdict sections unlock early. |
 | **~15–20s** | Progress strip updates: "Expert verdict ready — 3 of 5 reports building." Strip transforms into a quiet CTA. Expert reports arrive one by one with collapsible panels. | Verdict complete. Specialist deep dives completing in parallel. |
@@ -397,7 +401,7 @@ Third-party licenses: Flask (BSD-3), Anthropic SDK (MIT), python-docx (MIT), pdf
 
 ---
 
-0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,603-line frontend — built through conversation with Claude Code and Opus 4.6.
+0% of the code was written by a human. Every line — the Flask backend, the SSE streaming pipeline, the 10,708-line frontend — built through conversation with Claude Code and Opus 4.6.
 
 *FlipSide. Everyone deserves to see the other side.*
 ---
