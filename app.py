@@ -234,16 +234,8 @@ def _prescan_document(doc_id):
         profile_text, _, green_text = parse_identification_output(scan_text)
         scan_seconds = round(time.time() - t0, 1)
 
-        # Start green summary worker
-        total_cards = len(clauses) + (1 if green_text else 0)
-        if green_text and not not_applicable:
-            green_idx = len(clauses)
-            card_events[green_idx] = threading.Event()
-            threading.Thread(
-                target=card_worker,
-                args=(green_idx, build_green_summary_user(green_text)),
-                daemon=True,
-            ).start()
+        # Green summary card disabled — frontend skips green cards entirely
+        total_cards = len(clauses)
 
         doc['_card_total'] = total_cards
         doc['_prescan'] = {

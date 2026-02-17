@@ -6986,11 +6986,9 @@
     // ── Build and append one flip card ───────────────────────
     function buildSingleFlipCard(clause, index) {
         var risk = clause.risk;
-        // Individual cards must be RED or YELLOW — only the Fair Clauses Summary is GREEN
-        var isGreenSummaryTitle = clause.title === 'Fair Clauses Summary' || (clause.title && clause.title.indexOf('Fair Clauses') >= 0);
-        if (risk === 'green' && !isGreenSummaryTitle) {
-            risk = 'yellow';
-            clause.risk = 'yellow';
+        // Skip green cards entirely — flip card metaphor doesn't work for fair clauses
+        if (risk === 'green') {
+            return null;
         }
         var trickDesc = TRICK_DESCRIPTIONS[clause.trick] || '';
         var borderColor = risk === 'red' ? 'var(--red)' : risk === 'yellow' ? 'var(--yellow)' : 'var(--green-border)';
@@ -7013,23 +7011,16 @@
             '<div class="reader-voice-text">' + escapeHtml(clause.reader) + '</div>' +
             '</div>' +
             '</div>' +
-            '<button class="flip-trigger" aria-label="Flip card to reveal hidden clause details"><span class="flip-trigger-cta">Flip it!</span> <span>' + (risk === 'green' ? 'Verify what\u2019s behind this' : 'See what this really means') + '</span><span class="flip-trigger-arrow" style="margin-left:0.4rem">&rsaquo;</span></button>' +
+            '<button class="flip-trigger" aria-label="Flip card to reveal hidden clause details"><span class="flip-trigger-cta">Flip it!</span> <span>' + 'See what this really means' + '</span><span class="flip-trigger-arrow" style="margin-left:0.4rem">&rsaquo;</span></button>' +
             '</div>';
 
         // ── Back body: full reveal — teaser headline, figure, example, bottom line ──
         var backBodyHtml = '';
 
-        var isGreenSummary = clause.title === 'Fair Clauses Summary' || (risk === 'green' && clause.title && clause.title.indexOf('Fair Clauses') >= 0);
         var backHtml;
 
         // Haiku delivers full card data — back is always ready
-        if (isGreenSummary) {
-            backBodyHtml = '<div class="green-verdict">' +
-                '<div class="green-verdict-title">Confirmed: Fair as written</div>' +
-                '<div class="green-verdict-text">' +
-                escapeHtml(clause.bottomLine || 'These clauses do what they say.') +
-                '</div></div>';
-        } else if (clause.figure || clause.exampleNarrative) {
+        if (clause.figure || clause.exampleNarrative) {
             if (clause.figure) {
                 backBodyHtml += '<div class="back-figure back-figure-' + risk + '">' +
                     escapeHtml(clause.figure) + '</div>';
@@ -7043,37 +7034,35 @@
             }
         }
 
-        if (!isGreenSummary) {
-            // Bottom line comes right after figure + example (punchline position)
-            if (clause.bottomLine) {
-                backBodyHtml += '<div class="back-bottom-line">' +
-                    escapeHtml(clause.bottomLine) + '</div>';
-            }
+        // Bottom line comes right after figure + example (punchline position)
+        if (clause.bottomLine) {
+            backBodyHtml += '<div class="back-bottom-line">' +
+                escapeHtml(clause.bottomLine) + '</div>';
+        }
 
-            // Utility row: "The lure" toggle + "Find in document" on one line
-            var hasHoney = !!clause.honey;
-            var hasQuote = !!clause.quote;
-            if (hasHoney || hasQuote) {
-                backBodyHtml += '<div class="back-utility-row">';
-                if (hasHoney) {
-                    backBodyHtml += '<span class="back-honey-toggle" onclick="this.classList.toggle(\'expanded\');this.parentElement.nextElementSibling.classList.toggle(\'visible\')">' +
-                        '<span class="back-honey-label">The lure</span>' +
-                        '<span class="back-honey-chevron">\u25B6</span>' +
-                        '</span>';
-                }
-                if (hasQuote) {
-                    backBodyHtml += '<span class="find-in-doc" data-card-index="' + index + '">Find in document</span>';
-                }
-                backBodyHtml += '</div>';
-                if (hasHoney) {
-                    backBodyHtml += '<div class="back-honey-body">' +
-                        escapeHtml(clause.honey) + '</div>';
-                }
+        // Utility row: "The lure" toggle + "Find in document" on one line
+        var hasHoney = !!clause.honey;
+        var hasQuote = !!clause.quote;
+        if (hasHoney || hasQuote) {
+            backBodyHtml += '<div class="back-utility-row">';
+            if (hasHoney) {
+                backBodyHtml += '<span class="back-honey-toggle" onclick="this.classList.toggle(\'expanded\');this.parentElement.nextElementSibling.classList.toggle(\'visible\')">' +
+                    '<span class="back-honey-label">The lure</span>' +
+                    '<span class="back-honey-chevron">\u25B6</span>' +
+                    '</span>';
+            }
+            if (hasQuote) {
+                backBodyHtml += '<span class="find-in-doc" data-card-index="' + index + '">Find in document</span>';
+            }
+            backBodyHtml += '</div>';
+            if (hasHoney) {
+                backBodyHtml += '<div class="back-honey-body">' +
+                    escapeHtml(clause.honey) + '</div>';
             }
         }
 
         var backTitle = clause.teaser || clause.reveal || clause.title;
-        var backLabel = (risk === 'green') ? 'And that\u2019s correct' : 'What this actually allows';
+        var backLabel = 'What this actually allows';
         // Risk header → straight to analysis (no section ref, no quote — user can flip back or use Find in Document)
         var backInnerHtml = '';
         backInnerHtml += '<div class="risk-header risk-header-' + risk + '">' +
