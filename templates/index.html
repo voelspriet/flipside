@@ -4245,9 +4245,55 @@
             font-size: 0.55rem;
             opacity: 0.7;
         }
+
+        /* ── Mobile warning overlay ─────────────────────── */
+        .mobile-warning {
+            display: none;
+            position: fixed; inset: 0; z-index: 99999;
+            background: var(--bg);
+            flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        .mobile-warning-icon {
+            width: 56px; height: 56px; margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+        .mobile-warning h2 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.4rem; font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .mobile-warning p {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem; color: var(--text-secondary);
+            line-height: 1.6; max-width: 320px;
+        }
+        .mobile-warning .mobile-warning-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-top: 2rem;
+        }
+        @media (max-width: 768px) {
+            .mobile-warning { display: flex; }
+        }
     </style>
 </head>
 <body>
+
+<!-- Mobile warning -->
+<div class="mobile-warning">
+    <svg class="mobile-warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+    <h2>Desktop recommended</h2>
+    <p>FlipSide isn't optimized for mobile screens yet. For the full experience with flip cards, expert verdict, and deep dives, please open this on a desktop or laptop.</p>
+    <div class="mobile-warning-label">FlipSide</div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════
      SCREEN 1: UPLOAD
