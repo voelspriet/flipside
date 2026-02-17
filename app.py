@@ -46,6 +46,17 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
+
+# ── JSON error handlers (prevent Flask from returning HTML) ──
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify({'error': 'File too large. Maximum size is 10 MB.'}), 413
+
+
+@app.errorhandler(500)
+def internal_error(e):
+    return jsonify({'error': 'An internal error occurred. Please try again.'}), 500
+
 # ── Reverse proxy support ──────────────────────────────────
 # Reads X-Forwarded-For/Proto/Host/Prefix headers from the proxy.
 # For subdirectory deployments (e.g. /flipside), the proxy must set
