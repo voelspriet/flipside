@@ -367,14 +367,18 @@
             overflow: hidden; box-shadow: var(--shadow-md);
             border: 1px solid var(--border); text-align: left;
             transition: box-shadow 0.3s ease;
+            display: grid;
         }
         .hero-flip-card:hover { box-shadow: var(--shadow-lg); }
-        .hero-flip-front, .hero-flip-back { transition: opacity 0.35s ease, transform 0.35s ease; min-height: 280px; }
-        .hero-flip-back {
-            display: none; opacity: 0;
+        .hero-flip-front, .hero-flip-back {
+            grid-area: 1 / 1; transition: opacity 0.35s ease, transform 0.35s ease;
+            display: flex; flex-direction: column;
         }
-        .hero-flip-card.flipped .hero-flip-front { display: none; opacity: 0; }
-        .hero-flip-card.flipped .hero-flip-back { display: block; opacity: 1; }
+        .hero-flip-back {
+            visibility: hidden; opacity: 0;
+        }
+        .hero-flip-card.flipped .hero-flip-front { visibility: hidden; opacity: 0; }
+        .hero-flip-card.flipped .hero-flip-back { visibility: visible; opacity: 1; }
         .hero-demo:has(.hero-flip-card.flipped) .hero-demo-label { opacity: 0; transition: opacity 0.3s ease; }
         .hero-flip-header {
             padding: 0.75rem 1.25rem; display: flex; flex-direction: column; gap: 0.15rem;
@@ -399,7 +403,7 @@
         }
         .hero-flip-header-green .hero-flip-reassurance { color: var(--green-text); }
         .hero-flip-header-red .hero-flip-reassurance { color: var(--accent); }
-        .hero-flip-body { padding: 1rem 1.25rem; background: var(--bg-card); }
+        .hero-flip-body { padding: 1rem 1.25rem; background: var(--bg-card); flex: 1; }
         .hero-flip-quote {
             font-size: 0.8rem; color: var(--text-secondary); font-style: italic;
             border-left: 2px solid var(--border); padding-left: 0.75rem; margin-bottom: 0.75rem;
