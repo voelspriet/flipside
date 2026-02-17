@@ -1844,6 +1844,10 @@ def analyze(doc_id):
                     pass
                 else:
                     time.sleep(0.001)
+            # Ensure stream ends with done event (incomplete caches lack it)
+            has_done = any('"type": "done"' in e or '"type":"done"' in e for e in events)
+            if not has_done:
+                yield sse('done', json.dumps({'cached': True}))
             if doc_id in documents:
                 documents[doc_id]['analyzed'] = True
             return
