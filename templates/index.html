@@ -2594,8 +2594,8 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* Front content — flex:1 fills the grid-matched height; centers reader voice */
-        .front-content { padding: 2rem 2rem 1.25rem; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        /* Front content — flex:1 fills the grid-matched height; content hugs top, flip trigger stays at bottom */
+        .front-content { padding: 1.5rem 2rem 1rem; flex: 1; display: flex; flex-direction: column; }
         .flip-trigger { margin-top: auto; } /* pin "Flip it" button to bottom edge */
         .clause-reassurance {
             font-size: 1.3rem; font-weight: 700; color: var(--green-text);
@@ -7418,16 +7418,23 @@
             investigationDoc.classList.remove('woosh-to-sidebar');
             viewport.classList.remove('hidden');
             resultsArea.classList.remove('hidden');
-            showCardAtIndex(0);
 
+            // Start sidebar animation BEFORE showCardAtIndex so it's in progress
             var layoutEl = document.querySelector('.analysis-layout');
             if (layoutEl) {
                 layoutEl.classList.add('sidebar-visible');
                 var loadingEl = $('editorialLoading');
                 if (loadingEl) loadingEl.classList.add('woosh-in-sidebar');
-                var visCard = flipCardContainer.querySelector('.flip-card');
-                if (visCard) syncSidebarHeight(visCard);
             }
+
+            // Flag: sidebar is animating (900ms wooshInSidebar) — whoosh needs to wait
+            _sidebarAnimatingIn = true;
+            setTimeout(function() { _sidebarAnimatingIn = false; }, 950);
+
+            showCardAtIndex(0);
+
+            var visCard = flipCardContainer.querySelector('.flip-card');
+            if (visCard) syncSidebarHeight(visCard);
         }, 350);
     }
 
@@ -7650,6 +7657,7 @@
     var _shownNarrations = {};        // dedup: don't repeat the same narration
     var _narrateMinInterval = 3000;    // ms between narration updates
     var _workerDotsReady = 0;
+    var _sidebarAnimatingIn = false;  // true while sidebar woosh-in animation is running
 
     // ── Live narration: show real sentences from Opus thinking stream ──
 
@@ -9202,8 +9210,9 @@
             // Hide pill for whoosh entrance, then animate it in
             var whooshPill = visibleCard.querySelector('.front-quote-pill');
             if (whooshPill) whooshPill.classList.add('whoosh-pending');
-            // Small delay so card is visible and positioned before we read rects
-            setTimeout(function() { whooshClauseToCard(index, visibleCard); }, 150);
+            // If sidebar is still animating in (900ms), wait for it to settle before reading rects
+            var whooshDelay = _sidebarAnimatingIn ? 950 : 150;
+            setTimeout(function() { whooshClauseToCard(index, visibleCard); }, whooshDelay);
         }
 
         // Update bottom-next button label on current card
