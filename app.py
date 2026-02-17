@@ -1454,45 +1454,36 @@ This is the ONLY green card allowed. Any clause that is obviously fair must go h
 
 
 def build_clause_id_prompt():
-    """Phase 1: Lightweight identification scan. Minimal output for speed."""
-    return """You are a contract analyst. Quickly scan this document and identify clauses where rights, obligations, or financial exposure are asymmetric — where one party bears disproportionate risk, where penalties cascade, where discretion is one-sided, or where definitions alter plain-English meaning.
+    """Phase 1: Lightweight identification scan. Minimal output for speed.
+    Optimized: CLAUSE lines first (before profile) so card workers launch ASAP."""
+    return """Speed-scan this contract. Output CLAUSE lines IMMEDIATELY — no preamble, no headers before them. English only.
 
-## LANGUAGE RULE
-ALWAYS respond in ENGLISH regardless of the document's language.
+Your VERY FIRST output token must be "CLAUSE:" — start with the worst clause you find.
 
-## PLANNING STEP (mandatory)
-Before outputting anything, mentally list all sections of the document and classify each as: symmetric (both parties equal), asymmetric (one party favored), or neutral (procedural/administrative). Then select the most asymmetric clauses for detailed output.
+CLAUSE: [Title] ([Section/Context]) | RISK: [RED/YELLOW] | SCORE: [0-100] | TRICK: [category] | QUOTE: "[exact sentence from document]"
 
-## OUTPUT FORMAT
+Output one CLAUSE per line. Maximum 12. Worst first. Quotes must be exact copy-paste from the document.
 
-First, output the Document Profile:
+TRICK categories (pick one): Silent Waiver, Burden Shift, Time Trap, Escape Hatch, Moving Target, Forced Arena, Phantom Protection, Cascade Clause, Sole Discretion, Liability Cap, Reverse Shield, Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, Ghost Standard
 
+After all CLAUSE lines, output on one line:
+GREEN_CLAUSES: [ref]: [description]; [ref]: [description]; ...
+
+After GREEN_CLAUSES, output:
 ## Document Profile
-- **Document Type**: [type of document]
-- **Drafted By**: [who drafted it]
-- **Your Role**: [the non-drafting party's role]
-- **Jurisdiction**: [jurisdiction if identifiable, otherwise "Not specified"]
-- **Language**: [language of the document]
-- **Sections**: [number of major sections]
+- **Document Type**: [type]
+- **Drafted By**: [drafter]
+- **Your Role**: [non-drafting party]
+- **Jurisdiction**: [jurisdiction or "Not specified"]
+- **Language**: [language]
+- **Sections**: [count]
 
-Then list each significant clause (maximum 12 RED/YELLOW), one per line:
+Target: clauses with asymmetric rights, one-sided penalties, cascading exposure, discretion imbalance, or definitions that alter plain meaning. Section refs must name the topic (e.g. "Early Termination, §4.2" not just "§4.2"). Severity order — worst first.
 
-CLAUSE: [Descriptive Title] ([Context — Section/Product/Coverage]) | RISK: [RED/YELLOW] | SCORE: [0-100] | TRICK: [category] | QUOTE: "[copy-paste the single most revealing sentence from this clause]"
-
-After all RED/YELLOW clauses, list ALL fair/benign clauses on one line:
-
-GREEN_CLAUSES: [Section ref]: [one-line description]; [Section ref]: [one-line description]; ...
-
-## TRICK CATEGORIES (pick exactly one per clause):
-Silent Waiver, Burden Shift, Time Trap, Escape Hatch, Moving Target, Forced Arena, Phantom Protection, Cascade Clause, Sole Discretion, Liability Cap, Reverse Shield, Auto-Lock, Content Grab, Data Drain, Penalty Disguise, Gag Clause, Scope Creep, Ghost Standard
-
-## RULES
-1. Maximum 12 RED/YELLOW clauses — pick those with the greatest financial exposure, rights forfeiture, or power asymmetry
-2. Output in order of severity (worst first)
-3. Quotes must be EXACT text from the document — copy-paste, do not paraphrase
-4. If the document has NO terms or obligations (e.g. a recipe, novel, news article), output ONLY the Document Profile followed by: **Not Applicable**: [1-sentence explanation]
-5. The section reference in parentheses MUST provide document context (e.g., "Early Termination, §4.2" not just "§4.2")
-6. Be fast — this is a speed scan, not deep analysis"""
+If the document has NO terms or obligations (recipe, novel, article), output ONLY:
+## Document Profile
+[fields above]
+**Not Applicable**: [1-sentence reason]"""
 
 
 def build_single_card_system(doc_text):
@@ -2299,161 +2290,191 @@ def analyze(doc_id):
         # ── STREAMING PATH: cards not ready, run pipeline in background ──
         # Opus events flow to the browser from t=0 while cards build.
         def _card_pipeline():
-            """Background thread: waits for prescan/precards, starts card
-            workers, pushes pipeline events to the shared queue."""
+            """Background thread: forwards cards to SSE as they arrive,
+            WITHOUT waiting for full prescan to finish first."""
             try:
+                t_pipeline_start = time.time()
                 _prescan_ev = doc.get('_prescan_event')
-
-                # Wait for prescan (Phase 1: clause identification, ~7s)
-                if _prescan_ev:
-                    _prescan_ev.wait(timeout=25)
-
-                _prescan = doc.get('_prescan')
-
-                # Not applicable?
-                if _prescan and '**Not Applicable**' in _prescan.get('scan_text', ''):
-                    q.put(('cards_not_applicable', {
-                        'profile_text': _prescan.get('profile_text', ''),
-                        'scan_text': _prescan.get('scan_text', ''),
-                        'scan_seconds': _prescan.get('seconds', 0),
-                    }))
-                    return
-
-                # No prescan or failed — blocking scan
-                if not _prescan or not _prescan.get('clauses'):
-                    t0_scan = time.time()
-                    try:
-                        scan_response = client.messages.create(
-                            model=FAST_MODEL,
-                            max_tokens=4000,
-                            system=[{
-                                'type': 'text',
-                                'text': build_clause_id_prompt(),
-                                'cache_control': {'type': 'ephemeral'},
-                            }],
-                            messages=[{'role': 'user', 'content': user_msg}],
-                        )
-                        _scan_text = scan_response.content[0].text
-                        timings['scan'] = round(time.time() - t0_scan, 1)
-                        _profile, _clauses, _green = parse_identification_output(_scan_text)
-
-                        if '**Not Applicable**' in _scan_text or not _clauses:
-                            q.put(('cards_not_applicable', {
-                                'profile_text': _profile,
-                                'scan_text': _scan_text,
-                                'scan_seconds': timings.get('scan', 0),
-                            }))
-                            return
-
-                        # Start Phase 2 card workers
-                        if _profile:
-                            q.put(('cards_profile', _profile))
-                        _card_sys = build_single_card_system(doc['text'])
-                        _total = len(_clauses) + (1 if _green else 0)
-                        print(f'[pipeline] Starting {_total} card workers (blocking scan path)')
-                        for i, ci in enumerate(_clauses):
-                            cu = (
-                                f"Generate a complete flip card for this specific clause:\n\n"
-                                f"Title: {ci['title']}\n"
-                                f"Section Reference: {ci.get('section', 'Not specified')}\n"
-                                f"Risk Level: {ci['risk']}\n"
-                                f"Score: {ci['score']}/100\n"
-                                f"Trick Category: {ci['trick']}\n"
-                                f"Key Quote: \"{ci['quote']}\"\n\n"
-                                f"Analyze the clause in the document and output the COMPLETE flip card."
-                            )
-                            threading.Thread(
-                                target=worker,
-                                args=(f'card_{i}', _card_sys, 4000, FAST_MODEL, False),
-                                kwargs={'user_content': cu},
-                                daemon=True,
-                            ).start()
-                        if _green:
-                            threading.Thread(
-                                target=worker,
-                                args=(f'card_{len(_clauses)}', _card_sys, 2000, FAST_MODEL, False),
-                                kwargs={'user_content': build_green_summary_user(_green)},
-                                daemon=True,
-                            ).start()
-                        q.put(('cards_started', _total))
-                        return
-                    except Exception as e:
-                        print(f'[pipeline] Phase 1 failed: {e}, falling back to single-pass')
-                        quick_max = max(16000, min(32000, len(doc['text']) // 2))
-                        threading.Thread(
-                            target=worker,
-                            args=('quick', build_card_scan_prompt(), quick_max,
-                                  FAST_MODEL, False),
-                            daemon=True,
-                        ).start()
-                        q.put(('cards_fallback', None))
-                        return
-
-                # Prescan succeeded — forward individual cards as they complete
                 _card_queue = doc.get('_card_queue')
-                _card_total = doc.get('_card_total', 0)
-                _profile = _prescan.get('profile_text', '')
-                timings['scan'] = _prescan.get('seconds', 0)
 
-                if _card_queue and _card_total > 0:
-                    # Upload thread already has card workers running —
-                    # forward each card to the SSE stream as it finishes
-                    if _profile:
-                        q.put(('cards_profile', _profile))
-                    q.put(('cards_started', _card_total))
-                    print(f'[pipeline] Forwarding {_card_total} cards individually')
-                    _received = 0
-                    for _ in range(_card_total):
+                # ── EAGER FORWARDING: push cards to SSE as they arrive ──
+                # Card workers were spawned during prescan streaming, so
+                # cards may already be in the queue before prescan finishes.
+                _received = 0
+                _profile_sent = False
+                _started_sent = False
+
+                while True:
+                    # Check if prescan has finished
+                    prescan_done = _prescan_ev and _prescan_ev.is_set()
+
+                    # Try to grab a card from the queue (short timeout)
+                    if _card_queue:
                         try:
-                            idx, text = _card_queue.get(timeout=60)
+                            idx, text = _card_queue.get(timeout=0.3)
+                            # On first card, emit cards_started with preliminary count
+                            if not _started_sent:
+                                q.put(('cards_started', 20))  # Upper bound; corrected later
+                                _started_sent = True
                             q.put(('card_ready', (idx, text)))
                             _received += 1
                         except queue_module.Empty:
-                            print(f'[pipeline] Timed out waiting for card')
-                            break
-                    # If some cards timed out, tell main loop the real count
-                    if _received < _card_total:
-                        q.put(('cards_started', _received))
-                    return
+                            pass
 
-                # Fallback: no card queue — start fresh card workers
-                _clauses = _prescan['clauses']
-                _green = _prescan['green_text']
+                    # Once prescan is done, check if we're finished
+                    if prescan_done:
+                        _prescan = doc.get('_prescan')
 
-                if _profile:
-                    q.put(('cards_profile', _profile))
+                        # Not applicable?
+                        if _prescan and '**Not Applicable**' in _prescan.get('scan_text', ''):
+                            q.put(('cards_not_applicable', {
+                                'profile_text': _prescan.get('profile_text', ''),
+                                'scan_text': _prescan.get('scan_text', ''),
+                                'scan_seconds': _prescan.get('seconds', 0),
+                            }))
+                            return
 
-                _card_sys = build_single_card_system(doc['text'])
-                _total = len(_clauses) + (1 if _green else 0)
-                print(f'[pipeline] Starting {_total} card workers (prescan path)')
+                        # Send profile once
+                        if not _profile_sent:
+                            _profile_sent = True
+                            _profile = _prescan.get('profile_text', '') if _prescan else ''
+                            timings['scan'] = _prescan.get('seconds', 0) if _prescan else 0
+                            if _profile:
+                                q.put(('cards_profile', _profile))
 
-                for i, ci in enumerate(_clauses):
-                    cu = (
-                        f"Generate a complete flip card for this specific clause:\n\n"
-                        f"Title: {ci['title']}\n"
-                        f"Section Reference: {ci.get('section', 'Not specified')}\n"
-                        f"Risk Level: {ci['risk']}\n"
-                        f"Score: {ci['score']}/100\n"
-                        f"Trick Category: {ci['trick']}\n"
-                        f"Key Quote: \"{ci['quote']}\"\n\n"
-                        f"Analyze the clause in the document and output the COMPLETE flip card."
-                    )
-                    threading.Thread(
-                        target=worker,
-                        args=(f'card_{i}', _card_sys, 4000, FAST_MODEL, False),
-                        kwargs={'user_content': cu},
-                        daemon=True,
-                    ).start()
+                        # No prescan or failed — blocking scan
+                        if not _prescan or not _prescan.get('clauses'):
+                            if _received > 0:
+                                # Some cards arrived but prescan reported failure —
+                                # keep what we have
+                                q.put(('cards_started', _received))
+                                return
+                            t0_scan = time.time()
+                            try:
+                                scan_response = client.messages.create(
+                                    model=FAST_MODEL,
+                                    max_tokens=4000,
+                                    system=[{
+                                        'type': 'text',
+                                        'text': build_clause_id_prompt(),
+                                        'cache_control': {'type': 'ephemeral'},
+                                    }],
+                                    messages=[{'role': 'user', 'content': user_msg}],
+                                )
+                                _scan_text = scan_response.content[0].text
+                                timings['scan'] = round(time.time() - t0_scan, 1)
+                                _profile_fb, _clauses, _green = parse_identification_output(_scan_text)
 
-                if _green:
-                    threading.Thread(
-                        target=worker,
-                        args=(f'card_{len(_clauses)}', _card_sys, 2000, FAST_MODEL, False),
-                        kwargs={'user_content': build_green_summary_user(_green)},
-                        daemon=True,
-                    ).start()
+                                if '**Not Applicable**' in _scan_text or not _clauses:
+                                    q.put(('cards_not_applicable', {
+                                        'profile_text': _profile_fb,
+                                        'scan_text': _scan_text,
+                                        'scan_seconds': timings.get('scan', 0),
+                                    }))
+                                    return
 
-                q.put(('cards_started', _total))
+                                # Start Phase 2 card workers
+                                if _profile_fb:
+                                    q.put(('cards_profile', _profile_fb))
+                                _card_sys = build_single_card_system(doc['text'])
+                                _total = len(_clauses) + (1 if _green else 0)
+                                print(f'[pipeline] Starting {_total} card workers (blocking scan path)')
+                                for i, ci in enumerate(_clauses):
+                                    cu = (
+                                        f"Generate a complete flip card for this specific clause:\n\n"
+                                        f"Title: {ci['title']}\n"
+                                        f"Section Reference: {ci.get('section', 'Not specified')}\n"
+                                        f"Risk Level: {ci['risk']}\n"
+                                        f"Score: {ci['score']}/100\n"
+                                        f"Trick Category: {ci['trick']}\n"
+                                        f"Key Quote: \"{ci['quote']}\"\n\n"
+                                        f"Analyze the clause in the document and output the COMPLETE flip card."
+                                    )
+                                    threading.Thread(
+                                        target=worker,
+                                        args=(f'card_{i}', _card_sys, 4000, FAST_MODEL, False),
+                                        kwargs={'user_content': cu},
+                                        daemon=True,
+                                    ).start()
+                                if _green:
+                                    threading.Thread(
+                                        target=worker,
+                                        args=(f'card_{len(_clauses)}', _card_sys, 2000, FAST_MODEL, False),
+                                        kwargs={'user_content': build_green_summary_user(_green)},
+                                        daemon=True,
+                                    ).start()
+                                q.put(('cards_started', _total))
+                                return
+                            except Exception as e:
+                                print(f'[pipeline] Phase 1 failed: {e}, falling back to single-pass')
+                                quick_max = max(16000, min(32000, len(doc['text']) // 2))
+                                threading.Thread(
+                                    target=worker,
+                                    args=('quick', build_card_scan_prompt(), quick_max,
+                                          FAST_MODEL, False),
+                                    daemon=True,
+                                ).start()
+                                q.put(('cards_fallback', None))
+                                return
+
+                        # Prescan succeeded — check if all cards are in
+                        _card_total = doc.get('_card_total', 0)
+                        if _card_total > 0 and _received >= _card_total:
+                            # All cards forwarded
+                            q.put(('cards_started', _card_total))
+                            print(f'[pipeline] All {_card_total} cards forwarded (eager)')
+                            return
+
+                        # Cards still pending — if no queue, start fresh workers
+                        if not _card_queue:
+                            _clauses = _prescan['clauses']
+                            _green = _prescan['green_text']
+                            _card_sys = build_single_card_system(doc['text'])
+                            _total = len(_clauses) + (1 if _green else 0)
+                            print(f'[pipeline] Starting {_total} card workers (prescan path)')
+                            for i, ci in enumerate(_clauses):
+                                cu = (
+                                    f"Generate a complete flip card for this specific clause:\n\n"
+                                    f"Title: {ci['title']}\n"
+                                    f"Section Reference: {ci.get('section', 'Not specified')}\n"
+                                    f"Risk Level: {ci['risk']}\n"
+                                    f"Score: {ci['score']}/100\n"
+                                    f"Trick Category: {ci['trick']}\n"
+                                    f"Key Quote: \"{ci['quote']}\"\n\n"
+                                    f"Analyze the clause in the document and output the COMPLETE flip card."
+                                )
+                                threading.Thread(
+                                    target=worker,
+                                    args=(f'card_{i}', _card_sys, 4000, FAST_MODEL, False),
+                                    kwargs={'user_content': cu},
+                                    daemon=True,
+                                ).start()
+                            if _green:
+                                threading.Thread(
+                                    target=worker,
+                                    args=(f'card_{len(_clauses)}', _card_sys, 2000, FAST_MODEL, False),
+                                    kwargs={'user_content': build_green_summary_user(_green)},
+                                    daemon=True,
+                                ).start()
+                            q.put(('cards_started', _total))
+                            return
+
+                        # Keep polling — cards still arriving from queue
+                        continue
+
+                    # Prescan not done yet — keep polling
+                    if not _card_queue:
+                        # No queue yet (prescan hasn't started card workers)
+                        time.sleep(0.3)
+                        _card_queue = doc.get('_card_queue')
+                        continue
+
+                    # Safety: 60s total timeout
+                    if time.time() - t_pipeline_start > 60:
+                        print(f'[pipeline] Timed out after 60s, {_received} cards forwarded')
+                        if _received > 0:
+                            q.put(('cards_started', _received))
+                        return
 
             except Exception as e:
                 print(f'[card_pipeline] Error: {e}')
@@ -2674,6 +2695,21 @@ def analyze(doc_id):
                 total_cards = event
                 if total_cards == 0:
                     cards_all_done = True
+                else:
+                    # Re-check: cards may have arrived before total was known
+                    cards_received = sum(1 for v in card_done_flags.values() if v)
+                    if cards_received >= total_cards:
+                        cards_all_done = True
+                        total_quick = round(time.time() - start_time, 1)
+                        yield sse('quick_done', json.dumps({
+                            'seconds': total_quick, 'model': FAST_MODEL}))
+                        clause_count = sum(
+                            1 for v in card_texts.values()
+                            if v and 'Fair Clauses Summary' not in v)
+                        yield sse('handoff', json.dumps({
+                            'tricks_found': 0, 'summary': '',
+                            'clause_count': clause_count,
+                            'not_applicable': False}))
                 continue
 
             # ── Pipeline: individual pre-built card ready ──
