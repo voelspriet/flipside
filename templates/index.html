@@ -6025,8 +6025,7 @@
         }
         var ocrBanner = $('ocrBanner');
         if (ocrBanner) ocrBanner.classList.toggle('hidden', !documentOcrUsed);
-        $('cardViewport').classList.remove('hidden');
-        resultsArea.classList.remove('hidden');
+        // cardViewport stays hidden until transitionToCardView() runs
 
         // Sidebar: prepare content (collapsed — expands after screen switch)
         var sidebar = $('analysisSidebar');
