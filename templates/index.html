@@ -9333,14 +9333,16 @@
                 pip.addEventListener('click', (function(idx) {
                     return function() { showCardAtIndex(idx); };
                 })(p));
-                var risk = cards[p] ? cards[p].getAttribute('data-risk-level') : 'green';
-                if (risk) pip.classList.add('pip-' + risk);
                 pipsEl.appendChild(pip);
             }
         }
-        // Update active state
+        // Sync risk colors + active state every call (cards arrive incrementally)
         for (var p = 0; p < pipsEl.children.length; p++) {
-            pipsEl.children[p].classList.toggle('active', p === currentCardIndex);
+            var pip = pipsEl.children[p];
+            pip.classList.toggle('active', p === currentCardIndex);
+            var risk = cards[p] ? cards[p].getAttribute('data-risk-level') : '';
+            pip.classList.remove('pip-red', 'pip-yellow', 'pip-green');
+            if (risk) pip.classList.add('pip-' + risk);
         }
     }
 
