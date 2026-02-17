@@ -333,18 +333,24 @@
 
         /* ── Hero row: upload + example side by side ──── */
         .hero-row {
-            display: flex; gap: 2rem; align-items: flex-start;
+            display: flex; gap: 2rem; align-items: stretch;
             max-width: 940px; margin: 0 auto; width: 100%;
         }
         .hero-upload {
-            flex: 1 1 55%; min-width: 0; width: 100%;
+            flex: 1 1 50%; min-width: 0; width: 100%;
         }
+        .hero-upload .upload-card { height: 100%; display: flex; flex-direction: column; }
         .hero-demo {
-            flex: 0 0 320px; text-align: center;
+            flex: 1 1 50%; min-width: 0; text-align: center;
+            display: flex; flex-direction: column;
         }
+        .hero-demo .hero-flip-card { flex: 1; display: flex; flex-direction: column; }
+        .hero-demo .hero-flip-front, .hero-demo .hero-flip-back { flex: 1; display: flex; flex-direction: column; }
+        .hero-demo .hero-flip-body { flex: 1; }
         @media (max-width: 800px) {
             .hero-row { flex-direction: column; gap: 1.5rem; }
-            .hero-demo { flex: none; width: 100%; max-width: 400px; margin: 0 auto; }
+            .hero-upload .upload-card { height: auto; }
+            .hero-demo { flex: none; width: 100%; max-width: 480px; margin: 0 auto; }
         }
         .hero-demo-label {
             font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
@@ -4371,7 +4377,7 @@
         <div class="hero-row">
         <div class="hero-upload fade-up fade-up-d1">
         <div class="upload-card">
-            <p class="upload-headline">Drop any contract, terms, or policy you didn&rsquo;t write.<br>See what the other side intended you to miss &mdash;</p>
+            <p class="upload-headline">Drop any contract, coupon, terms, or policy you didn&rsquo;t write.<br>See what the other side intended you to miss &mdash;</p>
 
             <!-- Single document upload: 2-column input methods -->
             <div id="singleUpload">
