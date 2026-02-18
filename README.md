@@ -10,7 +10,7 @@
 
 Gym memberships, app terms, pet adoptions, sweepstakes entries — the things you sign with a shrug. They weren't written with one.
 
-*0% of the code was written by a human. 14,700+ lines of application code, 147 commits, 6 days — built entirely through conversation with Claude Code and Opus 4.6. Day one was spent [teaching the model how to think](planning.md) before writing a single line of code — on purpose.*
+*0% of the code was written by a human. 14,700+ lines of application code, 147 commits, 6 days — built entirely through conversation with Claude Code and Opus 4.6. Day one was spent on the [dance between man and machine](planning.md) before writing a single line of code — on purpose.*
 
 ![FlipSide upload screen](screenshots/readme_dropfile.jpg)
 
