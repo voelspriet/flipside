@@ -932,7 +932,7 @@ def analyze(doc_id):
                         'messages': [{'role': 'user', 'content': msg_content}],
                         'stream': True,
                     }
-                    if use_thinking:
+                    if use_thinking and 'opus' in model.lower():
                         create_kwargs['thinking'] = {'type': 'adaptive'}
                     if tools:
                         create_kwargs['tools'] = tools
@@ -2014,10 +2014,9 @@ def deepdive(doc_id, dive_type):
             )
             yield sse('phase', 'thinking')
             t0 = time.time()
-            stream = client.messages.create(
+            dd_kwargs = dict(
                 model=MODEL,
                 max_tokens=max_tokens,
-                thinking={'type': 'adaptive'},
                 system=[{
                     'type': 'text',
                     'text': prompt_fn(),
@@ -2026,6 +2025,9 @@ def deepdive(doc_id, dive_type):
                 messages=[{'role': 'user', 'content': user_msg}],
                 stream=True,
             )
+            if 'opus' in MODEL.lower():
+                dd_kwargs['thinking'] = {'type': 'adaptive'}
+            stream = client.messages.create(**dd_kwargs)
             try:
                 for event in stream:
                     if event.type == 'content_block_delta':
@@ -2171,10 +2173,9 @@ def ask(doc_id):
 
             for _round in range(max_rounds):
                 # ── Call Opus with tools ──
-                response = client.messages.create(
+                ask_kwargs = dict(
                     model=MODEL,
                     max_tokens=16000,
-                    thinking={'type': 'adaptive'},
                     system=[{
                         'type': 'text',
                         'text': system_prompt,
@@ -2183,6 +2184,9 @@ def ask(doc_id):
                     tools=ASK_TOOLS,
                     messages=messages,
                 )
+                if 'opus' in MODEL.lower():
+                    ask_kwargs['thinking'] = {'type': 'adaptive'}
+                response = client.messages.create(**ask_kwargs)
 
                 # ── Process response blocks ──
                 tool_calls = []
@@ -2265,10 +2269,9 @@ def timeline(doc_id):
                 "Generate a worst-case timeline showing how one common trigger cascades through this contract."
             )
             yield sse('phase', 'thinking')
-            stream = client.messages.create(
+            tl_kwargs = dict(
                 model=MODEL,
                 max_tokens=16000,
-                thinking={'type': 'adaptive'},
                 system=[{
                     'type': 'text',
                     'text': build_timeline_prompt(),
@@ -2277,6 +2280,9 @@ def timeline(doc_id):
                 messages=[{'role': 'user', 'content': user_msg}],
                 stream=True,
             )
+            if 'opus' in MODEL.lower():
+                tl_kwargs['thinking'] = {'type': 'adaptive'}
+            stream = client.messages.create(**tl_kwargs)
             try:
                 for event in stream:
                     if event.type == 'content_block_delta':
@@ -2327,10 +2333,9 @@ def counter_draft(doc_id):
                 "Generate a counter-draft with fair rewrites for all problematic clauses."
             )
             yield sse('phase', 'thinking')
-            stream = client.messages.create(
+            cd_kwargs = dict(
                 model=MODEL,
                 max_tokens=32000,
-                thinking={'type': 'adaptive'},
                 system=[{
                     'type': 'text',
                     'text': build_counter_draft_prompt(),
@@ -2339,6 +2344,9 @@ def counter_draft(doc_id):
                 messages=[{'role': 'user', 'content': user_msg}],
                 stream=True,
             )
+            if 'opus' in MODEL.lower():
+                cd_kwargs['thinking'] = {'type': 'adaptive'}
+            stream = client.messages.create(**cd_kwargs)
             try:
                 for event in stream:
                     if event.type == 'content_block_delta':
