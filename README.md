@@ -26,12 +26,6 @@ Gym memberships, app terms, pet adoptions, sweepstakes entries — the things yo
 
 ---
 
-## Why We Spent Day One Not Writing Code
-
-The first thing I told Claude wasn't "build me an app." It was: *here's how I think.* That conversation took over 8 hours before a single line of code was written. I explained two methodologies — "Think Like a Document" (read from the drafter's perspective, not your own) and meta-prompting (ask the AI to write its own prompt, then review it for bias before executing). Claude's first recommendation, CiteGuard, scored 10/10 on uniqueness across three separate evaluations — even after I showed it a direct competitor with 907 cases. Saying "you're wrong" didn't work; the model acknowledged the objection and kept its score. So I used the technique that started the project: *"Write me a prompt that would evaluate whether your uniqueness claim still holds."* When Claude executed its own evaluation prompt, the score dropped from 10/10 to 5/10 and the entire recommendation collapsed. That moment — where the AI won't question itself, but will write the prompt that questions itself — became the foundation of FlipSide. Every prompt in this system is a meta-prompt: it teaches the model *how to think about documents* before any document arrives. We didn't start coding on Day 1 because the thinking was the product. The code is just the container. Full story: [planning.md](planning.md).
-
----
-
 ## The Problem
 
 You probably didn't review the Coca-Cola sweepstakes rules that waive your right to sue. Or the pet adoption agreement that lets the breeder inspect your home for 5 years. Or the wedding venue "policy" that keeps your $15,000 deposit if it rains. These aren't edge cases — they're the documents most people actually encounter.
@@ -87,6 +81,12 @@ While you flip cards, Opus 4.6 streams a verdict from t=0: **Verdict Tier** (5 l
 
 | N Haiku card workers + 6 Opus threads | ~8s first card | ~$0.54 per analysis |
 |---|---|---|---|
+
+---
+
+### Day One: 8 Hours of Thinking, Zero Lines of Code
+
+The first thing I told Claude wasn't "build me an app." It was: *here's how I think.* I spent 8 hours teaching Claude two methodologies before writing a single line of code — and that conversation became the product. Claude's first idea scored itself 10/10 on uniqueness even after I showed it a direct competitor. Telling it "you're wrong" changed nothing. So I asked: *"Write me a prompt that tests whether your own claim still holds."* It did. The score collapsed to 5/10. That's the discovery: **the AI won't question itself, but it will write the prompt that questions itself.** Every prompt in FlipSide is built on this principle — the model learns *how to think about documents* before any document arrives. The thinking was the product. The code is the container. Full story: [planning.md](planning.md).
 
 ---
 
