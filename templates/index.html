@@ -4380,7 +4380,7 @@
             <!-- Single document upload: 2-column input methods -->
             <div id="singleUpload">
                 <div class="upload-methods" id="uploadMethods">
-                    <div class="upload-method" id="methodDrop">
+                    <div class="upload-method" id="methodDrop" style="opacity: 0.35; pointer-events: none; position: relative;">
                         <div class="drop-zone" id="dropZone">
                             <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.text,.md,image/*" capture="environment" class="sr-only">
                             <div id="uploadPrompt">
@@ -4394,13 +4394,15 @@
                                 <a class="file-remove" id="fileRemove">remove</a>
                             </div>
                         </div>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); background: var(--cream); padding: 0.2em 0.8em; border-radius: 100px;">soon</div>
                     </div>
-                    <div class="upload-method" id="methodPaste">
+                    <div class="upload-method" id="methodPaste" style="opacity: 0.35; pointer-events: none; position: relative;">
                         <div class="drop-zone method-zone" id="pasteZone">
                             <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></span>
                             <div class="dz-title">Paste text</div>
                         </div>
                         <textarea id="pasteArea" class="paste-area hidden" placeholder="Paste contract text here..."></textarea>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); background: var(--cream); padding: 0.2em 0.8em; border-radius: 100px;">soon</div>
                     </div>
                 </div>
             </div>
@@ -4453,7 +4455,7 @@
         </div><!-- .hero-row -->
 
             <div class="demo-grid-section" id="demoGridSection">
-                <div class="demo-grid-shrug" style="color: #c44b28; font-weight: 600;">For the jury: these are real analyses of real documents, pre-run and cached. Upload your own document above to see a fresh run.</div>
+                <div class="demo-grid-shrug" style="color: #c44b28; font-weight: 600;">These are real analyses of real documents, pre-run and cached.</div>
                 <div class="demo-grid">
                     <div class="demo-tile" data-sample="tos"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div><div class="demo-tile-label">Staying Connected</div><div class="demo-tile-desc">You agreed to more than you think</div></div>
                     <div class="demo-tile" data-sample="insurance"><div class="demo-tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="demo-tile-label">Peace of Mind</div><div class="demo-tile-desc">What&rsquo;s not covered?</div></div>
