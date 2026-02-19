@@ -655,9 +655,26 @@ def extract_image(file_storage):
 @app.route('/')
 def index():
     resp = app.make_response(render_template('index.html'))
-    resp.headers['Cache-Control'] = 'no-store'
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
     return resp
 
+
+@app.route('/robots.txt')
+def robots():
+    return Response("User-agent: *\nAllow: /\nSitemap: https://flipside.digitaldigging.org/sitemap.xml\n", mimetype='text/plain')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return Response("""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://flipside.digitaldigging.org/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>""", mimetype='application/xml')
 
 @app.route('/jury')
 def jury():

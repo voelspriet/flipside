@@ -3,11 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipSide — The Other Side of Small Print</title>
-    <meta name="description" content="Upload any contract and see what the other side intended. FlipSide flips the small print so you can read it from the drafter's perspective.">
-    <meta property="og:title" content="FlipSide — The Other Side of Small Print">
-    <meta property="og:description" content="Upload any contract and see what the other side intended. AI-powered clause analysis by Claude Opus 4.6.">
+    <title>FlipSide — Discover the Dark Side of Fine Print | AI Contract Analysis</title>
+    <meta name="description" content="Double-check any contract before you sign. FlipSide is a free AI contract review tool that reads leases, terms of service, insurance policies, and agreements from the drafter's perspective — then reveals what they intended you to miss.">
+    <meta name="keywords" content="contract review, check contract before signing, AI contract analysis, fine print checker, lease review, terms of service analyzer, hidden clauses, contract red flags, double check contract, agreement review tool, free contract checker">
+    <meta name="author" content="Henk van Ess">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://flipside.digitaldigging.org/">
+    <meta property="og:title" content="FlipSide — Discover the Dark Side of Fine Print">
+    <meta property="og:description" content="Free AI contract review tool. Double-check any lease, insurance policy, terms of service, or agreement before you sign. See what the drafter intended you to miss.">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://flipside.digitaldigging.org/">
+    <meta property="og:site_name" content="FlipSide">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FlipSide — Discover the Dark Side of Fine Print">
+    <meta name="twitter:description" content="Free AI tool to double-check contracts before you sign. Reviews leases, insurance, terms of service, and more — reveals hidden clauses and red flags.">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "FlipSide",
+        "url": "https://flipside.digitaldigging.org/",
+        "description": "AI-powered contract analysis that reads from the drafter's perspective and reveals what they intended you to miss.",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Web",
+        "author": {
+            "@type": "Person",
+            "name": "Henk van Ess",
+            "url": "https://www.digitaldigging.org"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is FlipSide?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "FlipSide shows you what the other side intended when they wrote your document. Upload any contract, agreement, or policy you didn't draft and FlipSide reads it from the drafter's perspective. Each clause gets a flip card — the front shows what a trusting reader sees, flip it and the back reveals the trick, the risk score, and what you should actually read."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How does FlipSide work?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "FlipSide runs two AI models in parallel: Claude Haiku 4.5 generates flip cards in ~8 seconds, while Claude Opus 4.6 builds an expert verdict from t=0 — verdict tier, main risk, power ratio, jurisdiction detection, risks, and a self-reviewed checklist."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is my document stored or shared?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "FlipSide stores nothing. Your document is not saved to disk, database, or temporary file. It exists only in your browser session memory and is gone when you close the tab. No cookies, no user accounts, no telemetry."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is FlipSide legal advice?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No. FlipSide is an educational tool that helps you understand what's in a document. It is not a substitute for legal advice. For important decisions — signing a lease, accepting employment terms, buying insurance — always consult a qualified attorney."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Who built FlipSide?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Henk van Ess, an internationally recognized expert in AI-powered digital research and open-source intelligence (OSINT). Every line of FlipSide was built through conversation with Claude Opus 4.6. He does not write code — the prompts were the product, the AI was the builder."
+                }
+            }
+        ]
+    }
+    </script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c44b28' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><path d='M14 2v6h6'/></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4344,6 +4423,7 @@
 </head>
 <body>
 
+<main>
 <!-- Mobile warning -->
 <div class="mobile-warning">
     <svg class="mobile-warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -4369,7 +4449,7 @@
         <div class="brand fade-up">
             <h1>FlipSide</h1>
             <p class="brand-hook">Discover the dark side of fine print.</p>
-            <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.05em; color: var(--text-dim); margin-top: 0.3rem;">Developed by Henk van Ess of DigitalDigging.org</p>
+            <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.05em; color: var(--text-dim); margin-top: 0.3rem;">Developed by Henk van Ess of <a href="https://www.digitaldigging.org" target="_blank" rel="noopener" style="color: var(--text-dim); text-decoration: underline;">DigitalDigging.org</a></p>
         </div>
 
         <!-- Upload card: full width -->
@@ -10846,5 +10926,6 @@
 
 })();
 </script>
+</main>
 </body>
 </html>
