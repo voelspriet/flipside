@@ -421,6 +421,36 @@ def _save_sample_cache():
 
 
 # ---------------------------------------------------------------------------
+# Message wall — visitor guestbook
+# ---------------------------------------------------------------------------
+
+_MESSAGES_PATH = os.path.join(os.path.dirname(__file__), 'data', 'messages.json')
+_messages = []
+_messages_lock = threading.Lock()
+_message_rate = {}  # IP -> last-post timestamp
+
+if os.path.exists(_MESSAGES_PATH):
+    try:
+        with open(_MESSAGES_PATH, 'r') as _f:
+            _messages = json.load(_f)
+        print(f'  Loaded message wall: {len(_messages)} messages')
+    except Exception as e:
+        print(f'  Warning: could not load messages: {e}')
+
+
+def _save_messages():
+    """Persist messages to disk."""
+    os.makedirs(os.path.dirname(_MESSAGES_PATH), exist_ok=True)
+    with open(_MESSAGES_PATH, 'w') as f:
+        json.dump(_messages, f, indent=2)
+
+
+def _strip_tags(text):
+    """Remove HTML tags from user input."""
+    return re.sub(r'<[^>]+>', '', text)
+
+
+# ---------------------------------------------------------------------------
 # Text extraction
 # ---------------------------------------------------------------------------
 
@@ -1996,6 +2026,49 @@ def clear_cache():
     if os.path.exists(_SAMPLE_CACHE_PATH):
         os.remove(_SAMPLE_CACHE_PATH)
     return jsonify({'status': 'cleared'})
+
+
+# ── Message wall endpoints ────────────────────────────────────────
+
+@app.route('/api/messages')
+def get_messages():
+    """Return latest 50 messages, newest first."""
+    with _messages_lock:
+        return jsonify(_messages[:50])
+
+
+@app.route('/api/messages', methods=['POST'])
+def post_message():
+    """Add a new message to the wall."""
+    data = request.get_json(silent=True) or {}
+    name = _strip_tags(str(data.get('name', '')).strip())
+    text = _strip_tags(str(data.get('text', '')).strip())
+
+    if not name or len(name) > 40:
+        return jsonify({'error': 'Name must be 1-40 characters'}), 400
+    if not text or len(text) > 280:
+        return jsonify({'error': 'Message must be 1-280 characters'}), 400
+
+    # Rate limit: 1 message per IP per 5 minutes
+    ip = request.remote_addr or 'unknown'
+    now = time.time()
+    if ip in _message_rate and now - _message_rate[ip] < 300:
+        remaining = int(300 - (now - _message_rate[ip]))
+        return jsonify({'error': f'Please wait {remaining}s before posting again'}), 429
+
+    msg = {
+        'id': str(uuid.uuid4()),
+        'name': name,
+        'text': text,
+        'timestamp': now,
+    }
+
+    with _messages_lock:
+        _messages.insert(0, msg)
+        _save_messages()
+    _message_rate[ip] = now
+
+    return jsonify(msg), 201
 
 
 # ── On-demand deep dive endpoint ──────────────────────────────────

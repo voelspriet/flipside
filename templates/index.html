@@ -730,6 +730,88 @@
             color: var(--text-primary); font-weight: 600;
         }
 
+        /* ── Message wall ───────────────────────────── */
+        .message-wall { margin-top: 2rem; }
+        .message-wall-header {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem; font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+        .message-wall-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 1.25rem;
+        }
+        @media (max-width: 800px) {
+            .message-wall-grid { grid-template-columns: 1fr; }
+        }
+        @media (min-width: 801px) and (max-width: 1100px) {
+            .message-wall-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        .msg-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 0.85rem 1rem;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: var(--text-body);
+            transition: border-color 0.25s ease;
+        }
+        .msg-card:hover { border-color: var(--accent); }
+        .msg-card-text { margin-bottom: 0.5rem; }
+        .msg-card-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .msg-card-name { font-weight: 600; color: var(--text-secondary); }
+        .msg-form {
+            display: flex; gap: 8px; align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .msg-form input, .msg-form textarea {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .msg-form input:focus, .msg-form textarea:focus {
+            border-color: var(--accent);
+        }
+        .msg-form input { width: 120px; }
+        .msg-form textarea {
+            flex: 1; min-width: 200px;
+            resize: none; height: 36px;
+        }
+        .msg-form button {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem; font-weight: 600;
+            padding: 0.5rem 1.1rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.2s ease;
+            white-space: nowrap;
+        }
+        .msg-form button:hover { background: var(--accent-hover); }
+        .msg-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .msg-error {
+            font-size: 0.72rem; color: var(--red);
+            margin-top: 0.35rem;
+            display: none;
+        }
+
         /* ══════════════════════════════════════════════════════
            SCREEN 2/3: ANALYSIS
            ══════════════════════════════════════════════════════ */
@@ -4556,6 +4638,18 @@
                 </div>
             </div>
 
+        </div>
+
+        <!-- ── Message wall ─────────────────────────────────── -->
+        <div class="message-wall fade-up fade-up-d2" id="messageWall">
+            <div class="message-wall-header">What people are saying</div>
+            <div class="message-wall-grid" id="messageGrid"></div>
+            <form class="msg-form" id="msgForm" autocomplete="off">
+                <input type="text" name="name" placeholder="Your name" maxlength="40" required>
+                <textarea name="text" placeholder="Leave a message..." maxlength="280" required></textarea>
+                <button type="submit">Post</button>
+            </form>
+            <div class="msg-error" id="msgError"></div>
         </div>
 
         <div class="disclaimer fade-up fade-up-d2">
@@ -10923,6 +11017,73 @@
             }
         });
     }
+
+    // ── Message wall ─────────────────────────────────────────────
+    (function initMessageWall() {
+        var grid = $('messageGrid');
+        var form = $('msgForm');
+        var errEl = $('msgError');
+        if (!grid || !form) return;
+
+        function timeAgo(ts) {
+            var diff = (Date.now() / 1000) - ts;
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            if (diff < 2592000) return Math.floor(diff / 86400) + 'd ago';
+            return new Date(ts * 1000).toLocaleDateString();
+        }
+
+        function renderMessages(msgs) {
+            if (!msgs.length) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:0.82rem;padding:1.5rem 0;">No messages yet. Be the first!</div>';
+                return;
+            }
+            grid.innerHTML = msgs.map(function(m) {
+                var safe = DOMPurify.sanitize(m.text);
+                var name = DOMPurify.sanitize(m.name);
+                return '<div class="msg-card">' +
+                    '<div class="msg-card-text">' + safe + '</div>' +
+                    '<div class="msg-card-meta"><span class="msg-card-name">' + name + '</span>' +
+                    '<span>' + timeAgo(m.timestamp) + '</span></div></div>';
+            }).join('');
+        }
+
+        function loadMessages() {
+            fetch('/api/messages').then(function(r) { return r.json(); })
+                .then(renderMessages)
+                .catch(function() {});
+        }
+
+        loadMessages();
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            errEl.style.display = 'none';
+            var btn = form.querySelector('button');
+            btn.disabled = true;
+
+            var nameVal = form.elements.name.value.trim();
+            var textVal = form.elements.text.value.trim();
+
+            fetch('/api/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: nameVal, text: textVal })
+            }).then(function(r) {
+                if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || 'Error'); });
+                return r.json();
+            }).then(function() {
+                form.reset();
+                loadMessages();
+            }).catch(function(err) {
+                errEl.textContent = err.message;
+                errEl.style.display = 'block';
+            }).finally(function() {
+                btn.disabled = false;
+            });
+        });
+    })();
 
 })();
 </script>
