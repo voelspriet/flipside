@@ -451,6 +451,35 @@ def _strip_tags(text):
 
 
 # ---------------------------------------------------------------------------
+# Visit counter — private, no PII, daily buckets
+# ---------------------------------------------------------------------------
+
+_VISITS_PATH = os.path.join(os.path.dirname(__file__), 'data', 'visits.json')
+_visits = {}  # {"2026-02-20": 14, ...}
+_visits_lock = threading.Lock()
+
+if os.path.exists(_VISITS_PATH):
+    try:
+        with open(_VISITS_PATH, 'r') as _f:
+            _visits = json.load(_f)
+        print(f'  Loaded visit counter: {sum(_visits.values())} total visits')
+    except Exception as e:
+        print(f'  Warning: could not load visits: {e}')
+
+
+def _record_visit():
+    """Increment today's visit count."""
+    today = time.strftime('%Y-%m-%d')
+    with _visits_lock:
+        _visits[today] = _visits.get(today, 0) + 1
+        try:
+            with open(_VISITS_PATH, 'w') as f:
+                json.dump(_visits, f, indent=2)
+        except Exception:
+            pass
+
+
+# ---------------------------------------------------------------------------
 # Text extraction
 # ---------------------------------------------------------------------------
 
@@ -684,6 +713,7 @@ def extract_image(file_storage):
 
 @app.route('/')
 def index():
+    _record_visit()
     resp = app.make_response(render_template('index.html'))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     resp.headers['Pragma'] = 'no-cache'
@@ -2026,6 +2056,21 @@ def clear_cache():
     if os.path.exists(_SAMPLE_CACHE_PATH):
         os.remove(_SAMPLE_CACHE_PATH)
     return jsonify({'status': 'cleared'})
+
+
+# ── Visit stats endpoint ──────────────────────────────────────────
+
+@app.route('/api/visits')
+def visit_stats():
+    """Return visit counts — daily buckets, no PII."""
+    with _visits_lock:
+        today = time.strftime('%Y-%m-%d')
+        return jsonify({
+            'today': _visits.get(today, 0),
+            'total': sum(_visits.values()),
+            'days': len(_visits),
+            'daily': _visits,
+        })
 
 
 # ── Message wall endpoints ────────────────────────────────────────
