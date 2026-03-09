@@ -1,21 +1,40 @@
-MIT License
+Flipside Source Available License
 
-Copyright (c) 2026 Henk van Ess
+Copyright (c) 2026 Henk van Ess. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. PERMITTED USE
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+   You may use, copy, modify, and distribute this software and its
+   documentation, free of charge, for any of the following purposes:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+   a) Personal, non-commercial use
+   b) Journalistic and fact-checking use
+   c) Academic research and education
+   d) Non-profit and public-interest purposes
+
+2. COMMERCIAL USE REQUIRES A SEPARATE AGREEMENT
+
+   Any use of this software for commercial purposes — including but not
+   limited to embedding in a commercial product, offering it as a hosted
+   service, or deploying it as part of a revenue-generating operation —
+   requires a separate written license agreement with the copyright holder.
+
+   To inquire about commercial licensing, contact: henk@digitaldigging.org
+
+3. CONDITIONS
+
+   a) This license notice must be included in all copies or substantial
+      portions of the software.
+   b) You may not remove or alter any copyright notices.
+   c) Contributions submitted to this project are licensed under the same
+      terms unless otherwise agreed in writing.
+
+4. NO WARRANTY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES
+   OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+   OTHER DEALINGS IN THE SOFTWARE.
