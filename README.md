@@ -1,7 +1,7 @@
 # FlipSide
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License: Source Available](https://img.shields.io/badge/license-Source%20Available-yellow.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](https://github.com/voelspriet/flipside/releases)
 [![Claude Opus 4.6](https://img.shields.io/badge/Claude-Opus%204.6-blueviolet.svg)](https://www.anthropic.com/news/claude-opus-4-6)
 [![Built with Claude Code](https://img.shields.io/badge/built%20with-Claude%20Code-darkcyan.svg)](https://claude.ai/claude-code)
@@ -437,11 +437,11 @@ Everything you share during this event — not just your final project, but ever
 
 **Because FlipSide says we can't trust the firm who coded FlipSide. :)**
 
-The entire codebase is open source under the **MIT License** — free for anyone to use, modify, and distribute. There are no paid tiers, no premium features, no subscriptions, and no plans to add any.
+The entire codebase is **source available** — free for personal, journalistic, academic, and non-profit use. Commercial deployment requires a separate license agreement (contact henk@digitaldigging.org). There are no paid tiers, no premium features, no subscriptions, and no plans to add any for individual users.
 
 ---
 
-Third-party licenses: Flask (BSD-3), Anthropic SDK (MIT), python-docx (MIT), pdfplumber (MIT), python-dotenv (BSD-3), marked.js (MIT), DOMPurify (Apache-2.0/MPL-2.0), DM Sans + JetBrains Mono (OFL). Full list in [LICENSE](LICENSE).
+Third-party licenses: Flask (BSD-3), Anthropic SDK (MIT), python-docx (MIT), pdfplumber (MIT), python-dotenv (BSD-3), marked.js (MIT), DOMPurify (Apache-2.0/MPL-2.0), DM Sans + JetBrains Mono (OFL).
 
 ---
 
